@@ -1,0 +1,144 @@
+[data-fx~="underline-out-hover"] { position: relative; }
+[data-fx~="underline-out-hover"] > [data-fx-part="line"],
+[data-fx~="underline-out-hover"]:not(:has(> [data-fx-part="line"]))::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: auto;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  /* The redraw length after release is --fx-back (--fx-dur if absent) — --fx-dur only when the pointer enters */
+  transition: width var(--fx-back, var(--fx-dur, 0.4s)) var(--fx-ease, cubic-bezier(0.05, 0.42, 0.41, 0.99));
+}
+@media (hover: hover) {
+  [data-fx~="underline-out-hover"]:is(:hover, :focus-visible) > [data-fx-part="line"],
+  [data-fx~="underline-out-hover"]:not(:has(> [data-fx-part="line"])):is(:hover, :focus-visible)::after { left: auto; right: 0; width: var(--fx-gone, calc(0.1% - 24px)); transition-duration: var(--fx-dur, 0.4s); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="underline-out-hover"] > [data-fx-part="line"],
+  [data-fx~="underline-out-hover"]::after { transition: none; }
+}
+/* Vertical-text link — the left vertical line retracts to the bottom end */
+[data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: vertical"] > [data-fx-part="line"] {
+  left: 0; top: 0; bottom: auto; width: 1px; height: 100%;
+  transition: height var(--fx-back, var(--fx-dur, 0.4s)) var(--fx-ease, cubic-bezier(0.05, 0.42, 0.41, 0.99));
+}
+@media (hover: hover) {
+  [data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: vertical"]:is(:hover, :focus-visible) > [data-fx-part="line"] { left: 0; right: auto; top: auto; bottom: 0; width: 1px; height: var(--fx-gone, calc(0.1% - 24px)); transition-duration: var(--fx-dur, 0.4s); }
+}
+/* Return type — a line retracted to the right regrows from the right end on release and is drawn to the left. Stays attached at the retracted end (original background-position 0s delay) while only the size turns */
+[data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: return"] {
+  background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat;
+  transition: background-size var(--fx-back, var(--fx-dur, 0.4s)) var(--fx-ease, cubic-bezier(0.05, 0.42, 0.41, 0.99)), background-position 0s var(--fx-back, var(--fx-dur, 0.4s));
+}
+[data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: return"] > [data-fx-part="line"],
+[data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: return"]::after { display: none; }
+@media (hover: hover) {
+  [data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: return"]:is(:hover, :focus-visible) {
+    background-size: 0 1px;
+    background-position: 100% 100%;
+    transition: background-size var(--fx-dur, 0.4s) var(--fx-ease, cubic-bezier(0.05, 0.42, 0.41, 0.99));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: return"] { transition: none; }
+}
+/* Size type — moves with transform instead of width (original ::after transform-origin 0 0 → on hover scale3d(0,1,1) at 100% 0). On release it is redrawn pivoting on the left end.
+   Line width and position are set by --fx-line-w (default 100%) and --fx-line-x (from the left, default 0) — for a short horizontal line beside text (Brand ”View All” 158px) */
+[data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: scale"] > [data-fx-part="line"],
+[data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: scale"]:not(:has(> [data-fx-part="line"]))::after {
+  left: var(--fx-line-x, 0); right: auto; width: var(--fx-line-w, 100%);
+  transform-origin: 0 0;
+  transition: transform var(--fx-dur, 0.4s) var(--fx-ease, cubic-bezier(0.05, 0.42, 0.41, 0.99));
+}
+@media (hover: hover) {
+  [data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: scale"]:is(:hover, :focus-visible) > [data-fx-part="line"],
+  [data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: scale"]:not(:has(> [data-fx-part="line"])):is(:hover, :focus-visible)::after {
+    left: var(--fx-line-x, 0); right: auto; width: var(--fx-line-w, 100%);
+    transform-origin: 100% 0; transform: scale3d(0, 1, 1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: scale"] > [data-fx-part="line"],
+  [data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: scale"]::after { transition: none; }
+}
+/* Flowing type — on hover, the line sweeps off to the right end (first half) then immediately redraws from the left (second half), running one full cycle once.
+   Even while the hover is held, the redrawn line stays in place. Thickness and offset via --fx-weight (default 1px) and --fx-offset (below the text, default 0) */
+[data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: flow"] > [data-fx-part="line"],
+[data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: flow"]:not(:has(> [data-fx-part="line"]))::after {
+  left: 0; right: auto; width: 100%;
+  height: var(--fx-weight, 1px);
+  bottom: calc(0px - var(--fx-offset, 0px));
+  transform-origin: left center;
+  transition: none;
+}
+@media (hover: hover) {
+  [data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: flow"]:is(:hover, :focus-visible) > [data-fx-part="line"],
+  [data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: flow"]:not(:has(> [data-fx-part="line"])):is(:hover, :focus-visible)::after {
+    left: 0; right: auto; width: 100%;
+    animation: fxUlFlow var(--fx-dur, 0.6s) var(--fx-ease, ease) forwards;
+  }
+}
+@keyframes fxUlFlow {
+  0% { transform-origin: right center; transform: scaleX(1); }
+  49% { transform-origin: right center; transform: scaleX(0); }
+  50% { transform-origin: left center; transform: scaleX(0); }
+  100% { transform-origin: left center; transform: scaleX(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: flow"] > [data-fx-part="line"],
+  [data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: flow"]::after { animation: none !important; }
+}
+/* Bar type — one loop runs by width (stuck to the right it shrinks to 45%, stays empty until 55%, then grows from the left). It is a thick bar with rounded ends, so shrinking it with scale would squash the ends.
+   Position is --fx-line-x (from the left) and --fx-line-w (width), thickness --fx-weight, drop-down offset --fx-offset, color --fx-line */
+[data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: bar"] > [data-fx-part="line"],
+[data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: bar"]:not(:has(> [data-fx-part="line"]))::after {
+  left: var(--fx-line-x, 0px); right: auto; width: var(--fx-line-w, 100%);
+  height: var(--fx-weight, 3px);
+  bottom: calc(0px - var(--fx-offset, 0px));
+  border-radius: var(--fx-radius, calc(var(--fx-weight, 3px) / 2));
+  background: var(--fx-line, currentColor);
+  transition: none;
+  pointer-events: none;
+}
+@media (hover: hover) {
+  [data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: bar"]:is(:hover, :focus-visible) > [data-fx-part="line"],
+  [data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: bar"]:not(:has(> [data-fx-part="line"])):is(:hover, :focus-visible)::after {
+    left: var(--fx-line-x, 0px); right: auto; width: var(--fx-line-w, 100%);
+    animation: fxUlBar var(--fx-dur, 0.5s) var(--fx-ease, ease);
+  }
+}
+@keyframes fxUlBar {
+  0% { left: auto; right: calc(100% - var(--fx-line-x, 0px) - var(--fx-line-w, 100%)); width: var(--fx-line-w, 100%); }
+  45% { left: auto; right: calc(100% - var(--fx-line-x, 0px) - var(--fx-line-w, 100%)); width: 0; }
+  55% { left: var(--fx-line-x, 0px); width: 0; }
+  100% { left: var(--fx-line-x, 0px); width: var(--fx-line-w, 100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: bar"] > [data-fx-part="line"],
+  [data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: bar"]::after { animation: none !important; }
+}
+/* Relay type — a 400%-wide stripe pattern (line 25% · gap 50% · line 25%) pushed from 100% → 0, so the line exits off the right, rests for one width, then a new line enters from off the left.
+   Normally there is no transition, so on release it snaps straight back (both ends look the same, so it goes unnoticed). Thickness --fx-weight (default 2px), color --fx-line */
+[data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: relay"] > [data-fx-part="line"],
+[data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: relay"]:not(:has(> [data-fx-part="line"]))::after {
+  left: 0; right: auto; width: 100%;
+  height: var(--fx-weight, 2px);
+  bottom: calc(0px - var(--fx-offset, 0px));
+  background: linear-gradient(90deg, var(--fx-line, currentColor) 25%, transparent 25%, transparent 75%, var(--fx-line, currentColor) 75%) 100% 0 / 400% 100% no-repeat;
+  transition: none;
+}
+@media (hover: hover) {
+  [data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: relay"]:is(:hover, :focus-visible) > [data-fx-part="line"],
+  [data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: relay"]:not(:has(> [data-fx-part="line"])):is(:hover, :focus-visible)::after {
+    left: 0; right: auto; width: 100%;
+    background-position: 0 0;
+    transition: background-position var(--fx-dur, 0.9s) var(--fx-ease, cubic-bezier(0.25, 1, 0.5, 1));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: relay"] > [data-fx-part="line"],
+  [data-fx~="underline-out-hover"][data-fx-underline-out-hover*="look: relay"]::after { transition: none !important; }
+}

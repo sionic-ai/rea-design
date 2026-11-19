@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iris-shutter — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); margin: 0; min-height: 100vh; }
+  .demo-hint { padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-row { display: flex; gap: 12px; padding: 40px; }
+  .demo-row button { padding: 12px 18px; border: 1px solid var(--kf-ink); background: none; cursor: pointer; }
+  .demo-log { padding: 0 40px; color: var(--kf-dim); }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>iris-shutter</b> — Press ”Close shutter”. The aperture blades tighten shut and fx:closed arrives .1s later. ”Reopen” hides it. <span style="color:var(--kf-dim)">(After 1s one more comes in, and after 2.5s one drops out)</span></p>
+<div class="demo-row"><button type="button" id="go">Close Shutter</button><button type="button" id="back">Reopen</button></div>
+<p class="demo-log" id="log">Waiting</p>
+<div data-fx="iris-shutter" data-demo-remove><svg viewBox="0 0 400 400"><defs><clipPath id="lens-a"><circle cx="200" cy="200" r="200"></circle></clipPath></defs><g data-fx-part="blades" clip-path="url(#lens-a)"></g></svg></div>
+<div data-fx="iris-shutter" id="main"><svg viewBox="0 0 400 400"><defs><clipPath id="lens-b"><circle cx="200" cy="200" r="200"></circle></clipPath></defs><g data-fx-part="blades" clip-path="url(#lens-b)"></g></svg></div>
+<template data-demo-late><div data-fx="iris-shutter" data-fx-iris-shutter="blades: 8; to: .3" style="--fx-size: 12vmax"><svg viewBox="0 0 400 400"><defs><clipPath id="lens-c"><circle cx="200" cy="200" r="200"></circle></clipPath></defs><g data-fx-part="blades" clip-path="url(#lens-c)"></g></svg></div></template>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+(() => {
+const main = document.getElementById("main"), log = document.getElementById("log");
+document.getElementById("go").addEventListener("click", () => { log.textContent = "Closing…"; main.dispatchEvent(new CustomEvent("fx:close")); });
+document.getElementById("back").addEventListener("click", () => { log.textContent = "Waiting"; main.dispatchEvent(new CustomEvent("fx:reset")); });
+main.addEventListener("fx:closed", () => (log.textContent = "fx:closed"));
+setTimeout(() => document.querySelectorAll("template[data-demo-late]").forEach((t) => t.replaceWith(t.content.cloneNode(true))), 1000);
+setTimeout(() => document.querySelectorAll("[data-demo-remove]").forEach((n) => n.remove()), 2500);
+})();
+</script>
+</body>
+</html>

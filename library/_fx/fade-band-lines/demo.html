@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>fade-band-lines — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { margin: 0; padding: 12px 20px; border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo { display: grid; gap: 48px; padding: 24px 20px 60vh; }
+  .list { display: flex; flex-direction: column; align-items: flex-start; font-size: 34px; line-height: 1.05; }
+  .spacer { height: 70vh; display: grid; place-items: center; color: var(--kf-dim); border: 1px dashed var(--kf-line); }
+  button { justify-self: start; padding: 6px 12px; border: 1px solid var(--kf-line); background: none; color: var(--kf-ink); cursor: pointer; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>fade-band-lines</b> — The first list starts when you press the button (start: event), the lower list when it is scrolled to 30% of the screen, with each row revealed as a band wipes away.</p>
+<section class="demo" id="demo">
+  <button type="button" id="go">Play first list (fx:play)</button>
+  <div class="list" id="first" data-fx="fade-band-lines" data-fx-fade-band-lines="start: event">
+    <span data-fx-part="line">Client One, Project Name</span>
+    <span data-fx-part="line">Client Two, Another Project</span>
+    <span data-fx-part="line">Client Three, Third Work</span>
+  </div>
+  <div class="spacer">Scroll down</div>
+  <div class="list" id="gone" data-fx="fade-band-lines" data-fx-fade-band-lines="dur: .4">
+    <span data-fx-part="line">Your first line here</span>
+    <span data-fx-part="line">Your second line runs a little longer</span>
+    <span data-fx-part="line">Your third line here</span>
+    <span data-fx-part="line">Your fourth line here</span>
+  </div>
+</section>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../../../_shared/vendor/gsap/ScrollTrigger.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+// Checks that it attaches to late panels (after 1s) and that detach runs when the panel is removed (after 4s)
+(() => {
+  gsap.registerPlugin(ScrollTrigger);
+  document.getElementById("go").addEventListener("click", () => document.getElementById("first").dispatchEvent(new CustomEvent("fx:play")));
+  setTimeout(() => {
+    const late = document.createElement("div");
+    late.className = "list";
+    late.setAttribute("data-fx", "fade-band-lines");
+    late.setAttribute("data-fx-fade-band-lines", "start: load");
+    late.innerHTML = '<span data-fx-part="line">One late line</span><span data-fx-part="line">Late-arriving line two</span>';
+    document.getElementById("demo").prepend(late);
+  }, 1000);
+  setTimeout(() => document.getElementById("gone")?.remove(), 4000);
+  document.querySelector(".demo-hint").append(" · After 1s one more panel comes in, and after 4s the lower panel leaves.");
+})();
+</script>
+</body>
+</html>

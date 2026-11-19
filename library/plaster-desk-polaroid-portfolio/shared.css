@@ -1,0 +1,222 @@
+/* One-screen 3D desk — no scrolling, bottom text (HUD) laid over a single scene.
+   The HUD is pushed along by the scene camera parallax (--fx-desk-x/y is emitted by polaroid-desk-gl). */
+:root {
+  --site-pad: clamp(36px, 7.2vw, 104px);
+  --site-pad-y: clamp(34px, 8.2vh, 74px);
+  --site-hud: clamp(14px, 1.53vw, 22px);
+  --site-paper: var(--kf-raised);
+  --site-photo: color-mix(in oklab, var(--kf-bg) 70%, var(--kf-line));
+  --site-shade: color-mix(in oklab, var(--kf-line) 45%, var(--kf-raised));
+  --site-mat: oklch(from var(--kf-line) calc(l + .12) .018 255);
+  --site-pill: color-mix(in oklab, var(--kf-ink) 92%, var(--kf-bg));
+  --site-screen: color-mix(in oklab, var(--kf-ink) 92%, var(--kf-dim));
+  --site-screen-ink: color-mix(in oklab, var(--kf-line) 82%, var(--kf-bg));
+  --site-screen-soft: color-mix(in oklab, var(--site-photo) 45%, var(--site-screen));
+  --site-ease: cubic-bezier(.625, .05, 0, 1);
+  --fx-flash: color-mix(in oklab, var(--kf-ink) 85%, var(--kf-contrast-bg));
+}
+@media (max-width: 767px) {
+  :root { --site-pad: 37px; --site-pad-y: 36px; --site-hud: 15px; }
+}
+
+html, body { height: 100%; }
+body {
+  overflow: hidden;
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font: var(--kf-weight-body) 16px/1.45 var(--kf-font-sans);
+  -webkit-font-smoothing: antialiased;
+  word-break: keep-all;
+}
+
+.tg-stage {
+  --fx-floor: var(--kf-bg);
+  --fx-paper: var(--site-paper);
+  --fx-photo: var(--site-photo);
+  --fx-photo-ink: var(--kf-dim);
+  --fx-caption: var(--kf-line);
+  --fx-glow: var(--kf-accent);
+  --fx-title: var(--kf-ink);
+  position: fixed;
+  inset: 0;
+  height: 100svh;
+}
+.tg-gobo {
+  --fx-shade: var(--site-shade);
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+}
+
+/* Bottom text — one layer over the scene, shifts together with the camera parallax */
+.tg-hud {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  translate: var(--fx-desk-x, 0) var(--fx-desk-y, 0);
+  font-family: var(--kf-font-display);
+  color: var(--kf-ink);
+}
+.tg-hud a, .tg-hud button { pointer-events: auto; }
+.tg-name {
+  position: absolute;
+  left: var(--site-pad);
+  top: var(--site-pad-y);
+  font-size: var(--site-hud);
+  font-weight: 600;
+  line-height: .93;
+  letter-spacing: .005em;
+  white-space: pre-line;
+}
+.tg-sound {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--site-pad-y) + var(--site-hud) * .28);
+  translate: -50% 0;
+  width: 38px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.tg-sound svg { width: 100%; height: 100%; overflow: visible; }
+.tg-sound path { fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
+.tg-nav {
+  position: absolute;
+  right: var(--site-pad);
+  top: var(--site-pad-y);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: var(--site-hud);
+  font-weight: 600;
+  line-height: 1.07;
+}
+.tg-nav a[aria-current="page"] { opacity: .55; }
+.tg-close {
+  position: absolute;
+  right: var(--site-pad);
+  top: var(--site-pad-y);
+  font-size: var(--site-hud);
+  font-weight: 600;
+  line-height: 1;
+}
+.tg-hero {
+  position: absolute;
+  left: calc(var(--site-pad) - .06em);
+  bottom: calc(var(--site-pad-y) + 4px);
+  font-size: clamp(33px, 6.6vw, 96px);
+  font-weight: 800;
+  line-height: .86;
+  letter-spacing: -.01em;
+  text-transform: uppercase;
+}
+.tg-tags {
+  position: absolute;
+  right: calc(var(--site-pad) - 2px);
+  top: 50%;
+  translate: 0 -55%;
+  font: 400 clamp(14px, 1.15vw, 17px)/1.2 var(--kf-font-sans);
+  text-align: right;
+}
+.tg-clock {
+  position: absolute;
+  right: calc(var(--site-pad) + 13.5vw + 26px);
+  bottom: calc(var(--site-pad-y) + 4px);
+  font: 500 12px/1.2 var(--kf-font-sans);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+@media (max-width: 767px) {
+  .tg-hero { top: 104px; bottom: auto; font-size: 33px; line-height: .9; }
+  .tg-tags { top: auto; bottom: 113px; left: var(--site-pad); right: auto; translate: none; text-align: left; font-size: 13px; }
+  .tg-clock { left: var(--site-pad); right: auto; bottom: 49px; font-size: 10.5px; white-space: pre-line; }
+  .tg-clock i { display: none; }
+}
+
+/* Bottom text is revealed from the top, line by line, each .36s later, starting at 1.05s (original HUD reveal — thomas curve) */
+.tg-rv {
+  display: block;
+  clip-path: inset(-.3em -.2em 100% -.2em);
+  translate: 0 .3em;
+  transition: clip-path 1.05s var(--site-ease), translate 1.05s var(--site-ease);
+  transition-delay: calc(var(--i, 0) * .36s + .08s);
+}
+html.tg-in .tg-rv { clip-path: inset(-.3em -.2em -.3em -.2em); translate: 0 0; }
+html.tg-out .tg-rv { clip-path: inset(-.3em -.2em 100% -.2em); translate: 0 -.2em; transition-duration: .55s; transition-timing-function: cubic-bezier(.7, 0, .84, 0); transition-delay: calc(var(--i, 0) * .05s); }
+@media (prefers-reduced-motion: reduce) {
+  .tg-rv, html.tg-out .tg-rv { transition: none; clip-path: none; translate: none; }
+}
+
+.tg-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* About — one centered name line, five intro lines, four contact links. The portrait polaroid sits in the bottom right cell */
+.tg-about {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -48%;
+  width: min(760px, calc(100% - var(--site-pad) * 2));
+  text-align: center;
+}
+.tg-about__name { font-size: clamp(26px, 4.45vw, 64px); font-weight: 800; line-height: 1; text-transform: uppercase; margin-bottom: clamp(14px, 2.6vw, 38px); }
+.tg-about__text { font: 400 clamp(15px, 1.22vw, 17.5px)/1.43 var(--kf-font-sans); color: var(--kf-ink-soft); }
+.tg-about__links { display: flex; justify-content: center; gap: clamp(22px, 2.1vw, 30px); margin-top: clamp(14px, 2.4vw, 34px); font-size: clamp(14px, 1.15vw, 16.5px); font-weight: 600; }
+@media (max-width: 767px) {
+  .tg-about { top: 47%; translate: -50% -50%; }
+}
+
+/* A single work — large name at bottom left, with description and pill row beside it. Above, that work’s screens flow as a curved strip (detail.js) */
+.tg-project { position: absolute; left: calc(var(--site-pad) - .06em); bottom: calc(var(--site-pad-y) + 4px); font-size: clamp(36px, 6.6vw, 96px); font-weight: 800; line-height: .86; text-transform: uppercase; }
+.tg-meta { position: absolute; left: 60.1%; bottom: calc(var(--site-pad-y) + 14px); width: min(250px, 18vw); }
+.tg-meta__text { font: 400 clamp(14px, 1.18vw, 17px)/1.33 var(--kf-font-sans); margin-bottom: 16px; }
+.tg-pills { display: flex; flex-wrap: wrap; gap: 6px; font-size: 11.5px; font-weight: 600; letter-spacing: .02em; }
+.tg-pill { display: inline-flex; align-items: center; height: 23px; padding: 0 8px; border: 1.5px solid currentColor; border-radius: var(--kf-radius-pill); }
+.tg-pill--fill { background: var(--site-pill); border-color: var(--site-pill); color: var(--kf-line); }
+.tg-pill--round { width: 23px; padding: 0; justify-content: center; background: var(--site-pill); border-color: var(--site-pill); color: var(--kf-line); }
+.tg-pill--round svg { width: 11px; height: 11px; }
+.tg-pills__row { display: flex; gap: 6px; width: 100%; }
+.tg-screens { position: absolute; left: 7.2%; right: 7.2%; top: 14.5%; height: 44.5%; pointer-events: auto; cursor: grab; touch-action: none; }
+.tg-screens:active { cursor: grabbing; }
+.tg-screens [data-screen] { display: none; }
+@media (max-width: 767px) {
+  .tg-project { bottom: auto; top: 69.5%; font-size: 36px; }
+  .tg-meta { left: var(--site-pad); bottom: 32px; width: 160px; }
+  .tg-meta__text { font-size: 14.5px; margin-bottom: 12px; }
+  .tg-screens { top: 9%; height: 56%; touch-action: pan-x; }
+  .tg-wide { display: none; }
+  .tg-pill { white-space: nowrap; }
+}
+
+/* Video lightbox — tap the screen and that work’s video fills a black overlay (the original fades in over .08s on open) */
+.tg-view { position: absolute; left: 291px; top: 885px; width: 389px; height: 24px; opacity: 0; border: 0; background: none; color: inherit; font: inherit; z-index: 4; }
+.tg-view:focus-visible { opacity: 1; outline: 2px solid var(--kf-accent); }
+.tg-viewer { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; background: color-mix(in oklab, var(--kf-line) 92%, transparent); opacity: 0; transition: opacity .083s linear; }
+.tg-viewer[data-open] { opacity: 1; }
+.tg-viewer[hidden] { display: none; }
+.tg-viewer__stage { width: min(88vw, 150vh); }
+.tg-viewer__close { position: absolute; top: 12px; right: 12px; width: 44px; height: 44px; border: 0; background: none; color: var(--kf-ink); font: 700 clamp(16px, 1.6vw, 20px)/1 var(--kf-font-display); cursor: pointer; }
+.tg-viewer__close span { transition: opacity .22s cubic-bezier(.37, 0, .63, 1); }
+.tg-viewer__close:hover { opacity: .4; }
+
+/* Lab — electrostatic mat panel, section name and one-line description at bottom left */
+body[data-page="lab"] .tg-stage { --fx-floor: var(--site-mat); --fx-paper: color-mix(in oklab, var(--kf-ink) 92%, var(--kf-dim)); --fx-caption: var(--site-photo); }
+body[data-page="lab"] {
+  background: var(--site-mat);
+  --site-metal: color-mix(in oklab, var(--kf-ink) 70%, var(--kf-dim));
+  --site-tool: color-mix(in oklab, var(--kf-line) 90%, var(--kf-dim));
+  --site-plastic: color-mix(in oklab, var(--kf-ink) 88%, var(--kf-dim));
+  --site-note: color-mix(in oklab, var(--kf-raised) 85%, var(--kf-ink));
+  --site-wire-a: oklch(from var(--kf-accent) .62 .2 28);
+  --site-wire-b: oklch(from var(--kf-accent) .82 .16 95);
+  --site-wire-c: color-mix(in oklab, var(--kf-line) 92%, var(--kf-dim));
+}
+.tg-lab { position: absolute; left: var(--site-pad); bottom: calc(var(--site-pad-y) + 16px); }
+.tg-lab__name { font-size: clamp(26px, 2.6vw, 38px); font-weight: 700; line-height: 1; margin-bottom: 8px; }
+.tg-lab__text { font: 600 clamp(11px, .92vw, 13px)/1.3 var(--kf-font-sans); }
+
+/* Loader: position and size same as the original, flash on the base text color side */
+.tg-loader { z-index: 40; }

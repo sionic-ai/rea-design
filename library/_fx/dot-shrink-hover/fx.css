@@ -1,0 +1,71 @@
+/* The fill of the pill button shrinks to a single point at the right end — when the fill (::before) and the text cover above it are shrunk together with the same circle (clip-path), 
+   The fill-colored text beneath is revealed, and after .6s an arrow lights up inside the dot, nudges 2px once, and returns */
+[data-fx~="dot-shrink-hover"] {
+  --fx-f: var(--fx-fill, var(--kf-ink));
+  position: relative;
+  overflow: clip;
+  isolation: isolate;
+  background-color: var(--fx-base, var(--kf-surface));
+  outline: 1px solid var(--fx-f);
+  outline-offset: -1px;
+}
+[data-fx~="dot-shrink-hover"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: var(--fx-f);
+  clip-path: circle(100% at 50% 50%);
+  transition: clip-path var(--fx-dur, 0.5s);
+}
+[data-fx~="dot-shrink-hover"] [data-fx-part="text"] { position: relative; z-index: 1; color: var(--fx-f); transition: color 0.2s; }
+[data-fx~="dot-shrink-hover"] .fx-dot-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fx-on, var(--kf-surface));
+  pointer-events: none;
+  clip-path: circle(100% at 50% 50%);
+  transition: clip-path var(--fx-dur, 0.5s);
+}
+[data-fx~="dot-shrink-hover"] .fx-dot-cover > * { color: inherit; }
+[data-fx~="dot-shrink-hover"]::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: var(--fx-arrow-x, 13.5px);
+  z-index: 3;
+  width: var(--fx-arrow, 10px);
+  height: var(--fx-arrow, 10px);
+  background: var(--fx-on, var(--kf-surface));
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M3 1l4 4-4 4' fill='none' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M3 1l4 4-4 4' fill='none' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E") center / contain no-repeat;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-50%);
+  transition: opacity 0.4s;
+}
+@media (hover: hover) and (min-width: 1024px) {
+  [data-fx~="dot-shrink-hover"]:is(:hover, :focus-visible)::before {
+    clip-path: circle(var(--fx-dot, 12px) at calc(100% - var(--fx-dot-x, 20px)) 50%);
+  }
+  [data-fx~="dot-shrink-hover"]:is(:hover, :focus-visible) .fx-dot-cover {
+    clip-path: circle(var(--fx-text-dot, var(--fx-dot, 12px)) at calc(100% - var(--fx-text-dot-x, var(--fx-dot-x, 20px))) 50%);
+  }
+  [data-fx~="dot-shrink-hover"]:is(:hover, :focus-visible) [data-fx-part="text"] { transition: color 0.2s 0.6s; }
+  [data-fx~="dot-shrink-hover"]:is(:hover, :focus-visible)::after { animation: fx-dot-arrow 0.8s 0.6s forwards; }
+}
+@keyframes fx-dot-arrow {
+  0% { opacity: 0; visibility: hidden; transform: translateY(-50%); }
+  25% { opacity: 1; visibility: visible; transform: translateY(-50%); }
+  62% { opacity: 1; visibility: visible; transform: translate(2px, -50%); }
+  to { opacity: 1; visibility: visible; transform: translateY(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="dot-shrink-hover"]::before, [data-fx~="dot-shrink-hover"] .fx-dot-cover { transition: none; }
+  [data-fx~="dot-shrink-hover"]:is(:hover, :focus-visible)::after { animation: none; opacity: 1; visibility: visible; }
+}

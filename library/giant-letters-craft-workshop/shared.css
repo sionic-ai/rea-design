@@ -1,0 +1,336 @@
+/* Shared by several sections — type size frame (16px at 1600 and below, proportional to width from 1600 to 1760, 110% at 1760+, 90% at 415 and below) · cell width, 
+   Menu circle button and dark brown menu board, center logo head, pill button (text swaps by rising upward), circle arrow link, underline link, slide circle button,
+   White curtain loader, footer (online shop band · contact · address). Original dimensions are calc(N em / 16) — N px at 1440. */
+:root {
+  --site-ease: cubic-bezier(0.39, 0.575, 0.565, 1);
+  --site-ease-btn: cubic-bezier(0.645, 0.045, 0.355, 1);
+  --site-ease-link: cubic-bezier(0.86, 0, 0.07, 1);
+  --site-ease-img: cubic-bezier(0.455, 0.03, 0.515, 0.955);
+  --site-photo: color-mix(in oklab, var(--kf-bg) 70%, var(--kf-surface));
+  --site-line-soft: color-mix(in srgb, var(--kf-line) 48%, transparent);
+  --site-line-faint: color-mix(in srgb, var(--kf-line) 32%, transparent);
+  --site-foot: var(--kf-dim);
+  --site-on-dark: var(--kf-contrast-ink);
+  --site-on-dark-soft: color-mix(in srgb, var(--kf-contrast-ink) 60%, transparent);
+  --site-on-dark-faint: color-mix(in srgb, var(--kf-contrast-ink) 17%, transparent);
+  --site-shade: linear-gradient(to bottom, transparent 0, transparent 40%, color-mix(in srgb, var(--kf-ink) 60%, transparent) 100%);
+  --site-ring: 214;
+  /* The original logo svg has no fill, so it is pure black (#000) — only the ink lightness is lowered to 0 to make the same black from the skin */
+  --site-logo: oklch(from var(--kf-ink) 0 0 h);
+}
+
+html { font-size: calc(16 / 1600 * 100vw); line-height: 1.8; background: var(--kf-bg); color: var(--kf-ink); }
+@media (min-width: 1760px) { html { font-size: 110%; } }
+@media (max-width: 1600px) { html { font-size: 100%; } }
+@media (max-width: 415px) { html { font-size: 90%; } }
+body {
+  background: var(--kf-bg); color: var(--kf-ink); font-family: var(--kf-font-sans); font-weight: var(--kf-weight-body);
+  letter-spacing: 0.06em; text-align: center; font-feature-settings: "palt"; word-break: keep-all; overflow-wrap: anywhere;
+}
+a { color: inherit; }
+h1, h2, h3, h4 { font-size: 1em; font-weight: inherit; }
+html:not(.mo-ready) #mo-scroll, html:not(.mo-ready) .mo-menu { opacity: 0; }
+button { font: inherit; color: inherit; }
+img, video { display: block; max-width: 100%; }
+:focus-visible { outline: 2px solid var(--kf-accent); outline-offset: 3px; }
+.mo-en { font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); overflow-wrap: normal; }
+.mo-en--bold { font-weight: 700; }
+.mo-vt { display: block; width: 1em; line-height: 1; white-space: nowrap; writing-mode: vertical-rl; font-feature-settings: "pkna"; }
+.mo-section { width: calc(590 / 750 * 100%); max-width: calc(1150em / 16); margin: 0 auto; text-align: left; }
+.mo-section--wide { width: calc(648 / 750 * 100%); max-width: calc(1264em / 16); }
+.mo-arrow { display: block; width: calc(23em / 16); height: calc(14em / 16); fill: currentColor; }
+
+/* Photo slot — in the original a pale cream cell turns on in .4s once the image loads. A link cell scales the image 1.03x (.35s) on hover */
+.mo-img { position: relative; overflow: hidden; background: var(--site-photo); }
+.mo-img__body { position: absolute; inset: 0; display: block; width: 100%; height: 100%; opacity: 0; transition: opacity 0.4s var(--site-ease-img); }
+.mo-img__body.wf-img { border: 0; }
+.mo-img__body.is-loaded { opacity: 1; }
+.mo-target { display: block; }
+.mo-target__img.mo-img__body { transition: opacity 0.4s var(--site-ease-img), transform 0.4s var(--site-ease-img); }
+@media (hover: hover) { .mo-target:hover .mo-target__img { transform: scale(1.03); } }
+
+/* Big English title — each letter pops in from 35px left at .9x in .06s steps (Back 1.7) */
+.mo-title { display: flex; }
+.mo-title > span { display: block; }
+
+/* Pill button — 2px border (the right side is covered by the circle icon). On hover the text slides up and out and the same text rises from below */
+.mo-btn {
+  position: relative; display: inline-flex; justify-content: space-between; align-items: stretch; overflow: visible;
+  border: calc(2em / 16) solid var(--kf-line); border-right: 0; border-radius: 999px; text-decoration: none;
+  transition: border-color 0.5s var(--site-ease), color 0.5s var(--site-ease);
+}
+.mo-btn::before { content: attr(data-txt); position: absolute; top: 50%; display: block; transform: translate3d(0, 20%, 0); opacity: 0; white-space: nowrap; }
+.mo-btn__txt, .mo-btn__icon { display: flex; align-items: center; white-space: nowrap; }
+.mo-btn__icon { justify-content: center; flex-shrink: 0; border: calc(2em / 16) solid var(--kf-line); border-radius: 50%; transition: border-color 0.5s var(--site-ease); }
+.mo-btn__icon .mo-ico { fill: currentColor; }
+@media (hover: hover) {
+  .mo-btn:hover { border-color: var(--kf-accent); }
+  .mo-btn:hover .mo-btn__icon { border-color: var(--kf-accent); }
+  .mo-btn:hover::before { animation: mo-btn-show 0.4s var(--site-ease-btn); }
+  .mo-btn:hover .mo-btn__txt { animation: mo-btn-hide 0.4s var(--site-ease-btn); }
+  .mo-btn:hover .mo-btn__icon svg { animation: mo-link-hover 0.5s var(--site-ease-btn); }
+}
+@keyframes mo-btn-show { from { opacity: 0; } to { opacity: 1; transform: translate3d(0, -50%, 0); } }
+@keyframes mo-btn-hide { from { opacity: 1; } to { opacity: 0; transform: translate3d(0, -20%, 0); } }
+@keyframes mo-link-hover {
+  0% { opacity: 1; }
+  50% { opacity: 0; transform: translate3d(100%, 0, 0); }
+  55% { opacity: 0; transform: translate3d(-100%, 0, 0); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes mo-link-hover-back {
+  0% { opacity: 1; }
+  50% { opacity: 0; transform: translate3d(-100%, 0, 0); }
+  55% { opacity: 0; transform: translate3d(100%, 0, 0); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* Circle arrow link (first page ”… View”) — the circle scales 1.5x and shifts left .5em, the arrow slot slides 1em, and the arrow exits then re-enters */
+.mo-tlink { display: inline-flex; align-items: center; overflow: visible; }
+.mo-tlink__txt { position: relative; z-index: 1; font-size: calc(14em / 16); }
+.mo-tlink__arrow { position: relative; z-index: 0; display: flex; align-items: center; justify-content: center; width: calc(72em / 16); height: calc(72em / 16); margin-left: calc(-20em / 16); transition: transform 0.4s var(--site-ease-btn); }
+.mo-tlink__arrow::before { content: ""; position: absolute; inset: 0; border: calc(2em / 16) solid var(--kf-surface); border-radius: 50%; transition: transform 0.4s var(--site-ease-btn); }
+.mo-tlink__arrow .mo-arrow { width: calc(18em / 16); height: calc(11em / 16); }
+@media (hover: hover) {
+  .mo-tlink:hover .mo-tlink__arrow { transform: translate3d(1em, 0, 0); }
+  .mo-tlink:hover .mo-tlink__arrow::before { transform: scale(1.5) translate3d(-0.5em, 0, 0); }
+  .mo-tlink:hover .mo-tlink__arrow svg { animation: mo-link-hover 0.5s var(--site-ease-btn); }
+}
+
+/* Small circle link (View details) — the circle fills brown and the arrow slips out and slides back in white */
+.mo-clink { display: inline-flex; align-items: center; }
+.mo-clink__txt { font-size: calc(13em / 16); }
+.mo-clink__arrow { position: relative; z-index: 0; display: flex; align-items: center; justify-content: center; width: calc(35em / 16); height: calc(35em / 16); margin-left: calc(11em / 16); overflow: hidden; border: calc(2em / 16) solid var(--site-line-soft); border-radius: 50%; }
+.mo-clink__arrow .mo-arrow { width: calc(17em / 16); height: calc(10em / 16); }
+@media (hover: hover) {
+  .mo-clink__arrow svg { transition: fill 0.1s; }
+  .mo-clink:hover .mo-clink__arrow { background: var(--kf-dim); border: 0; color: var(--kf-surface); }
+  .mo-clink:hover .mo-clink__arrow svg { animation: mo-link-hover 0.5s var(--site-ease-link); }
+}
+
+/* Underline link — on hover the line retracts to the right then is drawn again from the left (.6s ease) */
+.mo-line { display: inline; }
+.mo-line__txt { position: relative; }
+.mo-line__txt::after { content: ""; position: absolute; left: 0; bottom: 0; display: block; width: 100%; height: 1px; background: currentColor; }
+@media (hover: hover) { .mo-line:hover .mo-line__txt::after { animation: mo-line 0.6s ease; } }
+@keyframes mo-line {
+  0% { transform: scale(1, 1); transform-origin: top right; }
+  50% { transform: scale(0, 1); transform-origin: top right; }
+  51% { transform: scale(0, 1); transform-origin: top left; }
+  100% { transform: scale(1, 1); transform-origin: top left; }
+}
+
+/* Slide circle button — white 70px circle, on hover a brown outline draws a full turn in .35s and the arrow slips out and back in */
+.mo-slidenav { position: relative; display: flex; align-items: center; justify-content: center; width: calc(70em / 16); height: calc(70em / 16); padding: 0; border: 0; border-radius: 50%; background: var(--kf-surface); cursor: pointer; appearance: none; }
+.mo-slidenav[aria-disabled="true"], .mo-slidenav.swiper-button-disabled { opacity: 0.4; pointer-events: none; }
+.mo-slidenav__ring { position: absolute; top: -2px; left: -2px; width: calc(100% + 4px); height: calc(100% + 4px); z-index: 0; }
+.mo-slidenav__ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.mo-slidenav__ring circle { fill: transparent; stroke: var(--kf-accent); stroke-width: 2; stroke-dasharray: 0 var(--site-ring); }
+.mo-slidenav__arrow { position: relative; z-index: 1; display: block; }
+/* The arrow is a fill one tone lighter than the ink (original #2c2c2c) — on hover only the fill turns brown in .1s */
+.mo-slidenav__arrow svg { fill: color-mix(in srgb, var(--kf-ink) 92%, var(--kf-surface)); }
+.mo-slidenav.is-prev .mo-slidenav__arrow svg { transform: scaleX(-1); }
+@media (hover: hover) {
+  .mo-slidenav__ring circle { transition: stroke-dasharray 0.35s var(--site-ease); }
+  .mo-slidenav__arrow svg { transition: fill 0.1s; }
+  .mo-slidenav:hover .mo-slidenav__ring circle { stroke-dasharray: var(--site-ring) var(--site-ring); }
+  .mo-slidenav:hover .mo-slidenav__arrow svg { fill: var(--kf-accent); }
+  .mo-slidenav.is-next:hover .mo-slidenav__arrow svg { animation: mo-link-hover 0.5s var(--site-ease-link); }
+  .mo-slidenav.is-prev:hover .mo-slidenav__arrow { animation: mo-link-hover-back 0.5s var(--site-ease-link); }
+}
+.mo-dots .swiper-pagination-bullet { width: calc(7em / 16); height: calc(7em / 16); margin: 0; background: var(--kf-surface); opacity: 1; }
+.mo-dots .swiper-pagination-bullet + .swiper-pagination-bullet { margin-left: calc(13em / 16); }
+.mo-dots .swiper-pagination-bullet-active { background: var(--kf-ink); }
+
+/* News row — date · category pill · title (brown text on hover) */
+.mo-news__info { display: flex; align-items: center; }
+.mo-news__time { font-size: calc(15em / 16); letter-spacing: 0.04em; font-family: var(--kf-font-heading, var(--kf-font-sans)); font-weight: 700; }
+.mo-news__cat { display: block; margin-left: 1em; padding: calc(8em / 13) calc(16em / 13); font-size: calc(13em / 16); line-height: 1; border-radius: 1em; background: var(--kf-surface); transition: background-color 0.35s var(--site-ease), color 0.35s var(--site-ease); }
+.mo-news__cat:hover { background: var(--kf-accent-soft); color: var(--kf-on-accent); }
+.mo-news__body { margin-top: calc(10em / 16); }
+.mo-news__a { transition: color 0.35s var(--site-ease); }
+.mo-news__a:hover { color: var(--kf-accent-text); }
+
+/* ── Header — center logo, ”ONLINE SHOP” pill on the left. White when the menu is open ── */
+.mo-h { position: absolute; top: 0; left: 0; z-index: 98; display: flex; justify-content: center; width: 100%; padding-top: calc(78em / 16); pointer-events: none; }
+.mo-h > * { pointer-events: auto; }
+.mo-h.is-fixed { position: fixed; }
+.mo-h.is-menuopen { transform: translate3d(0, 0, 0) !important; }
+.mo-h__logo { position: relative; }
+.mo-logo { display: inline-block; font-family: var(--kf-font-display); font-weight: 700; font-size: calc(24em / 16); line-height: calc(33 / 24); letter-spacing: 0.02em; white-space: nowrap; transition: color 0.5s; }
+.mo-logo i { font-style: normal; font-weight: 500; color: var(--kf-accent-text); transition: color 0.5s; }
+.mo-logo--big { font-size: calc(64em / 16); }
+/* Original: on press, the logo and button turn white at once via html.is-menuopen (.5s) — the header’s is-menuopen (after 700ms) only handles fixing and receiving presses */
+html.is-menuopen .mo-h .mo-logo, html.is-menuopen .mo-h .mo-logo i { color: var(--site-on-dark); }
+.mo-h__btn { position: absolute; top: calc(56em / 16); left: 64px; transition: opacity 0.3s, visibility 0.3s; }
+.mo-h__btn .mo-btn { width: calc(243em / 16); height: calc(76em / 16); padding-left: calc(27em / 16); color: var(--kf-ink); }
+.mo-h__btn .mo-btn::before { left: calc(27em / 16); font-family: var(--kf-font-display); font-weight: 700; letter-spacing: 0.08em; }
+.mo-h__btn .mo-btn__txt { font-size: 1em; letter-spacing: 0.08em; }
+.mo-h__btn .mo-btn__icon { width: calc(74em / 16); height: calc(76em / 16); margin: calc(-2em / 16); }
+.mo-h__btn .mo-ico { width: calc(23em / 16); height: calc(23em / 16); fill: var(--site-logo); transition: fill 0.5s; }
+html.is-menuopen .mo-h__btn .mo-ico { fill: var(--site-on-dark); }
+html.is-menuopen .mo-h__btn .mo-btn, html.is-menuopen .mo-h__btn .mo-btn__icon { border-color: var(--site-on-dark); color: var(--site-on-dark); }
+@media (hover: hover) { html.is-menuopen .mo-h__btn .mo-btn:hover, html.is-menuopen .mo-h__btn .mo-btn:hover .mo-btn__icon { border-color: var(--kf-accent-soft); } }
+/* While the menu is open, body and footer are pinned in place (original #l-wrapper.is-menuopen) — document height collapses to the screen height */
+#mo-scroll.is-menuopen #mo-container, #mo-scroll.is-menuopen .mo-f { position: fixed; left: 0; width: 100%; }
+
+/* ── Menu round button — dark circle, when open a white circle with a black X (.4s) ── */
+.mo-menu {
+  position: fixed; top: calc(55em / 16); right: 64px; z-index: 99; display: flex; align-items: center; justify-content: center;
+  width: calc(78em / 16); height: calc(78em / 16); padding: 0; border: 0; border-radius: 50%; background: var(--kf-ink-soft); cursor: pointer; transition: opacity 0.3s, background-color 0.5s;
+}
+.mo-menu__line { position: relative; display: block; width: calc(26em / 16); height: 1em; overflow: hidden; }
+.mo-menu__line::before, .mo-menu__line::after { content: ""; position: absolute; left: 0; display: block; width: 100%; height: calc(3em / 16); background: var(--site-on-dark); transition: transform 0.4s, background-color 0.5s; }
+.mo-menu__line::before { top: 0; }
+.mo-menu__line::after { bottom: 0; }
+html.is-menuopen .mo-menu { background: var(--kf-surface); }
+html.is-menuopen .mo-menu__line::before, html.is-menuopen .mo-menu__line::after { background: var(--kf-ink); }
+html.is-menuopen .mo-menu__line::before { transform: translateY(calc(6em / 16)) rotate(-45deg); }
+html.is-menuopen .mo-menu__line::after { transform: translateY(calc(-6em / 16)) rotate(45deg); }
+/* On hover the two lines slide out to the right and enter from the left (.5s, lower line .1s later) — doesn’t spin on the open X */
+@media (hover: hover) {
+  .mo-menu:hover .mo-menu__line::before, .mo-menu:hover .mo-menu__line::after { animation: mo-menu-line 0.5s cubic-bezier(0.77, 0, 0.175, 1); }
+  .mo-menu:hover .mo-menu__line::after { animation-delay: 0.1s; }
+  html.is-menubtnopen .mo-menu:hover .mo-menu__line::before, html.is-menubtnopen .mo-menu:hover .mo-menu__line::after { animation: none; }
+}
+@keyframes mo-menu-line { 0% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(100%, 0, 0); } 52% { transform: translate3d(-100%, 0, 0); } 100% { transform: translate3d(0, 0, 0); } }
+
+/* ── Menu panel — a dark brown panel drops from the top with rounded corners (.7s) and the items bounce in from 60px above ── */
+.mo-nav { position: fixed; inset: 0; z-index: 98; width: 100%; height: 100vh; opacity: 0; visibility: hidden; text-align: left; }
+.mo-nav__bg { position: absolute; inset: 0; z-index: 0; background: var(--kf-contrast-bg); transform: translateY(-100%); }
+.mo-nav-pc, .mo-nav-sp { position: relative; z-index: 1; color: var(--site-on-dark); }
+.mo-nav-pc { display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding-top: calc(300 / 940 * 100vh); font-size: calc(15em / 16); }
+.mo-nav__body { display: flex; flex-wrap: wrap; }
+.mo-nav__block:nth-of-type(1) { flex-basis: calc(385 / 1150 * 100%); }
+.mo-nav__block:nth-of-type(1) .mo-nav__item + .mo-nav__item { margin-top: calc(27em / 15); }
+.mo-nav__block:nth-of-type(2) { flex-basis: calc(765 / 1150 * 100%); display: flex; justify-content: space-between; }
+.mo-nav__item { opacity: 0; }
+.mo-nav__en { display: block; font-size: calc(40em / 15); letter-spacing: 0.15em; line-height: 1; }
+.mo-nav__sub { margin-top: calc(27em / 15); color: var(--site-on-dark-soft); letter-spacing: 0.1em; }
+.mo-nav__sub li + li { margin-top: calc(8em / 15); }
+@media (hover: hover) { .mo-nav__sub a { transition: color 0.35s var(--site-ease); } .mo-nav__sub a:hover { color: var(--site-on-dark); } }
+.mo-nav__info { margin-top: calc(-93em / 15); }
+.mo-nav__info li + li { margin-top: calc(20em / 15); }
+.mo-nav__info-en { display: block; font-size: calc(22em / 15); letter-spacing: 0.15em; opacity: 0; }
+.mo-nav__sns { display: flex; align-items: center; opacity: 0; }
+.mo-nav__sns dt { margin-right: 1em; font-size: calc(22em / 15); color: var(--site-on-dark-faint); }
+.mo-nav__address { margin-bottom: calc(74 / 940 * 100vh); font-size: calc(13em / 15); opacity: 0; }
+.mo-nav__address p:first-child { margin-bottom: calc(18em / 13); }
+.mo-nav-sp { display: none; }
+.mo-sns { display: flex; align-items: center; }
+.mo-sns li + li { margin-left: calc(20em / 15); }
+.mo-sns__a { display: block; color: inherit; }
+.mo-sns__a svg { display: block; fill: currentColor; }
+.mo-sns__a.is-fb svg { width: calc(9em / 15); height: calc(18em / 15); }
+.mo-sns__a.is-ig svg { width: calc(18em / 15); height: calc(18em / 15); }
+.mo-sns__a.is-yt svg { width: calc(24em / 15); height: calc(17em / 15); }
+/* On hover the fill changes to that service’s signature color (.4s) — it is an external service’s brand color so it does not follow the skin */
+@media (hover: hover) {
+  .mo-sns__a svg { transition: fill 0.4s; }
+  .mo-sns__a.is-fb:hover svg { fill: #1877f2; } /* Not skin: social network brand color */
+  .mo-sns__a.is-ig:hover svg { fill: #d93177; } /* Not skin: photo-sharing app cover color */
+  .mo-sns__a.is-yt:hover svg { fill: #cd201f; } /* Not skin: video site cover color */
+}
+
+/* ── White curtain loader — after 2.3s the logo exits upward by 100px and disappears (1s Back), and after 3s the curtain lifts in .8s ── */
+.mo-loading { position: fixed; inset: 0; z-index: 99999; display: none; align-items: center; justify-content: center; width: 100vw; height: 100%; background: var(--kf-surface); }
+.mo-loading.is-load { display: flex; }
+.mo-loading__body { width: calc(320em / 16); text-align: center; }
+/* Original logo animation (63 frames, 15fps  = 4.2s loop) round strokes are drawn one after another with a brown brush tip leading — the letter outline is drawn at the same tempo */
+.mo-loading__svg { display: block; width: 100%; height: auto; overflow: visible; }
+.mo-loading__svg text { font-family: var(--kf-font-display); font-size: 92px; font-weight: 700; letter-spacing: 0.02em; }
+.mo-loading__thin { font-weight: 300; }
+.mo-loading__ink { fill: transparent; stroke: var(--kf-ink); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 700; stroke-dashoffset: 700; }
+.mo-loading__pen { fill: none; stroke: var(--kf-accent); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 24 676; stroke-dashoffset: 724; opacity: 0; }
+.mo-loading.is-draw .mo-loading__ink { animation: mo-draw-ink 4.2s linear infinite; }
+.mo-loading.is-draw .mo-loading__pen { animation: mo-draw-pen 4.2s linear infinite; }
+@keyframes mo-draw-ink { 0% { stroke-dashoffset: 700; fill: transparent; } 55% { stroke-dashoffset: 0; fill: transparent; } 70%, 100% { stroke-dashoffset: 0; fill: var(--kf-ink); } }
+@keyframes mo-draw-pen { 0% { stroke-dashoffset: 724; opacity: 1; } 55% { stroke-dashoffset: 24; opacity: 1; } 60%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+
+/* ── Shared sub-section frame ── */
+.mo-under { padding: calc(250em / 16) 0 calc(200em / 16); }
+.mo-undertxt { opacity: 0; }
+.mo-undertitle { display: flex; }
+.mo-undertitle > span { display: block; }
+
+/* ── Footer ── */
+.mo-f { overflow: hidden; padding-bottom: calc(85rem / 16); background: var(--site-foot); color: var(--site-on-dark); text-align: left; }
+.mo-f__online { position: relative; z-index: 1; display: block; height: calc(678em / 16); overflow: hidden; }
+.mo-f__online-bg { position: absolute; top: -5%; left: 0; z-index: 0; width: 100%; height: 110%; }
+.mo-f__online-bg .wf-img { position: absolute; inset: 0; height: 100%; border: 0; background-color: color-mix(in oklab, var(--kf-ink) 45%, var(--site-photo)); }
+.mo-f__online-main { position: relative; z-index: 2; display: flex; align-items: flex-end; height: 100%; padding-bottom: calc(80em / 16); }
+.mo-f__online-inner { position: relative; width: 100%; }
+.mo-f__online-title { font-size: calc(78em / 16); letter-spacing: 0.08em; line-height: 1.1; }
+.mo-f__online-txt { position: absolute; top: calc(105em / 16); left: calc(240em / 16); max-width: calc(495em / 16); }
+.mo-f__circle { position: relative; display: flex; align-items: center; justify-content: center; width: calc(88em / 16); height: calc(88em / 16); margin-top: calc(40em / 16); color: var(--site-on-dark); transition: transform 0.4s var(--site-ease-btn); }
+.mo-f__circle::before { content: ""; position: absolute; inset: 0; border: 2px solid color-mix(in srgb, var(--site-on-dark) 51%, transparent); border-radius: 50%; transition: transform 0.4s var(--site-ease-btn); }
+.mo-f__circle .mo-arrow { width: calc(24em / 16); height: calc(15em / 16); }
+@media (hover: hover) {
+  .mo-f__circle:hover { transform: translate3d(1em, 0, 0); }
+  .mo-f__circle:hover::before { transform: scale(1.7) translate3d(-0.5em, 0, 0); }
+  .mo-f__circle:hover svg { animation: mo-link-hover 0.5s var(--site-ease-btn); }
+}
+.mo-f__contact { padding-top: calc(150em / 16); }
+.mo-f__contact-title { margin-bottom: calc(35em / 80); font-size: calc(80em / 16); line-height: 1.1; letter-spacing: 0.12em; }
+.mo-f__contact-action { display: flex; align-items: center; margin-top: calc(75em / 16); }
+.mo-f__contact-action li + li { margin-left: calc(40em / 16); }
+.mo-f__contact-action .mo-btn { width: calc(390em / 16); height: calc(88em / 16); border-color: var(--kf-raised); color: var(--site-on-dark); }
+.mo-f__contact-action .mo-btn__icon { width: calc(88em / 16); height: calc(88em / 16); margin: calc(-2em / 16); border-color: var(--kf-raised); }
+.mo-f__contact-action .mo-btn--jp { padding-left: calc(46em / 16); }
+.mo-f__contact-action .mo-btn--jp::before { left: calc(46em / 16); font-size: calc(17em / 16); }
+.mo-f__contact-action .mo-btn--jp .mo-btn__txt { font-size: calc(17em / 16); }
+.mo-f__contact-action .mo-ico--mail { width: calc(30em / 16); height: calc(20em / 16); }
+.mo-f__contact-action .mo-btn--tel { padding-left: calc(35em / 16); border-width: 0; }
+.mo-f__contact-action .mo-btn--tel::before { left: calc(35em / 16); font-size: calc(20em / 16); }
+.mo-f__contact-action .mo-btn--tel .mo-btn__txt { font-size: calc(20em / 16); letter-spacing: 0.08em; font-weight: 700; }
+.mo-f__contact-action .mo-btn--tel .mo-btn__icon { display: none; }
+.mo-f__info { display: flex; justify-content: space-between; margin-top: calc(153em / 16); }
+.mo-f__address p:nth-of-type(2) { margin-top: calc(16em / 14); font-size: calc(14em / 16); }
+.mo-f__sns { display: flex; align-items: center; margin-right: calc(-35 / 1264 * 100%); }
+.mo-f__sns dt { margin-right: calc(19em / 56); font-size: calc(56em / 16); letter-spacing: 0.08em; color: var(--site-on-dark-faint); }
+.mo-f__sns .mo-sns li + li { margin-left: calc(25em / 16); }
+.mo-f__copy { margin-top: calc(60em / 16); font-size: calc(13em / 16); opacity: 0.6; }
+
+/* ── Tablet·phone (original 1024 and below) — logo moves to the left, ONLINE SHOP pill sits left of the menu circle ── */
+@media (max-width: 1024px) {
+  .mo-h { justify-content: flex-start; padding-left: calc(50 / 750 * 100%); padding-right: calc(50 / 750 * 100%); }
+  .mo-h__btn { left: auto; right: calc((50 / 750 * 100%) + (110em / 16)); }
+}
+@media (max-width: 640px) { .mo-h, .mo-menu { font-size: 0.8rem; } }
+@media (max-width: 415px) { .mo-h__logo { font-size: 0.9em; } .mo-h__btn { top: calc(68em / 16); font-size: 0.9em; } }
+@media (max-width: 560px) { .mo-h, .mo-menu { font-size: 0.7rem; } }
+
+/* ── Phone — original 768 and below: wider columns, header buttons hidden, menu panel in phone form (three products · two · news) ── */
+@media (max-width: 768px) {
+  .mo-section, .mo-section--wide { width: calc(650 / 750 * 100%); }
+  .mo-h { padding-top: calc(55em / 16); font-size: 0.9rem; }
+  .mo-menu { right: calc(50 / 750 * 100%); font-size: 0.8rem; }
+
+  .mo-nav-pc { display: none; }
+  .mo-nav-sp { display: block; padding-top: calc(160em / 16); font-size: calc(30em / 30); }
+  .mo-nav-sp__title { margin-bottom: 1em; font-size: calc(30em / 16); letter-spacing: 0.12em; line-height: 1; text-align: center; opacity: 0; }
+  .mo-nav-sp__products { display: flex; justify-content: space-between; }
+  .mo-nav-sp__products li { flex-basis: calc(200 / 680 * 100%); opacity: 0; }
+  .mo-nav-sp__products .wf-img { display: block; aspect-ratio: 1; border: 0; }
+  .mo-nav-sp__txt { display: block; margin-top: 0.4em; text-align: center; opacity: 0.6; font-size: 0.8em; }
+  .mo-nav-sp__other { position: relative; display: flex; justify-content: space-between; margin-top: 2em; padding-top: 2em; border-top: 1px solid var(--site-on-dark-faint); }
+  .mo-nav-sp__other li { flex-basis: calc(320 / 680 * 100%); opacity: 0; }
+  .mo-nav-sp__other .wf-img { display: block; aspect-ratio: 320 / 175; border: 0; }
+  .mo-nav-sp__info { display: flex; align-items: center; justify-content: space-between; margin-top: 2em; padding: 1.4em 1em; border-top: 1px solid var(--site-on-dark-faint); border-bottom: 1px solid var(--site-on-dark-faint); font-size: calc(22em / 16); opacity: 0; }
+  .mo-f__online { height: calc(500em / 16); }
+  .mo-f__online-title { font-size: calc(54em / 16); }
+  .mo-f__online-txt { position: static; margin-top: 1em; }
+  .mo-f__contact-title { font-size: calc(46em / 16); }
+  .mo-f__contact-action { display: block; }
+  .mo-f__contact-action li + li { margin: calc(40em / 16) 0 0; }
+  .mo-f__contact-action .mo-btn--tel { border-width: calc(2em / 16); padding-left: calc(65em / 16); }
+  .mo-f__contact-action .mo-btn--tel .mo-btn__icon { display: flex; }
+  .mo-f__contact-action .mo-btn { width: 100%; max-width: calc(330em / 16); height: calc(70em / 16); }
+  .mo-f__contact-action .mo-btn__icon { width: calc(70em / 16); height: calc(70em / 16); }
+  .mo-f__info { flex-direction: column; gap: 2em; margin-top: calc(80em / 16); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mo-btn::before, .mo-btn__txt, .mo-btn__icon svg, .mo-line__txt::after, .mo-slidenav__arrow, .mo-slidenav__arrow svg { animation: none !important; }
+  .mo-img__body { transition: none; }
+}

@@ -1,0 +1,171 @@
+/* Shared by the brand site kit — left pill nav + right Latest News button (red dot · rising plate), a header line that hides on scroll down,
+   Transition curtain (drops from above to cover, fades out on the next page), line-by-line rising text, photo parallax, footer revealed from behind (sticker, large wordmark). */
+:root {
+  /* Accent panel turned from the skin — hiring yellow (#FFFF47 = accent-soft as is), case-study blue (accent-text), frosted glass */
+  --site-glass: color-mix(in oklab, var(--kf-ink) 6%, transparent);
+  --site-glass-hover: color-mix(in oklab, var(--kf-ink) 12%, transparent);
+  --site-blue: var(--kf-accent-text);
+  --site-yellow: var(--kf-accent-soft);
+  --site-peach: var(--kf-raised);
+  --site-orange: var(--kf-accent);
+  --site-faint: color-mix(in oklab, var(--kf-ink) 20%, transparent);
+  /* About team name hover panel color (original light blue #B3D9FE) — derived by rotating from the case-study blue */
+  --site-tone-1: oklch(from var(--kf-accent-text) 0.8704 0.0654 calc(h - 16.93));
+  --site-ease: cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+body.tw-body { background: var(--kf-bg); color: var(--kf-ink); font: var(--kf-weight-body) 16px/1.4 var(--kf-font-sans); overflow-x: clip; }
+.es-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+button { background: none; border: 0; padding: 0; cursor: pointer; color: inherit; font: inherit; }
+.tw-main { position: relative; z-index: 10; min-height: 100vh; background: var(--kf-bg); }
+/* Body and footer blur together as one shell (.tw-shell) — blurring them separately would show the footer behind through the translucent body (the original AppShell also wraps main·Footer in one div) */
+.tw-pre .tw-shell, .tw-pre-head .tw-header-row { opacity: 0; }
+/* Photo that appears once loaded — original FadeInImage (opacity .7s Tailwind ease-out). A placeholder has nothing to load, so it counts as loaded on the frame after it is attached */
+.tw-fade-img { opacity: 0; transition: opacity 0.7s cubic-bezier(0, 0, 0.2, 1); }
+.tw-fade-img.is-loaded { opacity: 1; }
+/* Transition veil — original PageSail: a white veil below the header row covers over 350ms ease, and on the arrived section lifts after 80ms over the same length */
+body::after { content: ""; position: fixed; inset: 0; z-index: 40; background: var(--kf-bg); opacity: 0; pointer-events: none; transition: opacity 350ms ease; }
+.tw-sail body::after { opacity: 1; }
+
+/* Photo slot — the inner panel at 1.21× · −10% flows upward with scroll (original parallax image) */
+.tw-media { position: relative; overflow: hidden; }
+.tw-media-in { position: absolute; inset: 0; }
+.tw-media .wf-img { position: absolute; inset: 0; height: 100%; border: 0; }
+
+/* Text — each line rises from 110% below inside a mask (.85s power3.out, once at 85% of the screen) */
+.tw-line { display: block; overflow: hidden; }
+.tw-line > span { display: block; }
+.tw-mask { display: block; overflow: hidden; }
+.tw-mask > span { display: block; }
+.tw-word { display: inline-block; }
+
+/* ── Header row */
+.tw-header { position: fixed; top: 0; left: 0; z-index: 70; width: 100%; transition: transform 0.3s ease-in-out; }
+.tw-header.is-hidden { transform: translateY(-100%); }
+.tw-header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; padding: 16px 16px 0; }
+.tw-pill { display: flex; align-items: center; gap: 12px; height: 48px; padding: 8px 20px 8px 14px; border-radius: var(--kf-radius-sm); background: var(--site-glass); -webkit-backdrop-filter: blur(42px); backdrop-filter: blur(42px); overflow: hidden; }
+.tw-logo { display: block; width: 76px; height: 28px; }
+.tw-logo text { fill: currentColor; font-family: var(--kf-font-display); font-weight: 600; }
+.tw-logo-small { font-size: 6px; letter-spacing: 0.04em; }
+.tw-logo-big { font-size: 15px; letter-spacing: -0.04em; }
+.tw-nav-links { display: flex; align-items: center; gap: 32px; margin-left: 20px; font-size: 14px; font-weight: 500; letter-spacing: -0.01em; }
+/* Nav link — in the original, all dark on the home page and work detail, on other pages .3 (only the current page dark), .6 on hover */
+.tw-nav-link { opacity: 0.3; }
+.tw-nav-link[aria-current="page"], body[data-page="index"] .tw-nav-link, body[data-page="detail"] .tw-nav-link { opacity: 1; }
+.tw-nav-link:hover, body[data-page="index"] .tw-nav-link:hover, body[data-page="detail"] .tw-nav-link:hover { opacity: 0.6; }
+.tw-burger { display: none; flex-direction: column; justify-content: center; align-items: center; gap: 4px; width: 28px; height: 28px; }
+.tw-burger span { display: block; width: 16px; height: 1.5px; background: currentColor; }
+.tw-wins-btn { position: relative; display: flex; align-items: center; justify-content: center; width: 114px; height: 48px; border-radius: var(--kf-radius-sm); background: var(--site-glass); -webkit-backdrop-filter: blur(42px); backdrop-filter: blur(42px); font-size: 14px; font-weight: 500; letter-spacing: -0.01em; }
+.tw-wins-btn:hover { background: var(--site-glass-hover); transition: none; }
+.tw-wins-dot { position: absolute; top: 8px; right: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--kf-danger); }
+/* Recent News window — original News dialog: a blurred backdrop covering the screen (black 20%, 10px blur), close button at top right, a 421px card column 60px from the right (cards 136px, 7px gap, scrolling inside).
+   When opened over a dark header row, a white glass card (20%→45%) with a black 10% backing panel */
+.tw-wins { position: fixed; inset: 0; z-index: 100; color: var(--kf-ink); }
+.tw-wins[hidden] { display: none; }
+.tw-wins-back { position: absolute; inset: 0; background: color-mix(in srgb, var(--kf-ink) 20%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.tw-wins-close { position: absolute; top: 16px; right: 16px; z-index: 30; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 1px solid var(--kf-ink); border-radius: 8px; background: var(--kf-ink); color: var(--kf-bg); -webkit-backdrop-filter: blur(15px); backdrop-filter: blur(15px); }
+.tw-wins-close svg { width: 6px; height: 6px; fill: none; stroke: currentColor; stroke-width: 1.2; }
+.tw-wins-col { position: absolute; top: 15px; right: 60px; z-index: 10; display: flex; flex-direction: column; gap: 7px; width: min(421px, calc(100vw - 108px)); height: calc(100vh - 30px); padding-bottom: 16px; overflow-y: scroll; overscroll-behavior: contain; scrollbar-width: none; }
+.tw-wins-col::-webkit-scrollbar { display: none; }
+.tw-win { flex: none; border: 1px solid color-mix(in srgb, var(--kf-ink) 10%, transparent); border-radius: 16px; background: color-mix(in srgb, var(--kf-bg) 70%, transparent); -webkit-backdrop-filter: blur(42px); backdrop-filter: blur(42px); transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+.tw-win:hover { background: color-mix(in srgb, var(--kf-bg) 90%, transparent); }
+.tw-win-link { display: grid; grid-template-columns: 100px 1fr; align-items: center; gap: 18px; height: 136px; padding: 18px 16px; }
+.tw-win-img { position: relative; width: 100px; height: 100px; border-radius: 8px; overflow: hidden; }
+.tw-win-img .tw-media { position: absolute; inset: 0; }
+.tw-win-txt { display: flex; flex-direction: column; justify-content: space-between; align-self: start; height: 100px; padding-top: 3px; }
+.tw-win-title { max-width: 244px; font-size: 14px; line-height: 1.2; letter-spacing: -0.14px; }
+.tw-win-meta { font-size: 10px; line-height: 1.4; color: color-mix(in srgb, currentColor 40%, transparent); }
+.tw-wins-all { margin-top: 6px; font-weight: 400; line-height: 1.2; letter-spacing: -0.14px; }
+.tw-wins.is-dark { color: var(--kf-contrast-ink); }
+.tw-wins.is-dark .tw-wins-back { background: color-mix(in srgb, var(--kf-ink) 10%, transparent); }
+.tw-wins.is-dark .tw-wins-close { border-color: color-mix(in srgb, var(--kf-ink) 10%, transparent); background: var(--kf-bg); color: var(--kf-ink); }
+.tw-wins.is-dark .tw-win { border-color: color-mix(in srgb, var(--kf-contrast-ink) 10%, transparent); background: color-mix(in srgb, var(--kf-contrast-ink) 20%, transparent); }
+.tw-wins.is-dark .tw-win:hover { background: color-mix(in srgb, var(--kf-contrast-ink) 45%, transparent); }
+.tw-contact { position: absolute; top: calc(100% + 8px); left: 16px; z-index: 2; display: grid; gap: 6px; width: 260px; padding: 16px; border-radius: var(--kf-radius-md); background: var(--kf-bg); box-shadow: 0 10px 40px color-mix(in oklab, var(--kf-ink) 12%, transparent); font-size: 14px; transform-origin: top left; }
+.tw-contact[hidden] { display: none; }
+.tw-contact b { font-size: 20px; letter-spacing: -0.04em; }
+.tw-mmenu { display: grid; gap: 10px; margin: 8px 12px; padding: 16px; border-radius: var(--kf-radius-md); background: var(--kf-bg); font-size: 20px; font-weight: 600; }
+.tw-mmenu[hidden] { display: none; }
+@media (max-width: 767px) {
+  .tw-header-row { padding: 12px 12px 0; }
+  .tw-pill { height: 40px; padding: 8px 8px 8px 12px; }
+  .tw-nav-links { display: none; }
+  .tw-burger { display: flex; }
+  .tw-wins-btn { width: auto; height: 40px; padding: 0 10px; font-size: 12px; }
+  .tw-wins-col { top: 64px; right: 12px; width: calc(100vw - 24px); height: calc(100vh - 80px); }
+  .tw-wins-close { display: none; }
+}
+
+/* Shared arrow link — original BentArrowIcon: on hover the bent arrow lengthens in .5s (.33,1,.68,1) and shifts right by the .4em margin,
+   Underline stretches from right-anchored 0 to left-anchored 1 */
+.tw-arrow-link { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+.tw-bent-wrap { display: inline-flex; flex-shrink: 0; font-style: normal; margin-right: 0; transition: margin-right 0.5s cubic-bezier(0.33, 1, 0.68, 1); }
+:is(a, button):hover > .tw-bent-wrap { margin-right: 0.4em; }
+.tw-bent { width: 14px; height: 11px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.2; stroke-linecap: square; }
+.tw-bent path { transition: d 0.5s cubic-bezier(0.33, 1, 0.68, 1); }
+.tw-bent .a { d: path("M6.69531 1.29541L10.8495 5.44959L6.69531 9.60376"); }
+.tw-bent .b { d: path("M1 0.600098V5.50938H9.75"); }
+:is(a, button):hover .tw-bent .a { d: path("M14.6953 1.79531L18.8495 5.94949L14.6953 10.1037"); }
+:is(a, button):hover .tw-bent .b { d: path("M1 0.6V6.01016H18"); }
+/* Big bent arrow (original big-all-work) — stroke 3, and the head extends to the right on hover */
+.tw-bent.is-big { width: 1.75rem; height: auto; stroke-width: 3; }
+.tw-bent.is-big .a { d: path("M10.5195 5.17969L17.097 11.411L10.5195 17.6422"); }
+.tw-bent.is-big .b { d: path("M1.5 1.5V11.5006H15.3542"); }
+:is(a, button):hover .tw-bent.is-big .a { d: path("M21.332 5.17969L28.5012 11.411L21.332 17.6422"); }
+:is(a, button):hover .tw-bent.is-big .b { d: path("M1.5 1.5V11.5006H26.5"); }
+.tw-ul { position: relative; }
+.tw-ul::after { content: ""; position: absolute; left: 0; bottom: -4px; width: 100%; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: right; transition: transform 0.5s cubic-bezier(0.33, 1, 0.68, 1); pointer-events: none; }
+:is(a, button):hover .tw-ul::after { transform: scaleX(1); transform-origin: left; }
+
+/* Shared large title (uppercase semibold, line-height .9, letter-spacing −.05em) */
+.tw-page-hero { padding: 140px 24px 80px; }
+.tw-page-t { font: 600 clamp(2.5rem, 6.6vw, 7.5rem)/0.9 var(--kf-font-display); letter-spacing: -0.05em; text-transform: uppercase; max-width: 14ch; }
+.tw-page-t .tw-word { margin-right: 0.22em; overflow: hidden; vertical-align: top; }
+.tw-page-t .tw-word > span { display: inline-block; }
+
+/* ── Slides (home intro · method, about page method) — text over a full-bleed photo, the next one covers it from below with clip */
+.tw-slides { position: relative; }
+.tw-slide { position: relative; display: grid; align-items: center; height: 100vh; overflow: hidden; color: var(--kf-contrast-ink); background: var(--kf-contrast-bg); }
+.tw-slide-img { position: absolute; inset: 0; }
+.tw-slide-img .wf-img { --wf-fill: color-mix(in oklab, var(--kf-ink) 70%, var(--kf-accent)); --wf-line: color-mix(in oklab, var(--kf-contrast-ink) 25%, transparent); --wf-fill-ink: color-mix(in oklab, var(--kf-contrast-ink) 70%, transparent); }
+.tw-slide-copy { position: relative; z-index: 1; width: min(560px, calc(100% - 48px)); margin-left: 47vw; }
+@media (max-width: 767px) { .tw-slide-copy { margin: 0 24px; } }
+.tw-slide-k { display: block; margin-bottom: 4px; font-size: 16px; font-weight: 500; opacity: 0.5; }
+.tw-slide-t { margin-bottom: 18px; font-size: 22px; font-weight: 500; line-height: 1.15; letter-spacing: -0.02em; }
+
+/* ── Footer — sits behind the body and is revealed as the body scrolls up. Click an empty spot for a sticker */
+.tw-footer { position: sticky; bottom: 0; z-index: 0; width: 100%; overflow: hidden; background: var(--kf-bg); }
+.tw-footer-in { max-width: 1920px; margin: 0 auto; padding: clamp(20px, 4svh, 32px) 80px 0; }
+.tw-footer-top { display: flex; justify-content: space-between; gap: 40px; }
+.tw-footer-lead { font: 600 40px/1 var(--kf-font-display); letter-spacing: -2px; color: var(--site-faint); }
+.tw-footer-mail:hover { opacity: 0.8; }
+.tw-footer-mail { display: block; margin-top: 4px; font: 600 40px/1 var(--kf-font-display); letter-spacing: -2px; }
+.tw-footer-cols { display: flex; align-items: flex-start; font-size: 14px; white-space: nowrap; }
+.tw-footer-cols > :first-child { width: 63px; margin-left: 84px; }
+.tw-footer-cols > :last-child { width: 66px; margin-left: 103px; }
+.tw-footer-h { opacity: 0.4; }
+.tw-footer-links { display: flex; flex-direction: column; gap: 4px; margin-top: 23px; }
+.tw-footer-links a:hover { opacity: 0.6; }
+/* Original footer spacing — the gap between the top row and the wordmark is filled with the viewport height so the footer becomes one full screen (about 896px at 1440×900) */
+.tw-footer-gap { margin-top: clamp(24px, 5svh, 44px); height: clamp(80px, calc(100svh - 232px - 24.8vw), 330px); }
+/* Wordmark slot uses the original logo image ratio (1844:458) at screen width − 32px */
+.tw-wordmark { display: flex; flex-direction: column; justify-content: flex-end; min-height: calc((100vw - 32px) * 458 / 1844 + 20px); padding: 0 16px 20px; font-family: var(--kf-font-display); font-weight: 600; letter-spacing: -0.06em; line-height: 0.82; }
+.tw-wordmark-small { font-size: 3.6vw; letter-spacing: -0.03em; }
+.tw-wordmark-big { font-size: 15.6vw; white-space: nowrap; }
+@media (max-width: 767px) {
+  .tw-footer-in { padding: 20px 16px 0; }
+  .tw-footer-top { flex-direction: column; }
+  .tw-footer-lead, .tw-footer-mail { font-size: 24px; letter-spacing: -1.2px; }
+  .tw-footer-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .tw-footer-cols > :first-child, .tw-footer-cols > :last-child { width: auto; margin-left: 0; }
+  .tw-footer-gap { margin-top: 36px; height: 160px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0s !important; }
+}
+
+/* Over the dark hero (work detail), the header row uses white glass · white text — glass .1, .16 on hover */
+.tw-header.is-dark { color: var(--kf-contrast-ink); }
+.tw-header.is-dark .tw-pill, .tw-header.is-dark .tw-wins-btn { background: color-mix(in srgb, var(--kf-contrast-ink) 10%, transparent); color: var(--kf-contrast-ink); }
+.tw-header.is-dark .tw-wins-btn:hover { background: color-mix(in srgb, var(--kf-contrast-ink) 16%, transparent); }

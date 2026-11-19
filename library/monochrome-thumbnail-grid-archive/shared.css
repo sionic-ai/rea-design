@@ -1,0 +1,181 @@
+/* Frame shared by all pages — fixed header bar · hamburger · half-and-half menu · fixed footer · text loader · noise transition layer, plus the scroll inside the barba panel (lenis wrapper) */
+:root {
+  --site-panel: var(--kf-raised);
+  --site-veil: color-mix(in srgb, var(--kf-ink) 3.5%, var(--kf-bg));
+  --site-glass: color-mix(in srgb, var(--kf-contrast-bg) 70%, transparent);
+  --site-glass-line: var(--kf-line);
+  --site-on-glass: var(--kf-contrast-ink);
+  --site-shade: var(--kf-contrast-bg);
+  --site-leaf: var(--kf-surface);
+  --site-photo: color-mix(in srgb, var(--kf-ink) 18%, var(--kf-bg));
+  --site-photo-ink: color-mix(in srgb, var(--kf-ink) 55%, var(--kf-bg));
+
+  --grid-repeat: repeat(24, 1fr);
+  --grid-gap: 10px;
+  --grid-pad: 20px;
+}
+@media (max-width: 767px) {
+  :root { --grid-repeat: repeat(4, 1fr); }
+}
+
+/* The original turns off document scrolling and a single barba panel scrolls (lenis wrapper) — during the transition the two panels each start at the top */
+html {
+  font-size: 0.7320644217vw;
+  height: 100svh;
+  overflow: hidden;
+  overflow-x: clip;
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar { display: none; }
+@media (max-width: 767px) { html { font-size: 2.6666666667vw; } }
+body {
+  width: 100%;
+  max-width: 2700px;
+  height: 100svh;
+  margin: auto;
+  position: relative;
+  overflow: clip;
+  overscroll-behavior: none;
+  scrollbar-width: none;
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+  font-feature-settings: "palt";
+}
+body::-webkit-scrollbar { display: none; }
+::selection { background: var(--kf-ink-soft); color: color-mix(in srgb, var(--kf-bg) 80%, var(--kf-ink)); }
+button { background: none; border: 0; padding: 0; cursor: pointer; text-align: inherit; }
+a { cursor: pointer; }
+
+[data-barba="container"] {
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  scrollbar-width: none;
+}
+[data-barba="container"]::-webkit-scrollbar { display: none; }
+
+/* Header bar — 24-column grid with name (1–2 cols) and two-line intro (3–8 cols) */
+.ff-header { position: fixed; top: 28px; left: 0; width: 100%; z-index: 100; }
+.ff-header__inner {
+  width: 100%;
+  display: grid;
+  column-gap: var(--grid-gap);
+  grid-template-columns: var(--grid-repeat);
+  padding-inline: var(--grid-pad);
+}
+.ff-header__name { font-size: 16px; font-weight: var(--kf-weight-display); grid-column: 1 / span 2; white-space: nowrap; }
+.ff-header__name a { transition: all 0.4s ease; }
+@media (hover: hover) { .ff-header__name a:hover { opacity: 0.5; } }
+.ff-header__text { font-size: 12px; grid-column: 3 / span 6; }
+@media (max-width: 1000px) { .ff-header__text { grid-column: 4 / span 6; } }
+@media (max-width: 767px) { .ff-header__text { display: none; } }
+
+/* Hamburger — the two lines are erased by clip and then redrawn as an X (shared.js) */
+.ff-menu-btn { position: fixed; top: 24px; right: 20px; width: 30px; height: 20px; z-index: 103; }
+.ff-menu-btn__line { position: absolute; left: 0; display: block; width: 100%; height: 1px; background: var(--kf-ink); }
+.ff-menu-btn__line:nth-of-type(1) { top: 8px; }
+.ff-menu-btn__line:nth-of-type(2) { top: 12px; }
+.ff-menu-btn:focus-visible { outline: 1px solid var(--kf-ink); outline-offset: 4px; }
+
+/* Half-and-half menu — the right white panel opens from below, the left photo from above, via clip */
+.ff-menu {
+  display: flex;
+  flex-direction: row-reverse;
+  position: fixed;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 100svh;
+  z-index: 102;
+  pointer-events: none;
+  overflow: hidden;
+}
+.ff-menu__inner { background: var(--kf-surface); width: 50%; }
+.ff-menu__box {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 20px;
+  padding-bottom: 60px;
+  grid-column: 15 / span 8;
+}
+.ff-menu__box .title { font-size: 13px; color: var(--kf-dim); margin-bottom: 6px; }
+.ff-menu__box .links { display: flex; }
+.ff-menu__box a, .ff-menu__box .text { font-size: 18px; }
+.ff-menu__box a { transition: all 0.4s ease; }
+@media (hover: hover) { .ff-menu__box a:hover { opacity: 0.5; } }
+.ff-menu__box .is-current { opacity: 0.5; pointer-events: none; }
+.ff-menu__image { display: flex; align-items: center; justify-content: center; width: 50%; height: 100%; overflow: hidden; }
+.ff-menu__image .wf-img { width: 100%; height: 100%; border: 0; }
+@media (min-width: 768px) {
+  .ff-menu__inner {
+    clip-path: inset(100% 0% 0% 0%);
+    display: grid;
+    column-gap: var(--grid-gap);
+    grid-template-columns: var(--grid-repeat);
+    padding-inline: var(--grid-pad);
+  }
+  .ff-menu__image { clip-path: inset(0% 0% 100% 0%); }
+}
+@media (max-width: 767px) {
+  .ff-menu { opacity: 0; background: var(--kf-surface); padding-top: 100px; flex-direction: column; }
+  .ff-menu__inner { width: 100%; padding-inline: 20px; }
+  .ff-menu__image { width: 100%; height: 53svh; }
+}
+@media (max-width: 450px) and (min-height: 800px) { .ff-menu__image { height: 65svh; } }
+
+.ff-footer { position: fixed; bottom: 20px; left: 0; width: 100%; z-index: 100; padding-inline: 20px; }
+.ff-footer__copy { display: block; font-size: 10px; width: fit-content; margin-left: auto; }
+@media (max-width: 767px) {
+  .ff-footer { bottom: 16px; }
+  .ff-footer__copy { margin: auto; }
+}
+
+/* Text loader — name letters light up one by one as a leaf settles, then switch off and the curtain lifts */
+.ff-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 100svh;
+  background: var(--kf-bg);
+  z-index: 9999;
+}
+.ff-loading__text { display: flex; height: fit-content; overflow: hidden; font-size: 18px; font-weight: var(--kf-weight-display); letter-spacing: 0.02em; }
+.ff-loading__text span { display: block; line-height: 1; opacity: 0; }
+.ff-loading__text .u-space { width: 4px; }
+.ff-loading__icon { width: 30px; margin: 0 auto 14px; opacity: 0; transform: translate(20px, -20px) rotate(-30deg); color: var(--kf-ink); }
+.ff-loading__icon svg, .ff-leaf-icon svg { width: 100%; height: auto; display: block; }
+
+/* Noise transition curtain — one WebGL panel (shared.js), with Loading and a leaf in the center */
+.ff-webgl { position: fixed; inset: 0 auto auto 0; width: 100%; height: 100vh; z-index: 200; pointer-events: none; }
+.ff-webgl canvas { display: block; }
+.ff-veil-text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 201;
+  opacity: 0;
+  pointer-events: none;
+}
+.ff-veil-text .ff-leaf-icon { width: 16px; color: var(--kf-ink); }
+.ff-veil-text p { font-size: 18px; font-weight: var(--kf-weight-display); }
+@media (max-width: 767px) { .ff-veil-text p { font-size: 16px; } }
+
+.u-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ff-loading { display: none; }
+  .ff-header__name a, .ff-menu__box a { transition: none; }
+}

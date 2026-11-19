@@ -1,0 +1,157 @@
+/* Original values: the image strip is a screen-fixed panel (fixed), cell 16:10 (phone 4:5), sentence section text 1.8rem/2.75, product sections 100vh each, title mask 3.4s */
+.lx-contents { position: relative; }
+.lx-bg { position: fixed; inset: 0; z-index: 0; }
+/* A photo slot, but since the original background is a dark stage, it is painted with a dark floor + distant golden glow instead of a gray board */
+.lx-bg__img, .lx-schedule__bg { position: absolute !important; inset: 0; height: 100%; border: 0; background-color: var(--kf-bg); background-image: radial-gradient(60% 18% at 50% 52%, color-mix(in srgb, var(--kf-accent-soft) 28%, transparent), transparent 70%), linear-gradient(transparent 55%, color-mix(in srgb, var(--kf-ink) 4%, transparent)); }
+.lx-bg__img::after, .lx-schedule__bg::after { top: auto; bottom: 2rem; background: transparent; color: var(--kf-dim); }
+
+/* ---------- Image strip (WebGL) — DOM cells set the position and size, and our shader plane is drawn curved in the same place ---------- */
+.lx-art { position: fixed; inset: 0; z-index: 1; width: 100vw; height: 100svh; overflow: hidden; pointer-events: none; }
+.lx-art__wrapper, .lx-art__webgl { position: absolute; inset: 0; }
+.lx-art__body { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; height: 100%; transform-origin: 50% 50%; }
+.lx-art__lists { display: flex; gap: 1rem; margin: 0; padding: 0; list-style: none; will-change: transform; }
+.lx-art__list { flex: none; width: 50vw; aspect-ratio: 2880 / 1800; opacity: 0; }
+.lx-art__stage { display: block; width: 100% !important; height: 100% !important; }
+html.is-pointer-enter { cursor: pointer; }
+html.is-pointer-enter body { cursor: pointer; }
+
+/* ---------- Statement Section ---------- */
+.lx-statement { position: relative; z-index: 2; }
+.lx-statement__head { position: fixed; inset: 0 0 auto; height: 100svh; pointer-events: none; }
+.lx-statement__head-box { position: absolute; inset: 0; }
+.lx-statement__title { position: absolute; inset: 0; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28rem; opacity: calc(1 - var(--progress, 0)); font-size: 9.6rem; font-weight: 200; letter-spacing: .08em; line-height: 1; background-image: linear-gradient(180deg, var(--kf-ink) 10%, var(--kf-dim) 70%, var(--kf-raised) 130%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.lx-statement__scroll { position: absolute; left: 50%; bottom: 3rem; translate: -50% 0; }
+.lx-statement .lx-scroll { opacity: calc(1 - var(--progress, 0)); }
+.lx-statement__bg { position: absolute; inset: 0; z-index: -1; height: 100vh; background: var(--site-black); opacity: calc(var(--progress, 0) * .6); }
+.lx-statement__body { position: relative; margin-top: 100vh; padding-top: 15vh; padding-bottom: 115vh; text-align: center; }
+.lx-statement__texts { display: grid; gap: 6rem; }
+.lx-statement__text { margin: 0; font-size: 1.8rem; line-height: 2.75; letter-spacing: .1em; }
+.lx-statement__catch { margin: 12rem 0 0; font-size: 1.8rem; letter-spacing: .1em; }
+.lx-statement__logo { width: 25.1rem; margin: 11.8rem auto 0; font-size: 4rem; font-weight: 400; letter-spacing: .35em; text-indent: .35em; }
+
+/* ---------- Product gallery ---------- */
+.lx-products { position: relative; z-index: 2; margin-top: 40vh; }
+.lx-progress { position: fixed; top: 4.7rem; left: 50%; z-index: 3; display: flex; gap: 1.5rem; align-items: center; justify-content: center; overflow: hidden; translate: -50% 0; opacity: 0; visibility: hidden; filter: blur(.8rem); transition: opacity 1.2s var(--site-ease), visibility 1.2s var(--site-ease), filter 1.2s var(--site-ease); }
+html[data-active="gallery"] .lx-progress { opacity: 1; visibility: visible; filter: blur(0); }
+.lx-progress__current, .lx-progress__total { height: 19.5px; font-size: 13px; letter-spacing: .05em; white-space: nowrap; }
+.lx-progress__current { overflow: hidden; }
+.lx-progress__current > span { display: grid; }
+.lx-progress__current > span > span { display: block; height: 19.5px; }
+.lx-progress__bar { position: relative; display: block; width: 24rem; height: 1px; overflow: hidden; background: var(--site-line); }
+.lx-progress__bar::before { content: ""; position: absolute; top: 0; left: calc(var(--progress, 0) * 1%); width: 7.5rem; height: 100%; background-image: linear-gradient(90deg, var(--site-gold-0), var(--site-gold-50), var(--site-gold), var(--site-gold-50), var(--site-gold-0)); translate: -50% 0; }
+.lx-product { position: relative; z-index: 1; height: 100vh; color: var(--kf-ink); opacity: 0; visibility: hidden; transition: opacity 3s var(--site-ease), visibility 3s var(--site-ease); }
+html[data-active="gallery"] .lx-product, html[data-active="detail"] .lx-product { opacity: 1; visibility: visible; }
+.lx-product__heading { position: fixed; bottom: 8rem; left: 5rem; display: flex; flex-direction: column; gap: 3rem; opacity: 0;
+  mask-image: linear-gradient(90deg, black 0%, black 33%, transparent 66%); /* Not skin: mask alpha */
+  mask-repeat: no-repeat; mask-position: left; mask-size: 100% auto; }
+.lx-product__sub { font-size: 1.2rem; letter-spacing: .05em; }
+.lx-product__title { margin: 0; min-height: 14.9rem; display: flex; flex-direction: column; justify-content: flex-end; font-size: 6.4rem; font-weight: 200; line-height: 1.05; letter-spacing: .02em; text-transform: uppercase; }
+.lx-product__button { display: none; position: fixed; bottom: 4.4rem; left: 2rem; pointer-events: none; }
+@keyframes lx-mask { 0% { visibility: hidden; opacity: 0; mask-size: 100% auto; } 20% { opacity: 1; } 100% { visibility: visible; opacity: 1; mask-size: 300% auto; } }
+html[data-active="gallery"] .lx-products[data-current="1"] .lx-product--1 .lx-product__heading,
+html[data-active="gallery"] .lx-products[data-current="2"] .lx-product--2 .lx-product__heading,
+html[data-active="gallery"] .lx-products[data-current="3"] .lx-product--3 .lx-product__heading,
+html[data-active="gallery"] .lx-products[data-current="4"] .lx-product--4 .lx-product__heading,
+html[data-active="gallery"] .lx-products[data-current="5"] .lx-product--5 .lx-product__heading,
+html[data-active="gallery"] .lx-products[data-current="6"] .lx-product--6 .lx-product__heading,
+html[data-active="gallery"] .lx-products[data-current="7"] .lx-product--7 .lx-product__heading,
+html[data-active="gallery"] .lx-products[data-current="8"] .lx-product--8 .lx-product__heading { animation: lx-mask 3.4s cubic-bezier(.26, 1, .48, 1) forwards; }
+html[data-active="gallery"] .lx-products[data-current="1"] .lx-product--1 .lx-product__button,
+html[data-active="gallery"] .lx-products[data-current="2"] .lx-product--2 .lx-product__button,
+html[data-active="gallery"] .lx-products[data-current="3"] .lx-product--3 .lx-product__button,
+html[data-active="gallery"] .lx-products[data-current="4"] .lx-product--4 .lx-product__button,
+html[data-active="gallery"] .lx-products[data-current="5"] .lx-product--5 .lx-product__button,
+html[data-active="gallery"] .lx-products[data-current="6"] .lx-product--6 .lx-product__button,
+html[data-active="gallery"] .lx-products[data-current="7"] .lx-product--7 .lx-product__button,
+html[data-active="gallery"] .lx-products[data-current="8"] .lx-product--8 .lx-product__button { pointer-events: all; }
+/* VIEW MORE — pill border, the cross turns 90° on hover */
+.lx-more { display: inline-flex; align-items: center; gap: 1.6rem; height: 4.4rem; padding-inline: 2.4rem 2rem; border: 1px solid currentColor; border-radius: var(--kf-radius-pill); font-size: 1.2rem; letter-spacing: .1em; transition: background-color .35s var(--site-ease); }
+.lx-more:hover { background: color-mix(in srgb, var(--kf-ink) 12%, transparent); }
+.lx-more__icon { position: relative; width: 1rem; height: 1rem; transition: rotate .6s var(--site-ease); }
+.lx-more__icon::before, .lx-more__icon::after { content: ""; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: currentColor; }
+.lx-more__icon::after { rotate: 90deg; }
+.lx-more:hover .lx-more__icon { rotate: 90deg; }
+
+/* ---------- Schedule ---------- */
+.lx-schedule { position: relative; z-index: 2; height: 20vh; margin-top: 100vh; color: var(--kf-ink); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 1.2s var(--site-ease) .6s, visibility 1.2s var(--site-ease) .6s; }
+html[data-active="schedule"] .lx-schedule { opacity: 1; visibility: visible; pointer-events: all; transition-delay: 0s; }
+.lx-schedule__container { position: fixed; inset: 0; z-index: 1; display: grid; place-items: center; background: var(--kf-bg); opacity: 0; transition: opacity 1.2s var(--site-ease); }
+html[data-active="schedule"] .lx-schedule__container, html[data-active="menu"] .lx-schedule__container { opacity: 1; }
+.lx-schedule__cover { position: absolute; inset: 0; background: var(--site-cover); }
+.lx-schedule__body { position: relative; display: flex; flex-direction: column; align-items: center; gap: 5rem; }
+.lx-schedule__detail { display: flex; flex-direction: column; align-items: center; gap: 1.6rem; }
+.lx-schedule__name { margin: 0; font-size: 2.6rem; font-weight: 300; letter-spacing: .2em; }
+.lx-schedule__date { margin: 0; font-size: 6rem; font-weight: 200; letter-spacing: .05em; }
+.lx-schedule__date small { font-size: 2rem; }
+.lx-schedule__place { margin: 0; font-size: 1.6rem; letter-spacing: .15em; }
+.lx-schedule__dl { position: relative; display: flex; align-items: center; overflow: hidden; height: 6rem; padding-inline: 4rem; border-radius: var(--kf-radius-pill); }
+@property --lx-angle { syntax: "<angle>"; inherits: false; initial-value: 125deg; }
+.lx-schedule__dl-border { position: absolute; inset: 0; border-radius: inherit; padding: 1px; background: var(--site-line) linear-gradient(var(--lx-angle), var(--site-gold-deep) 0%, var(--site-gold-0) 25%, var(--site-gold-0) 50%, var(--site-gold-deep) 75%, var(--site-gold-0) 100%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: lx-angle 4s linear infinite; } /* Not skin: mask alpha that leaves only the border */
+@keyframes lx-angle { to { --lx-angle: 305deg; } }
+.lx-schedule__dl-label { position: relative; display: flex; align-items: center; gap: 1.6rem; font-size: 1.5rem; letter-spacing: .05em; }
+.lx-schedule__dl svg, .lx-schedule__foot svg { width: .8rem; }
+.lx-schedule__foot { position: absolute; left: 5rem; right: 5rem; bottom: 3rem; }
+.lx-schedule__border { display: block; height: 1px; background: var(--site-line); }
+.lx-schedule__foot-in { display: flex; justify-content: space-between; align-items: center; padding-top: 2rem; font-size: 1.2rem; letter-spacing: .1em; }
+.lx-schedule__foot-in a { display: inline-flex; align-items: center; gap: .8rem; }
+.lx-schedule__detail.is-wait, .lx-schedule__book.is-wait { opacity: 0; }
+
+/* ---------- Product detail (horizontal drawer) — peels open from below (1.2s expo.inOut) and scrolls horizontally ---------- */
+.lx-detail { position: fixed; inset: 0; z-index: 900; display: none; background: var(--kf-bg); overflow-x: auto; overflow-y: hidden; overscroll-behavior: contain; }
+.lx-detail__status { position: fixed; top: 9rem; left: 5rem; right: 5rem; z-index: 2; display: flex; align-items: center; gap: 2.4rem; pointer-events: none; }
+.lx-detail__status > * { pointer-events: auto; }
+.lx-detail__close { position: relative; width: 4.5rem; height: 4.5rem; border: 1px solid currentColor; border-radius: 50%; flex: none; transition: rotate .6s var(--site-ease); }
+.lx-detail__close:hover { rotate: 90deg; }
+.lx-detail__close span::before, .lx-detail__close span::after { content: ""; position: absolute; top: 50%; left: 50%; width: 1.5rem; height: 1px; background: currentColor; translate: -50% -50%; rotate: 45deg; }
+.lx-detail__close span::after { rotate: -45deg; }
+.lx-detail__title, .lx-detail__no { height: 1.95rem; overflow: hidden; font-size: 1.3rem; letter-spacing: .05em; }
+.lx-detail__title > span, .lx-detail__no > span { display: grid; transition: transform .6s var(--site-ease); }
+.lx-detail__title > span > span, .lx-detail__no > span > span { display: block; height: 1.95rem; white-space: nowrap; }
+.lx-detail__progress { position: relative; flex: 1; height: 1px; background: var(--site-line); overflow: hidden; }
+.lx-detail__progress::before { content: ""; position: absolute; inset: 0; background: var(--site-gold); transform-origin: left; scale: calc(var(--progress, 0) / 100) 1; }
+.lx-detail__contents { display: flex; width: max-content; height: 100vh; }
+.lx-dp { display: flex; height: 100vh; }
+.lx-dp[hidden] { display: none; }
+.lx-dp__intro, .lx-dp__sec1 { display: flex; align-items: flex-end; gap: 6rem; padding: 18rem 6rem 8rem; box-sizing: border-box; }
+.lx-dp__heading { display: flex; flex-direction: column; gap: 1.6rem; width: 44rem; flex: none; }
+.lx-dp__sub { font-size: 1.2rem; letter-spacing: .1em; }
+.lx-dp__title { margin: 0; font-size: 6.4rem; font-weight: 200; line-height: 1.05; text-transform: uppercase; }
+.lx-dp__border { display: block; height: 1px; background: var(--site-line); }
+.lx-dp__text { margin: 0; font-size: 1.6rem; line-height: 2.2; letter-spacing: .08em; }
+.lx-dp__visual { display: block; height: 100%; aspect-ratio: 2880 / 1800; flex: none; }
+.lx-dp__visual--tall { aspect-ratio: 4 / 5; }
+.lx-dp__sec2 { display: flex; gap: 2rem; padding: 0 6rem; height: 100vh; }
+.lx-marquee { width: 32rem; height: 100vh; overflow: hidden; }
+.lx-marquee__track { display: grid; gap: 2rem; will-change: transform; }
+.lx-marquee__item { display: block; width: 100%; aspect-ratio: 4 / 5; }
+.lx-dp__sec3 { display: flex; flex-direction: column; justify-content: center; gap: 3rem; width: 60rem; padding: 0 8rem; box-sizing: border-box; }
+.lx-dp__next { align-self: flex-start; }
+
+@media (max-width: 767.98px) {
+  .lx-art__list { aspect-ratio: 800 / 1000; }
+  .lx-statement__title { gap: 13.5rem; font-size: 3.4rem; white-space: nowrap; }
+  .lx-statement__text { font-size: 1.5rem; }
+  .lx-progress { top: 9rem; }
+  .lx-progress__bar { width: 29rem; }
+  .lx-product { height: 90vh; }
+  .lx-product__heading { left: 2rem; bottom: 10.4rem; gap: 1.2rem; }
+  .lx-statement__logo { width: 17.8rem; margin-top: 8rem; font-size: 2.8rem; }
+  .lx-product__title { font-size: 3.6rem; min-height: 0; }
+  .lx-product__button { display: block; }
+  .lx-schedule__date { font-size: 3.6rem; text-align: center; }
+  .lx-schedule__foot { left: 2rem; right: 2rem; }
+  .lx-detail { overflow-x: hidden; overflow-y: auto; }
+  .lx-detail__status { top: 8rem; left: 2rem; right: 2rem; }
+  .lx-detail__contents { flex-direction: column; width: auto; height: auto; }
+  .lx-dp, .lx-dp__intro, .lx-dp__sec1, .lx-dp__sec2 { flex-direction: column; height: auto; }
+  .lx-dp__intro, .lx-dp__sec1 { padding: 14rem 2rem 4rem; align-items: stretch; }
+  .lx-dp__heading { width: auto; }
+  .lx-dp__visual { width: 100%; height: auto; }
+  .lx-dp__sec2 { padding: 0 2rem; }
+  .lx-marquee { width: 100%; height: 50vh; }
+  .lx-dp__sec3 { width: auto; padding: 6rem 2rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lx-product__heading { animation: none !important; opacity: 1; mask-image: none; }
+  .lx-schedule__dl-border { animation: none; }
+}

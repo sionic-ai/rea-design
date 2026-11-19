@@ -1,0 +1,63 @@
+/* On hover it scales up elastically and stays at that scale, on release it snaps smaller, wobbles, and settles to 1 — the original drew the elasticity with keyframes.
+   --fx-scale sets the resting scale (default 1.1), and --fx-dur and --fx-back receive the lengths. Keyframe ratios are the original two types as is (pill · ring) */
+[data-fx~="elastic-pop-hover"] {
+  --fx-k: calc(var(--fx-scale, 1.1) - 1);
+  animation: fx-epop-back var(--fx-back, .7s) both;
+  backface-visibility: hidden;
+}
+@media (any-hover: hover) {
+  [data-fx~="elastic-pop-hover"]:hover { animation: fx-epop var(--fx-dur, 1s) both; }
+}
+[data-fx~="elastic-pop-hover"]:active { animation: fx-epop var(--fx-press, .7s) both; }
+/* Round button type — resting scale 1.2, the first bounce is bigger, on press it sinks to .88 then rebounds to 1.15 */
+[data-fx~="elastic-pop-hover"][data-fx-elastic-pop-hover*="look: ring"] { --fx-scale: 1.2; animation-name: fx-epop-ring-back; animation-duration: var(--fx-back, 1s); }
+@media (any-hover: hover) {
+  [data-fx~="elastic-pop-hover"][data-fx-elastic-pop-hover*="look: ring"]:hover { animation-name: fx-epop-ring; }
+}
+[data-fx~="elastic-pop-hover"][data-fx-elastic-pop-hover*="look: ring"]:active { animation: fx-epop-press var(--fx-press, .4s) both; }
+/* So it does not wobble when first opened — the original runs one rebound wobble right on opening (as is if look: intro) */
+[data-fx~="elastic-pop-hover"]:not(.fx-epop-ready):not(:hover):not(:active):not([data-fx-elastic-pop-hover*="intro"]) { animation: none; }
+
+@keyframes fx-epop {
+  0% { transform: translateZ(0) scale(1); }
+  16% { transform: translateZ(0) scale(calc(1 + var(--fx-k) * 1.15)); }
+  28% { transform: translateZ(0) scale(calc(1 + var(--fx-k) * .9)); }
+  44% { transform: translateZ(0) scale(calc(1 + var(--fx-k) * 1.05)); }
+  59%, 73%, 88% { transform: translateZ(0) scale(calc(1 + var(--fx-k) * 1.02)); }
+  100% { transform: translateZ(0) scale(calc(1 + var(--fx-k))); }
+}
+@keyframes fx-epop-back {
+  0% { transform: translateZ(0) scale(calc(1 + var(--fx-k))); }
+  16% { transform: translateZ(0) scale(calc(1 - var(--fx-k) * .3)); }
+  28% { transform: translateZ(0) scale(calc(1 + var(--fx-k) * .15)); }
+  44% { transform: translateZ(0) scale(calc(1 - var(--fx-k) * .05)); }
+  59% { transform: translateZ(0) scale(calc(1 + var(--fx-k) * .02)); }
+  73% { transform: translateZ(0) scale(calc(1 - var(--fx-k) * .01)); }
+  88%, 100% { transform: translateZ(0) scale(1); }
+}
+@keyframes fx-epop-ring {
+  0% { transform: scale(1); }
+  16% { transform: scale(calc(1 + var(--fx-k) * 1.3)); }
+  28% { transform: scale(calc(1 + var(--fx-k) * .85)); }
+  44% { transform: scale(calc(1 + var(--fx-k) * 1.05)); }
+  59%, 73%, 88%, 100% { transform: scale(calc(1 + var(--fx-k))); }
+}
+@keyframes fx-epop-ring-back {
+  0% { transform: scale(calc(1 + var(--fx-k))); }
+  16% { transform: scale(calc(1 - var(--fx-k) * .3)); }
+  28% { transform: scale(calc(1 + var(--fx-k) * .15)); }
+  44% { transform: scale(calc(1 - var(--fx-k) * .05)); }
+  59% { transform: scale(calc(1 + var(--fx-k) * .02)); }
+  73% { transform: scale(calc(1 - var(--fx-k) * .01)); }
+  88%, 100% { transform: scale(1); }
+}
+@keyframes fx-epop-press {
+  0% { transform: scale(1); }
+  25% { transform: scale(.88); }
+  50% { transform: scale(1.15); }
+  75% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="elastic-pop-hover"], [data-fx~="elastic-pop-hover"]:hover, [data-fx~="elastic-pop-hover"]:active { animation: none !important; }
+}

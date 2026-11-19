@@ -1,0 +1,185 @@
+/* Shared: header (logo, center nav, language, capsule button), vegetable dropdown and phone menu, left ruler, loading curtain, page transition curtain, cream footer and soil canvas.
+   Sizes are the original’s 1440-base px times --u (screen width ÷ 1440, max 1600), and phone is based on 375. */
+:root {
+  --u: calc(min(1600px, 100vw) / 1440);
+  --site-space: var(--kf-contrast-bg);
+  --site-space-2: color-mix(in oklab, var(--kf-contrast-bg) 89%, var(--kf-contrast-ink));
+  --site-on-space: var(--kf-contrast-ink);
+  --site-on-space-dim: color-mix(in oklab, var(--kf-contrast-ink) 55%, var(--kf-contrast-bg));
+  --site-cream-66: color-mix(in srgb, var(--kf-bg) 40%, transparent);
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-cubic: cubic-bezier(0.33, 1, 0.68, 1);
+}
+@media (max-width: 767px) {
+  :root { --u: calc(min(563px, 100vw) / 375); }
+}
+html { background: var(--site-space); }
+body { background: var(--kf-bg); color: var(--kf-ink); font-family: var(--kf-font-sans); font-weight: var(--kf-weight-body); letter-spacing: 0.04em; }
+body[data-page="home"] { background: var(--site-space); }
+.wf-img { background-color: var(--kf-raised); }
+
+/* ---------- Header ---------- */
+/* Header color changes instantly, only the text, logo and divider follow in .2s (original --_header-color) */
+/* The header itself creates no stacking context — only the fixed header bar (bar) blends with the page below via difference (original header__bar) */
+.v-header { --hc: var(--site-on-space); position: relative; z-index: auto; color: var(--hc); }
+.v-header[data-theme="black"] { --hc: var(--kf-ink); }
+/* Original blend — the header line of white text is mixed with difference so it looks dark on cream and white on black (the same even when the dropdown opens) */
+.v-header[data-theme="blend"] .v-header__bar { mix-blend-mode: difference; }
+/* In blend mode the capsule gets a white background pushing in with text turning black, decorative dots hidden. The menu dot shows only when the menu is open */
+.v-header[data-theme="blend"] .v-header__ctl .v-capsule { --cap-hover: var(--site-on-space); }
+.v-header[data-theme="blend"] .v-header__ctl .v-capsule__dot { display: none; }
+.v-header[data-theme="blend"]:not(:has(.v-mega.is-open)) .v-menu-btn i { visibility: hidden; }
+body:has(.v-sp.is-open) .v-header[data-theme="blend"] .v-menu-btn i { visibility: visible; }
+.v-header__bar { display: flex; align-items: center; height: calc(64 * var(--u)); padding: 0 calc(24 * var(--u)) 0 calc(20 * var(--u)); }
+.v-logo { display: flex; align-items: center; gap: calc(8 * var(--u)); font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); font-size: calc(17 * var(--u)); letter-spacing: 0.02em; transition: opacity 0.2s linear; }
+.v-logo svg { width: calc(22 * var(--u)); fill: var(--hc, currentColor); transition: fill 0.2s linear; }
+.v-nav { display: flex; align-items: center; margin-inline-start: calc(70 * var(--u)); }
+.v-nav__list { display: flex; align-items: center; gap: calc(22 * var(--u)); font-size: calc(11 * var(--u)); }
+.v-nav__link { position: relative; display: grid; padding: 4px 0; border: 0; background: none; color: inherit; font: inherit; letter-spacing: inherit; cursor: pointer; }
+.v-nav__link > span { grid-area: 1 / 1; transition: opacity 0.2s linear, color 0.2s linear; }
+.v-nav__link .is-cur { font-weight: 700; opacity: 0; }
+.v-nav__link[aria-current="true"] .is-def { opacity: 0; }
+.v-nav__link[aria-current="true"] .is-cur { opacity: 1; }
+/* Original flashItemAnimation04 — on hover .4 → 1 three times at .06s */
+@keyframes v-flash04 { from { opacity: 0.4; } to { opacity: 1; } }
+.v-nav__link[aria-current="true"] .is-cur { animation: v-flash04 0.06s linear 0s 3 both; }
+.v-nav__sep { width: 1px; height: calc(14 * var(--u)); margin-inline: calc(6 * var(--u)); background: var(--hc); opacity: 0.6; transition: background-color 0.2s linear; }
+.v-header__ctl { display: flex; align-items: center; gap: calc(20 * var(--u)); margin-inline-start: auto; }
+.v-header__ctl .v-capsule { width: calc(187 * var(--u)); height: calc(43 * var(--u)); padding-inline: calc(20 * var(--u)); }
+/* Circle decoration capsule (hero About link·view vegetable case) — before pressing, a ring spreads 3.6× from the dot and vanishes (original capsuleClickableCircleDecoration .6s) */
+:is(.lead__link, .vpanel__cta) .v-capsule__dot::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--cap-dot-hover); opacity: 0; }
+@keyframes v-cap-ring-o { 0% { opacity: 0; } 10% { opacity: 1; } 90%, 100% { opacity: 0; } }
+@keyframes v-cap-ring-s { from { transform: scale(0); animation-timing-function: var(--ease-cubic); } to { transform: scale(3.6); } }
+.v-lang { display: flex; gap: calc(10 * var(--u)); font-size: calc(10 * var(--u)); }
+.v-lang .is-on { opacity: 0.6; }
+.v-lang a { transition: color 0.2s linear; }
+.v-menu-btn { display: none; }
+
+/* Capsule button — thin-bordered pill with an orange dot on the right, and on hover the dot grows into an arrow circle */
+.v-capsule { --cap-hover: var(--kf-accent); --cap-dot: var(--kf-accent); --cap-dot-hover: var(--kf-on-accent); position: relative; isolation: isolate; overflow: hidden; display: inline-flex; align-items: center; justify-content: space-between; gap: calc(16 * var(--u)); min-width: calc(150 * var(--u)); height: calc(30 * var(--u)); padding: 0 calc(8 * var(--u)) 0 calc(16 * var(--u)); border: 1px solid currentColor; border-radius: var(--kf-radius-pill); font-size: calc(10.5 * var(--u)); font-weight: 700; white-space: nowrap; transition: background-color 0.2s linear, color 0.2s linear; }
+.v-capsule::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--cap-hover); transform: translateX(-100%); transition: transform 0.4s var(--ease-expo); }
+.v-capsule > span:first-child { position: relative; transition: color 0.2s linear; }
+.v-capsule__dot { position: relative; display: grid; place-items: center; width: calc(10 * var(--u)); aspect-ratio: 1; border-radius: 50%; background: var(--cap-dot); }
+.v-capsule__dot svg { width: 50%; fill: none; color: var(--cap-dot); stroke: currentColor; stroke-width: 2; transition: color 0.1s linear; }
+.v-capsule--fill { --cap-hover: var(--kf-surface); --cap-dot: var(--kf-on-accent); --cap-dot-hover: var(--kf-accent); border-color: var(--kf-accent); background: var(--kf-accent); color: var(--kf-ink); }
+@media (hover: hover) {
+  .v-logo:hover, .v-lang a:hover, .v-footer__logo:hover { opacity: 0.6; transition-duration: 0.1s; }
+  .v-nav__link:hover { animation: v-flash04 0.06s linear 0s 3 both; }
+  .v-capsule:hover::before { transform: none; }
+  .v-capsule:hover > span:first-child { transition-duration: 0.1s; }
+  .v-capsule:hover .v-capsule__dot { background: var(--cap-dot-hover); }
+  .v-capsule:hover .v-capsule__dot svg { color: var(--cap-dot-hover); }
+  .v-header[data-theme="blend"] .v-header__ctl .v-capsule:hover > span:first-child { color: var(--site-space); }
+  :is(.lead__link, .vpanel__cta) .v-capsule:hover .v-capsule__dot::after { animation: v-cap-ring-o 0.6s linear, v-cap-ring-s 0.6s linear; }
+}
+/* With the dropdown open (when not blend) the header capsule has black text and a transparent background */
+.v-header:not([data-theme="blend"]):has(.v-mega.is-open) .v-header__ctl .v-capsule { color: var(--kf-ink); }
+.v-capsule--lg { min-width: calc(170 * var(--u)); height: calc(36 * var(--u)); font-size: calc(11 * var(--u)); }
+
+/* Vegetable dropdown (nav Vegetables) */
+/* Original header__mega-menu — the panel drops from -60 with .6s expo and shows at .2s, the description rises from 140 below after .2s, and the vegetables come in one by one (.04s apart + .1s) from 40 below */
+.v-header__bar { position: fixed; top: 0; left: 0; right: 0; z-index: 62; }
+.v-mega__overlay { position: fixed; inset: 0; z-index: 60; background: color-mix(in srgb, var(--site-space) 80%, transparent); opacity: 0; pointer-events: none; transition: opacity 0.1s linear; }
+.v-header:has(.v-mega.is-open) .v-mega__overlay { opacity: 1; pointer-events: auto; }
+.v-header[data-theme="white"]:has(.v-mega.is-open) { --hc: var(--kf-ink); }
+.v-mega { position: fixed; top: 0; left: 0; right: 0; z-index: 61; padding-top: calc(107 * var(--u)); background: var(--kf-bg); color: var(--kf-ink); opacity: 0; visibility: hidden; transform: translateY(calc(-60 * var(--u))); transition: transform 0.4s var(--ease-expo), opacity 0.1s linear, visibility 0.1s linear; }
+.v-mega.is-open { opacity: 1; visibility: visible; transform: none; transition: transform 0.6s var(--ease-expo), opacity 0.2s linear; }
+.v-mega__inner { width: calc(1105 * var(--u)); margin: 0 auto; padding: calc(8 * var(--u)) 0 calc(40 * var(--u)); }
+.v-mega__desc { margin-block-end: calc(20 * var(--u)); font-size: calc(12 * var(--u)); line-height: 1.6; opacity: 0; transform: translateY(calc(140 * var(--u))); transition: opacity 0.2s linear, transform 0.4s var(--ease-expo); }
+.v-mega.is-open .v-mega__desc { opacity: 1; transform: none; transition: opacity 0.2s linear 0.2s, transform 0.6s var(--ease-expo); }
+.v-mega__list { position: relative; display: flex; justify-content: space-between; gap: calc(15 * var(--u)); }
+.v-mega__item, .v-mega__more { --d: calc(var(--i) * 0.04s + 0.1s); opacity: 0; transform: translateY(calc(40 * var(--u))); transition: opacity 0.2s linear, transform 0.4s var(--ease-expo); }
+.v-mega.is-open :is(.v-mega__item, .v-mega__more) { opacity: 1; transform: none; transition: opacity 0.2s linear var(--d), transform 0.6s var(--ease-expo) var(--d); }
+.v-mega__item { position: relative; display: grid; gap: 4px; width: calc(205 * var(--u)); font-size: calc(12 * var(--u)); font-weight: 700; }
+.v-mega__item .wf-img { aspect-ratio: 1; margin-block-end: calc(14 * var(--u)); }
+.v-mega__item .wf-img::after { white-space: normal; width: 90%; font-size: 8px; text-align: center; }
+.v-mega__item::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; aspect-ratio: 1; background: var(--site-cream-66); opacity: 0; transition: opacity 0.2s linear; }
+@media (hover: hover) {
+  .v-mega__item:hover::after { opacity: 1; transition-duration: 0.1s; }
+}
+.v-mega__item small { color: var(--kf-dim); font-size: calc(9 * var(--u)); font-weight: 500; }
+.v-mega__more { display: grid; place-items: center; align-content: center; gap: 6px; width: calc(120 * var(--u)); aspect-ratio: 1; border: 1px dashed var(--kf-line); border-radius: var(--kf-radius-sm); color: var(--kf-dim); font-size: calc(10 * var(--u)); text-align: center; }
+html.v-lock { overflow: hidden; }
+
+/* Phone menu */
+/* Original header__sp-menu-wrapper — a 315-wide drawer on the right sits shifted 20%, slides in over .6s expo (closing .4s), with an 80% scrim behind */
+.v-sp { position: fixed; top: 0; right: 0; z-index: 70; display: flex; flex-direction: column; width: min(calc(315 * var(--u)), 100vw); height: 100dvh; padding: calc(16 * var(--u)) calc(20 * var(--u)) calc(30 * var(--u)); background: var(--kf-bg); color: var(--kf-ink); overflow-y: auto; opacity: 0; visibility: hidden; transform: translateX(20%); transition: transform 0.4s var(--ease-expo), opacity 0.2s linear, visibility 0.2s linear; }
+.v-sp.is-open { opacity: 1; visibility: visible; transform: none; transition: transform 0.6s var(--ease-expo), opacity 0.2s linear; }
+.v-sp__overlay { position: fixed; inset: 0; z-index: 69; background: color-mix(in srgb, var(--site-space) 80%, transparent); opacity: 0; pointer-events: none; transition: opacity 0.1s linear; }
+.v-sp.is-open + .v-sp__overlay { opacity: 1; pointer-events: auto; }
+.v-sp__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-inline-end: calc(70 * var(--u)); }
+.v-sp__close { position: absolute; top: calc(14 * var(--u)); right: calc(16 * var(--u)); display: flex; align-items: center; gap: 6px; border: 0; background: none; color: inherit; font: 700 calc(11 * var(--u)) var(--kf-font-display); cursor: pointer; }
+.v-sp__nav { display: grid; gap: calc(16 * var(--u)); margin-block-start: calc(36 * var(--u)); font-size: calc(16 * var(--u)); font-weight: 700; }
+.v-sp__vegs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: calc(10 * var(--u)); font-weight: 500; }
+.v-sp__vegs .wf-img { aspect-ratio: 1; }
+.v-sp__cta { margin-block-start: calc(30 * var(--u)); }
+.v-sp__sns { display: flex; align-items: center; gap: 14px; margin-block-start: calc(24 * var(--u)); padding-block-start: calc(20 * var(--u)); border-top: 1px solid var(--kf-line); font-size: calc(11 * var(--u)); }
+
+/* ---------- Left ruler + orange dot (overall progress) ---------- */
+.v-ruler { position: fixed; top: 0; bottom: 0; left: calc(10 * var(--u)); z-index: 40; width: 6px; color: var(--site-on-space-dim); pointer-events: none; transition: color 0.2s linear; }
+.v-ruler[data-theme="black"] { color: var(--kf-dim); }
+.v-ruler[data-theme="blend"] { mix-blend-mode: difference; }
+.v-ruler__ticks { position: absolute; inset: calc(80 * var(--u)) 0; background: repeating-linear-gradient(to bottom, currentColor 0 1px, transparent 1px calc(14 * var(--u))); opacity: 0.6; }
+.v-ruler__dot { position: absolute; left: 50%; top: calc(80 * var(--u)); width: 6px; aspect-ratio: 1; margin-left: -3px; border-radius: 50%; background: var(--kf-accent); }
+
+/* ---------- Loading veil · transition veil ---------- */
+.v-loading { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; align-content: center; gap: calc(24 * var(--u)); background: var(--site-space); color: var(--site-on-space); }
+.v-loading[data-is-loaded="true"] { opacity: 0; visibility: hidden; transition: opacity 0.2s linear 0.2s, visibility 0.2s linear 0.2s; }
+.v-loading__mark { width: calc(54 * var(--u)); fill: currentColor; animation: v-spin 6s linear infinite; }
+@keyframes v-spin { to { transform: rotate(360deg); } }
+.v-loading__bar { width: calc(120 * var(--u)); height: 1px; background: var(--site-on-space-dim); }
+.v-loading__bar i { display: block; height: 100%; background: var(--kf-accent); transform: scaleX(0); transform-origin: left; }
+.v-loading__credit { position: absolute; bottom: calc(24 * var(--u)); font-size: calc(9 * var(--u)); color: var(--site-on-space-dim); }
+/* Position is set only through GSAP yPercent — if a CSS transform is also present, GSAP reads that px as y and the two stack, so the curtain doesn’t rise all the way */
+.v-mask { position: fixed; inset: 0; z-index: 99; background: var(--kf-bg); pointer-events: none; visibility: hidden; }
+
+/* ---------- Footer ---------- */
+.v-footer { position: relative; z-index: 2; min-height: 100vh; padding: calc(150 * var(--u)) calc(110 * var(--u)) calc(30 * var(--u)); background: var(--kf-bg); color: var(--kf-ink); overflow: hidden; }
+.v-footer__inner { position: relative; z-index: 1; display: flex; justify-content: space-between; }
+.v-footer__title { font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); font-size: calc(26 * var(--u)); line-height: 1.6; }
+.v-footer__text { margin-block-start: calc(28 * var(--u)); font-size: calc(13 * var(--u)); line-height: 2; }
+.v-footer__btn { margin-block-start: calc(28 * var(--u)); }
+.v-footer__btn .v-capsule { --cap-hover: var(--kf-bg); --cap-dot: var(--kf-bg); width: calc(240 * var(--u)); height: calc(51 * var(--u)); }
+.v-footer__links { display: grid; justify-items: center; align-content: start; gap: calc(22 * var(--u)); width: calc(160 * var(--u)); font-size: calc(11 * var(--u)); text-align: center; }
+.v-footer__logo { transition: opacity 0.2s linear; display: grid; justify-items: center; gap: 6px; font-family: var(--kf-font-display); font-weight: 700; font-size: calc(13 * var(--u)); }
+.v-footer__logo svg { width: calc(40 * var(--u)); fill: currentColor; }
+.v-footer__icons { display: flex; gap: 14px; }
+.v-footer__icons svg { width: calc(20 * var(--u)); fill: currentColor; }
+.v-footer__share { position: relative; display: grid; justify-items: center; gap: calc(10 * var(--u)); }
+.v-footer__chip { padding: 2px 12px; border: 1px solid var(--kf-ink); border-radius: var(--kf-radius-pill); background: none; color: inherit; font: 700 calc(9 * var(--u)) var(--kf-font-sans); cursor: pointer; transition-property: opacity, color; transition: opacity 0.2s linear, color 0.1s linear; }
+.v-footer__chip[aria-expanded="true"] { color: var(--kf-dim); }
+.v-footer__share-btns { display: flex; justify-content: center; gap: calc(9 * var(--u)); max-height: 0; overflow: hidden; opacity: 0; visibility: hidden; transform: translateY(calc(-8 * var(--u))); transition: max-height 0.4s var(--ease-expo), opacity 0.1s linear, transform 0.4s var(--ease-expo), visibility 0.2s linear; }
+.v-footer__share-btns.is-open { max-height: calc(50 * var(--u)); margin-top: calc(12 * var(--u)); opacity: 1; visibility: visible; transform: none; transition: max-height 0.6s var(--ease-expo), opacity 0.2s linear, transform 0.6s var(--ease-expo), visibility 0.2s linear; }
+.v-footer__share-btns a { display: grid; place-items: center; width: calc(32 * var(--u)); aspect-ratio: 1; border: 1px solid var(--kf-surface); border-radius: 50%; background: var(--kf-ink); color: var(--kf-bg); transition: opacity 0.2s linear; }
+.v-footer__share-btns svg { width: 40%; fill: currentColor; }
+.v-footer__sup { display: grid; gap: calc(22 * var(--u)); transition: transform 0.4s var(--ease-expo); }
+/* On PC the SNS button row floats overlapping, so the group below is pushed down 30, on phones the row spreads in place, so the group moves down by that much (original footer__share) */
+@media (min-width: 768px) {
+  .v-footer__share-btns, .v-footer__share-btns.is-open { position: absolute; top: 100%; max-height: none; }
+  .v-footer__links:has([data-share][aria-expanded="true"]) .v-footer__sup { transform: translateY(calc(30 * var(--u))); transition-duration: 0.6s; }
+}
+@media (hover: hover) {
+  .v-footer__chip:hover, .v-footer__share-btns a:hover { opacity: 0.6; transition-duration: 0.1s; }
+}
+.v-footer__h { font-weight: 700; }
+.v-footer__copy { position: absolute; right: calc(40 * var(--u)); bottom: calc(24 * var(--u)); z-index: 1; font-size: calc(9 * var(--u)); }
+.v-soil { position: absolute; left: 0; right: 0; bottom: 0; height: 62vh; }
+.v-soil canvas { display: block; width: 100%; height: 100%; }
+
+@media (max-width: 767px) {
+  .v-header__bar { height: calc(56 * var(--u)); padding: 0 calc(16 * var(--u)); }
+  .v-logo { font-size: calc(16 * var(--u)); }
+  .v-nav, .v-header__ctl .v-lang, .v-header__ctl .v-capsule, .v-mega { display: none; }
+  .v-menu-btn { display: flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; color: inherit; font: 700 calc(11 * var(--u)) var(--kf-font-display); letter-spacing: 0.08em; cursor: pointer; }
+  .v-menu-btn i { width: 6px; aspect-ratio: 1; border-radius: 50%; background: var(--kf-accent); }
+  .v-ruler { display: none; }
+  .v-footer { padding: calc(90 * var(--u)) calc(24 * var(--u)) calc(30 * var(--u)); }
+  .v-footer__inner { flex-direction: column; gap: calc(50 * var(--u)); }
+  .v-footer__title { font-size: calc(20 * var(--u)); }
+  .v-footer__links { width: 100%; }
+  .v-footer__copy { right: 50%; transform: translateX(50%); white-space: nowrap; }
+  .v-soil { height: 40vh; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .v-loading__mark { animation: none; }
+}

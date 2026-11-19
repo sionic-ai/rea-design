@@ -1,0 +1,167 @@
+/* Three views — text (gray-brown stage) · list (white background) · photo (black stage). The background changes in .3s */
+.a3-page { position: relative; z-index: 0; width: 100%; min-width: 1100px; overflow: hidden; transition: all 0.3s; }
+.a3-word, .a3-list, .a3-visual { display: none; }
+body[data-view="word"] .a3-page { height: 100%; background: var(--kf-surface); }
+body[data-view="word"] .a3-word { display: block; }
+body[data-view="list"] .a3-page { background: var(--kf-bg); }
+body[data-view="list"] .a3-list { display: block; }
+body[data-view="visual"] .a3-page { background: var(--kf-contrast-bg); }
+body[data-view="visual"] .a3-visual { display: block; }
+
+/* ── Text view: the 1578×762 panel is scaled to fit the screen (based on 1920×1080, index.js). One character cell 133.2px · one line cell 200px (at 230px text) ── */
+.a3-word { position: relative; width: 100%; height: 100vh; }
+.a3-word__inner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1578px;
+  height: 762px;
+  transform: translate(-50%, calc(-50% + 28px));
+}
+.a3-word__block {
+  --fx-cell: 133.2px;
+  --fx-pitch: 200px;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% calc(50% - 28px);
+}
+.a3-word__row {
+  font: var(--kf-weight-display) calc(230px * var(--a3-glyph))/1em var(--kf-font-display);
+  font-stretch: var(--a3-glyph-stretch);
+  margin: -5px 0 0 -10px;
+}
+.a3-word__row a {
+  display: block;
+  height: 170px;
+  line-height: 170px;
+  overflow: hidden;
+  color: var(--kf-ink);
+  transition: all 0.1s;
+}
+.a3-word__row a:hover { color: var(--kf-accent); }
+.a3-word__row span { display: block; transform: translateY(-15px); }
+
+/* ── List View ── */
+.a3-list, .a3-visual { position: relative; width: 100%; padding: 170px 0 200px; }
+.a3-list__inner { width: calc(100% - 300px); margin: 0 auto; }
+.a3-list ul { border-top: 1px solid var(--kf-line); }
+.a3-list li { display: flex; border-bottom: 1px solid var(--kf-line); }
+.a3-list__desc {
+  order: 0;
+  flex-basis: 230px;
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: space-between;
+  padding: 25px 0;
+}
+.a3-list__detail { flex-basis: 100%; margin-bottom: 20px; }
+.a3-list__detail span, .a3-list__voice {
+  display: block;
+  font: var(--kf-weight-body) calc(18px * var(--a3-label))/25.2px var(--kf-font-sans);
+  font-stretch: var(--a3-label-stretch);
+}
+.a3-list__voice { flex-basis: 100%; line-height: 18px; }
+.a3-list__voice a { position: relative; color: var(--kf-ink); text-decoration: underline; transition: all 0.1s; }
+.a3-list__voice a::before {
+  content: "";
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-right: 10px;
+  border-style: solid;
+  border-width: 7px 0 7px 12px;
+  border-color: transparent transparent transparent var(--kf-ink);
+  transition: all 0.1s;
+}
+.a3-list__voice a:hover { color: var(--kf-accent); }
+.a3-list__voice a:hover::before { border-left-color: var(--kf-accent); }
+.a3-list__voice.is-playing { pointer-events: none; }
+.a3-list__voice.is-playing a { color: var(--kf-accent); }
+.a3-list__voice.is-playing a::before { border-left-color: var(--kf-accent); }
+.a3-list__name {
+  order: 1;
+  flex-basis: calc(100% - 230px);
+  align-self: center;
+  /* Name size is computed by index.js from the screen width and put into --a3-name (original (width − 550) × 200 / 1920 px) */
+  font: var(--kf-weight-display) calc(var(--a3-name, 7.813vw) * var(--a3-glyph))/var(--a3-name, 7.813vw) var(--kf-font-display);
+  font-stretch: var(--a3-glyph-stretch);
+}
+.a3-list__name a { display: block; color: var(--kf-ink); transition: all 0.1s; }
+.a3-list__name a:hover { color: var(--kf-accent); }
+.a3-list__name span { display: inline-block; }
+.a3-name-pc { display: block; font-style: normal; transform: translateY(-7px); visibility: hidden; white-space: nowrap; }
+.a3-name-pc.is-show { visibility: visible; }
+.a3-name-sp { display: none; font-style: normal; }
+
+/* ── Photo view: 3 columns at 16:9, 10px gap between cells ── */
+.a3-visual__inner { width: calc(100% - 220px); margin: 0 auto; }
+.a3-visual ul { display: flex; flex-wrap: wrap; justify-content: space-between; }
+.a3-visual li {
+  display: block;
+  flex-basis: calc((100% - 20px) / 3);
+  margin-bottom: 10px;
+  overflow: hidden;
+  line-height: 1;
+  background: var(--kf-contrast-ink);
+}
+.a3-visual a { display: block; position: relative; width: 100%; height: 100%; line-height: 1; }
+.a3-visual__thumb { position: absolute; inset: 0; z-index: 0; opacity: 0; }
+.a3-visual__spacer { display: block; position: relative; aspect-ratio: 16 / 9; }
+.a3-visual__video a { background: var(--kf-contrast-ink); color: var(--kf-contrast-bg); transition: background-color 0.2s; }
+.a3-visual__video a:hover { background: var(--kf-surface); }
+.a3-visual__video span:not(.a3-visual__spacer) { display: block; position: absolute; z-index: 0; }
+.a3-video__icon {
+  left: 8.9%;
+  top: 14.2%;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 18.5px 0 18.5px 32px;
+  border-color: transparent transparent transparent var(--kf-contrast-bg);
+}
+.a3-video__title, .a3-video__sub, .a3-video__play { font-weight: var(--kf-weight-body); font-family: var(--kf-font-sans); font-stretch: var(--a3-label-stretch); }
+.a3-video__title { left: 8.9%; bottom: 23.1%; font-size: calc(1.458vw * var(--a3-label)); line-height: 1.808vw; }
+.a3-video__sub { left: 8.9%; bottom: 12.6%; font-size: calc(0.781vw * var(--a3-label)); line-height: 0.781vw; }
+.a3-video__play { right: 9%; bottom: 12.6%; font-size: calc(1.458vw * var(--a3-label)); line-height: 1.458vw; border-bottom: 1px solid var(--kf-contrast-bg); }
+
+@media (max-width: 768px) {
+  .a3-page { min-width: 100%; }
+  body[data-view="word"] .a3-page { height: auto; }
+  .a3-word { height: auto; padding-bottom: 40vw; }
+  .a3-word__inner { position: relative; left: auto; top: auto; width: 100%; height: auto; transform: none; }
+  .a3-word__block { --fx-cell: 15.443vw; height: auto; padding-top: 26vw; }
+  .a3-word__row { position: relative; font-size: calc(26.6667vw * var(--a3-glyph)); margin: 0 0 6vw 10.6667vw; }
+  .a3-word__row a { height: 20vw; line-height: 20vw; }
+  .a3-word__row span { transform: translateY(-1.3333vw); }
+
+  .a3-list, .a3-visual { padding: 26.6667vw 0 40vw; }
+  .a3-list__inner { width: 82.133%; }
+  .a3-list ul { border-top-width: 0.2667vw; }
+  .a3-list li { display: block; border-bottom-width: 0.2667vw; padding: 5.3333vw 0 6.6667vw; }
+  .a3-list__desc { width: 100%; padding: 0; }
+  .a3-list__detail { flex-basis: 81%; margin-bottom: 0; }
+  .a3-list__detail span, .a3-list__voice { font-size: calc(3vw * var(--a3-label)); line-height: 4.2vw; }
+  .a3-list__voice { line-height: 3vw; }
+  .a3-list__voice { flex-basis: 19%; text-align: right; }
+  .a3-list__voice a::before { border-width: 0.9333vw 0 0.9333vw 1.6vw; margin-right: 1.3333vw; }
+  .a3-list__name { --a3-name: 15.7333vw; line-height: 14.632vw; margin-bottom: 0.8vw; }
+  .a3-list__name span { padding-top: 0.6667vw; }
+  .a3-name-pc { display: none; }
+  .a3-name-sp { display: block; transform: translateY(-2.6667vw); }
+
+  .a3-visual__inner { width: 81.333%; }
+  .a3-visual li { flex-basis: 100%; margin-bottom: 2vw; }
+  .a3-visual__video { height: 45.7333vw; }
+  .a3-visual__video a { transition: none; }
+  .a3-visual__video a:hover { background: var(--kf-contrast-ink); }
+  .a3-video__icon { left: 7.0667vw; top: 6.6667vw; border-width: 2.6667vw 0 2.6667vw 4.6667vw; }
+  .a3-video__title { left: 7.0667vw; bottom: 10.6667vw; font-size: calc(4vw * var(--a3-label)); line-height: 4.96vw; }
+  .a3-video__sub { left: 7.0667vw; bottom: 6.2667vw; font-size: calc(2.6667vw * var(--a3-label)); line-height: 2.6667vw; transform-origin: 0 100%; transform: scale(0.8); }
+  .a3-video__play { right: 8vw; bottom: 6.2667vw; font-size: calc(4vw * var(--a3-label)); line-height: 4vw; border-bottom-width: 0.2667vw; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .a3-page, .a3-word__row a, .a3-list__name a, .a3-list__voice a, .a3-visual__video a { transition: none; }
+  .a3-visual__thumb { opacity: 1; }
+}

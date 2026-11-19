@@ -1,0 +1,301 @@
+/* Common to all pages — header (difference blend), menu plate, floating CONTACT circle, footer, arrows, loader, side contents, subpage frame.
+   The original sets almost all sizes in screen width (vw) — 1vw at 1440 = 14.4px, below 768px use the phone value */
+:root {
+  /* Six product colors — the original blue, sky, mint, lime, pink and purple, rotated from the accent’s OKLCH (within 1/255 of the original values) */
+  --site-c1: var(--kf-accent);
+  --site-c2: oklch(from var(--kf-accent) calc(l + .1847) calc(c * .813) calc(h - 10.99));
+  --site-c3: oklch(from var(--kf-accent) calc(l + .2056) calc(c * .755) calc(h - 93.07));
+  --site-c4: oklch(from var(--kf-accent) calc(l + .3091) calc(c * 1.013) calc(h - 128.21));
+  --site-c5: oklch(from var(--kf-accent) calc(l + .2213) calc(c * .714) calc(h + 94.13));
+  --site-c6: oklch(from var(--kf-accent) calc(l + .0511) calc(c * .709) calc(h + 46.36));
+  --site-violet: oklch(from var(--kf-accent) calc(l - .2628) calc(c * 1.194) calc(h + 30.76));
+  --site-steel: var(--kf-accent-soft);
+  --site-glass: oklch(from var(--kf-line) calc(l + .1227) c h / .5);
+  --site-glass-hover: oklch(from var(--kf-line) calc(l + .149) c h);
+  --site-foot-dim: color-mix(in srgb, var(--kf-dim), var(--kf-contrast-ink) 33%);
+  --site-focus: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='m0 0h22v9H9v13H0zM100 0H78v9h13v13h9zM0 100h22v-9H9V78H0zM100 100H78v-9h13V78h9z'/%3E%3C/svg%3E");
+  --site-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 31' fill='none' stroke='black' stroke-width='1.6'%3E%3Cpath d='m0 15.5h34M20 1.5l14 14-14 14'/%3E%3C/svg%3E");
+}
+
+html { font-size: 62.5%; }
+body {
+  margin: 0;
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font: var(--kf-weight-body) 1.6rem/1.75 var(--kf-font-sans);
+  letter-spacing: .01em;
+}
+::selection { background: var(--site-violet); color: var(--kf-on-accent); }
+.ts-wrap { overflow: clip; }
+.ts-main { position: relative; z-index: 0; overflow: clip; width: 100%; }
+.ts-en { font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); }
+
+/* Everything is hidden at first and appears in .5s under body.is-visible (original body.visible) */
+.ts-head, .ts-main, .ts-foot { opacity: 0; pointer-events: none; transition: opacity .5s; }
+body.is-visible .ts-head, body.is-visible .ts-main, body.is-visible .ts-foot { opacity: 1; pointer-events: all; }
+
+/* ---------- Header: light text laid on in difference blend, so it’s black on a white panel and white on a black panel ---------- */
+.ts-head {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 1000;
+  padding: 1.42vw;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  mix-blend-mode: difference;
+  color: var(--kf-bg);
+}
+.ts-logo { display: block; width: 12.21vw; transition: width .5s, opacity .3s; }
+.ts-logo.is-small { width: 8.54vw; }
+.ts-logo svg { width: 100%; height: auto; }
+.ts-head__btn { display: flex; align-items: center; background: none; border: 0; padding: 0; cursor: pointer; }
+.ts-head__btn > span { font: 400 1.14vw/1 var(--kf-font-display); }
+.ts-burger { position: relative; aspect-ratio: 1; width: 5vw; }
+.ts-burger i { position: absolute; left: 50%; width: 60%; height: 8%; background: currentColor; transform: translate(-50%, -50%); transition: top .3s, transform .3s; }
+.ts-burger i:nth-child(1) { top: 38%; }
+.ts-burger i:nth-child(2) { top: 62%; }
+.ts-head.is-open { pointer-events: none !important; }
+.ts-head.is-open .ts-logo { opacity: 0; }
+.ts-head.is-open .ts-head__btn { pointer-events: all; }
+.ts-head.is-open .ts-burger i { top: 50%; }
+.ts-head.is-open .ts-burger i:nth-child(1) { transform: translate(-50%, -50%) rotate(45deg); }
+.ts-head.is-open .ts-burger i:nth-child(2) { transform: translate(-50%, -50%) rotate(-45deg); }
+
+/* Floating CONTACT circle — on hover two layers, purple and light, grow with a .05s offset, and it vanishes when the footer is visible */
+.ts-call {
+  position: fixed;
+  right: 1.14vw;
+  bottom: 1.14vw;
+  width: 8vw;
+  aspect-ratio: 1;
+  transition: opacity .5s;
+}
+.ts-call.is-hidden, .ts-head.is-open .ts-call { opacity: 0; pointer-events: none; }
+.ts-call a { position: relative; display: block; width: 100%; height: 100%; }
+.ts-call a::before, .ts-call a::after { content: ""; position: absolute; inset: 0; border-radius: 50%; scale: 0; transition: scale .5s; }
+.ts-call a::before { background: var(--site-violet); transition-delay: .05s; }
+.ts-call a::after { background: var(--kf-bg); transition-delay: 0s; }
+.ts-call svg { position: relative; z-index: 1; width: 100%; height: 100%; mix-blend-mode: difference; }
+@media (min-width: 769px) {
+  .ts-call a:hover::before { scale: 1; transition-delay: 0s; }
+  .ts-call a:hover::after { scale: 1; transition-delay: .05s; }
+}
+
+/* ---------- Arrow: on hover the current arrow slides out to the right and .2s later a new arrow enters from the left (.6s) — on release, it plays once more ---------- */
+.ts-arrow { position: absolute; overflow: clip; display: block; }
+.ts-arrow::before, .ts-arrow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  -webkit-mask: var(--site-arrow) no-repeat 100% 50% / contain;
+  mask: var(--site-arrow) no-repeat 100% 50% / contain;
+  animation-fill-mode: both;
+  animation-duration: .6s;
+}
+.ts-arrow::after { transform: translateX(-100%); }
+@media (min-width: 769px) {
+  .ts-arrow.is-h1::before { animation-name: ts-arrow-in; animation-delay: .2s; }
+  .ts-arrow.is-h1::after { animation-name: ts-arrow-out; animation-delay: 0s; }
+  .ts-arrow.is-h::before { animation-name: ts-arrow-out; animation-delay: 0s; }
+  .ts-arrow.is-h::after { animation-name: ts-arrow-in; animation-delay: .2s; }
+}
+@media (max-width: 768px) { .ts-arrow::after { display: none; } }
+@keyframes ts-arrow-in { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+@keyframes ts-arrow-out { from { transform: translateX(0); } to { transform: translateX(100%); } }
+
+/* ---------- Menu panel and footer link groups (same structure, only color differs) ---------- */
+.ts-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  overflow-y: auto;
+  background: var(--site-steel);
+  color: var(--kf-ink);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s;
+}
+.ts-menu.is-open { opacity: 1; pointer-events: all; overscroll-behavior: none; }
+.ts-links { display: flex; gap: 5.42vw; padding: 2.2vw 7.14vw 0; font-size: 1.2rem; }
+.ts-menu .ts-links { padding-top: 8.5vw; }
+.ts-links__cat { flex: 1; }
+.ts-links h2 { font: 300 3.21vw/1.4 var(--kf-font-display); margin: 0; }
+.ts-links h2 a { position: relative; padding-right: 3.6vw; letter-spacing: -.05em; }
+.ts-links h2 a .ts-arrow { top: 50%; right: 0; width: 2.42vw; height: 2vw; transform: translateY(-50%); }
+.ts-links__tree { margin-top: 1vw; }
+.ts-links__row { display: flex; gap: 1.92vw; }
+.ts-links__row + .ts-links__row { margin-top: 4.6vw; }
+.ts-links__row > dl { flex: 1; margin: 0; }
+.ts-links__row > dl.is-wide { width: 48.5%; flex: none; }
+.ts-links__row > dl > dt { font-size: 1.28vw; border-bottom: 1px solid var(--kf-line); padding-bottom: .1vw; }
+.ts-links__row > dl > dt.is-under { font-size: 1.57vw; }
+.ts-links__row > dl > dt.is-under span { font-size: .85vw; padding-left: 1.42vw; }
+.ts-links__row > dl > dd { display: flex; gap: 1.92vw; margin: 1.3vw 0 0; }
+.ts-links__row > dl > dd dl { flex: 1; margin: 0; }
+.ts-links__row > dl > dd dl dt { font-size: .92vw; color: var(--site-foot-dim); }
+.ts-menu .ts-links__row > dl > dd dl dt { color: var(--kf-ink-soft); }
+.ts-links__row > dl > dd dl dd { margin: .71vw 0 0; }
+.ts-links__row li a { position: relative; font-size: 1.07vw; padding-right: 1.8vw; letter-spacing: -.05em; white-space: nowrap; }
+.ts-links__row li a .ts-arrow, .ts-links__info li a .ts-arrow { top: 50%; right: 0; width: 1.21vw; height: 1vw; transform: translateY(-50%); }
+.ts-links__info { padding-top: 1vw; }
+.ts-links__info li + li { margin-top: .9vw; }
+.ts-links__info li a { position: relative; font: 300 2.14vw/1.5 var(--kf-font-display); padding-right: 1.8vw; }
+.ts-links__info > .ts-links__pp { display: block; margin-top: 1.5vw; font: 300 1.2vw/1.5 var(--kf-font-display); }
+.ts-links__info > address { font-style: normal; font-size: 1.07vw; margin-top: 5.5vw; }
+.ts-links__info > address span { display: block; }
+.ts-links__info small { display: block; font-size: 1.07vw; margin-top: 2.7vw; }
+.ts-menu__logo { padding: 2.5vw 3.57vw 7.14vw 36.07vw; }
+
+/* ---------- Footer ---------- */
+.ts-foot { background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); font-size: 1.2rem; }
+.ts-foot .ts-links dt { border-color: var(--site-foot-dim); }
+.ts-foot__call a { position: relative; display: block; padding: 8.8% 5.85%; border-top: 1px solid var(--kf-contrast-bg); border-bottom: 1px solid var(--kf-contrast-ink); }
+.ts-foot__call .ts-arrow { top: 50%; right: 5.85%; width: 3.63vw; height: 3vw; transform: translateY(-50%); mix-blend-mode: difference; }
+.ts-foot__anim { position: absolute; inset: 0; overflow: hidden; }
+.ts-foot__anim > i { position: absolute; top: 0; left: -110%; width: 100%; height: 100%; transition: left .7s ease-out; }
+.ts-foot__anim > i::after { content: ""; position: absolute; top: 50%; right: -10%; width: 50vw; height: 50vw; border-radius: 50%; transform: translateY(-50%); background: inherit; }
+.ts-foot__anim > i:nth-child(1) { background: var(--site-c4); transition-delay: .2s; }
+.ts-foot__anim > i:nth-child(2) { background: var(--kf-contrast-ink); transition-delay: 0s; }
+@media (min-width: 769px) {
+  .ts-foot__call a:hover .ts-foot__anim > i { left: 0; }
+  .ts-foot__call a:hover .ts-foot__anim > i:nth-child(1) { transition-delay: 0s; }
+  .ts-foot__call a:hover .ts-foot__anim > i:nth-child(2) { transition-delay: .2s; }
+}
+.ts-foot__txt { position: relative; z-index: 1; display: flex; gap: 7.57vw; mix-blend-mode: difference; }
+.ts-foot__txt h2 { margin: 0; font: 300 3.57vw/1 var(--kf-font-display); }
+.ts-foot__txt p { flex: 1; font-size: 1.21vw; margin: 0; }
+.ts-foot__mark { padding: 10.14vw 5.71vw 7.14vw; }
+.ts-mark-big { display: flex; align-items: flex-end; gap: 1.8vw; color: var(--kf-contrast-ink); font: 700 29vw/.74 var(--kf-font-display); letter-spacing: -.04em; }
+.ts-mark-big > * { flex: none; }
+.ts-mark-big svg { width: 22vw; height: auto; }
+.ts-mark-big.is-menu { color: var(--kf-ink); font-size: 19.75vw; gap: 1.23vw; }
+.ts-mark-big.is-menu svg { width: 15vw; }
+
+/* Subpage photo slot — the inside is set to 1.3x and 15% down, and drifts from 12% → −12% */
+.ts-pimg { overflow: hidden; }
+.ts-pimg > :first-child { scale: 1.3; translate: 0 15%; }
+
+/* ---------- Loader (first visit only): over the video a clump of characters passes diagonally from bottom right to top left ---------- */
+.ts-load { position: fixed; inset: 0; z-index: 10000; pointer-events: none; opacity: 0; overflow: hidden; }
+.ts-load.is-show { opacity: 1; pointer-events: all; }
+.ts-load video { width: 100%; height: 100%; object-fit: cover; }
+.ts-load__img { position: absolute; top: 250%; left: 250%; width: 115%; min-width: 153.5vh; aspect-ratio: 4 / 3; transform: translate(-50%, -50%) scale(2) rotate(45deg); transition: top 1.5s ease-in, left 1.5s ease-in, transform 1.5s ease-in; }
+.ts-load__img svg { position: absolute; left: 50%; top: 50%; width: 100%; height: 100%; transform: translate(-50%, -50%); }
+.ts-load.is-move .ts-load__img { top: -150%; left: -150%; transform: translate(-50%, -50%) scale(2) rotate(-45deg); }
+
+/* ---------- Focus brackets (black corner L-shapes at four corners) — hero · card hover · detail hero ---------- */
+.ts-focus { position: absolute; inset: 0; pointer-events: none; color: var(--kf-ink); }
+.ts-focus svg { width: 100%; height: 100%; }
+
+/* Character art (SVG) */
+.ts-char { display: block; width: 100%; height: auto; overflow: visible; }
+.ts-char-wrap { position: relative; aspect-ratio: 1; }
+
+/* ---------- Sub page: big title · side contents · section frame · info table ---------- */
+.ts-ptitle { text-align: right; line-height: 1; padding: 10.14vw 3.85vw 5.92vw; }
+.ts-ptitle h1 { margin: 0; font: 400 6.42vw/1 var(--kf-font-display); }
+.ts-ptitle span { display: block; font-size: 1.42vw; font-weight: 500; }
+
+.ts-snav { position: absolute; width: 100%; top: 30svh; left: 5.71%; bottom: 6.78vw; display: flex; align-items: flex-end; z-index: 10; pointer-events: none; font-family: var(--kf-font-display); font-weight: 300; }
+.ts-snav nav { position: sticky; bottom: 8%; left: 0; }
+.ts-snav ul { border-radius: var(--kf-radius-lg); width: 12.57vw; overflow: hidden; pointer-events: all; backdrop-filter: blur(10px); }
+.ts-snav li { position: relative; }
+.ts-snav li a { display: block; padding: .9em 1.4em; padding-right: 0; background: var(--site-glass); transition: background-color .3s; font-size: 1vw; line-height: 1.75; font-family: var(--kf-font-sans); }
+.ts-snav li a span { display: inline-block; transition: padding-left .3s; }
+.ts-snav li a:hover { background: var(--site-glass-hover); }
+.ts-snav li + li::before { content: ""; position: absolute; top: 0; left: 50%; width: 92%; border-top: 1px solid var(--kf-bg); transform: translateX(-50%); z-index: 1; }
+.ts-snav li.is-scroll::after { content: ""; position: absolute; top: 50%; left: 1.42vw; width: 1.71vw; height: 1.14vw; transform: translateY(-50%); background: currentColor; -webkit-mask: var(--site-arrow) no-repeat 0 50% / contain; mask: var(--site-arrow) no-repeat 0 50% / contain; opacity: 0; transition: opacity .3s; }
+.ts-snav li.is-current a span { padding-left: 1.85vw; }
+.ts-snav li.is-current::after { opacity: 1; }
+.ts-snav li.is-dl::before { border-color: var(--kf-ink); }
+.ts-snav li.is-dl svg { position: absolute; top: 50%; right: 1.71vw; width: 1.35vw; height: 1.35vw; transform: translateY(-50%); }
+
+.ts-detail { position: relative; padding: 10vw 0 13.7vw; }
+.ts-ditem { position: relative; padding-left: 5.71%; padding-right: 5.71%; }
+.ts-ditem + .ts-ditem { padding-top: 8.4%; margin-top: 8.4%; }
+.ts-ditem + .ts-ditem::before { content: ""; position: absolute; top: 0; left: 50%; width: 88.57%; border-top: 1px solid var(--kf-line); transform: translateX(-50%); }
+.ts-ditem.is-noline::before { display: none; }
+.ts-ditem.is-nopad { padding-top: 0; margin-top: 0; }
+.ts-ditem__wrap { display: flex; }
+.ts-ditem.is-row .ts-ditem__wrap { display: block; }
+.ts-ditem__title { width: 32.98%; }
+.ts-ditem__title h2 { margin: 0; }
+.ts-ditem__title h2 span { display: block; }
+.ts-ditem__title h2 span:nth-child(1) { font: 300 5vw/.9 var(--kf-font-display); }
+.ts-ditem__title h2 span:nth-child(2) { font-size: 1.42vw; margin-top: .1em; font-weight: 500; line-height: 1.75; }
+.ts-ditem__cnt { flex: 1; }
+.ts-ditem.is-tint { background: var(--kf-raised); }
+
+.ts-info dl { display: flex; margin: 0; font-size: 1.14vw; font-weight: 300; padding: .77em 2.6em; border-bottom: 1px solid var(--kf-line); }
+.ts-info dl:first-child { border-top: 1px solid var(--kf-line); }
+.ts-info dt { width: 20.5vw; }
+.ts-info dd { flex: 1; margin: 0; }
+
+/* Round numbered list — only the numbers stick out to the left */
+.ts-num { text-indent: -1.6em; padding-left: 1.6em; }
+.ts-num span { font-size: 1.2em; margin-right: .3em; }
+
+/* Small heading with ◎ */
+.ts-mark-label::before { content: "◎"; padding-right: .2em; }
+
+/* Photo slot — recolors the wire.css placeholder to this site’s tone (light gray, no corners) */
+.ts-ph { background-color: var(--kf-raised); border: 0; }
+
+@media (max-width: 768px) {
+  .ts-head { padding: 4.82vw; }
+  .ts-logo { width: 46.22vw; }
+  .ts-logo.is-small { width: 32.35vw; }
+  .ts-head__btn > span { font-size: 3vw; }
+  .ts-burger { width: 15vw; }
+  .ts-call { width: 20%; right: 4.69vw; bottom: 4.69vw; }
+  .ts-links { display: block; padding-top: 12.7vw; }
+  .ts-menu .ts-links { padding-top: 12.7vw; }
+  .ts-links h2 { font-size: 8.32vw; }
+  .ts-links h2 a { padding-right: 9.33vw; }
+  .ts-links h2 a .ts-arrow { width: 6.27vw; height: 5.18vw; }
+  .ts-links__tree { margin-top: 1.5vw; }
+  .ts-links__row { flex-wrap: wrap; gap: 7vw 5%; }
+  .ts-links__row + .ts-links__row { margin-top: 13vw; }
+  .ts-links__row > dl.is-wide { width: 100%; }
+  .ts-links__row > dl > dt { font-size: 3.9vw; }
+  .ts-links__row > dl > dt.is-under { font-size: 4.81vw; }
+  .ts-links__row > dl > dt.is-under span { font-size: 2.73vw; padding-left: 3.9vw; }
+  .ts-links__row > dl > dd { flex-wrap: wrap; gap: 7vw 5%; margin-top: 3.5vw; }
+  .ts-links__row > dl > dd dl { width: 47.5%; flex: none; }
+  .ts-links__row > dl > dd dl dt { font-size: 2.73vw; }
+  .ts-links__row > dl > dd dl dd { margin-top: 2vw; }
+  .ts-links__row li a { font-size: 3.12vw; padding-right: 5vw; }
+  .ts-links__row li a .ts-arrow, .ts-links__info li a .ts-arrow { width: 3.64vw; height: 3.12vw; }
+  .ts-links__info { padding-top: 8.5vw; }
+  .ts-links__info li + li { margin-top: 3.5vw; }
+  .ts-links__info li a { font-size: 7.42vw; padding-right: 5vw; }
+  .ts-links__info > .ts-links__pp { margin-top: 2.8vw; font-size: 3.5vw; }
+  .ts-links__info > address { font-size: 3.12vw; margin-top: 10vw; }
+  .ts-links__info small { font-size: 3.12vw; margin-top: 4vw; }
+  .ts-menu__logo { padding: 10vw 4.82vw 12vw; }
+  .ts-foot__call a { padding-top: 16vw; padding-bottom: 16vw; }
+  .ts-foot__call .ts-arrow { width: 5.44vw; height: 4.5vw; }
+  .ts-foot__txt { flex-flow: column; gap: 4vw; }
+  .ts-foot__txt h2 { font-size: 11.72vw; }
+  .ts-foot__txt p { font-size: 3.26vw; }
+  .ts-foot__mark { padding: 16vw 4.82vw 12vw; }
+  .ts-ptitle { padding: 28vw 3.85vw 13vw; }
+  .ts-ptitle h1 { font-size: 14.58vw; }
+  .ts-ptitle span { font-size: 3.51vw; }
+  .ts-snav { display: none; }
+  .ts-detail { padding-top: 11.2vw; }
+  .ts-ditem__wrap { display: block; }
+  .ts-ditem__title { width: 100%; }
+  .ts-ditem__title h2 span:nth-child(1) { font-size: 11.72vw; }
+  .ts-ditem__title h2 span:nth-child(2) { font-size: 3.65vw; }
+  .ts-ditem__cnt { margin-top: 7vw; }
+  .ts-ditem + .ts-ditem { padding-top: 14vw; margin-top: 14vw; }
+  .ts-info dl { font-size: 3.12vw; padding: .74em 0; }
+  .ts-info dt { width: 44.4vw; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ts-arrow::before, .ts-arrow::after { animation: none !important; }
+  .ts-foot__anim > i, .ts-call a::before, .ts-call a::after, .ts-load__img { transition: none !important; }
+}

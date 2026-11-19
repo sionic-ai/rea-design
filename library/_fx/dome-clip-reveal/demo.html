@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dome-clip-reveal — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .demo { padding: 40px 20px 60vh; display: grid; gap: 80px; }
+  .big { font: var(--kf-weight-display) clamp(48px, 8vw, 100px)/0.9 var(--kf-font-display); letter-spacing: -0.03em; justify-self: start; }
+  .photo { width: min(560px, 90vw); aspect-ratio: 4 / 3; background: var(--kf-surface); }
+  .photo .art { width: 100%; height: 100%; background: linear-gradient(135deg, var(--kf-accent), var(--kf-contrast-bg)); }
+  .photo p { margin-top: 10px; }
+  .stage { height: 60vh; background: linear-gradient(135deg, var(--kf-contrast-bg), var(--kf-accent)); }
+  .drawer { position: fixed; inset: 0; z-index: 90; background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); display: grid; place-items: center; font: 400 40px/1 var(--kf-font-display); visibility: hidden; }
+  .drawer.is-open { visibility: visible; }
+  button { justify-self: start; padding: 10px 18px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-pill); background: var(--kf-surface); color: var(--kf-ink); cursor: pointer; }
+  .drawer button { position: absolute; top: 20px; right: 20px; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>dome-clip-reveal</b> — Scroll down. The title and photo fill up with a rounded header curtain, “Drawer” sags down from above in a curve, and in “Expand” the center box swells and grows. <span style="color:var(--kf-dim)">(One more title comes in after 1s, and one drops out after 2.5s)</span></p>
+<main class="demo">
+  <button type="button" id="open">Open Drawer</button>
+  <h2 class="big" data-fx="dome-clip-reveal">Big Heading</h2>
+  <figure class="photo" data-fx="dome-clip-reveal" data-fx-dome-clip-reveal="dur: 1.5; ease: power2.inOut; lag: .1; sweep: 1; scale-dur: 3; sub-y: 20; sub-dur: 1.5; sub-delay: .25; sub-each: .5"><div class="art" data-fx-part="media"></div></figure>
+  <button type="button" id="grow">Unfold</button>
+  <div class="stage" id="box" data-fx="dome-clip-reveal" data-fx-dome-clip-reveal="look: box; on: manual; lag: .1"></div>
+  <h2 class="big" data-fx="dome-clip-reveal" data-demo-remove>Removed Heading</h2>
+</main>
+<nav class="drawer" data-fx="dome-clip-reveal" data-fx-dome-clip-reveal="look: down; dur: .75; close-dur: .5">Menu<button type="button" id="close">Close</button></nav>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+const drawer = document.querySelector(".drawer");
+document.querySelector("#open").addEventListener("click", () => { drawer.classList.add("is-open"); drawer.dispatchEvent(new CustomEvent("fx:play")); });
+document.querySelector("#close").addEventListener("click", () => drawer.dispatchEvent(new CustomEvent("fx:close")));
+drawer.addEventListener("fx:closed", () => drawer.classList.remove("is-open"));
+document.querySelector("#grow").addEventListener("click", () => document.querySelector("#box").dispatchEvent(new CustomEvent("fx:play")));
+setTimeout(() => { const h = document.createElement("h2"); h.className = "big"; h.textContent = "Late Heading"; h.dataset.fx = "dome-clip-reveal"; document.querySelector(".demo")?.append(h); }, 1000);
+setTimeout(() => { document.querySelectorAll("[data-demo-remove]").forEach((n) => n.remove()); }, 2500);
+</script>
+</body>
+</html>

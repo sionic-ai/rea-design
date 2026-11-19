@@ -1,0 +1,59 @@
+/* Three-card spread — the center card drops in from 32px above, side cards hide behind the center (300px inward · 60px back · .94 scale) and then 
+   Slides out without rotating and finally turns outward -12°/12°. The two sides move first (.25s) and the center appears at .5s */
+[data-fx~="card-fan-in"] {
+  --fx-card-fan-in-glide: cubic-bezier(0.45, 0, 0.2, 1);
+  --fx-card-fan-in-out: cubic-bezier(0.33, 1, 0.68, 1);
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  perspective: 1000px;
+}
+
+[data-fx~="card-fan-in"] > [data-fx-part="center"] {
+  position: relative;
+  z-index: 3;
+  animation:
+    fx-card-fan-in-drop var(--fx-dur, 1.1s) var(--fx-card-fan-in-out) var(--fx-delay, 0.5s) backwards,
+    fx-card-fan-in-fade calc(var(--fx-dur, 1.1s) * 0.5) var(--fx-card-fan-in-out) var(--fx-delay, 0.5s) backwards;
+}
+
+[data-fx~="card-fan-in"] > [data-fx-part="left"],
+[data-fx~="card-fan-in"] > [data-fx-part="right"] {
+  position: relative;
+  z-index: 2;
+  transform: translateX(var(--fx-card-fan-in-rest-x)) translateZ(-20px) rotateY(var(--fx-card-fan-in-rest-turn));
+  animation:
+    fx-card-fan-in-side var(--fx-side-dur, 1.8s) var(--fx-card-fan-in-glide) var(--fx-side-delay, 0.25s) backwards,
+    fx-card-fan-in-fade calc(var(--fx-side-dur, 1.8s) * 0.5) var(--fx-card-fan-in-glide) var(--fx-delay, 0.5s) backwards;
+}
+
+[data-fx~="card-fan-in"] > [data-fx-part="left"] {
+  --fx-card-fan-in-tuck-x: var(--fx-tuck, 300px);
+  --fx-card-fan-in-rest-x: var(--fx-overlap, 80px);
+  --fx-card-fan-in-rest-turn: calc(-1 * var(--fx-turn, 12deg));
+  transform-origin: 100%;
+}
+
+[data-fx~="card-fan-in"] > [data-fx-part="right"] {
+  --fx-card-fan-in-tuck-x: calc(-1 * var(--fx-tuck, 300px));
+  --fx-card-fan-in-rest-x: calc(-1 * var(--fx-overlap, 80px));
+  --fx-card-fan-in-rest-turn: var(--fx-turn, 12deg);
+  transform-origin: 0;
+}
+
+@keyframes fx-card-fan-in-drop {
+  from { transform: translateY(-32px); }
+}
+
+@keyframes fx-card-fan-in-side {
+  from { transform: translateX(var(--fx-card-fan-in-tuck-x)) translateZ(-60px) rotateY(0deg) scale(0.94); }
+}
+
+@keyframes fx-card-fan-in-fade {
+  from { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="card-fan-in"] > [data-fx-part] { animation: fx-card-fan-in-fade 0.4s 0.2s backwards; }
+}

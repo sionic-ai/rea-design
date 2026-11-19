@@ -1,0 +1,26 @@
+/* Behind the pill button a rainbow conic gradient panel spins once every 5 seconds, then on hover it spreads out with 24px blur, scale .75→1 and transparent→visible (.5s), 
+   On release it slowly fades out along the same path in 2s (curve is the Tailwind default cubic-bezier(.4,0,.2,1)). The button shadow deepens at the same tempo. The five colors are --fx-c1~c5 (default colors rotated from the accent color) */
+@property --fx-cg-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes fx-cg-spin { to { --fx-cg-angle: 360deg; } }
+[data-fx~="conic-glow-hover"] { position: relative; display: inline-block; isolation: isolate; }
+[data-fx~="conic-glow-hover"] [data-fx-part="face"] {
+  position: relative; z-index: 1; display: inline-block; border-radius: var(--kf-radius-pill);
+  box-shadow: 0 0 0 transparent; transition: box-shadow var(--fx-out, 2s) var(--fx-ease, cubic-bezier(0.4, 0, 0.2, 1));
+}
+[data-fx~="conic-glow-hover"] [data-fx-part="glow"] {
+  --c1: var(--fx-c1, var(--kf-accent));
+  --c2: var(--fx-c2, oklch(from var(--kf-accent) .82 .12 calc(h + 290)));
+  --c3: var(--fx-c3, oklch(from var(--kf-accent) .62 .17 calc(h + 225)));
+  --c4: var(--fx-c4, oklch(from var(--kf-accent) .94 .13 calc(h + 115)));
+  --c5: var(--fx-c5, oklch(from var(--kf-accent) .82 .11 calc(h + 330)));
+  position: absolute; inset: -4px; z-index: 0; border-radius: var(--kf-radius-pill); pointer-events: none;
+  background: conic-gradient(from var(--fx-cg-angle) at 50% 50%, var(--c1) 0, var(--c2) 12.5%, var(--c3) 25%, var(--c4) 37.5%, var(--c5) 50%, var(--c1) 62.5%, var(--c2) 75%, var(--c3) 87.5%, var(--c1) 100%);
+  animation: fx-cg-spin var(--fx-spin, 5s) linear infinite;
+  filter: blur(var(--fx-blur, 24px)); opacity: 0; scale: .75;
+  transition: opacity var(--fx-out, 2s) var(--fx-ease, cubic-bezier(0.4, 0, 0.2, 1)), scale var(--fx-out, 2s) var(--fx-ease, cubic-bezier(0.4, 0, 0.2, 1));
+}
+@media (hover: hover) {
+  [data-fx~="conic-glow-hover"]:hover [data-fx-part="glow"], [data-fx~="conic-glow-hover"]:focus-visible [data-fx-part="glow"] { opacity: 1; scale: 1; transition-duration: var(--fx-in, .5s); }
+  [data-fx~="conic-glow-hover"]:hover [data-fx-part="face"] { box-shadow: var(--kf-shadow-lift); transition-duration: var(--fx-in, .5s); }
+}
+@media (prefers-reduced-motion: reduce) { [data-fx~="conic-glow-hover"] [data-fx-part="glow"] { animation: none; transition: none; } }

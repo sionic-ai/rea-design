@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>char-roll-loader — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 500 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 10; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hero { position: relative; height: 80vh; padding: 30px; }
+  .demo-mark, .demo-loader [data-fx-part="mark"] { font: 500 clamp(80px, 18vw, 240px)/0.8 var(--kf-font-display); letter-spacing: -0.04em; }
+  .demo-mark { position: absolute; top: 30px; left: 30px; }
+  .demo-loader { padding: 30px; }
+  .demo-again { margin: 20px 30px; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>char-roll-loader</b> — On open, logo letters rise from below cell by cell over a dark curtain, and until the document fully arrives (at least 2s) the letters roll up one step at a time in turn. When it stops, the logo moves to the wordmark spot below and the curtain lifts. You can replay it with the button below.</p>
+<div class="demo-hero"><div class="demo-mark">Brand</div></div>
+<button class="demo-again wf-btn" type="button">View again</button>
+<div class="demo-loader" data-fx="char-roll-loader" data-fx-char-roll-loader="to: .demo-mark"><div data-fx-part="mark">Brand</div></div>
+<div class="demo-empty" data-fx="char-roll-loader"></div>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../../../_shared/vendor/gsap/SplitText.min.js"></script>
+<script>
+// Late arrivals and removals — checks that fx-core attaches to an element added after 1s and detaches from an element removed after 2.5s
+(() => {
+  const src = document.querySelector('[data-fx~="char-roll-loader"]');
+  const t = document.createElement("template");
+  t.innerHTML = src.outerHTML;
+  const make = (tag) => { const el = t.content.firstElementChild.cloneNode(true); el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => src.after(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-again").addEventListener("click", () => {
+    document.querySelectorAll('[data-fx~="char-roll-loader"][data-demo]').forEach((el) => el.remove());
+    const now = document.querySelector(".demo-loader");
+    now.replaceWith(t.content.firstElementChild.cloneNode(true));
+  });
+  document.querySelector(".demo-hint").append(" · After 1s another identical curtain comes in, and after 2.5s one drops out (detach).");
+})();
+</script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

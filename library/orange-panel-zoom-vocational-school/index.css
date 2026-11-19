@@ -1,0 +1,470 @@
+/* Splash — a 15rem symbol at the center of a white curtain (logo-fill-loader, orange fills up over gray) */
+.ma-splash { z-index: 999; --fx-fill: var(--kf-bg); --fx-base: var(--kf-line); --fx-ink: var(--kf-accent); }
+.ma-splash__logo { width: 15rem; }
+.ma-splash__logo svg { width: 100%; height: auto; }
+
+/* Hero standby (isStandby) — the big copy is clipped from the bottom up, while text · badge · page number are transparent. When the splash clears, they open in .5s with .2s and .3s delays */
+.ma-hero__big.is-1 { transition: clip-path 0.5s var(--ma-ease) 0.2s; }
+.ma-hero__big.is-2 { transition: clip-path 0.5s var(--ma-ease) 0.3s; }
+.ma-hero.is-standby .ma-hero__big { clip-path: inset(0 0 100%); }
+.ma-hero__text p, .ma-hero__scroll, .ma-hero__oc, .ma-hero__dots { transition: opacity 0.5s var(--ma-ease) 0.2s; }
+.ma-hero.is-standby .ma-hero__text p, .ma-hero.is-standby .ma-hero__scroll, .ma-hero.is-standby .ma-hero__oc, .ma-hero.is-standby .ma-hero__dots { opacity: 0; }
+
+/* Hero color — each time the video panel changes, one of five colors (orange · red · green · blue · yellow) different from the current one is picked at random (original html[data-theme-color]). 
+   Badge and speech bubble colors are also paired per color. Past 80% of the Hero it returns to orange */
+html { --ma-red: oklch(from var(--kf-accent) calc(l - 0.1297) calc(c + 0.0186) calc(h - 21.42)); --ma-theme: var(--kf-accent); --ma-ocbg: var(--ma-oc); --ma-octext: var(--kf-ink); --ma-comment: var(--kf-accent-soft); }
+html[data-hue="red"] { --ma-theme: var(--ma-red); --ma-ocbg: var(--kf-success); --ma-octext: var(--kf-on-accent); --ma-comment: color-mix(in oklab, var(--ma-red) 12%, var(--kf-bg)); }
+html[data-hue="green"] { --ma-theme: var(--kf-success); --ma-ocbg: var(--ma-app); --ma-octext: var(--kf-on-accent); --ma-comment: color-mix(in oklab, var(--kf-success) 18%, var(--kf-bg)); }
+html[data-hue="blue"] { --ma-theme: var(--ma-app); --ma-ocbg: var(--kf-accent); --ma-octext: var(--kf-on-accent); --ma-comment: color-mix(in oklab, var(--ma-app) 15%, var(--kf-bg)); }
+html[data-hue="yellow"] { --ma-theme: var(--ma-oc); --ma-ocbg: var(--ma-red); --ma-octext: var(--kf-on-accent); --ma-comment: color-mix(in oklab, var(--ma-oc) 30%, var(--kf-bg)); }
+
+/* ───────── Hero — orange panel · vertical video strip · large copy at both bottom sides · yellow badge ───────── */
+.ma-hero { position: relative; z-index: 1; height: 100svh; min-height: 64rem; overflow: hidden; background: var(--ma-theme); color: var(--kf-on-accent); transition: background-color 0.75s var(--ma-ease); }
+.ma-hero__copy { position: absolute; left: 0; right: 0; bottom: 2.9rem; z-index: 4; display: flex; justify-content: space-between; align-items: flex-end; width: calc(100% - 8.4rem); margin-inline: auto; pointer-events: none; }
+.ma-hero__big { display: flex; flex-direction: column; font-family: var(--kf-font-display); font-weight: 800; line-height: 1; clip-path: inset(0 0 0); }
+.ma-hero__big.is-2 { align-items: flex-end; }
+.ma-hero__k { font-size: min(18rem, 23.4svh); letter-spacing: -0.02em; }
+.ma-hero__s { margin-top: 1.2rem; font-size: min(6.6rem, 8.6svh); letter-spacing: -0.04em; }
+.ma-hero__text { position: absolute; top: min(17.3rem, 22.5svh); left: 4.8rem; z-index: 4; }
+.ma-hero__text p { font-size: clamp(1.2rem, 0.9857rem + 0.5495vw, min(1.7rem, 2.21svh)); font-weight: 700; line-height: 1.59; }
+.ma-hero__slider { position: absolute; top: min(10rem, 13svh); left: 0; width: 100%; z-index: 2; }
+.ma-hero__track { height: calc(35.1svh * 16 / 9 * 1.185); }
+.ma-hero__item { width: 35.1svh; aspect-ratio: 9 / 16; }
+.ma-hero__item:not(.is-active) .ma-hero__media::after { content: ""; position: absolute; inset: 0; background: var(--ma-theme); opacity: 0.5; transition: background-color 0.75s var(--ma-ease); }
+.ma-hero__media { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; border-radius: min(2rem, 2.6svh); }
+.ma-hero__comment { position: absolute; right: -4.6rem; top: -2.4rem; z-index: 2; display: grid; place-items: center; width: 12.6rem; height: 8rem; padding: 1.4rem; border-radius: 1.6rem; background: var(--ma-comment); color: var(--kf-ink); font-size: 1.1rem; font-weight: 700; line-height: 1.25; rotate: 12deg; opacity: 0; translate: 0 -70%; transition: translate 0s ease 0.75s, opacity 0.4s var(--ma-ease); }
+.ma-hero__item.is-active .ma-hero__comment { opacity: 1; translate: 0 0; transition: translate 0.3s var(--ma-back), opacity 0.4s var(--ma-ease); }
+/* Each slide plate row gets its own z-index (up to the max plate count), so the press cell goes above it — if it sits beneath, the white circle cursor doesn’t turn on */
+.ma-hero__nav { position: absolute; left: 50%; top: 0; z-index: 20; width: 41.6svh; height: calc(35.1svh * 16 / 9 * 1.185); translate: -50% 0; }
+.ma-hero__nav button { position: absolute; top: 0; width: 50%; height: 100%; border: 0; background: none; }
+.ma-hero__nav [data-fx-part="prev"] { left: 0; }
+.ma-hero__nav [data-fx-part="next"] { right: 0; }
+.ma-hero__dots, .ma-movie__dots { display: flex; justify-content: center; gap: 0.6rem; margin-top: 2.4rem; }
+.ma-dot { width: 0.8rem; height: 0.8rem; padding: 0; border: 0; border-radius: 50%; background: var(--kf-on-accent); opacity: 0.6; cursor: pointer; transition: opacity 0.3s var(--ma-ease), scale 0.3s var(--ma-back); }
+.ma-dot { position: relative; }
+.ma-dot.is-active { opacity: 1; }
+/* Original page-number circle — the ring of the current page is drawn straight until the next turn (10s) (stroke-dashoffset). Pressing or moving on restarts it from the beginning */
+.ma-dot__ring { position: absolute; left: 50%; top: 50%; width: 2rem; height: 2rem; translate: -50% -50%; fill: none; stroke: var(--kf-on-accent); stroke-width: 1.5; opacity: 0; rotate: -90deg; }
+.ma-dot__ring circle { stroke-dasharray: 50.27; stroke-dashoffset: 50.27; }
+.ma-dot.is-active .ma-dot__ring { opacity: 1; }
+.ma-dot.is-active .ma-dot__ring circle { animation: ma-dot-run 10s linear forwards; }
+@keyframes ma-dot-run { to { stroke-dashoffset: 0; } }
+.ma-round { display: grid; place-items: center; width: 4.8rem; height: 4.8rem; padding: 0; border: 0; border-radius: 50%; background: var(--kf-bg); color: var(--kf-accent); font-size: 2.4rem; cursor: pointer; transition: scale 0.5s var(--ma-back); }
+.ma-round:hover { scale: 1.1; }
+.ma-hero__oc { position: absolute; top: min(9rem, 11.7svh); right: 4.8rem; z-index: 4; display: flex; flex-direction: column; align-items: center; justify-content: center; width: min(23rem, 30svh); aspect-ratio: 1; border-radius: 50%; color: var(--ma-octext); text-decoration: none; filter: drop-shadow(10px 10px 30px rgba(0, 0, 0, 0.15)); }
+.ma-hero__oc-bg { position: absolute; inset: 0; z-index: -1; border-radius: 50%; background: var(--ma-ocbg); clip-path: inset(8.2% 0 0); transition: clip-path 0.3s var(--ma-ease); }
+.ma-hero__oc:hover .ma-hero__oc-bg { clip-path: inset(16% 0 0); }
+.ma-hero__oc-next { padding: 0.2rem 0.8rem; border-radius: 0.4rem; background: var(--kf-success, var(--kf-accent)); color: var(--kf-on-accent); font-size: 1.4rem; }
+.ma-hero__oc-t { margin-top: 0.6rem; font-size: min(2.2rem, 2.86svh); font-weight: 700; letter-spacing: -0.04em; }
+.ma-hero__oc-date { font-size: min(6rem, 7.8svh); font-weight: 700; line-height: 1.1; }
+.ma-hero__oc-more { padding: 0.2rem 1.2rem; border: 1px solid var(--ma-octext); border-radius: var(--kf-radius-pill); font-size: 1.4rem; transition: border-color 0.3s var(--ma-ease), background-color 0.3s var(--ma-ease); }
+.ma-hero__oc-more span { display: block; color: var(--ma-octext); transition: color 0.3s var(--ma-ease); }
+/* Original .oc:hover .more — regardless of color pair, always a white cell and white border with only the text in the badge background color */
+.ma-hero__oc:hover .ma-hero__oc-more { background: var(--kf-bg); border-color: var(--kf-bg); }
+.ma-hero__oc:hover .ma-hero__oc-more span { color: var(--ma-ocbg); }
+/* Folded paper corner at the badge’s top right — on hover it is pushed to -11%·16% and scales 1.33 (.35s) */
+.ma-hero__oc-parts { position: absolute; top: min(-1.5rem, -1.95svh); right: min(2.4rem, 3.1svh); width: min(8.6rem, 11.2svh); height: min(9.3rem, 12.1svh); color: var(--kf-bg); transition: translate 0.35s var(--ma-ease), scale 0.35s var(--ma-ease); }
+.ma-hero__oc-parts svg { width: 100%; height: 100%; rotate: -18deg; }
+.ma-hero__oc:hover .ma-hero__oc-parts { translate: -11% 16%; scale: 1.33; }
+.ma-pick__img .ma-ph, .ma-post__img .ma-ph { transition: scale 0.3s var(--ma-ease); }
+.ma-pick__item:hover .ma-pick__img .ma-ph, .ma-post a:hover .ma-post__img .ma-ph { scale: 1.02; }
+.ma-hero__scroll { position: absolute; left: 0; right: 0; bottom: 2.3rem; z-index: 4; display: flex; flex-direction: column; align-items: center; width: fit-content; margin-inline: auto; padding: 0; border: 0; background: none; color: var(--kf-on-accent); font-size: 1.2rem; cursor: pointer; }
+.ma-hero__scroll-l { display: grid; overflow: hidden; line-height: 1; }
+.ma-hero__scroll-l span { grid-area: 1 / 1; animation: ma-scroll-a 1.2s var(--ma-ease) infinite; }
+.ma-hero__scroll-l span + span { translate: 0 -100%; animation-name: ma-scroll-b; }
+.ma-hero__scroll svg { width: 1.4rem; height: 1.4rem; margin-top: 1rem; }
+@keyframes ma-scroll-a { 0% { translate: 0 0; } 60%, 100% { translate: 0 100%; } }
+@keyframes ma-scroll-b { 0% { translate: 0 -100%; } 60%, 100% { translate: 0 0; } }
+
+/* Picked news — orange panel, only the center panel scaled 600/270 */
+.ma-pick { position: relative; z-index: 2; padding: 10rem 0 14rem; background: var(--kf-accent); color: var(--kf-on-accent); border-radius: 0 0 10rem 10rem; overflow: hidden; }
+.ma-pick__head { position: absolute; left: 4.8rem; top: 10rem; z-index: 3; }
+.ma-pick__head h2 { display: flex; flex-direction: column; font-size: 4.8rem; line-height: 1.2; }
+.ma-pick__head h2 span + span { font-size: 2.4rem; }
+.ma-pick__track { height: calc(27rem * 2.222 * 9 / 16 + 12rem); }
+.ma-pick__item { display: block; width: 27rem; color: inherit; text-decoration: none; }
+.ma-pick__img { display: block; aspect-ratio: 16 / 9; border-radius: 1.2rem; overflow: hidden; }
+.ma-pick__meta { display: flex; gap: 0.8rem; align-items: center; margin-top: 1rem; font-size: 1.1rem; }
+.ma-pick__t { display: block; font-size: 1.3rem; font-weight: 700; }
+/* Even as the panel grows 600/270 times, the text keeps its size — restored with --fx-s written by center-grow-strip */
+.ma-pick__meta, .ma-pick__t { scale: calc(1 / var(--fx-s, 1)); transform-origin: 0 0; }
+.ma-tag { padding: 0 0.6rem; border: 1px solid currentColor; border-radius: 0.4rem; font-size: 1rem; }
+.ma-pick__tools { display: flex; justify-content: center; gap: 1.2rem; }
+
+/* Photo collection — 32-column grid (collage-center-grow) */
+/* As in the original, the last 100svh of a section overlaps the next section (About), so About is already rising from below while the photo collection fades out */
+.ma-photo { position: relative; z-index: 2; margin-bottom: -100svh; pointer-events: none; }
+.ma-photo__stage { background: var(--kf-bg); }
+.ma-photo__stage {
+  --size: calc((100svh - min(20rem, 15.38vw)) / 4);
+  display: grid; grid-template-columns: repeat(32, 1fr); grid-template-rows: var(--size) var(--size) min(20rem, 15.38vw) var(--size) var(--size); gap: 20px; padding: 20px;
+}
+.ma-photo__item { position: relative; border-radius: 2rem; overflow: hidden; }
+.ma-photo__item.is-01 { grid-column: 1 / 6; grid-row: 1; } .ma-photo__item.is-02 { grid-column: 6 / 13; grid-row: 1; }
+.ma-photo__item.is-03 { grid-column: 13 / 21; grid-row: 1 / 3; } .ma-photo__item.is-04 { grid-column: 1 / 13; grid-row: 2 / 4; }
+.ma-photo__item.is-05 { grid-column: 21 / 33; grid-row: 1 / 4; }
+.ma-photo__item.is-06 { grid-column: 13 / 21; grid-row: 3; overflow: visible; z-index: 3; }
+.ma-photo__item.is-07 { grid-column: 1 / 11; grid-row: 4 / 6; } .ma-photo__item.is-08 { grid-column: 11 / 18; grid-row: 4 / 6; }
+.ma-photo__item.is-09 { grid-column: 18 / 28; grid-row: 4 / 6; } .ma-photo__item.is-10 { grid-column: 28 / 33; grid-row: 5; } .ma-photo__item.is-11 { grid-column: 28 / 33; grid-row: 4; }
+.ma-photo__item.is-01, .ma-photo__item.is-02, .ma-photo__item.is-03, .ma-photo__item.is-05 { margin-top: -58px; }
+
+/* School intro — cards around a rounded pillar panel */
+.ma-about { position: relative; z-index: 1; background: var(--kf-bg); padding: 8rem 2rem 0; }
+.ma-about__wrap { position: relative; min-height: max(66rem, 76.1vw); }
+.ma-about__detail { position: absolute; inset: 0; top: max(3rem, 2.3vw); z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 2rem; width: max(35rem, 26.9vw); height: max(60rem, 46.15vw); margin: auto; padding: max(23.8rem, 18.31vw) 4rem 0; border-radius: 100vmax; background: var(--kf-bg); box-shadow: var(--kf-shadow-soft); text-align: center; }
+.ma-about__en { color: var(--kf-accent); font-size: 1.8rem; }
+.ma-about__h { font-size: 3.6rem; line-height: 1.2; }
+.ma-about__text { font-size: 1.5rem; text-align: left; }
+.ma-about__nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; }
+.ma-about__card { position: relative; }
+.ma-about__card:nth-child(1) { grid-column: 1; } .ma-about__card:nth-child(2) { grid-column: 4; }
+.ma-about__card:nth-child(3) { grid-column: 1; } .ma-about__card:nth-child(4) { grid-column: 4; }
+.ma-about__card:nth-child(5) { grid-column: 1; } .ma-about__card:nth-child(6) { grid-column: 4; }
+/* Student carousel (original st-tube): a round tube attached at the center top of the panel. Every 2.5s the next student, hidden under the tube at .33 scale, rises .3s later over .4s,
+   Speech bubbles pop out .6s late with a .3s overshoot Curve. The container tilts differently per student (--ma-rot), so the picture is rotated back to stand upright */
+.ma-about__card.is-student { position: absolute; top: max(6rem, 4.6154vw); left: 0; right: 0; z-index: 3; width: max(35.4rem, 27.2308vw); height: max(35.4rem, 27.2308vw); margin-inline: auto; pointer-events: none; opacity: 0; transition: opacity 0.5s var(--ma-ease); }
+.ma-about__card.is-student.is-active { opacity: 1; }
+.ma-tube__defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+.ma-tube { --size: max(24.2rem, 18.6154vw); }
+.ma-tube__mat { display: grid; }
+.ma-tube__item { grid-area: 1 / 1; overflow: clip; clip-path: inset(0 calc((100% - var(--size)) / 2) 0 round 0 0 calc(var(--size) / 2) calc(var(--size) / 2)); rotate: calc(var(--ma-rot, 0) * 1deg); transform-origin: center 66%; }
+.ma-tube__img { transform-origin: center 66%; rotate: calc(var(--ma-rot, 0) * -1deg); }
+.ma-tube__fig { display: block; width: 100%; height: auto; aspect-ratio: 1; fill: var(--kf-bg); stroke: var(--kf-ink); stroke-width: 2.4; stroke-linejoin: round; color: var(--kf-ink); transform-origin: center bottom; scale: 0.33; translate: 0 66%; transition: scale 0.4s var(--ma-ease), translate 0.4s var(--ma-ease); }
+.ma-tube__img.is-lb .ma-tube__fig { transform-origin: left bottom; }
+.ma-tube__img.is-rb .ma-tube__fig { transform-origin: right bottom; }
+.ma-tube__item.is-active .ma-tube__fig { scale: 1; translate: 0 0; transition: scale 0.4s var(--ma-ease) 0.3s, translate 0.4s var(--ma-ease) 0.3s; }
+.ma-tube__bg { position: absolute; left: 0; right: 0; bottom: 0; z-index: -1; width: var(--size); height: var(--size); margin-inline: auto; border-radius: 50%; background: var(--kf-accent); }
+.ma-tube__fuki { position: absolute; inset: 0; margin: auto; }
+.ma-tube__say { position: absolute; display: grid; place-items: center; width: max(12.4rem, 9.5385vw); height: max(10.5rem, 8.0769vw); padding: 0 1rem 2rem; color: var(--kf-ink); font-size: 1.3rem; font-weight: 700; line-height: 1.3; text-align: center; transform-origin: top left; scale: 0; opacity: 0; transition: scale 0.2s var(--ma-ease), opacity 0.2s var(--ma-ease); }
+.ma-tube__say svg { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; color: var(--ma-oc); filter: drop-shadow(6px 10px 15px rgba(0, 0, 0, 0.1)); }
+.ma-tube__say > span { position: relative; }
+.ma-tube__say.is-active { scale: 1; opacity: 1; transition: scale 0.3s var(--ma-back) 0.6s, opacity 0.2s var(--ma-ease) 0.6s; }
+.ma-tube__say.is-1 { right: 0.9rem; bottom: 5.6rem; } .ma-tube__say.is-2 { right: 1.5rem; bottom: 6.3rem; }
+.ma-tube__say.is-3 { left: 1.7rem; bottom: 1.1rem; transform-origin: top right; } .ma-tube__say.is-4 { left: 1.5rem; bottom: 0.2rem; transform-origin: top right; }
+.ma-tube__say.is-3 svg, .ma-tube__say.is-4 svg { scale: -1 1; }
+.ma-tube__say.is-5 { right: 4.6rem; bottom: 16.4rem; transform-origin: bottom left; } .ma-tube__say.is-5 svg { scale: 1 -1; }
+.ma-tube__say.is-6 { right: 3.2rem; bottom: 3.9rem; } .ma-tube__say.is-7 { right: 3.2rem; bottom: 3.5rem; }
+.ma-tube__say.is-8 { right: 3rem; bottom: 6.5rem; } .ma-tube__say.is-9 { right: 3rem; bottom: 1rem; } .ma-tube__say.is-10 { right: 4rem; bottom: 4rem; }
+.ma-about__card a { display: flex; align-items: center; gap: 1.2rem; padding: 1.2rem; border-radius: 2rem; background: var(--kf-surface); color: var(--kf-ink); text-decoration: none; transition: background-color 0.5s var(--ma-ease); }
+.ma-about__card a:hover { background: var(--kf-accent-soft); }
+.ma-about__card-img { width: 9rem; aspect-ratio: 4 / 3; border-radius: 1rem; overflow: hidden; flex: none; }
+.ma-about__card-t { flex: 1; font-weight: 700; font-size: 1.5rem; }
+.ma-about__card .ma-arrow { background: var(--kf-accent); color: var(--kf-on-accent); }
+.ma-bubble { position: absolute; z-index: 0; border-radius: 50%; background: var(--kf-accent-soft); }
+.ma-bubble.is-1 { width: 18rem; height: 18rem; left: 22%; top: 8%; } .ma-bubble.is-2 { width: 9rem; height: 9rem; right: 24%; top: 30%; } .ma-bubble.is-3 { width: 13rem; height: 13rem; left: 30%; bottom: 6%; }
+
+.ma-message { position: relative; z-index: 1; display: flex; align-items: center; gap: 4rem; height: 41.77vw; max-height: 54.3rem; margin: 6rem 0 0; padding: 0 6rem; overflow: hidden; border-radius: 2rem; background: var(--kf-accent); color: var(--kf-on-accent); }
+.ma-message__text { position: relative; z-index: 2; }
+.ma-message__big { font-family: var(--kf-font-display); font-weight: 800; font-size: 6.4rem; line-height: 1.1; }
+.ma-message__big .ma-en { font-size: 1.6em; }
+.ma-message__name { margin-top: 1.6rem; font-weight: 700; }
+.ma-message__comment { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 1rem; font-family: var(--kf-font-display); font-weight: 800; font-size: 2.4rem; }
+.ma-message__comment li { position: relative; width: fit-content; padding: 0.6rem 1.6rem; border-radius: var(--kf-radius-pill); background: var(--kf-bg); color: var(--kf-accent); }
+/* Original comment-text — every 1.5s a speech bubble pops out one at a time from a .5x offset spot (.3s overshoot curve, .1s late), and when all three are full they blur out together and restart.
+   The tail is drawn from the side at .15s after .3s */
+.ma-message__comment li { scale: 0.5; opacity: 0; transition: translate 0s var(--ma-ease) 0.3s, scale 0s var(--ma-ease) 0.3s, opacity 0.3s var(--ma-ease); }
+.ma-message__comment li:nth-child(1) { rotate: 5deg; margin-left: 8rem; translate: 50% 25%; }
+.ma-message__comment li:nth-child(2) { rotate: 3deg; margin-top: 2rem; translate: 50% 0; }
+.ma-message__comment li:nth-child(3) { rotate: -4deg; margin-left: 5rem; margin-top: 3rem; translate: 50% -25%; }
+.ma-message__comment li.is-active { opacity: 1; scale: 1; translate: 0 0; transition: translate 0.3s var(--ma-back) 0.1s, scale 0.3s var(--ma-back) 0.1s, opacity 0.2s var(--ma-ease) 0.1s; }
+.ma-message__tail { position: absolute; z-index: -1; width: 3.4rem; aspect-ratio: 1; }
+.ma-message__tail svg { display: block; width: 100%; height: 100%; color: var(--kf-bg); translate: -100% 0; clip-path: inset(0 100% 0 0); transition: translate 0s var(--ma-ease) 0.3s, clip-path 0s var(--ma-ease) 0.3s; }
+.ma-message__comment li.is-active .ma-message__tail svg { translate: 0 0; clip-path: inset(0); transition: translate 0.15s var(--ma-ease) 0.3s, clip-path 0.15s var(--ma-ease) 0.3s; }
+.ma-message__comment li:nth-child(1) .ma-message__tail { right: 2.3rem; bottom: -2.8rem; scale: 1 -1; rotate: 60deg; }
+.ma-message__comment li:nth-child(2) .ma-message__tail { width: 4.5rem; right: -4.2rem; bottom: 0; }
+.ma-message__comment li:nth-child(3) .ma-message__tail { width: 3.2rem; top: -0.3rem; right: -3rem; scale: 1 -1; rotate: -20deg; }
+.ma-message__seen { position: relative; z-index: 2; width: 34rem; height: 100%; margin-left: auto; }
+.ma-message__flow { position: absolute; left: 0; bottom: -2rem; z-index: 1; opacity: 0.15; }
+.ma-message__flow > div { font-size: clamp(13rem, 10rem + 7.69vw, max(20rem, 15.38vw)); }
+
+.ma-data { position: relative; padding: 10rem 0 12rem; background: var(--kf-bg); overflow: hidden; }
+.ma-data__flow { position: absolute; top: 2rem; left: 0; color: var(--kf-surface); }
+.ma-data__flow > div { font-size: 12rem; }
+.ma-data__grid { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; }
+.ma-data__card { padding: 3.2rem 2.4rem; border-radius: 2rem; background: var(--kf-surface); }
+.ma-data__label { font-weight: 700; }
+.ma-data__num { color: var(--kf-accent); font-family: var(--kf-font-display); font-weight: 800; font-size: 2.4rem; line-height: 1; }
+.ma-data__num .ma-en { font-size: 6.4rem; }
+.ma-data__note { margin-top: 1rem; font-size: 1.1rem; color: var(--kf-dim); }
+
+/* Three departments — left list sticks and department panels overlap-stack */
+/* Original t-course — Departments and Find your dream form one panel (white background, z 2), and the 10rem bottom corner exists only at the end of Find your dream. Open Campus is attached below, waiting */
+.ma-course { position: relative; z-index: 2; height: 300svh; padding-top: 14rem; background: var(--kf-bg); }
+.ma-course__pin { position: sticky; top: 9rem; display: grid; grid-template-columns: 26% 1fr; gap: 4rem; height: calc(100svh - 9rem); padding: 0 4.8rem 4rem; overflow: hidden; }
+.ma-course__h { display: flex; align-items: baseline; gap: 0.4rem; color: var(--kf-accent); font-size: 3.6rem; }
+.ma-course__h .ma-en { font-size: 9rem; line-height: 1; }
+.ma-course__en { color: var(--kf-dim); font-size: 1.6rem; }
+.ma-course__nav { margin-top: 5rem; }
+.ma-course__nav-item { display: flex; align-items: center; gap: 1rem; padding: 1.2rem 0; border-bottom: 1px solid var(--kf-line); font-weight: 700; color: var(--kf-dim); transition: color 0.3s var(--ma-ease); }
+.ma-course__dot { width: 1rem; height: 1rem; border-radius: 50%; background: var(--kf-accent); scale: 0; transition: scale 0.5s var(--ma-back); }
+.ma-course__nav-item.is-current { color: var(--kf-ink); }
+.ma-course__nav-item.is-current .ma-course__dot { scale: 1; }
+.ma-course__detail { position: relative; }
+.ma-course__card { position: absolute; inset: 0; display: grid; grid-template-columns: 1.2fr 1fr; gap: 3.2rem; padding: 3.2rem; border-radius: 3rem; background: var(--kf-bg); color: var(--kf-ink); text-decoration: none; box-shadow: var(--kf-shadow-soft); translate: 0 calc((1 - var(--val, 1)) * 110%); }
+.ma-course__card.is-vd { --val: 1; }
+.ma-course__img { position: relative; border-radius: 2rem; overflow: hidden; }
+/* Original department card — the thumbnail over the video clears away in .5s on hover (revealing the video), and the title takes the department color */
+.ma-course__thumb { position: absolute; inset: 0; z-index: 1; transition: opacity 0.5s var(--ma-ease); }
+.ma-course__card:hover .ma-course__thumb, .ma-course__card.is-active .ma-course__thumb { opacity: 0; }
+/* Original course-movie video — the video is always laid down and revealed over .5s. Play and pause are handled in index.js (play on hover, pause .3s after the pointer leaves) */
+.ma-course__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.5s var(--ma-ease); }
+.ma-course__card:hover .ma-course__video, .ma-course__card.is-active .ma-course__video { opacity: 1; }
+.ma-course__card.is-vd { --ma-course: var(--ma-red); } .ma-course__card.is-ai { --ma-course: var(--kf-success); } .ma-course__card.is-av { --ma-course: var(--ma-app); }
+.ma-course__name { display: flex; align-items: center; gap: 1.2rem; font-family: var(--kf-font-display); font-weight: 800; font-size: 3.2rem; }
+/* Original data-hover=color — the department name letters take on the department color from the front (.4s expo.out · stagger total .1s) */
+.ma-course__card:hover .ma-course__label .ma-t { color: var(--ma-course, var(--kf-accent)); }
+.ma-course__name .ma-arrow { background: var(--kf-accent); color: var(--kf-on-accent); }
+.ma-course__text { display: block; margin-top: 2rem; }
+.ma-course__jobs { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 3rem; font-size: 1.2rem; }
+.ma-course__jobs b { width: 100%; color: var(--kf-accent); }
+.ma-course__jobs span { padding: 0.2rem 0.8rem; border-radius: 0.4rem; background: var(--kf-accent-soft); }
+
+/* FIND YOUR DREAM */
+.ma-dream { position: relative; z-index: 2; height: 240svh; padding-bottom: 10rem; border-radius: 0 0 10rem 10rem; background: var(--kf-bg); }
+.ma-dream__pin { position: sticky; top: 9rem; display: grid; grid-template-columns: repeat(32, 1fr); grid-template-rows: auto 1fr; gap: 0 20px; height: calc(100svh - 9rem); padding: 0 10px 4rem; }
+.ma-dream__copy { grid-column: 1 / 33; grid-row: 1; display: flex; justify-content: space-between; align-items: center; color: var(--kf-accent); font-size: min(18rem, 12.5vw); font-weight: 700; line-height: 1; letter-spacing: -0.02em; }
+.ma-dream__copy span { transition: none; }
+.ma-dream__copy .is-find { translate: calc(var(--val, 0) * 0%) 0; }
+.ma-dream__your { writing-mode: vertical-rl; rotate: 180deg; font-size: 0.14em; color: var(--kf-ink); opacity: var(--val, 0); }
+.ma-dream__card { grid-column: 11 / 17; grid-row: 1 / 3; align-self: start; display: grid; place-items: center; margin-top: calc(min(5rem, (100svh - 9rem) / 15.36) * var(--val, 0) + 12rem); aspect-ratio: 3 / 4; border-radius: 2rem; background: color-mix(in oklab, var(--kf-surface) calc((1 - var(--val, 0)) * 100%), var(--kf-accent)); color: var(--kf-on-accent); }
+.ma-dream__q { font-size: 8rem; font-weight: 700; }
+.ma-dream__result { display: none; font-size: 2.4rem; text-align: center; padding: 2rem; }
+.ma-dream__card.is-picked .ma-dream__q { display: none; }
+.ma-dream__card.is-picked .ma-dream__result { display: block; }
+.ma-dream__select { grid-column: 17 / 33; grid-row: 2; margin-top: 3rem; }
+.ma-dream__select h3 { font-size: 3.2rem; margin-bottom: 2rem; }
+.ma-dream__select em { font-style: normal; color: var(--kf-accent); }
+.ma-dream__chips { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+.ma-chip { padding: 0.6rem 1.4rem; border: 1px solid var(--kf-ink); border-radius: var(--kf-radius-pill); background: var(--kf-bg); color: var(--kf-ink); font: inherit; font-size: 1.3rem; font-weight: 700; cursor: pointer; transition: background-color 0.3s var(--ma-ease), color 0.3s var(--ma-ease), scale 0.5s var(--ma-back); }
+.ma-chip:hover { scale: 1.06; }
+.ma-chip.is-select { background: var(--kf-accent); border-color: var(--kf-accent); color: var(--kf-on-accent); }
+
+/* Open campus — three picture layers moving at different speeds */
+/* ───────── Section stacking (original t-sticky-area) — sticky sections are wrapped in a group so they stick only inside it. The empty space becomes the scrub range ───────── */
+.ma-area.is-white { background: var(--kf-bg); }
+.ma-space { height: calc(var(--ma-lv, 1) * 100svh); }
+.ma-space[data-space="oc"] { --ma-lv: 1.5; }
+.ma-space[data-space="movie"] { --ma-lv: 2.5; }
+/* Open campus (original t-oc) — a 144.5rem panel sticks to the bottom of the screen (sticky bottom 0) and lies under the department panel above it (z 2). At first it sits lowered so only the top 60svh+10rem shows, then 
+   While passing the 150svh blank area (top bottom → bottom top, scrub) it rises into place, and a white panel (z 2) covers it as it rises over it */
+.ma-oc { position: relative; z-index: 1; min-height: 120svh; padding: 14rem 4.8rem 0; overflow: hidden; text-align: center; }
+
+.ma-oc__bg { position: absolute; inset: 0; z-index: 0; }
+.ma-oc__head { position: relative; z-index: 3; }
+.ma-oc__bubble { display: inline-block; padding: 0.8rem 2rem; border-radius: var(--kf-radius-pill); background: var(--kf-accent); color: var(--kf-on-accent); font-size: 1.8rem; }
+.ma-oc__head h2 { margin: 2rem 0; color: var(--ma-app); font-size: 9.6rem; line-height: 1.1; }
+.ma-oc__head h2 small { font-size: 0.6em; }
+.ma-oc__join { position: absolute; right: 12%; top: 48%; z-index: 4; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 24rem; aspect-ratio: 1; border-radius: 50%; background: var(--ma-oc); color: var(--kf-ink); text-decoration: none; transition: scale 0.5s var(--ma-back); }
+.ma-oc__join:hover { scale: 1.06; }
+/* Original button-join .mat — the patterned ring around the badge rotates endlessly, one turn per 20s (absent on phones, which use a static pill button) */
+.ma-oc__ring { position: absolute; inset: -1.6rem; z-index: -1; pointer-events: none; animation: ma-spin 20s linear infinite; }
+.ma-oc__ring svg { display: block; width: 100%; height: 100%; fill: none; stroke: var(--ma-oc); stroke-width: 1.4; stroke-dasharray: 3 5; }
+@keyframes ma-spin { to { rotate: 360deg; } }
+.ma-oc__req { position: absolute; right: 4.8rem; bottom: 8rem; z-index: 4; display: grid; place-items: center; width: 14rem; aspect-ratio: 1; border-radius: 50%; background: var(--ma-app); color: var(--kf-on-accent); font-weight: 700; text-decoration: none; }
+.ma-oc__mat { position: relative; z-index: 2; height: 60svh; }
+.ma-oc__ship { position: absolute; left: 6%; top: -30%; width: 28rem; aspect-ratio: 2 / 1; }
+.ma-oc__campus { position: absolute; left: 50%; bottom: 0; width: 56rem; aspect-ratio: 1 / 1; translate: -50% 10%; }
+.ma-oc__light { position: absolute; inset: 0; background: conic-gradient(from 200deg at 50% 100%, transparent 0deg, var(--ma-wash) 20deg, transparent 40deg, var(--ma-wash) 70deg, transparent 90deg); }
+.ma-oc__flow { position: absolute; left: 0; bottom: 4rem; z-index: 1; color: var(--kf-bg); opacity: 0.5; }
+.ma-oc__flow > div { font-size: 18rem; }
+@media (min-width: 1025px) {
+  .ma-oc { position: sticky; bottom: 0; height: 144.5rem; min-height: 0; padding-top: 21.8rem; transform: translateY(calc(100% - (60svh + 10rem))); }
+  .ma-oc__join { top: 57.4rem; right: 8.2rem; width: 30.1rem; }
+  .ma-oc__req { top: 89.6rem; right: 8rem; bottom: auto; width: 14.5rem; }
+  .ma-oc__mat { position: absolute; inset: 0; height: auto; overflow: hidden; }
+  .ma-oc__ship { left: auto; right: 4.8rem; top: 19.5rem; width: 21.7rem; aspect-ratio: 217 / 144; }
+  .ma-oc__campus { top: 64.6rem; bottom: auto; width: 88.2rem; aspect-ratio: 1764 / 1994; translate: -50% 0; }
+  .ma-oc__light { max-width: max(130rem, 81.25vw); margin-inline: auto; }
+  .ma-oc__flow { bottom: 19.5rem; }
+}
+
+/* Orange group (original t-sticky-area is-bg-color-orange) — the first white panel (job support · visitors, z 2 · 10rem corners) is pulled up 120svh+10rem to cover the open campus, and 
+   A video section sticks beneath it and waits, revealed as the white panel lifts away. The group background is painted without position so it sits under the stuck section */
+.ma-orange { background: var(--kf-accent); color: var(--kf-on-accent); }
+.ma-group { position: relative; z-index: 2; margin-top: calc(-120svh - 10rem); padding-block: 10rem; border-radius: 10rem; background: var(--kf-bg); color: var(--kf-ink); }
+.ma-support { display: grid; grid-template-columns: repeat(32, 1fr); gap: 20px; padding: 2rem 0 12rem; }
+.ma-support__img { grid-column: 4 / 18; grid-row: 1; height: 60rem; margin-left: -20px; border-radius: 3rem; overflow: hidden; }
+.ma-support__detail { grid-column: 19 / 32; grid-row: 1; margin-block: auto; padding-right: 4rem; }
+.ma-support__detail h2 { font-size: 2rem; color: var(--kf-accent); }
+.ma-support__detail h3 { margin: 2rem 0; font-size: 4rem; line-height: 1.3; }
+.ma-support__detail em { font-style: normal; color: var(--kf-accent); }
+.ma-support__detail p { margin-bottom: 3rem; font-size: 1.5rem; }
+.ma-visitor { display: grid; grid-template-columns: 1fr 2fr; gap: 6rem; margin: 0 4.8rem; padding: 6rem 0 0; border-top: 1px solid var(--kf-ink); }
+.ma-visitor__head { text-align: right; }
+.ma-visitor__head .ma-en { font-size: 4.4rem; line-height: 1.1; }
+.ma-visitor__head h2 { margin-top: 1rem; font-size: 1.6rem; color: var(--kf-accent); }
+.ma-visitor li { border-bottom: 1px solid var(--kf-ink); transition: border-color 0.3s var(--ma-ease); }
+.ma-visitor li:last-child { border-bottom: 0; }
+.ma-visitor a { display: grid; grid-template-columns: 1fr 1.6fr; align-items: center; padding: 2.4rem 0; color: inherit; text-decoration: none; }
+.ma-visitor__t { display: flex; align-items: center; gap: 1.6rem; font-size: 2rem; font-weight: 700; }
+.ma-visitor__d { font-size: 1.3rem; }
+/* Original visitor group hover — characters on the hovered line turn orange from the front (.4s expo.out), characters on the other lines turn pale gray (.8s), and the lines between, the other arrows and captions drop to .2 (.3s). 
+   Once outside the group, the text returns all at once to ink-black over .8s */
+.ma-visitor .ma-circle { width: 3.2rem; height: 3.2rem; border-color: var(--kf-accent); background: var(--kf-accent); color: var(--kf-on-accent); }
+.ma-visitor .ma-circle, .ma-visitor__d { transition: opacity 0.3s var(--ma-ease); }
+.ma-visitor__label .ma-t { transition: color 0.8s var(--ma-quad); }
+.ma-visitor ul:hover .ma-visitor__label .ma-t { color: var(--ma-mute); transition: color 0.8s var(--ma-expo) var(--ma-d, 0s); }
+.ma-visitor ul:hover li a:hover .ma-visitor__label .ma-t { color: var(--kf-accent); transition: color 0.4s var(--ma-expo) var(--ma-d, 0s); }
+.ma-visitor ul:hover li { border-color: color-mix(in oklab, var(--kf-ink) 20%, transparent); }
+.ma-visitor ul:hover a:not(:hover) .ma-circle, .ma-visitor ul:hover a:not(:hover) .ma-visitor__d { opacity: 0.2; }
+.ma-circle { transition: background-color 0.3s var(--ma-ease), color 0.3s var(--ma-ease); }
+/* Video section (original t-movie) — pulled up over the 250svh blank space (margin-top −250svh) and attached to the bottom of the screen. At first it sits lowered so that only 100svh−24rem is visible, then
+   Snaps into place (scrub) from when the blank cell’s top reaches the screen bottom until its center does — meanwhile the white panel peels upward to reveal */
+.ma-movie { position: relative; padding: 8rem 0 13.6rem; overflow: hidden; }
+@media (min-width: 1025px) {
+  .ma-movie { position: sticky; bottom: 0; margin-top: -250svh; padding-top: 24rem; padding-bottom: 15.7rem; transform: translateY(calc(100% - (100svh - 24rem))); }
+  .ma-movie__head { top: 24rem; }
+}
+.ma-movie__head { position: absolute; left: 0; right: 0; top: 8rem; z-index: 3; width: min(32rem, 41.6svh); margin: auto; pointer-events: none; text-align: left; }
+.ma-movie__head h2 { font-size: 2.4rem; }
+.ma-movie__head p { font-size: 5.6rem; font-weight: 700; line-height: 1; }
+.ma-movie__track { height: calc(19.6rem * 1.633 * 16 / 9); }
+.ma-movie__item { width: 19.6rem; aspect-ratio: 9 / 16; border-radius: 2rem; overflow: hidden; }
+.ma-movie__tools { display: flex; justify-content: center; align-items: center; gap: 1.2rem; margin-top: 3rem; }
+.ma-movie__dots { margin: 0 2rem 0 0; }
+.ma-topics { padding: 6rem 0 12rem; }
+.ma-topics__head { display: flex; align-items: center; gap: 1.8rem; margin-bottom: 4rem; }
+.ma-topics__head .ma-en { font-size: 5.6rem; font-weight: 700; }
+.ma-topics__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.4rem; }
+.ma-post a { display: block; padding: 1.6rem; border-radius: 2rem; background: var(--kf-bg); color: var(--kf-ink); text-decoration: none; }
+.ma-post__img { display: block; aspect-ratio: 16 / 9; border-radius: 1.2rem; overflow: hidden; }
+.ma-post__meta { display: flex; justify-content: space-between; margin: 1.2rem 0 0.6rem; font-size: 1.1rem; color: var(--kf-accent); }
+.ma-post__t { display: block; font-size: 1.4rem; font-weight: 700; line-height: 1.6; }
+.ma-topics__more { margin-top: 4rem; text-align: center; }
+.ma-interview { position: relative; padding-block: 15rem; overflow: hidden; }
+.ma-interview__flow { position: absolute; left: 0; top: 4rem; opacity: 0.15; }
+.ma-interview__flow > div { font-size: clamp(13rem, 10.86rem + 5.49vw, 18rem); }
+.ma-interview__in { position: relative; display: flex; justify-content: space-between; align-items: flex-start; }
+.ma-interview__head { text-align: right; order: 2; }
+.ma-interview__head .ma-en { font-size: 5.6rem; font-weight: 700; line-height: 1; }
+.ma-interview__head h2 { font-size: 1.6rem; margin-bottom: 2rem; }
+.ma-interview__detail { width: 56.2rem; }
+.ma-interview__box { display: grid; padding: 3.2rem; border-radius: 3rem; background: var(--kf-bg); color: var(--kf-ink); }
+.ma-talk { grid-area: 1 / 1; opacity: 0; visibility: hidden; translate: 0 2rem; transition: opacity 0.5s var(--ma-ease), translate 0.5s var(--ma-back), visibility 0s 0.5s; }
+.ma-talk.is-select { opacity: 1; visibility: visible; translate: 0 0; transition: opacity 0.5s var(--ma-ease), translate 0.5s var(--ma-back); }
+.ma-talk p { display: flex; gap: 1.2rem; align-items: flex-start; margin-bottom: 1.6rem; }
+.ma-talk__q > span:last-child, .ma-talk__a > span:first-child { padding: 1.2rem 1.6rem; border-radius: 1.6rem; background: var(--kf-surface); font-size: 1.4rem; font-weight: 700; }
+.ma-talk__a { justify-content: flex-end; }
+.ma-talk__a > span:first-child { background: var(--kf-accent-soft); }
+.ma-talk__face { flex: none; width: 4.8rem; height: 4.8rem; border-radius: 50%; overflow: hidden; }
+.ma-talk__name { justify-content: flex-end; color: var(--kf-accent); font-size: 1.2rem; }
+.ma-interview__sel { display: flex; gap: 0.8rem; margin-top: 2rem; }
+.ma-sel { padding: 0.8rem 2.4rem; border: 1px solid var(--kf-on-accent); border-radius: var(--kf-radius-pill); background: none; color: var(--kf-on-accent); font: inherit; font-weight: 700; cursor: pointer; transition: background-color 0.3s var(--ma-ease), color 0.3s var(--ma-ease); }
+.ma-sel.is-select, .ma-sel:hover { background: var(--kf-bg); color: var(--kf-accent); }
+
+@media (max-width: 1024px) {
+  .ma-hero { height: auto; min-height: 0; padding: 8rem 0 4rem; }
+  .ma-hero__copy { position: relative; bottom: auto; width: 100%; padding: 0 1.6rem; flex-direction: row; }
+  .ma-hero__k { font-size: 6rem; } .ma-hero__s { font-size: 2.2rem; writing-mode: vertical-rl; }
+  .ma-hero__big { flex-direction: row; align-items: flex-start; }
+  .ma-hero__text { position: relative; top: auto; left: auto; padding: 2rem 1.6rem 0; order: 3; }
+  .ma-hero__slider { position: relative; top: auto; margin-top: 2rem; }
+  .ma-hero__track { height: calc(27rem * 16 / 9); }
+  .ma-hero__item { width: 27rem; }
+  .ma-hero__arrows { position: absolute; left: 0; right: 0; top: 40%; display: flex; justify-content: space-between; padding: 0 1rem; z-index: 6; }
+  .ma-hero__oc { position: absolute; top: auto; bottom: 12rem; right: 1.6rem; width: 13rem; }
+  .ma-hero__oc-date { font-size: 3.2rem; } .ma-hero__oc-t { font-size: 1.3rem; }
+  .ma-hero__scroll { display: none; }
+  .ma-pick { padding: 6rem 0 8rem; border-radius: 0 0 4rem 4rem; }
+  .ma-pick__head { position: static; padding: 0 1.6rem 3rem; }
+  .ma-pick__track { height: calc(27rem * 9 / 16 + 10rem); }
+  .ma-photo[data-fx] { height: auto; margin-bottom: 0; pointer-events: auto; }
+  /* Phone: two rows of photos flow endlessly in opposite directions over 10s (original photo-slider · height 12rem · gap 1rem), the large center photo stands between them */
+  .ma-photo [data-fx-part="stage"] { position: relative; display: flex; flex-direction: column; align-items: center; gap: 0; padding: 0; height: auto; overflow: hidden; }
+  .ma-photo [data-fx-part="grow"] { position: relative; left: auto; top: auto; translate: none; clip-path: none; }
+  .ma-photo__item { display: none; }
+  .ma-photo__item.is-06 { display: block; order: 2; width: calc(100% - 40px); aspect-ratio: 3 / 2; margin-top: 0 !important; border-radius: 1rem; }
+  .ma-photo__slider { display: flex; order: 1; gap: 1rem; width: 100%; margin-block: 2rem; }
+  .ma-photo__slider.is-reverse { order: 3; scale: -1 1; }
+  .ma-photo__list { display: flex; flex-shrink: 0; gap: 1rem; animation: ma-photo-flow 10s linear infinite; }
+  .ma-photo__cell { display: block; flex-shrink: 0; height: 12rem; border-radius: 1rem; overflow: hidden; }
+  .ma-photo__slider.is-reverse .ma-photo__cell { scale: -1 1; }
+  .ma-about { padding: 6rem 1.6rem 0; }
+  .ma-about__wrap { min-height: 0; display: flex; flex-direction: column; gap: 3rem; }
+  .ma-about__detail { position: relative; inset: auto; width: 100%; height: auto; padding: 6rem 2.4rem 4rem; border-radius: 4rem; }
+  .ma-about__nav { grid-template-columns: 1fr 1fr; }
+  .ma-about__card:nth-child(n) { grid-column: auto; }
+  /* Phone — instead of a tube, a 21.5rem×11.6rem rounded board (corner 2rem) from which the student rises at 1.25x (original sp) */
+  .ma-about__card.is-student { position: relative; top: auto; grid-column: 1 / 3; justify-self: end; width: 21.5rem; height: 11.6rem; margin: 0 1rem 0 0; }
+  .ma-tube { display: contents; }
+  .ma-tube__mat { position: absolute; left: 0; right: 0; bottom: 0; }
+  .ma-tube__item { clip-path: inset(0 round 2rem); rotate: 0deg; }
+  .ma-tube__img { rotate: 0deg; scale: 1.25; }
+  .ma-tube__item:nth-child(1) .ma-tube__img { translate: -10% 15%; } .ma-tube__item:nth-child(2) .ma-tube__img { translate: -11% 18%; }
+  .ma-tube__item:nth-child(3) .ma-tube__img { translate: 17% 11%; rotate: -35deg; } .ma-tube__item:nth-child(4) .ma-tube__img { translate: 11% 17%; }
+  .ma-tube__item:nth-child(5) .ma-tube__img { translate: -3% 15%; } .ma-tube__item:nth-child(6) .ma-tube__img { translate: 0 16%; }
+  .ma-tube__item:nth-child(7) .ma-tube__img { translate: 9% 16%; } .ma-tube__item:nth-child(8) .ma-tube__img { translate: -14% 15%; }
+  .ma-tube__item:nth-child(9) .ma-tube__img { translate: 5% 16%; } .ma-tube__item:nth-child(10) .ma-tube__img { translate: 12% 14%; }
+  .ma-tube__bg { width: 100%; height: 100%; border-radius: 2rem; }
+  .ma-tube__say { width: 9.4rem; height: 8rem; font-size: 1rem; }
+  .ma-tube__say.is-1 { right: 0.9rem; bottom: 0.9rem; } .ma-tube__say.is-2 { right: 1rem; bottom: 1.2rem; }
+  .ma-tube__say.is-3 { left: 0.9rem; bottom: 1rem; } .ma-tube__say.is-4 { left: 0.6rem; bottom: 1rem; }
+  .ma-tube__say.is-5 { right: 1.2rem; bottom: 6.3rem; }
+  .ma-tube__say.is-6 { right: auto; left: -3.1rem; bottom: 7.2rem; transform-origin: bottom right; } .ma-tube__say.is-7 { right: auto; left: -3rem; bottom: 7.3rem; transform-origin: bottom right; }
+  .ma-tube__say.is-6 svg, .ma-tube__say.is-7 svg, .ma-tube__say.is-9 svg { scale: -1 -1; }
+  .ma-tube__say.is-8 { right: 0.9rem; bottom: 1.7rem; } .ma-tube__say.is-9 { right: auto; left: -2.5rem; bottom: 6.6rem; transform-origin: bottom right; }
+  .ma-tube__say.is-10 { right: auto; left: -2.3rem; bottom: 1.2rem; transform-origin: top right; } .ma-tube__say.is-10 svg { scale: -1 1; }
+  /* Phone — shortcut cards are low like the original sp cards (small photo left · name · arrow in one row) */
+  .ma-about__card a { flex-wrap: wrap; gap: 0.8rem; padding: 1rem; border-radius: 1.6rem; }
+  .ma-about__card-img { width: 100%; aspect-ratio: 16 / 9; }
+  .ma-about__card-t { font-size: 1.3rem; }
+  .ma-about__card .ma-arrow { width: 2.2rem; height: 2.2rem; }
+  .ma-bubble { display: none; }
+  .ma-message { flex-direction: column; align-items: flex-start; height: auto; max-height: none; padding: 4rem 2.4rem 0; gap: 2rem; }
+  .ma-message__big { font-size: 4rem; }
+  .ma-message__comment { font-size: 1.8rem; }
+  .ma-message__seen { width: 100%; height: 30rem; }
+  .ma-data__grid { grid-template-columns: 1fr 1fr; }
+  .ma-data__num .ma-en { font-size: 4.4rem; }
+  .ma-course { height: auto; padding: 8rem 0 0; }
+  .ma-course__pin { position: static; display: block; height: auto; padding: 0 1.6rem; }
+  .ma-course__detail { display: flex; flex-direction: column; gap: 2rem; margin-top: 3rem; }
+  .ma-course__card { position: relative; inset: auto; grid-template-columns: 1fr; translate: none; padding: 2rem; }
+  .ma-course__name { font-size: 2.4rem; }
+  .ma-dream { height: auto; padding-bottom: 6rem; border-radius: 0 0 5rem 5rem; }
+  .ma-dream__pin { position: static; display: flex; flex-direction: column; height: auto; padding: 4rem 1.6rem 6rem; gap: 2rem; }
+  .ma-dream__copy { font-size: 6.4rem; flex-wrap: wrap; }
+  .ma-dream__card { width: 60%; margin: 0 auto; }
+  .ma-dream__select h3 { font-size: 2.2rem; }
+  /* Phone — Open Campus rises overlapping 100svh beneath the panel above, stays attached at header −6rem for one screen (100svh empty space behind), and the white panel overlaps by 6rem to connect (original sp) */
+  .ma-oc { position: sticky; top: -6rem; margin-top: -100svh; min-height: 0; padding: 8rem 1.6rem 0; }
+  .ma-oc__head h2 { font-size: 4.4rem; }
+  .ma-oc__join { position: relative; right: auto; top: auto; width: 100%; aspect-ratio: auto; height: 6.4rem; margin: 2rem 0 1rem; border-radius: var(--kf-radius-pill); }
+  .ma-oc__req { position: relative; right: auto; bottom: auto; width: 100%; aspect-ratio: auto; height: 5.6rem; border-radius: var(--kf-radius-pill); }
+  .ma-oc__mat { height: 50rem; }
+  .ma-oc__campus { width: 34rem; }
+  .ma-oc__flow > div { font-size: 8rem; }
+  .ma-oc__ring { display: none; }
+  .ma-group { margin-top: -6rem; padding-block: 6rem; border-radius: 5rem; }
+  .ma-support { display: flex; flex-direction: column; padding: 2rem 1.6rem 6rem; }
+  .ma-support__img { height: 30rem; margin: 0; }
+  .ma-support__detail { padding: 3.2rem 2.4rem; }
+  .ma-support__detail h3 { font-size: 2.6rem; }
+  .ma-visitor { grid-template-columns: 1fr; gap: 2rem; margin: 0 1.6rem; padding: 4rem 0 6rem; }
+  .ma-visitor__head { text-align: left; }
+  .ma-visitor a { grid-template-columns: 1fr; gap: 0.6rem; }
+  /* Phone — the video section also overlaps 6rem under the white panel and waits stuck to the screen bottom (no scrub) */
+  .ma-movie { position: sticky; bottom: 0; margin-top: -6rem; padding: 13rem 0 9.5rem; }
+  .ma-movie__head { position: static; width: auto; padding: 0 1.6rem 2rem; }
+  .ma-movie__track { height: calc(15.2rem * 1.579 * 16 / 9); }
+  .ma-movie__item { width: 15.2rem; }
+  /* Phone — News is one row each, photo left and text right, like the original sp */
+  .ma-topics__grid { grid-template-columns: 1fr; gap: 1rem; }
+  .ma-post a { display: grid; grid-template-columns: 12rem 1fr; grid-template-rows: auto 1fr; column-gap: 1.2rem; padding: 1rem; border-radius: 1.2rem; }
+  .ma-post__img { grid-row: 1 / 3; border-radius: 0.8rem; }
+  .ma-post__meta { margin: 0 0 0.4rem; }
+  .ma-post__t { font-size: 1.3rem; line-height: 1.5; }
+  .ma-topics__head .ma-en { font-size: 4rem; }
+  .ma-interview { padding-block: 8rem; }
+  .ma-interview__in { flex-direction: column; gap: 3rem; }
+  .ma-interview__head { order: 0; text-align: left; }
+  .ma-interview__detail { width: 100%; }
+  .ma-interview__box { padding: 2rem; }
+}
+@keyframes ma-photo-flow { to { translate: calc(-100% - 1rem) 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .ma-hero__scroll-l span, .ma-photo__list, .ma-oc__ring { animation: none; }
+  .ma-talk, .ma-hero__comment { transition: none; }
+  .ma-oc, .ma-movie { transform: none; }
+  .ma-message__comment li, .ma-message__tail svg { transition: none; }
+}

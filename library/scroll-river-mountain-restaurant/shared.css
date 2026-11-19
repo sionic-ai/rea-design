@@ -1,0 +1,259 @@
+/* Things that span the whole page: river-stream loader (stays as a fixed line), right menu, booking button, phone menu, vertical section name, English/Korean two-column text, footer. 
+   The river line does not use the original geographic path but is redrawn as an invented bend of the same size (236×549). */
+/* Original color steps are built from skin variables — original values are in comments. The original’s white lines and white text are handled by the accent (#fff) in this skin */
+:root {
+  --sn-gutter: 5.3vw;
+  --site-light: var(--kf-accent);                                                         /* #fff */
+  --site-light-70: color-mix(in srgb, var(--site-light) 70%, transparent);                 /* rgba(255,255,255,.7) */
+  --site-light-30: color-mix(in srgb, var(--site-light) 30%, transparent);                 /* rgba(255,255,255,.3) */
+  --site-light-15: color-mix(in srgb, var(--site-light) 15%, transparent);                 /* rgba(255,255,255,.15) */
+  --site-ink-30: color-mix(in srgb, var(--kf-ink) 30%, transparent);                       /* rgba(77,77,77,.3) */
+  --site-fog: color-mix(in srgb, oklch(from var(--kf-bg) calc(l + 0.25) calc(c * 0.3) h) 90%, transparent); /* Haze rgba(255,255,255,.9) */
+  --site-shade-end: oklch(from var(--kf-ink) calc(l + 0.135) c h);                         /* #737373 dark right side of menu band */
+  /* Photo slot — misty blue-gray, green and earth textures of the original photo */
+  --site-ph: oklch(from var(--kf-bg) calc(l - 0.087) calc(c * 0.93) calc(h - 2.2));        /* #7f98a3 */
+  --site-ph-line: oklch(from var(--kf-bg) calc(l - 0.144) calc(c * 0.97) calc(h - 3));      /* #6d8792 */
+  --site-ph-ink: oklch(from var(--kf-bg) calc(l + 0.193) calc(c * 0.27) calc(h - 6.4));     /* #e6eef1 */
+  --site-ph-green: oklch(from var(--kf-bg) calc(l - 0.159) c calc(h - 77.7));              /* #6f8473 */
+  --site-ph-green-line: oklch(from var(--kf-bg) calc(l - 0.214) c calc(h - 76.2));         /* #5f7464 */
+  --site-ph-green-ink: oklch(from var(--kf-bg) calc(l + 0.181) calc(c * 0.42) calc(h - 86.3)); /* #e3ebe2 */
+  --site-ph-warm: oklch(from var(--kf-bg) calc(l - 0.049) calc(c * 0.8) calc(h - 151.8));  /* #a99d8c */
+  --site-ph-warm-line: oklch(from var(--kf-bg) calc(l - 0.111) calc(c * 0.81) calc(h - 151.8)); /* #968a79 */
+  --site-ph-warm-ink: oklch(from var(--kf-bg) calc(l + 0.206) calc(c * 0.42) calc(h - 147.8)); /* #f6f0e6 */
+}
+/* Background only on html — painting body would cover the fixed background (concept photo) at negative z */
+html { background: var(--kf-bg); }
+body { background: transparent; }
+body {
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  font-size: 14px;
+  line-height: 1.75;
+}
+/* Like the original (Typekit), hide the screen until the font is ready, then bring it in over .3s — if it takes over 3s, just open it */
+html.sn-font-wait { opacity: 0; }
+html.sn-font-ready { opacity: 1; transition: opacity 0.3s; }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+/* Photo slot — painted in the misty green and blue-gray of the original photo */
+.sn-ph { --wf-fill: var(--site-ph); --wf-line: var(--site-ph-line); --wf-fill-ink: var(--site-ph-ink); }
+.sn-ph--green { --wf-fill: var(--site-ph-green); --wf-line: var(--site-ph-green-line); --wf-fill-ink: var(--site-ph-green-ink); }
+.sn-ph--warm { --wf-fill: var(--site-ph-warm); --wf-line: var(--site-ph-warm-line); --wf-fill-ink: var(--site-ph-warm-ink); }
+.sn-ph video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.sn-ph.wf-img::after { white-space: normal; width: max-content; max-width: 86%; text-align: center; line-height: 1.5; }
+
+/* ---------- River line — starts as a background-color curtain loader, and once fully drawn it turns transparent and becomes a fixed line at screen center ---------- */
+.sn-river {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100svh;
+  background: var(--kf-bg);
+  pointer-events: none;
+  transition: background-color 2s ease-in, opacity 0.8s;
+}
+.sn-river__img { display: flex; justify-content: center; width: 100%; }
+.sn-river__svg { position: relative; width: 100%; max-width: 20rem; transform: scale(0.8); transition: transform 1.5s ease-out; }
+.sn-river__wrap { width: 100%; height: min(90svh, 46.25rem); }
+.sn-river__wrap svg { width: 100%; height: 100%; overflow: visible; }
+.sn-river path { fill: none; stroke-miterlimit: 10; }
+.sn-river .river-bg { stroke: var(--site-ink-30); stroke-width: 1; transition: stroke 3s; }
+.sn-river .river-preview { stroke: var(--site-light-70); stroke-width: 1; stroke-dasharray: 400 1600; stroke-dashoffset: 400; opacity: 0; }
+.sn-river .river-preview.is-visible { opacity: 1; animation: sn-preview 3s 1s cubic-bezier(0.89, 0.42, 0.54, 1) infinite; }
+.sn-river .river-progress { stroke: var(--kf-ink); stroke-width: 1; }
+.sn-river__links { opacity: 0; pointer-events: none; transition: opacity 0.8s; }
+.sn-river__links a { cursor: pointer; }
+.sn-river__links rect { fill: transparent; }
+.sn-river__links text { fill: var(--kf-ink); font: 300 14px var(--kf-font-en); }
+.sn-river__counter {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 12.5rem;
+  transform: translate3d(7.5rem, -30%, 0);
+  font: 300 4.375rem/1 var(--kf-font-display);
+  letter-spacing: 0.13em;
+  transition: opacity 1s;
+}
+/* Four fog sheets: cover the edges during the loader, then pull away */
+.sn-fog span {
+  position: absolute;
+  width: 100%;
+  height: 60vh;
+  background: radial-gradient(60% 100% at 50% 0%, var(--site-fog), transparent 70%);
+  opacity: 0.5;
+  transition: transform 2s ease-in-out, opacity 2s;
+}
+.sn-fog span:nth-child(1) { top: 0; left: 0; transition-delay: 0.2s; }
+.sn-fog span:nth-child(2) { bottom: 0; left: 0; transform: rotate(180deg); transition-delay: 0.1s; }
+.sn-fog span:nth-child(3) { top: 0; left: 0; width: 60vh; height: 100%; background: radial-gradient(100% 60% at 0% 50%, var(--site-fog), transparent 70%); }
+.sn-fog span:nth-child(4) { top: 0; right: 0; width: 60vh; height: 100%; background: radial-gradient(100% 60% at 100% 50%, var(--site-fog), transparent 70%); transition-delay: -0.1s; }
+body.is-loaded .sn-river { z-index: 2; background-color: transparent; }
+body.is-loaded .sn-river__svg { transform: scale(1); }
+body.is-loaded .sn-river__counter { opacity: 0; }
+body.is-loaded .sn-fog span { opacity: 0; }
+body.is-loaded .sn-fog span:nth-child(1) { transform: translate3d(0, -100%, 0); }
+body.is-loaded .sn-fog span:nth-child(2) { transform: rotate(180deg) translate3d(0, -100%, 0); }
+body.is-loaded .sn-fog span:nth-child(3) { transform: translate3d(-100%, 0, 0); }
+body.is-loaded .sn-fog span:nth-child(4) { transform: translate3d(100%, 0, 0); }
+.sn-river.is-white .river-bg { stroke: var(--site-light-30); }
+.sn-river.is-white .river-progress { stroke: var(--site-light); }
+.sn-river.is-hidden { opacity: 0; }
+.sn-river.is-nav-anim { animation: sn-nav-anim 2s; }
+.sn-river.is-nav-open { z-index: 997 !important; pointer-events: auto; }
+.sn-river.is-nav-open .sn-river__links { opacity: 1; pointer-events: auto; }
+.sn-river.is-nav-open .river-bg { stroke: var(--site-ink-30); }
+.sn-river.is-nav-open .river-progress { stroke: var(--kf-ink); }
+@keyframes sn-nav-anim { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes sn-preview {
+  0%, 5% { stroke-dashoffset: 400; opacity: 0.7; }
+  85% { stroke-dashoffset: -1600; opacity: 0.7; }
+  85.01% { opacity: 0; }
+  90% { stroke-dashoffset: -1600; opacity: 0; }
+  90.01% { stroke-dashoffset: 400; opacity: 0; }
+  91%, 100% { stroke-dashoffset: 400; opacity: 0.7; }
+}
+@media (max-width: 1000px) {
+  .sn-river__svg { display: flex; align-items: center; width: 63%; }
+  .sn-river__wrap { display: flex; align-items: center; height: auto; }
+  .sn-river__wrap svg { display: block; height: auto; max-height: 70svh; }
+  .sn-river__counter { top: -1.875rem; font-size: 3.125rem; }
+}
+
+/* ---------- Menu — italic vertical list top right · reserve button bottom right (enters from the right after load) ---------- */
+.sn-nav__links {
+  position: fixed;
+  top: 2.5rem;
+  right: 3.75rem;
+  z-index: 996;
+  opacity: 0;
+  transform: translate3d(50px, 0, 0);
+  transition: opacity 1s, transform 1s;
+}
+.sn-nav__inner { display: flex; flex-direction: column; align-items: flex-end; gap: 3.4375rem; }
+.sn-nav__inner a { color: var(--site-light); font: italic 400 0.75rem/1 var(--kf-font-en); letter-spacing: 0.03em; transition: opacity 0.8s; }
+.sn-nav__inner a:hover { opacity: 0.6; transition: opacity 0.3s; }
+.sn-ig { display: block; width: 1.25rem; height: 1.25rem; color: var(--site-light); }
+.sn-ig svg { width: 100%; height: 100%; }
+.sn-nav__inner .sn-ig { margin-top: -0.3125rem; }
+.sn-resv {
+  display: flex;
+  align-items: center;
+  gap: 0.9375rem;
+  padding: 0.3125rem 1.25rem;
+  border: 1px solid var(--site-light);
+  border-radius: 3.125rem;
+  color: var(--site-light);
+  font: 400 0.875rem/1 var(--kf-font-en);
+  letter-spacing: 0.08em;
+  transition: background-color 0.8s;
+}
+/* New-window icon, arrow and pin keep only their shape via mask and the fill is the text color — baking color into the image would remain after a skin change */
+.sn-resv::after, .sn-blank::after { -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 17 17' fill='none' stroke='%23000' stroke-width='1'%3E%3Cpath d='M7 3.5H3.5v10h10V10M9.5 3.5h4v4M13.5 3.5 7.5 9.5'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 17 17' fill='none' stroke='%23000' stroke-width='1'%3E%3Cpath d='M7 3.5H3.5v10h10V10M9.5 3.5h4v4M13.5 3.5 7.5 9.5'/%3E%3C/svg%3E") center / contain no-repeat; }
+.sn-resv::after { content: ""; display: block; width: 1.0625rem; height: 1.0625rem; margin-bottom: 0.3em; background: currentColor; }
+.sn-resv:hover { background-color: var(--site-light-15); transition: background-color 0.5s; }
+.sn-nav > .sn-resv {
+  position: fixed;
+  right: 3.125rem;
+  bottom: 2.5rem;
+  z-index: 997;
+  gap: 0.5rem;
+  padding: 0.5625rem 2.8125rem 0.4375rem 3rem;
+  border-width: 0.5px;
+  font-size: 1.125rem;
+  letter-spacing: 0.05em;
+  opacity: 0;
+  transform: translate3d(50px, 0, 0);
+  transition: opacity 1s, transform 1s, background-color 0.8s;
+}
+body.is-loaded .sn-nav__links, body.is-loaded .sn-nav > .sn-resv { opacity: 1; transform: none; }
+.sn-nav__logo, .sn-nav__burger, .sn-nav__ig { display: none; }
+
+/* Phone — text logo at top left, wave button at top right (changes shape to X when pressed), menu over the river stream */
+@media (max-width: 1000px) {
+  .sn-nav::before { content: ""; position: fixed; inset: 0; z-index: 996; background: var(--kf-bg); opacity: 0; pointer-events: none; transition: opacity 1s; }
+  .sn-nav__logo { position: fixed; top: 0.625rem; left: var(--sn-gutter); z-index: 999; display: block; color: var(--site-light); font: 300 2.25rem/1 var(--kf-font-display); letter-spacing: 0.04em; transition: color 1s; }
+  .sn-nav__burger { position: fixed; top: 1.125rem; right: var(--sn-gutter); z-index: 999; display: block; width: 2.5rem; padding: 0; border: 0; background: none; cursor: pointer; }
+  .sn-nav__burger svg { display: block; width: 100%; overflow: visible; }
+  .sn-nav__burger path { fill: none; stroke: var(--site-light); stroke-width: 1; transition: d 0.8s ease-in-out, stroke 1s; }
+  .sn-nav__burger .p1 { d: path("M2 9 C8 6, 13 12, 19 9 S 31 6, 38 9"); }
+  .sn-nav__burger .p2 { d: path("M2 17 C8 14, 13 20, 19 17 S 31 14, 38 17"); }
+  .sn-nav__ig { position: fixed; bottom: 1.875rem; left: 1.875rem; z-index: 998; display: block; color: var(--kf-ink); opacity: 0; pointer-events: none; transition: opacity 1s; }
+  .sn-nav__links { display: none; }
+  .sn-nav > .sn-resv { right: var(--sn-gutter); bottom: 1.8125rem; padding: 0.625rem 1.25rem; border-width: 0.7px; font-size: 0.875rem; letter-spacing: 0.1em; }
+  .sn-nav > .sn-resv::after { width: 1.125rem; height: 0.875rem; margin-bottom: 0.15em; -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 14' fill='none' stroke='%23000'%3E%3Cpath d='M1 7h15M10 1.5 16 7l-6 5.5'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 14' fill='none' stroke='%23000'%3E%3Cpath d='M1 7h15M10 1.5 16 7l-6 5.5'/%3E%3C/svg%3E"); }
+  .sn-nav.is-open::before { opacity: 1; pointer-events: auto; }
+  .sn-nav.is-open .sn-nav__logo { color: var(--kf-ink); }
+  .sn-nav.is-open .sn-nav__burger path { stroke: var(--kf-ink); }
+  .sn-nav.is-open .sn-nav__burger .p1 { d: path("M8 3 C12 8, 16 11, 20 13 S 28 19, 32 23"); }
+  .sn-nav.is-open .sn-nav__burger .p2 { d: path("M8 23 C12 18, 16 15, 20 13 S 28 7, 32 3"); }
+  .sn-nav.is-open .sn-nav__ig { opacity: 1; pointer-events: auto; }
+  .sn-nav.is-open > .sn-resv { border-color: var(--kf-ink); color: var(--kf-ink); }
+}
+
+/* ---------- Section Common ---------- */
+.sn-section { position: relative; padding: 6.25rem 0; }
+.sn-bg::before { content: ""; position: absolute; inset: 0; z-index: -2; display: block; background: var(--kf-bg); }
+
+/* Vertical section name on the left — outline text goes from 1.1x back to place at 0.2s intervals */
+.sn-title {
+  position: absolute;
+  top: 6.125rem;
+  left: 2.8125rem;
+  width: 3.9375rem;
+  color: transparent;
+  -webkit-text-stroke: 0.8px var(--site-light);
+  font: 300 3.6rem/1 var(--kf-font-display);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+}
+.sn-title > span { display: inline-block; opacity: 0; transform: scale(1.1); transition: opacity 0.8s ease-in-out, transform 0.5s ease-in-out; }
+.sn-title.is-active > span { opacity: 1; transform: scale(1); }
+.sn-title--ink { -webkit-text-stroke-color: var(--kf-ink); }
+@media (max-width: 1000px) { .sn-title { left: var(--sn-gutter); width: 2.375rem; font-size: 2.2rem; } }
+
+/* English/Korean two columns */
+.sn-texts { display: flex; gap: 3.75rem; }
+.sn-texts .en, .sn-texts .ja { width: 100%; }
+.sn-texts .en { font: 300 0.75rem/1.58 var(--kf-font-en); letter-spacing: 0.02em; }
+.sn-texts .ja { font-size: 0.75rem; line-height: 1.75; letter-spacing: 0.2em; }
+.sn-texts p + p { margin-top: 1.4em; }
+@media (max-width: 1000px) { .sn-texts { flex-direction: column; gap: 1.875rem; } .sn-texts .ja { font-size: 0.6875rem; line-height: 1.65; } }
+
+.sn-en-ja { display: flex; align-items: center; line-height: 1; }
+.sn-en-ja .en { font: 300 1.25rem/1 var(--kf-font-en); letter-spacing: 0.05em; }
+.sn-en-ja .ja { display: flex; align-items: center; font-size: 1.125rem; letter-spacing: 0.3em; }
+.sn-en-ja .ja::before { content: ""; display: inline-block; width: 1px; height: 0.9375rem; margin: 0 0.9375rem 0.25rem; background: var(--kf-ink); }
+@media (max-width: 1000px) { .sn-en-ja .en { font-size: 1rem; } .sn-en-ja .ja { font-size: 0.9375rem; letter-spacing: 0.1em; } }
+
+.sn-blank { font: 300 1rem var(--kf-font-en); letter-spacing: 0.05em; text-decoration: underline; text-underline-offset: 0.2em; transition: opacity 1s; }
+.sn-blank::after { content: ""; display: inline-block; width: 1.0625rem; height: 1.0625rem; margin: 0 0 -0.3em 0.5rem; background: currentColor; }
+.sn-blank:hover { opacity: 0.6; transition: opacity 0.3s; }
+
+/* Once when visible (at 20% visible) */
+.js-fadeUp { opacity: 0; transform: translate3d(0, 35px, 0); transition: opacity 2s, transform 1s ease-out; }
+.js-fadeUp.is-active { opacity: 1; transform: none; }
+.js-fadeIn { opacity: 0; transition: opacity 2s; }
+.js-fadeIn.is-active { opacity: 1; }
+html.sn-still .js-fadeUp, html.sn-still .js-fadeIn, html.sn-still .sn-title > span { opacity: 1; transform: none; }
+
+/* ---------- Footer — a screen-height photo approaches from 1.3x to 1x, logo at top left, copyright at bottom left ---------- */
+.sn-footer { position: relative; z-index: -1; width: 100%; height: 100svh; overflow: hidden; }
+.sn-footer__back { width: 100%; height: 100%; }
+.sn-footer__back .wf-img { height: 100%; border: 0; transform-origin: center bottom; }
+.sn-footer__logo { position: absolute; top: 1.875rem; left: 3.75rem; color: var(--site-light); font: 300 3.8rem/1 var(--kf-font-display); letter-spacing: 0.04em; }
+.sn-footer__copy { position: absolute; bottom: 2.8125rem; left: 3.75rem; color: var(--site-light); font: 300 0.6875rem var(--kf-font-en); letter-spacing: 0.05em; }
+@media (max-width: 1000px) { .sn-footer__logo { display: none; } .sn-footer__copy { left: var(--sn-gutter); bottom: 1.875rem; } }
+
+/* Arrow cursor following along over the slider */
+.sn-cursor { position: fixed; z-index: 9999; display: none; width: 3.75rem; height: 3.75rem; pointer-events: none; opacity: 0; transition: opacity 0.3s; }
+.sn-cursor { color: var(--site-light); }
+.sn-cursor svg { width: 100%; height: 100%; }
+.sn-cursor.is-left { transform: scaleX(-1); }

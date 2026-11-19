@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mark-fade-veil — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); padding: 24px; }
+  .demo-hint { margin-bottom: 16px; font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-mark { display: grid; place-items: center; aspect-ratio: 1; border-radius: 50% 50% 8px 8px; background: var(--kf-accent); color: var(--kf-on-accent); font: 700 14px/1 var(--kf-font-sans); }
+  .demo-again { margin-top: 12px; padding: 8px 14px; border: 1px solid var(--kf-line); background: var(--kf-surface); cursor: pointer; }
+  .demo-log { margin-top: 12px; font: 500 12px/1.6 var(--kf-font-mono); }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>mark-fade-veil</b> — Refresh. The mark in the center of the curtain turns on at 1 second and off at 3.6 seconds, and at 4.2 seconds the curtain lifts over 1.3 seconds.</p>
+<button class="demo-again" type="button">Once more as a returning visitor (straight to fx:open, no curtain)</button>
+<p class="demo-log"></p>
+<div data-fx="mark-fade-veil" data-fx-mark-fade-veil="mode: first; key: fx-demo"><div class="demo-mark" data-fx-part="mark">LOGO</div></div>
+<script>
+// Late arrivals and removals — checks that fx-core attaches to an element added after 1s and detaches from an element removed after 2.5s
+(() => {
+  const src = document.querySelector('[data-fx~="mark-fade-veil"]');
+  if (!src) return;
+  const log = document.querySelector(".demo-log");
+  document.addEventListener("fx:open", (e) => { log.textContent += ` fx:open(${e.detail.again ? "again" : "first"})`; });
+  document.addEventListener("fx:done", () => { log.textContent += " fx:done"; });
+  const html = src.outerHTML;
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = html; const el = t.content.firstElementChild; el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => src.after(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1s another identical one comes in (the late arrival), and after 2.5s one drops out (the detach).");
+  document.querySelector(".demo-again").addEventListener("click", () => {
+    const el = make("again");
+    el.setAttribute("data-fx-mark-fade-veil", "mode: again; key: fx-demo");
+    document.body.append(el);
+  });
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

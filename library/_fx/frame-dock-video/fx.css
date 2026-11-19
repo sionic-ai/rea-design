@@ -1,0 +1,22 @@
+/* A full-bleed video panel (clip) stays pinned to the screen, shrinks into a frame and settles down, and after scrolling one full screen it attaches to its place in the document.
+   The outer panel crops the same amount from each side by --fx-wrap and twice that from the bottom to keep the ratio, and the inner video (media) gets its own top-anchored --fx-scale */
+[data-fx~="frame-dock-video"] { --fx-wrap: 1; --fx-scale: 1; position: relative; }
+[data-fx~="frame-dock-video"] [data-fx-part="clip"],
+[data-fx~="frame-dock-video"] [data-fx-part="follow"] { position: fixed; left: 0; width: 100%; will-change: transform; }
+[data-fx~="frame-dock-video"] [data-fx-part="clip"] {
+  z-index: 1; aspect-ratio: var(--fx-ratio, 1920 / 800); overflow: hidden; background: var(--kf-contrast-bg);
+  clip-path: polygon(
+    calc(100% * (1 - var(--fx-wrap)) / 2) 0, calc(100% - 100% * (1 - var(--fx-wrap)) / 2) 0,
+    calc(100% - 100% * (1 - var(--fx-wrap)) / 2) calc(100% * var(--fx-wrap)), calc(100% * (1 - var(--fx-wrap)) / 2) calc(100% * var(--fx-wrap))
+  );
+}
+[data-fx~="frame-dock-video"] [data-fx-part="follow"] { z-index: 2; pointer-events: none; }
+[data-fx~="frame-dock-video"] [data-fx-part="media"] {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  transform: scale(var(--fx-scale)); transform-origin: top center;
+}
+[data-fx~="frame-dock-video"].is-docked [data-fx-part="clip"],
+[data-fx~="frame-dock-video"].is-docked [data-fx-part="follow"] { position: absolute; transform: none !important; }
+/* In an inner scroll panel it does not pin, it only progresses in place */
+[data-fx-scroller] [data-fx~="frame-dock-video"] [data-fx-part="clip"],
+[data-fx-scroller] [data-fx~="frame-dock-video"] [data-fx-part="follow"] { position: relative; }

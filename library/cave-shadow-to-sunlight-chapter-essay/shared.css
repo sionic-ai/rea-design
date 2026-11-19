@@ -1,0 +1,277 @@
+/* Shared by all pages: type, film grain, entrance door (preloader), page-turn veil, single-line top nav, contents drawer.
+   On the last section html[data-theme="light"] added flips the nav text to ink black. */
+
+:root {
+  /* Sunlight section colors come from the inverted stage (--kf-contrast-*), and sky blue, sunset glow and sunlight are made from the accent and contrast background (so the original #24497a · #ffe7cf · #f3f5f4 values come out) */
+  --site-day: var(--kf-contrast-bg);
+  --site-day-ink: var(--kf-contrast-ink);
+  --site-day-dim: color-mix(in srgb, var(--kf-contrast-ink) 62%, transparent);
+  --site-sun: oklch(from var(--kf-contrast-bg) calc(l + .038) calc(c * .452) calc(h - 17.9));
+  --site-sky: oklch(from var(--kf-accent) calc(l - .298) calc(c * .469) calc(h + 213.2));
+  --site-glow: oklch(from var(--kf-accent-soft) calc(l + .049) calc(c * .552) calc(h + 2.6));
+  --site-flare: oklch(from var(--kf-contrast-bg) calc(l + .1) calc(c * .2) h);
+  --site-answer: color-mix(in oklab, var(--site-glow) 45%, var(--site-flare));
+  /* Portrait placeholder: sepia shade (dark section) and gray in sunlight (light section) */
+  --site-portrait: color-mix(in oklab, var(--kf-accent-text) 32%, var(--kf-bg));
+  --site-portrait-ink: color-mix(in oklab, var(--kf-accent-text) 55%, var(--kf-accent-soft));
+  --site-portrait-day: color-mix(in oklab, var(--kf-contrast-ink) 50%, var(--kf-contrast-bg));
+  --site-shadow: 0 0 40px color-mix(in srgb, var(--kf-bg) 85%, transparent), 0 0 12px color-mix(in srgb, var(--kf-bg) 60%, transparent);
+  --site-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --site-ease-draw: cubic-bezier(0.87, 0, 0.13, 1);
+  --site-gutter: clamp(16px, 3.2vw, 48px);
+  --site-section: 100svh;
+  --ph-ink: var(--kf-ink);
+  --ph-muted: var(--kf-dim);
+  --ph-ease: var(--kf-ease-out);
+  --mx: 50vw;
+  --my: 50vh;
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --ph-ink: var(--site-day-ink);
+  --ph-muted: var(--site-day-dim);
+}
+
+html, body { background: var(--kf-bg); color: var(--kf-ink); }
+body {
+  font-family: var(--kf-font-sans);
+  font-size: 18px;
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+}
+::selection { background: var(--kf-ink); color: var(--kf-bg); }
+:focus-visible { outline: 1px solid currentColor; outline-offset: 4px; }
+button { background: none; border: 0; padding: 0; cursor: pointer; text-align: inherit; }
+blockquote { margin: 0; }
+
+.ph-eyebrow {
+  font-family: var(--kf-font-sans);
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  font-variant-caps: all-small-caps;
+  color: var(--ph-muted);
+}
+.ph-note {
+  font-family: var(--kf-font-sans);
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.35;
+  color: var(--ph-muted);
+}
+.ph-link {
+  font-family: var(--kf-font-sans);
+  font-size: 18px;
+  color: var(--ph-ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  text-decoration-color: color-mix(in srgb, var(--kf-ink) 35%, transparent);
+  transition: text-decoration-color 0.3s;
+}
+.ph-link:hover, .ph-link:focus-visible { text-decoration-color: currentColor; }
+:root[data-theme="light"] .ph-link { text-decoration-color: color-mix(in srgb, var(--kf-contrast-ink) 35%, transparent); }
+.ph-display {
+  font-family: var(--kf-font-display);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.005em;
+}
+.ph-body {
+  font-family: var(--kf-font-sans);
+  font-size: clamp(20px, 1.6vw, 27px);
+  line-height: 1.38;
+  color: var(--kf-ink);
+}
+.ph-line-mask { display: block; overflow: clip; }
+.ph-line { display: block; padding-bottom: 0.06em; }
+
+/* Film grain: a 180px random gray dot image shakes in six steps over 0.9s */
+.ph-grain {
+  position: fixed;
+  inset: -50%;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.09;
+  background-size: 180px;
+  animation: ph-grain 0.9s steps(6) infinite;
+}
+@keyframes ph-grain {
+  0% { transform: translate(0); }
+  20% { transform: translate(-4%, 3%); }
+  40% { transform: translate(3%, -5%); }
+  60% { transform: translate(-6%, -2%); }
+  80% { transform: translate(5%, 4%); }
+  to { transform: translate(0); }
+}
+
+/* Entrance door: between two eyelids, top and bottom, a line of ember light grows with loading, and the eyelids open once a choice is made */
+.ph-preloader { position: fixed; inset: 0; z-index: 100; pointer-events: all; }
+.ph-lid { position: absolute; left: 0; right: 0; height: 50.5%; background: var(--kf-bg); }
+.ph-lid--top { top: 0; }
+.ph-lid--bottom { bottom: 0; }
+.ph-slit {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--kf-accent), var(--kf-accent-soft), var(--kf-accent), transparent);
+  box-shadow: 0 0 24px 2px rgba(255, 106, 26, 0.6);
+  transform: scaleX(0);
+}
+.ph-preloader__center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding-bottom: 26vh;
+}
+.ph-preloader__center .ph-note { margin-bottom: 18px; }
+.ph-preloader__word {
+  font-family: var(--kf-font-display);
+  font-style: italic;
+  font-size: clamp(40px, 6vw, 88px);
+  line-height: 1;
+  color: var(--kf-ink);
+}
+.ph-preloader__choice {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding-top: 18vh;
+  visibility: hidden;
+}
+.ph-mask { display: block; overflow: hidden; padding: 0 0.2em 0.12em; }
+.ph-preloader__enter {
+  display: block;
+  font-family: var(--kf-font-display);
+  font-size: clamp(40px, 6vw, 96px);
+  line-height: 1.05;
+  color: var(--kf-ink);
+  transition: color 0.5s var(--ph-ease);
+}
+.ph-preloader__enter:hover, .ph-preloader__enter:focus-visible {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.14em;
+}
+/* Original ‹or in silence› is painted in the light-section muted color (62% ink) so it’s barely visible on dark, then brightens to bone color on hover */
+.ph-preloader__silent {
+  display: block;
+  padding: 10px;
+  font-style: italic;
+  font-size: 20px;
+  border-color: transparent;
+  color: var(--site-day-dim);
+  transition: color 0.5s var(--ph-ease);
+}
+.ph-preloader__silent:hover, .ph-preloader__silent:focus-visible { color: var(--kf-ink); }
+.ph-preloader__note { position: absolute; bottom: var(--site-gutter); left: var(--site-gutter); max-width: 360px; }
+
+/* Section transition curtain: the eyelids close, a section number · title rises over a gap of light, then behind it the scroll is moved and it opens again */
+.ph-veil { position: fixed; inset: 0; z-index: 80; visibility: hidden; pointer-events: all; }
+.ph-veil .ph-lid { will-change: transform; }
+.ph-veil .ph-lid--top { box-shadow: 0 30px 80px 20px rgba(11, 9, 7, 0.9); }
+.ph-veil .ph-lid--bottom { box-shadow: 0 -30px 80px 20px rgba(11, 9, 7, 0.9); }
+.ph-veil .ph-slit {
+  background: linear-gradient(90deg, transparent, var(--kf-accent) 30%, var(--kf-accent-soft), var(--kf-accent) 70%, transparent);
+  box-shadow: 0 0 24px 2px rgba(255, 106, 26, 0.55);
+}
+.ph-veil__label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+  pointer-events: none;
+}
+.ph-veil__label .ph-mask { padding: 0 0.1em 0.08em; }
+.ph-veil__numeral, .ph-veil__title { display: block; }
+.ph-veil__numeral { color: var(--kf-dim); }
+.ph-veil__title {
+  font-family: var(--kf-font-display);
+  font-size: clamp(48px, 8vw, 140px);
+  line-height: 1.05;
+  color: var(--kf-ink);
+}
+
+/* Top single-line nav: wordmark on the left, current section name in the center, sound·index on the right */
+.ph-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px var(--site-gutter);
+  color: var(--ph-ink);
+  transition: color 0.6s var(--ph-ease), opacity 0.6s var(--ph-ease);
+}
+.ph-nav__brand { font-family: var(--kf-font-display); font-size: 28px; line-height: 1; color: inherit; }
+.ph-nav__center { color: var(--ph-muted); }
+.ph-nav__center > span { display: inline-block; animation: ph-runhead 0.7s var(--ph-ease); }
+@keyframes ph-runhead { 0% { opacity: 0; } }
+.ph-nav__right { display: flex; align-items: center; gap: clamp(18px, 2.5vw, 36px); }
+
+/* Contents drawer: black panel covering the whole screen, section titles · dotted leaders · Roman numerals */
+.ph-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  background: var(--kf-bg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 var(--site-gutter);
+  visibility: hidden;
+  opacity: 0;
+}
+.ph-menu > * { width: min(760px, 100%); margin-inline: auto; }
+.ph-menu__head { margin-bottom: 3vh; }
+.ph-menu__item {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 0.5vh 0;
+  font-family: var(--kf-font-display);
+  font-size: clamp(32px, min(4.6vw, 7vh), 60px);
+  line-height: 1.15;
+  color: var(--kf-ink);
+  text-align: left;
+  transition: color 0.3s;
+}
+.ph-menu__leader { flex: 1; border-bottom: 2px dotted color-mix(in srgb, var(--kf-ink) 30%, transparent); transform: translateY(-0.2em); }
+.ph-menu__numeral { font-size: 0.7em; color: var(--kf-dim); }
+.ph-menu__item--sub {
+  padding-left: 1.4em;
+  font-family: var(--kf-font-sans);
+  font-style: italic;
+  font-size: clamp(20px, min(2.4vw, 4vh), 30px);
+  color: var(--kf-dim);
+}
+.ph-menu__item:hover .ph-menu__title, .ph-menu__item:focus-visible .ph-menu__title {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.14em;
+}
+.ph-menu__item:hover .ph-menu__leader, .ph-menu__item:focus-visible .ph-menu__leader { border-bottom-color: color-mix(in srgb, var(--kf-ink) 70%, transparent); }
+:root.is-menu .ph-nav { color: var(--kf-ink); }
+
+@media (max-width: 768px) {
+  .ph-nav__center { position: absolute; top: 64px; left: var(--site-gutter); font-size: 16px; }
+  :root[data-section="hero"] .ph-nav__center { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ph-grain { animation: none; }
+}

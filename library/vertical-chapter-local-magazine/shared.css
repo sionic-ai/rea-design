@@ -1,0 +1,319 @@
+/* Spans all pages: paper background · base text · top-left logo · top row menu · two round buttons at top right · menu drawer · underline link · ‹View all› line button · footer */
+:root {
+  /* Original translucent lines (black·white 50%) and the first-screen navy veil (40%) */
+  --site-line-ink: color-mix(in oklab, var(--kf-ink) 50%, transparent);
+  --site-line-paper: color-mix(in oklab, var(--kf-surface) 50%, transparent);
+  --site-veil: color-mix(in oklab, var(--kf-accent) 40%, transparent);
+  --site-ring-light: color-mix(in oklab, var(--kf-surface) 90%, var(--kf-ink));
+  --site-ring-dark: color-mix(in oklab, var(--kf-ink) 70%, var(--kf-surface));
+  --site-icon-hover: color-mix(in srgb, var(--kf-ink) 84%, var(--kf-surface));
+  --site-pad: 40px;
+}
+
+html:has(body.gn) { background: var(--kf-bg); }
+body.gn {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  font-size: 16px;
+  line-height: 2;
+  font-feature-settings: "palt" 1;
+}
+body.gn.is-dark { background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); }
+/* Page turn — the pressed page fades over .3s, then the next page (the source STUDIO turn changes over 283ms after 94ms) */
+body.gn { transition: opacity 0.3s var(--kf-ease-ui); }
+body.gn.is-leaving { opacity: 0.3; }
+.gn img, .gn video { display: block; }
+.gn-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* Logo: small ‹Monthly› + large publication name + one English line — the original is image text (144×62) */
+.gn-logo {
+  position: absolute;
+  top: 30px;
+  left: 46px;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: auto auto;
+  column-gap: 18px;
+  align-items: end;
+  color: inherit;
+}
+.gn-logo__small { font-family: var(--kf-font-display); font-weight: 700; font-size: 14px; line-height: 1; letter-spacing: 0.3em; }
+.gn-logo__latin { font-family: var(--kf-font-latin, var(--kf-font-display)); font-size: 8px; line-height: 1; letter-spacing: 0.05em; }
+.gn-logo__name { grid-column: 1 / -1; margin-top: 6px; font-family: var(--kf-font-display); font-weight: 700; font-size: 39px; line-height: 1; letter-spacing: 0.32em; }
+.is-light-head .gn-logo { color: var(--kf-ink); }
+
+/* Top menu — on hover the underline grows 0 → 100% (the current page is at 100% from the start) */
+.gn-menu {
+  position: absolute;
+  top: 53px;
+  right: 180px;
+  z-index: 3;
+  display: flex;
+  gap: 24px;
+  overflow: hidden;
+  color: var(--kf-contrast-ink);
+}
+.is-light-head .gn-menu { color: var(--kf-ink); }
+.gn-menu a { display: flex; flex-direction: column; gap: 4px; font-size: 14px; line-height: 1.4; letter-spacing: 0.05em; }
+.gn-menu a::after {
+  content: "";
+  width: 0;
+  height: 1px;
+  background: var(--site-line-paper);
+  transition: width 0.3s var(--kf-ease-ui);
+}
+.is-light-head .gn-menu a::after { background: var(--site-line-ink); }
+.gn-menu a:hover::after,
+.gn-menu a[aria-current="page"]::after { width: 100%; }
+
+/* Two round buttons at top right — white and black swap on hover */
+.gn-btns {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 5;
+  display: flex;
+  gap: 10px;
+  padding: 40px 40px 16px;
+}
+.gn-btn {
+  display: grid;
+  place-items: center;
+  width: 45px;
+  height: 45px;
+  border: 0;
+  border-bottom: 1px solid var(--site-ring-light);
+  border-radius: 50%;
+  background: var(--kf-surface);
+  color: var(--kf-ink);
+  cursor: pointer;
+  transition: all 0.3s var(--kf-ease-ui);
+}
+.gn-btn svg { width: 20px; height: 20px; transition: inherit; }
+.gn-btn:hover { background: var(--kf-ink); color: var(--kf-surface); border-bottom-color: var(--site-ring-dark); }
+.gn-btn.is-menu { background: var(--kf-ink); color: var(--kf-surface); border-bottom-color: var(--site-ring-dark); }
+.gn-btn.is-menu svg { width: 24px; height: 24px; }
+.gn-btn.is-menu:hover { background: var(--kf-surface); color: var(--site-icon-hover); border-bottom-color: var(--site-ring-light); }
+.gn-btn:focus-visible { outline: 1px solid var(--kf-accent-soft); outline-offset: 2px; }
+
+/* Menu modal — opened with the round menu button. A white panel at the center of a paper panel, with six large serif menu items scattered collage-style around it (the original is lettering artwork). 
+   The panel eases in over .4s cubic-bezier(.4,.4,0,1) like a Studio modal, then the white panel and menu sharpen from blur one after another (the curve is Studio’s default entrance ease — measured from the original and matched) */
+.gn-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  visibility: hidden;
+  transition: visibility 0s linear 0.4s;
+}
+.gn-drawer.is-open { pointer-events: auto; visibility: visible; transition-delay: 0s; }
+.gn-drawer__base {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in oklab, var(--kf-ink) 16%, transparent);
+  opacity: 0;
+  transition: opacity 0.4s var(--kf-ease-ui);
+}
+.gn-drawer__panel {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  opacity: 0;
+  transition: opacity 0.4s var(--kf-ease-ui);
+}
+.gn-drawer.is-open .gn-drawer__base,
+.gn-drawer.is-open .gn-drawer__panel { opacity: 1; }
+.gn-drawer__close { position: absolute; top: 40px; right: 40px; z-index: 2; background: var(--kf-surface); color: var(--site-icon-hover); border-bottom-color: var(--site-ring-light); }
+.gn-drawer__card {
+  position: absolute;
+  left: 19.03%;
+  top: 27.56%;
+  width: 62%;
+  height: 45%;
+  display: grid;
+  place-items: center;
+  background: var(--kf-surface);
+}
+.gn-drawer__mark { font-family: var(--kf-font-latin, var(--kf-font-display)); font-weight: 500; font-size: 15px; letter-spacing: 0.06em; }
+.gn-dw {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  font-family: var(--kf-font-display);
+  font-weight: var(--kf-weight-display);
+  line-height: 1.1;
+  color: var(--kf-ink);
+}
+.gn-dw span { display: block; }
+.gn-dw--history { left: 9.65%; top: 12.33%; flex-direction: column; font-size: 62px; }
+.gn-dw--history span { width: fit-content; border-bottom: 1px solid var(--site-line-ink); }
+.gn-dw--history .gn-dw__in { margin-left: 66px; }
+.gn-dw--report { left: 77.85%; top: 12.78%; flex-direction: row-reverse; align-items: flex-start; }
+.gn-dw--report span, .gn-dw--about span { writing-mode: vertical-rl; }
+.gn-dw--report .gn-dw__small { padding-right: 6px; border-right: 1px solid var(--site-line-ink); font-size: 40px; }
+.gn-dw--report .gn-dw__big { font-size: 112px; }
+.gn-dw--people { left: 10.14%; top: 53.1%; align-items: flex-end; border-bottom: 1px solid var(--site-line-ink); }
+.gn-dw--people .gn-dw__huge { font-size: 150px; line-height: 1; }
+.gn-dw--people .gn-dw__small { margin-left: -60px; font-size: 40px; }
+.gn-dw--about { left: 52.5%; top: 59.4%; flex-direction: row-reverse; align-items: flex-start; gap: 4px; font-size: 50px; }
+.gn-dw--about span + span { margin-top: 50px; }
+.gn-dw--about span { border-left: 1px solid var(--site-line-ink); }
+.gn-dw--top { left: 78.1%; top: 69.9%; border-bottom: 1px solid var(--site-line-ink); font-size: 66px; }
+.gn-dw--contact { left: 77.6%; top: 83.9%; border-bottom: 1px solid var(--site-line-ink); font-size: 30px; }
+.gn-drawer__card {
+  opacity: 0;
+  scale: 0.9;
+  transition: opacity 0.8s ease, scale 0.8s ease;
+}
+.gn-dw {
+  opacity: 0;
+  translate: 30px 0;
+  filter: blur(11px);
+  transition: opacity 1.4s ease, translate 1.4s ease, filter 1.4s ease;
+}
+/* Vertical-writing menu (monthly coverage · about us) rises from 30px below */
+.gn-dw--report, .gn-dw--about { translate: 0 30px; }
+.gn-drawer.is-open .gn-drawer__card { opacity: 1; scale: 1; transition-delay: 0.35s; }
+.gn-drawer.is-open .gn-dw { opacity: 1; translate: 0 0; filter: blur(0); transition-delay: calc(0.85s + var(--i, 0) * 0.04s); }
+.gn-dw--history { --i: 0; }
+.gn-dw--report { --i: 1; }
+.gn-dw--people { --i: 2; }
+.gn-dw--about { --i: 3; }
+.gn-dw--top { --i: 4; }
+.gn-dw--contact { --i: 5; }
+.gn-dw:hover { opacity: 0.6; transition-delay: 0s; transition-duration: 0.3s; }
+
+/* ‹View all› line button — the top·bottom lines shrink 100% → 80% on hover (top sticks to the left, bottom to the right) and the arrow shifts */
+.gn-more {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  padding: 15px 22px;
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  color: inherit;
+}
+.gn-more::before,
+.gn-more::after {
+  content: "";
+  position: absolute;
+  height: 1px;
+  width: 100%;
+  background: var(--site-line-ink);
+  transition: width 0.3s var(--kf-ease-ui);
+}
+.gn-more::before { top: 0; left: 0; }
+.gn-more::after { bottom: 0; right: 0; transition-duration: 0.4s; }
+.is-on-dark .gn-more::before,
+.is-on-dark .gn-more::after,
+.gn-more.is-on-dark::before,
+.gn-more.is-on-dark::after { background: var(--site-line-paper); }
+.gn-more:hover::before,
+.gn-more:hover::after { width: 80%; }
+.gn-more__arrow { width: 7px; height: 12px; transition: translate 0.4s var(--kf-ease-ui); }
+.gn-more:hover .gn-more__arrow { translate: var(--site-arrow-shift, 10px) 0; }
+
+/* Section header label — one English line with a translucent line beneath it from the left screen edge */
+.gn-kicker {
+  display: block;
+  width: fit-content;
+  padding: 0 0 4px 38px;
+  border-bottom: 1px solid var(--site-line-ink);
+  font-family: var(--kf-font-latin, var(--kf-font-display));
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 1.22;
+}
+.is-dark .gn-kicker { border-bottom-color: var(--site-line-paper); }
+
+/* Footer — a night alley photo spreads beneath the black panel */
+.gn-foot {
+  position: relative;
+  overflow: hidden;
+  background: var(--kf-contrast-bg);
+  color: var(--kf-contrast-ink);
+}
+.gn-foot__photo { position: absolute; inset: 0; z-index: 0; border: 0; }
+.gn-foot__inner {
+  position: relative;
+  z-index: 2;
+  width: 85%;
+  margin: 0 auto;
+  padding: 160px 0 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 200px;
+}
+.gn-foot__row { display: flex; justify-content: space-between; align-items: flex-start; }
+.gn-foot__brand { display: flex; flex-direction: column; }
+.gn-foot__brand .gn-logo { position: static; height: 110px; align-content: space-between; color: var(--kf-contrast-ink); }
+.gn-foot__brand .gn-logo__name { font-size: 70px; }
+.gn-foot__brand .gn-logo__small { font-size: 26px; }
+.gn-foot__brand .gn-logo__latin { font-size: 14px; }
+.gn-foot__by { margin: 60px 0 20px; font-weight: 500; font-size: 16px; line-height: 1.4; }
+.gn-foot__sns { display: flex; gap: 20px; }
+.gn-foot__sns svg { width: 26px; height: 30px; }
+.gn-foot__links { display: flex; flex-direction: column; gap: 20px; }
+.gn-foot__links ul { display: flex; flex-direction: column; gap: 20px; line-height: 1.4; }
+.gn-foot__links a { display: inline-flex; flex-direction: column; font-size: 16px; line-height: 1.4; }
+.gn-foot__links a::after { content: ""; width: 0; height: 1px; background: var(--site-line-paper); transition: width 0.4s var(--kf-ease-ui); }
+.gn-foot__links a:hover::after { width: 100%; }
+.gn-foot__copy { font-weight: 700; font-size: 14px; line-height: 1.4; text-align: center; }
+
+/* Person card photo — shared by the front-page row and the people list. On hover the photo scales 1.1× and the long chevron shifts 30px */
+.gn-person__link { display: flex; flex-direction: column; align-items: flex-end; }
+.gn-person__frame { width: 100%; overflow: hidden; }
+.gn-person__img { width: 100%; height: 350px; border: 0; transition: transform 0.3s var(--kf-ease-ui); }
+.gn-person__link:hover .gn-person__img { transform: scale(1.1); }
+.gn-person__chev { width: 50px; height: 98px; margin: -70px 10px 0 0; opacity: 0.5; color: var(--kf-ink); transition: translate 0.3s var(--kf-ease-ui); }
+.gn-person__link:hover .gn-person__chev { translate: 30px 0; transition-timing-function: ease-out; }
+.gn-date { align-self: flex-start; margin-top: -28px; padding: 3px 9px 4px; background: var(--kf-ink); color: var(--kf-surface); font-size: 12px; line-height: 1.4; }
+
+/* Entrance elements get a waiting state in HTML up front — elements already visible in the hero get ‹visible› as soon as parts attach, so the waiting look is never drawn and the transition is skipped */
+@media (prefers-reduced-motion: reduce) {
+  .gn *, .gn *::before, .gn *::after { transition-duration: 0s !important; }
+  .gn .fx-studio-appear-wait { opacity: 1 !important; filter: none !important; translate: none !important; scale: none !important; }
+}
+@media (max-width: 840px) {
+  .gn-logo { top: 20px; left: 20px; }
+  .gn-kicker { padding: 0 0 0 20px; font-size: 14px; }
+  .gn-logo__name { font-size: 31px; }
+  .gn-menu { display: none; }
+  .gn-btns { padding: 20px 20px 0 0; }
+  .gn-drawer__close { top: 20px; right: 20px; }
+  .gn-drawer__card { left: 15.1%; top: 15%; width: 70%; height: 70%; }
+  .gn-drawer__mark { font-size: 11px; }
+  .gn-dw--history { left: 3.6%; top: 26%; font-size: 30px; }
+  .gn-dw--history .gn-dw__in { margin-left: 32px; }
+  .gn-dw--report { left: 65.9%; top: 13.5%; }
+  .gn-dw--report .gn-dw__small { font-size: 20px; }
+  .gn-dw--report .gn-dw__big { font-size: 56px; }
+  .gn-dw--people { left: -1.5%; top: 66.2%; }
+  .gn-dw--people .gn-dw__huge { font-size: 88px; }
+  .gn-dw--people .gn-dw__small { margin-left: -30px; font-size: 22px; }
+  .gn-dw--about { left: 53.3%; top: 60.4%; font-size: 26px; }
+  .gn-dw--top { left: 64.4%; top: 79.6%; font-size: 36px; }
+  .gn-dw--contact { left: 64.4%; top: 87.6%; font-size: 15px; }
+  .gn-foot__photo { top: auto; height: 37%; }
+  .gn-foot__inner { width: 90%; padding: 70px 0 20px; }
+  .gn-foot__row { flex-direction: column; align-items: center; gap: 34px; }
+  .gn-foot__brand { align-items: center; }
+  .gn-foot__brand .gn-logo { height: 95px; }
+  .gn-foot__brand .gn-logo__name { font-size: 60px; }
+  .gn-foot__brand .gn-logo__small { font-size: 22px; }
+  .gn-foot__brand .gn-logo__latin { font-size: 12px; }
+  .gn-foot__by { margin: 20px 0 16px; }
+  .gn-foot__links { flex-direction: row; gap: 40px; }
+  .gn-foot__links ul { gap: 22px; }
+  .gn-foot__links a { font-size: 14px; }
+  .gn-foot__copy { font-size: 12px; }
+  .gn-person__img { height: 200px; }
+  .gn-person__chev { width: 38px; height: 68px; margin: -24px 10px 0 0; }
+  .gn-date { margin-top: -44px; }
+}

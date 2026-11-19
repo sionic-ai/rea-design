@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>frame-step-reveal — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .demo { display: grid; gap: 24px; max-width: 760px; padding: 48px 20px; }
+  .demo h2 { font: var(--kf-weight-display) 56px/1.05 var(--kf-font-display); }
+  .demo .kicker { font: 500 13px/1 var(--kf-font-mono); letter-spacing: .3em; }
+  .demo .body { font-size: 22px; line-height: 1.6; }
+  .demo .num { font: 500 14px/1 var(--kf-font-mono); }
+  .demo .pic { aspect-ratio: 16 / 9; background: linear-gradient(135deg, var(--kf-accent), var(--kf-ink)); }
+  .demo-spacer { height: 90vh; display: grid; place-items: center; color: var(--kf-dim); }
+  .demo-btn { justify-self: start; height: 40px; padding: 0 16px; border: 1px solid var(--kf-line); background: var(--kf-surface); color: var(--kf-ink); cursor: pointer; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>frame-step-reveal</b> — Letters, lines, numbers and photos switch on one step at a time at 30fps. Scroll down, then press the “Again” button to replay.</p>
+<section class="demo">
+  <p class="kicker" data-fx="frame-step-reveal" data-fx-frame-step-reveal="look: type">Your one-line intro here</p>
+  <h2 data-fx="frame-step-reveal">Your two-word name here</h2>
+  <p class="body" data-fx="frame-step-reveal" data-fx-frame-step-reveal="look: lines">Your body text goes here in about three lines. A cursor block follows the line pushing the cover, and when the line ends it drops to the start of the next line.</p>
+  <p class="num" data-fx="frame-step-reveal" data-fx-frame-step-reveal="look: count">[ .. ] Slots raised ........ 17 / 17</p>
+  <button class="demo-btn" type="button">Again</button>
+</section>
+<div class="demo-spacer">Scroll down ↓</div>
+<section class="demo">
+  <div class="pic" data-fx="frame-step-reveal" data-fx-frame-step-reveal="look: dither"></div>
+  <p class="body" data-fx="frame-step-reveal" data-fx-frame-step-reveal="look: lines">Second paragraph that turns on when scrolled into view.</p>
+</section>
+<div class="demo-spacer"></div>
+<script>
+// Late arrivals and removals — checks that fx-core attaches to an element added after 1s and detaches from an element removed after 2.5s
+(() => {
+  const src = document.querySelector('[data-fx~="frame-step-reveal"]');
+  if (!src) return;
+  const html = src.outerHTML.replace(/\sid="[^"]*"/g, "");
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = html; const el = t.content.firstElementChild; el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => src.after(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-btn")?.addEventListener("click", () => document.querySelectorAll('[data-fx~="frame-step-reveal"]').forEach((el) => el.dispatchEvent(new Event("fx:replay"))));
+  document.querySelector(".demo-hint").append(" · After 1s another identical one comes in (the late arrival), and after 2.5s one drops out (the detach).");
+})();
+</script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

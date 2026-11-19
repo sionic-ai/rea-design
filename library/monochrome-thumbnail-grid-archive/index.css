@@ -1,0 +1,146 @@
+/* Home — left 47% has a 4-cell black-and-white thumbnail grid, the right half is a gray surface with WebGL preview·year row·falling leaves. Switching to Slider turns the cells into a single-row film strip */
+.ff-home { width: 100%; min-height: 100svh; background: var(--kf-bg); position: relative; }
+
+.ff-grid { display: flex; align-items: flex-start; justify-content: space-between; width: 100%; min-height: 100svh; }
+.ff-grid.is-row { height: 10000px; }
+.ff-grid__contents {
+  width: 47%;
+  min-height: 100svh;
+  display: grid;
+  column-gap: 70px;
+  row-gap: 70px;
+  grid-template-columns: repeat(4, 1fr);
+  padding-left: 20px;
+  align-items: center;
+  padding-block: 100px;
+  position: relative;
+  z-index: 1;
+}
+.ff-grid__contents.is-row { position: sticky; top: 0; width: fit-content; display: flex; align-items: center; flex-wrap: nowrap; }
+.ff-grid__contents.is-row .ff-grid__item { width: 60svh; }
+@media (min-width: 2000px) { .ff-grid__contents { column-gap: 40px; grid-template-columns: repeat(5, 1fr); } }
+@media (max-width: 1300px) { .ff-grid__contents { column-gap: 40px; } }
+@media (max-width: 1200px) { .ff-grid__contents { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 900px) { .ff-grid__contents { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 767px) {
+  .ff-grid__contents { width: 100%; column-gap: 10px; row-gap: 40px; grid-template-columns: repeat(3, 1fr); padding-inline: 20px; padding-block: 80px 100px; }
+}
+
+.ff-grid__item { display: flex; gap: 10px; opacity: 0; }
+.ff-grid__num { font-size: 10px; }
+.ff-grid__thumb { width: 100%; position: relative; overflow: hidden; }
+@media (min-width: 768px) { .ff-grid__thumb { min-height: 100px; padding-top: 70%; } }
+@media (max-width: 767px) { .ff-grid__thumb { padding-top: 80%; } }
+/* On hover, a black .7 overlay and a center + — .4s */
+.ff-grid__thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--site-shade);
+  z-index: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.4s ease;
+}
+.ff-grid__thumb::before {
+  content: "+";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 22px;
+  color: var(--site-on-glass);
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.4s ease;
+}
+@media (hover: hover) {
+  .ff-grid__thumb:hover::after { opacity: 0.7; }
+  .ff-grid__thumb:hover::before { opacity: 1; }
+}
+.ff-grid__thumb .wf-img { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; filter: grayscale(100%); }
+.ff-grid__thumb .wf-img::after { font-size: 9px; white-space: normal; width: 90%; text-align: center; }
+.ff-grid__item:focus-visible { outline: 1px solid var(--kf-ink); outline-offset: 4px; }
+
+/* Preview surface — the DOM cell (.ff-ref) is an invisible placeholder, the real image is a WebGL plane following that spot (index.js) */
+.ff-grid__area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: sticky;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: 100svh;
+  background: var(--site-panel);
+  overflow: hidden;
+}
+@media (max-width: 767px) { .ff-grid__area { display: none; } }
+.ff-grid__area-image { width: 100%; height: 320px; position: relative; overflow: hidden; opacity: 0; z-index: 1; }
+@media (max-width: 1250px) { .ff-grid__area-image { height: 280px; } }
+@media (max-width: 1170px) { .ff-grid__area-image { height: 240px; } }
+@media (max-width: 930px) { .ff-grid__area-image { height: 210px; } }
+@media (max-width: 780px) { .ff-grid__area-image { height: 190px; } }
+.ff-ref { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); height: 100%; opacity: 0; }
+.ff-grid__years { display: flex; align-items: center; gap: 20px; position: absolute; left: 50%; bottom: 14svh; transform: translate(-50%); z-index: 1; }
+.ff-grid__years span { display: block; font-size: 32px; }
+.ff-grid__years .line { width: 171px; height: 3px; background: var(--kf-ink); }
+
+.ff-leaf { position: absolute; width: 50px; z-index: 0; color: var(--site-leaf); pointer-events: none; }
+.ff-leaf:nth-of-type(2n) { z-index: 2; }
+.ff-leaf svg { width: 100%; height: auto; display: block; }
+
+/* In the Slider, hovering a cell lays a full-screen color photo in .4s */
+.ff-grid__full { position: fixed; inset: 0 auto auto 0; width: 100%; height: 100svh; z-index: 0; pointer-events: none; }
+.ff-grid__full > * { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; border: 0; }
+
+.ff-canvas { position: fixed; inset: 0 auto auto 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+.ff-canvas canvas { display: block; }
+
+/* Grid · Slider pill — a white pill slides 80px on a black translucent glass panel */
+.ff-view {
+  width: fit-content;
+  border-radius: var(--kf-radius-pill);
+  background: var(--site-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--site-glass-line);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  position: fixed;
+  left: 50%;
+  bottom: 40px;
+  transform: translate(-50%);
+  padding: 3px;
+  z-index: 100;
+}
+.ff-view__btn {
+  min-width: 70px;
+  height: 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: var(--kf-radius-pill);
+  position: relative;
+  z-index: 1;
+  transition: all 0.4s ease;
+}
+@media (hover: hover) { .ff-view__btn:hover { opacity: 0.5; } }
+.ff-view__btn span { font-size: 12px; font-weight: var(--kf-weight-display); line-height: 1; color: var(--site-on-glass); transition: all 0.4s 0.4s ease; }
+.ff-view__btn.is-current { pointer-events: none; }
+.ff-view__btn.is-current span { color: var(--kf-ink); }
+.ff-view__btn:focus-visible { outline: 1px solid var(--site-on-glass); }
+.ff-view__bg { position: absolute; width: 70px; height: 26px; background: var(--site-on-glass); border-radius: var(--kf-radius-pill); }
+[data-list-view] span { display: inline-block; position: relative; left: 2px; }
+
+.ff-scroll { position: fixed; left: 40px; bottom: 47px; font-size: 14px; font-weight: var(--kf-weight-display); opacity: 0; pointer-events: none; z-index: 2; }
+@media (max-width: 767px) { .ff-scroll { font-size: 12px; left: 50%; bottom: 100px; transform: translate(-50%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ff-grid__item { opacity: 1; }
+  .ff-grid__thumb::after, .ff-grid__thumb::before, .ff-view__btn, .ff-view__btn span { transition: none; }
+}

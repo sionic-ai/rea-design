@@ -1,0 +1,64 @@
+[data-fx~="sprite-hotspot-map"] { position: relative; }
+[data-fx~="sprite-hotspot-map"] [data-fx-part="spot"] {
+  position: absolute;
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+/* Sprite strip — a strip as wide as the frame count (--fx-frames), stepped one frame at a time. Original background-position 0→100% steps(n, jump-none) */
+[data-fx~="sprite-hotspot-map"] [data-fx-part="strip"] {
+  display: block;
+  width: calc(var(--fx-frames, 1) * 100%);
+  height: 100%;
+  animation: fx-sprite-steps var(--fx-dur, .6s) steps(var(--fx-frames, 1), jump-none) infinite;
+}
+[data-fx~="sprite-hotspot-map"].is-still [data-fx-part="strip"] { animation: none; }
+@keyframes fx-sprite-steps {
+  to { transform: translateX(calc(-100% + 100% / var(--fx-frames, 1))); }
+}
+/* Baked spot — the strip is hidden and the slot background position steps 0→100% in jumps (with a single cell steps is void, so it stays still) */
+[data-fx~="sprite-hotspot-map"] [data-fx-part="spot"].is-baked { background-repeat: no-repeat; background-position: 0 0; animation: fx-sprite-bg var(--fx-dur, .6s) steps(var(--fx-frames, 1), jump-none) infinite; }
+[data-fx~="sprite-hotspot-map"] [data-fx-part="spot"].is-baked [data-fx-part="strip"] { visibility: hidden; animation: none; }
+[data-fx~="sprite-hotspot-map"].is-still [data-fx-part="spot"].is-baked { animation: none; }
+@keyframes fx-sprite-bg { to { background-position: 100% 0; } }
+/* On screens without a hand, a magnifier icon marks tappable spots (original 40px icon) — a mask, so color follows the skin */
+@media (hover: none) {
+  [data-fx~="sprite-hotspot-map"] [data-fx-part="spot"] { overflow: visible; }
+  [data-fx~="sprite-hotspot-map"] [data-fx-part="spot"]::before {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    left: var(--fx-badge-x, 50%);
+    top: var(--fx-badge-y, 0%);
+    width: 40px;
+    height: 40px;
+    background: var(--kf-accent);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill-rule='evenodd' d='M13 1a12 12 0 1 0 6.9 21.8l6.7 6.7 2.9-2.9-6.7-6.7A12 12 0 0 0 13 1Zm-1.5 6.5h3v4h4v3h-4v4h-3v-4h-4v-3h4z'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill-rule='evenodd' d='M13 1a12 12 0 1 0 6.9 21.8l6.7 6.7 2.9-2.9-6.7-6.7A12 12 0 0 0 13 1Zm-1.5 6.5h3v4h4v3h-4v4h-3v-4h-4v-3h4z'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+}
+[data-fx~="sprite-hotspot-map"] [data-fx-part="pan"] { overflow-x: auto; scrollbar-width: none; }
+[data-fx~="sprite-hotspot-map"] [data-fx-part="pan"]::-webkit-scrollbar { display: none; }
+
+[data-fx~="sprite-hotspot-map"] [data-fx-part="modal"] {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  transition: opacity .3s cubic-bezier(.22, 1, .36, 1), visibility .3s cubic-bezier(.22, 1, .36, 1);
+}
+[data-fx~="sprite-hotspot-map"] [data-fx-part="modal"][aria-hidden="true"] { visibility: hidden; opacity: 0; pointer-events: none; }
+[data-fx~="sprite-hotspot-map"] :has(> [data-fx-part="track"]) { overflow: hidden; }
+[data-fx~="sprite-hotspot-map"] [data-fx-part="track"] { display: flex; transition: transform .5s ease; }
+[data-fx~="sprite-hotspot-map"] [data-fx-part="track"] > * { flex: 0 0 100%; }
+html.fx-lock { overflow: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="sprite-hotspot-map"] [data-fx-part="strip"], [data-fx~="sprite-hotspot-map"] [data-fx-part="spot"].is-baked { animation: none; }
+  [data-fx~="sprite-hotspot-map"] [data-fx-part="modal"], [data-fx~="sprite-hotspot-map"] [data-fx-part="track"] { transition: none; }
+}

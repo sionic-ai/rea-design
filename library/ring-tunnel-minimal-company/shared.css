@@ -1,0 +1,371 @@
+/* Spans several pages: mouse dot · entrance circle, top-left logo, three-dot menu, right vertical strip, big English title, typing text, footer wordmark */
+
+:root {
+  /* Colors the standard --kf-* lacks — all built from --kf-* so they survive swapping theme.css and change along when the skin changes. 
+     When using the original skin, the original values (#b5647e·#d6d6d6·#585858) are matched so they come out as they are */
+  /* Hero four nested rings: from the front (bright) to the inner (dark). The 3D scene reads these values to paint */
+  --site-ring-1: var(--kf-accent);
+  --site-ring-2: var(--kf-accent-soft);
+  --site-ring-3: oklch(from var(--kf-accent) calc(l * 0.8349) calc(c * 0.8375) calc(h + 0.38));
+  --site-ring-4: var(--kf-accent-text);
+  /* Gray donut rising in the philosophy section, and text on the ring */
+  --site-ring-ghost: var(--kf-raised);
+  --site-ring-text: var(--kf-on-accent);
+  --site-dim-on-ink: oklch(from var(--kf-dim) calc(l * 1.1379) c h);
+  /* Base gray of the mouse circle (difference blend) */
+  --site-cursor: oklch(from var(--kf-ink) calc(l * 1.8272) c h);
+  --site-menu-glass: color-mix(in oklab, var(--site-dim-on-ink) 60%, transparent);
+  /* difference blending must use white or black so it inverts visibly on any background */
+  --site-invert: oklch(from var(--kf-bg) 1 0 0);
+  --site-invert-ink: oklch(from var(--kf-bg) 0 0 0);
+  --site-gutter: 30px;
+  --site-rail: 240px;
+}
+@media (max-width: 1279px) { :root { --site-rail: 200px; } }
+@media (max-width: 767px) { :root { --site-gutter: 4.2vw; --site-rail: 0px; } }
+
+body {
+  background: var(--kf-surface);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  font-size: 16px;
+  line-height: 1.8;
+  letter-spacing: 0.08em;
+  font-feature-settings: "palt";
+}
+@media (max-width: 767px) {
+  body { font-size: 3.8vw; }
+}
+
+.w-main {
+  position: relative;
+  z-index: 1;
+  background: var(--kf-bg);
+  overflow: clip;
+}
+
+.w-sp { display: block; }
+.w-pc { display: none; }
+@media (min-width: 768px) {
+  .w-sp { display: none; }
+  .w-pc { display: block; }
+  .w-ib { display: inline-block; }
+}
+
+/* ---------- Mouse dot: white dot with difference blend — black on light backgrounds, 5x over links ---------- */
+.w-cursor-dot {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--site-invert);
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%) scale(1);
+  transition: transform 0.3s ease, opacity 0.3s;
+  mix-blend-mode: difference;
+}
+.w-cursor-dot.is-none { transform: translate(-50%, -50%) scale(0); }
+.w-cursor-dot.is-hover { transform: translate(-50%, -50%) scale(5); }
+@media (min-width: 768px) and (hover: hover) {
+  .w-cursor-dot { display: block; }
+}
+
+/* Enter circle (desktop): enter-disc-cursor part — a white circle fills over a gray circle and the text grows. Because it uses difference blending, it looks green over pink and black over white */
+.fx-enter-disc { --fx-disc: var(--site-cursor); color: var(--site-invert-ink); }
+.fx-enter-disc::after { background: var(--site-invert); }
+@media (max-width: 767px) { .fx-enter-disc { display: none; } }
+/* While the entry circle floats, the dots are hidden */
+.fx-disc-on .w-cursor-dot { transform: translate(-50%, -50%) scale(0); }
+.w-hero { cursor: none; }
+
+/* ---------- Entry circle (phone): fixed at screen center, from 2.2s grows circle → white circle → text, and shrinks away on entering ---------- */
+.w-tap-enter {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 9999;
+  border-radius: 50%;
+  color: var(--site-invert-ink);
+  font: 700 calc(12 / 375 * 100vw) / 1 var(--kf-font-display);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  pointer-events: none;
+  mix-blend-mode: difference;
+  transform: translate(-50%, -50%);
+}
+@media (min-width: 768px) {
+  .w-tap-enter { display: none; }
+}
+.w-tap-enter__disc {
+  display: block;
+  width: 30vw;
+  height: 30vw;
+  border-radius: 50%;
+  background: var(--site-cursor);
+  transform: scale(0);
+  animation: w-pop 0.5s 2.2s var(--kf-ease-out) forwards;
+}
+.w-tap-enter::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50em;
+  background: var(--site-invert);
+  transform: scale(0);
+  animation: w-pop 0.5s 2.4s var(--kf-ease-out) forwards;
+}
+.w-tap-enter__txt {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  animation: w-pop-centered 0.3s 2.6s var(--kf-ease-out) forwards;
+}
+.w-tap-enter.is-none { animation: w-tap-out 1s var(--kf-ease-out) forwards; }
+@keyframes w-pop { to { transform: scale(1); } }
+@keyframes w-pop-centered { to { transform: translate(-50%, -50%) scale(1); } }
+@keyframes w-tap-out {
+  from { transform: translate(-50%, -50%) scale(1); }
+  to { transform: translate(-50%, -50%) scale(0); }
+}
+@keyframes w-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes w-fade-out { from { opacity: 1; } to { opacity: 0; } }
+
+/* ---------- Top-left logo ---------- */
+.w-logo {
+  position: fixed;
+  z-index: 100;
+  top: 37px;
+  left: 30px;
+  width: 190px;
+  opacity: 0;
+  animation: w-fade 1s 2.4s forwards;
+}
+.w-logo__link { display: block; }
+.w-logo__mark {
+  display: block;
+  font: 600 32px/1 var(--kf-font-display);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+@media (max-width: 767px) {
+  .w-logo { top: calc(4vw + 14px); left: 4vw; width: 30%; }
+  .w-logo__mark { font-size: 5.4vw; }
+}
+
+/* ---------- Three-dot menu: translucent gray glass button grows to 120×240 and the three dots gather into one bar ---------- */
+.w-menu {
+  position: fixed;
+  z-index: 100;
+  top: 30px;
+  right: 30px;
+  transform: scale(0);
+  animation: w-pop 1s 2s var(--kf-ease-out) forwards;
+}
+@media (max-width: 767px) {
+  .w-menu { top: 4vw; right: 4vw; }
+}
+.w-menu__btn {
+  --s: 51px;
+  --d: 5px;
+  --top: 23px;
+  --edge: 13px;
+  display: block;
+  position: relative;
+  width: var(--s);
+  height: var(--s);
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: var(--site-menu-glass);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  cursor: pointer;
+  transition: all 0.8s var(--kf-ease-out);
+}
+@media (max-width: 767px) {
+  .w-menu__btn { --s: 45px; --d: 4px; --top: 20px; --edge: 10px; }
+}
+.w-menu__inner { position: absolute; top: 0; right: 0; width: var(--s); height: var(--s); }
+.w-menu__dot {
+  position: absolute;
+  top: var(--top);
+  width: var(--d);
+  height: var(--d);
+  border-radius: 50em;
+  background: var(--kf-ink-soft);
+  transition: left 0.3s var(--kf-ease-out), right 0.3s var(--kf-ease-out), width 0.3s var(--kf-ease-out);
+}
+/* Closed: three dots in a row. Open: the left and middle dots gather at the right end and the right dot stretches into a 24px bar to become ‹—› */
+.w-menu__dot.is-1 { left: var(--edge); transition-delay: 0.3s; }
+.w-menu__dot.is-2 { right: calc(var(--edge) + 10px); transition-delay: 0.3s; }
+.w-menu__dot.is-3 { right: var(--edge); transition-delay: 0s; }
+.w-menu.is-open .w-menu__btn { width: 120px; height: 240px; }
+.w-menu.is-open .w-menu__dot.is-1 { left: calc(var(--s) - var(--edge) - var(--d)); transition-delay: 0s; }
+.w-menu.is-open .w-menu__dot.is-2 { right: var(--edge); transition-delay: 0s; }
+.w-menu.is-open .w-menu__dot.is-3 { width: 24px; transition-delay: 0.3s; }
+
+.w-menu__nav {
+  position: absolute;
+  top: 55px;
+  right: 0;
+  width: 120px;
+  padding: 0 15px 10px 0;
+  text-align: right;
+  font: 500 13px/1.2 var(--kf-font-display);
+  letter-spacing: 0;
+  pointer-events: none;
+}
+.w-menu__nav li { margin-bottom: 1em; opacity: 0; transition: opacity 0.3s; }
+.w-menu__nav a { position: relative; }
+.w-menu__nav a::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 0;
+  height: 1px;
+  background: var(--kf-ink);
+  transition: all 0.3s;
+}
+.w-menu__nav li.is-active a::before { width: 100%; }
+@media (hover: hover) and (min-width: 768px) {
+  .w-menu__nav a:hover::before { width: 100%; }
+}
+.w-menu.is-open .w-menu__nav { pointer-events: auto; }
+.w-menu.is-open .w-menu__nav li { animation: w-fade 0.4s forwards; }
+.w-menu.is-open .w-menu__nav li:nth-child(1) { animation-delay: 0.4s; }
+.w-menu.is-open .w-menu__nav li:nth-child(2) { animation-delay: 0.5s; }
+.w-menu.is-open .w-menu__nav li:nth-child(3) { animation-delay: 0.6s; }
+.w-menu.is-open .w-menu__nav li:nth-child(4) { animation-delay: 0.7s; }
+.w-menu.is-open .w-menu__nav li:nth-child(5) { animation-delay: 0.8s; }
+.w-menu.is-open .w-menu__nav li:nth-child(6) { animation-delay: 0.9s; }
+
+/* ---------- Vertical strip at bottom right ---------- */
+.w-ticker {
+  position: fixed;
+  z-index: 50;
+  right: -20px;
+  bottom: 85px;
+  width: 110px;
+  overflow: hidden;
+  border-inline: 1px solid;
+  font: 400 12px/1.2 var(--kf-font-display);
+  letter-spacing: 0.08em;
+  rotate: -90deg;
+  translate: 100% 0;
+  animation: w-ticker-in 1s 2.2s forwards;
+}
+@keyframes w-ticker-in { from { translate: 70% 0; } to { translate: 0 0; } }
+@media (max-width: 767px) {
+  .w-ticker { right: -7vw; bottom: 15vw; width: 20vw; font-size: 2vw; }
+}
+.w-ticker__track { display: flex; width: 450%; }
+.w-ticker__track.is-click { width: 500%; }
+.w-ticker__track.is-scroll {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
+}
+.w-ticker__row { display: flex; animation: w-ticker-left 10s 0.5s linear infinite both; }
+.w-ticker__row span { padding-right: 20px; white-space: nowrap; }
+.w-ticker__row.is-sp { display: none; }
+@media (max-width: 767px) {
+  .w-ticker__row span { padding-right: 4vw; }
+  .w-ticker__row.is-pc { display: none; }
+  .w-ticker__row.is-sp { display: flex; }
+}
+@keyframes w-ticker-left { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+/* After entering: a black curtain covers from the right and exits to the left, swapping the text */
+.w-ticker.is-scroll .w-ticker__track.is-click::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--kf-ink);
+  clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
+  animation: w-ticker-wipe 1s 1.5s forwards;
+}
+.w-ticker.is-scroll .w-ticker__track.is-click .w-ticker__row { animation: w-ticker-left 10s 0.5s linear infinite both, w-fade-out 0.1s 2s forwards; }
+.w-ticker.is-scroll .w-ticker__track.is-scroll { animation: w-ticker-reveal 1s 1.7s forwards; }
+@keyframes w-ticker-wipe {
+  0% { clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%); }
+  50% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+  100% { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
+}
+@keyframes w-ticker-reveal {
+  from { clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%); }
+  to { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+}
+
+/* ---------- Big English title: when it reaches the lower 1/6 of the screen, the line tilted 10° straightens and letters rise at 20ms intervals ---------- */
+.w-title {
+  font: 600 110px/1.2 var(--kf-font-display);
+  letter-spacing: 0.08em;
+  overflow: hidden;
+  opacity: 0;
+  transform-origin: left top;
+}
+@media (max-width: 1279px) { .w-title { font-size: 100px; } }
+@media (max-width: 999px) { .w-title { font-size: 90px; } }
+@media (max-width: 767px) { .w-title { font-size: 11.8vw; } }
+.w-title .w-char { display: inline-block; transform: translate(0, 100%); }
+.w-title.is-in { animation: w-title-wrap 0.4s forwards; }
+.w-title.is-in .w-char { animation: w-title-char 1s forwards; animation-delay: calc(var(--i) * 0.02s); }
+@keyframes w-title-wrap {
+  from { opacity: 0; transform: rotate(10deg); }
+  to { opacity: 1; transform: rotate(0); }
+}
+@keyframes w-title-char { to { transform: translate(0, 0); } }
+
+/* ---------- Typewriter text: the transparent original text holds the space, characters are stamped on top one by one ---------- */
+.w-type { position: relative; }
+.w-type__base { visibility: hidden; }
+.w-type__out { position: absolute; top: 0; left: 0; width: 100%; }
+
+/* ---------- Footer: on a gray panel, small copyright at left, big wordmark at right ---------- */
+.w-footer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 400px 40px 0;
+  overflow: hidden;
+  background: var(--kf-raised);
+  font-family: var(--kf-font-display);
+}
+.w-footer__copy {
+  order: -1;
+  margin-bottom: 1em;
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: 0;
+}
+/* With a line height of .7 the Poppins baseline lands at the bottom of the line box, so the text sticks to the bottom edge of the footer */
+.w-footer__mark {
+  width: 60%;
+  font: 600 min(10.4vw, 200px) / 0.7 var(--kf-font-display);
+  letter-spacing: -0.02em;
+  text-align: right;
+  white-space: nowrap;
+}
+@media (max-width: 767px) {
+  .w-footer { display: block; padding: 50vw 3vw 0; }
+  .w-footer__mark { width: auto; margin-bottom: 7vw; font-size: 17vw; text-align: left; }
+  .w-footer__copy { margin-bottom: 3vw; font-size: calc(10 / 375 * 100vw); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .w-logo, .w-menu, .w-ticker { animation: none; opacity: 1; transform: none; translate: 0 0; }
+  .w-title { opacity: 1; }
+  .w-title .w-char { transform: none; }
+  .w-tap-enter { display: none; }
+}

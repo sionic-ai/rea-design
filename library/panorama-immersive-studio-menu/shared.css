@@ -1,0 +1,215 @@
+/* Common devices of the whole site — film strip · grain, header bar · key map, sound button, cursor, record notice, door transition curtain, section title card.
+   All colors are built from --kf-* (they change together when the skin changes). Bands and veils are the background lowered to a very dark value */
+:root {
+  --site-night: oklch(from var(--kf-bg) calc(l * .35) c h);
+  --site-veil: color-mix(in oklab, var(--kf-bg) 88%, transparent);
+  --site-faint: color-mix(in oklab, var(--kf-ink) 55%, transparent);
+  --site-ghost: color-mix(in oklab, var(--kf-ink) 35%, transparent);
+  --site-hair: color-mix(in oklab, var(--kf-ink) 18%, transparent);
+  --site-cream: var(--kf-ink-soft);
+  --site-cream-hi: oklch(from var(--kf-ink-soft) calc(l + .03) c h);
+  /* Peach tone of header-row hover · paper tone of note text — only brightness and saturation shifted from cream */
+  /* Shift channels from cream so the original values come out as is — peach #ffdcb4eb, paper #f6eee0, note text #efe4d2 */
+  --site-peach: rgb(from var(--kf-ink-soft) calc(r + 23) g calc(b - 16) / .92);
+  --site-paper: rgb(from var(--kf-ink-soft) calc(r + 14) calc(g + 18) calc(b + 28));
+  --site-note: rgb(from var(--kf-ink-soft) calc(r + 7) calc(g + 8) calc(b + 14));
+  --site-cream-dim: color-mix(in oklab, var(--kf-ink-soft) 70%, transparent);
+  --site-blood: var(--kf-accent);
+  --site-gold: oklch(from var(--kf-ink-soft) calc(l * .92) calc(c + .06) calc(h - 8));
+  /* Cool blue-gray of the cathedral stone and window light — only the hue is rotated from the text color */
+  --site-cold: oklch(from var(--kf-ink) calc(l * .92) .035 245);
+  --site-bar: 5vh;
+  --wf-fill: color-mix(in oklab, var(--kf-ink) 7%, var(--kf-bg));
+  --wf-fill-ink: color-mix(in oklab, var(--kf-ink) 45%, var(--kf-bg));
+  --wf-line: color-mix(in oklab, var(--kf-ink) 14%, var(--kf-bg));
+}
+@media (max-width: 900px) { :root { --site-bar: 6vh; } }
+
+html { background: var(--kf-bg); }
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font: var(--kf-weight-body) 15px/1.55 var(--kf-font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+body.has-cursor, body.has-cursor a, body.has-cursor button { cursor: none; }
+.cs-skip { position: absolute; left: -999px; }
+
+/* ── Cinema bars + grain — after entry, the black bars at top and bottom slide in over 1.2s cubic-bezier(.7,0,.2,1) ── */
+.cs-cine { position: fixed; inset: 0; z-index: 62; pointer-events: none; }
+.cs-cine__bar { position: absolute; left: 0; right: 0; height: var(--site-bar); background: var(--site-night); will-change: transform; }
+.cs-cine__bar--top { top: 0; transform: translateY(-100%); }
+.cs-cine__bar--bottom { bottom: 0; transform: translateY(100%); }
+body.is-in .cs-cine__bar--top { animation: csBarTop 1.2s cubic-bezier(.7, 0, .2, 1) .2s forwards; }
+body.is-in .cs-cine__bar--bottom { animation: csBarBottom 1.2s cubic-bezier(.7, 0, .2, 1) .2s forwards; }
+@keyframes csBarTop { to { transform: translateY(0); } }
+@keyframes csBarBottom { to { transform: translateY(0); } }
+.cs-grain {
+  position: absolute; inset: -10%;
+  opacity: 0;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  animation: csGrainShift 1s steps(5) infinite;
+}
+body.is-in .cs-grain { animation: csGrainIn 1.5s ease .2s forwards, csGrainShift 1s steps(5) infinite; }
+@keyframes csGrainIn { to { opacity: .09; } }
+@keyframes csGrainShift { 0% { transform: translate(0); } 20% { transform: translate(-2%, 2%); } 40% { transform: translate(2%, -1%); } 60% { transform: translate(-1%, 3%); } 80% { transform: translate(1%, -2%); } to { transform: translate(0); } }
+
+/* ── Header row — wordmark / current section. Drops in from above in .7s (after 1.5s) ── */
+.cs-head {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 65;
+  height: var(--site-bar);
+  display: flex; align-items: center; gap: .55rem;
+  padding: 0 2.2rem;
+  opacity: 0;
+  visibility: hidden;
+  font-size: .7rem; letter-spacing: .32em; text-transform: uppercase;
+}
+body.is-in .cs-head, body.is-in .cs-key, body.is-in .cs-foot { visibility: visible; }
+body.is-in .cs-head { animation: csFadeDown .7s 1.5s both; }
+body.is-quick .cs-head { animation-delay: .2s; }
+@keyframes csFadeDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+.cs-mark { color: var(--site-faint); padding: .4rem; margin: 0 -.4rem; transition: color .25s, opacity .25s; }
+.cs-mark:hover { color: var(--site-peach); opacity: .7; }
+.cs-sep { color: var(--site-ghost); letter-spacing: .1em; }
+.cs-crumb { color: var(--site-cream); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cs-crumb a { color: var(--site-faint); font-weight: 400; transition: color .2s; }
+.cs-crumb a:hover { color: var(--site-peach); }
+
+/* Key — top right, opens the cathedral map on click */
+.cs-key {
+  position: fixed; top: calc(var(--site-bar) / 2); right: 22px; z-index: 70;
+  padding: 4px; border: 0; background: none;
+  color: color-mix(in oklab, var(--kf-ink) 85%, transparent);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-50%);
+  transition: transform .25s, color .25s, filter .22s;
+}
+body.is-in .cs-key { animation: csKeyIn .7s 1.5s both; }
+body.is-quick .cs-key { animation-delay: .2s; }
+/* As in the original, the entrance animation holds transform too, so the hover scale doesn’t apply */
+@keyframes csKeyIn { from { opacity: 0; transform: translateY(calc(-50% - 6px)); } to { opacity: .85; transform: translateY(-50%); } }
+.cs-key:hover, .cs-key[aria-expanded="true"] { opacity: 1; filter: drop-shadow(0 0 12px rgba(232, 207, 151, .55)); }
+.cs-key svg { width: 34px; height: 34px; }
+
+/* Bottom row — sound button (four bars dance to the sound). .7s after a 2.2s delay */
+.cs-foot {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 65;
+  height: var(--site-bar);
+  display: flex; justify-content: flex-end; align-items: center;
+  padding: 0 2.2rem;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+}
+body.is-in .cs-foot { animation: csFadeUp .7s 2.2s both; }
+body.is-quick .cs-foot { animation-delay: .3s; }
+@keyframes csFadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.cs-sound { pointer-events: auto; width: 32px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border: 0; background: none; color: rgb(from var(--kf-ink) r g b / .92); transition: color .25s, transform .25s; }
+.cs-sound:hover { color: var(--kf-ink); transform: scale(1.08); }
+.cs-sound:not(.is-on) { color: color-mix(in oklab, var(--kf-ink) 40%, transparent); }
+.cs-sound svg { width: 19px; height: 22px; display: block; }
+.cs-sound rect { transition: y 60ms ease-out, height 60ms ease-out; }
+
+/* ── Cursor — 3px dot and 24px ring. Over links (is-hot) the ring edge brightens and a faint glow circles around it ── */
+.cs-cursor { position: fixed; inset: 0; z-index: 120; pointer-events: none; }
+.cs-cursor__dot, .cs-cursor__ring { position: absolute; left: 0; top: 0; border-radius: 50%; will-change: transform; }
+.cs-cursor__dot { width: 3px; height: 3px; background: color-mix(in oklab, var(--kf-ink) 85%, transparent); transition: background-color .18s, box-shadow .18s; }
+.cs-cursor__dot.is-hot { background: color-mix(in oklab, var(--kf-ink) 96%, transparent); box-shadow: 0 0 6px rgba(255, 255, 255, .48); }
+.cs-cursor__ring { width: 24px; height: 24px; border: 1px solid color-mix(in oklab, var(--kf-ink) 30%, transparent); transition: border-color .25s, background-color .25s, box-shadow .25s; }
+.cs-cursor__ring.is-hot { background: color-mix(in oklab, var(--kf-ink) 3.5%, transparent); border-color: color-mix(in oklab, var(--kf-ink) 68%, transparent); box-shadow: 0 0 0 2px rgba(255, 255, 255, .04), 0 0 12px rgba(255, 255, 255, .18); }
+.cs-cursor.is-out { opacity: 0; }
+@media (hover: none), (pointer: coarse) { .cs-cursor { display: none; } }
+
+/* ── Recording notice note — frosted glass at the bottom center (original consent-note values) ── */
+.cs-note {
+  position: fixed; left: 50%; bottom: calc(1.1rem + env(safe-area-inset-bottom, 0px)); z-index: 62;
+  box-sizing: border-box; width: min(36rem, 100vw - 2rem);
+  display: flex; align-items: center; gap: 1.25rem;
+  padding: .8rem 1rem .8rem 1.25rem;
+  background: color-mix(in oklab, var(--kf-bg) 88%, transparent);
+  border: 1px solid color-mix(in oklab, var(--site-note) 14%, transparent);
+  border-radius: 14px;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .45);
+  color: color-mix(in oklab, var(--site-note) 66%, transparent);
+  font-family: var(--kf-font-sans);
+  transform: translate(-50%, .6rem);
+  opacity: 0;
+  transition: opacity .5s, transform .5s;
+}
+.cs-note.is-shown { opacity: 1; transform: translate(-50%, 0); }
+.cs-note p { flex: auto; margin: 0; font-size: .74rem; line-height: 1.5; letter-spacing: .02em; }
+.cs-note p a { color: color-mix(in srgb, var(--site-note) 90%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--site-note) 32%, transparent); transition: border-color .2s, color .2s; }
+.cs-note p a:hover { color: var(--site-paper); border-bottom-color: color-mix(in srgb, var(--site-paper) 80%, transparent); }
+.cs-note__doors { flex: none; display: flex; align-items: center; }
+/* The two doors’ width stays the original English button width — so the space inside the note matches the original even with Korean placeholders */
+.cs-note__doors button { border: 0; background: none; padding: .55rem .7rem; font-size: .68rem; letter-spacing: .2em; text-transform: uppercase; white-space: nowrap; color: color-mix(in srgb, var(--site-paper) 86%, transparent); transition: color .2s; }
+.cs-note__doors button:first-child { width: 99px; }
+.cs-note__doors button:last-child { width: 147px; }
+.cs-note__doors button:hover { color: var(--kf-ink); }
+.cs-note__doors i { width: 1px; height: 1.4rem; background: linear-gradient(transparent, color-mix(in oklab, var(--site-gold) 75%, transparent), transparent); }
+
+/* ── Page-transition curtain — .45s on leaving, and when going from home to a door, 1.05s delay then .6s ── */
+.cs-door { position: fixed; inset: 0; z-index: 90; pointer-events: none; background: var(--site-night); opacity: 0; transition: opacity .6s cubic-bezier(.5, 0, .5, 1); }
+.cs-door.is-leaving { opacity: 1; transition-duration: .45s; }
+.cs-door.is-entering { opacity: 1; transition: opacity .6s cubic-bezier(.4, 0, 1, 1) 1.05s; }
+
+/* ── Chapter title card (rune-title-loader) — subpage header ── */
+.cs-part { display: flex; flex-direction: column; align-items: center; gap: 1.6rem; }
+.cs-part [data-fx-part="caption"] { margin: 0; font-size: .72rem; letter-spacing: .6em; text-transform: uppercase; color: var(--site-faint); padding-left: .6em; }
+.cs-part [data-fx-part="title"] {
+  margin: 0;
+  font: 300 clamp(1.5rem, 4.4vw, 3.8rem)/1.1 var(--kf-font-serif);
+  letter-spacing: .22em; text-transform: uppercase;
+  text-shadow: 0 0 28px color-mix(in oklab, var(--kf-ink) 22%, transparent), 0 0 60px rgba(0, 0, 0, .6);
+}
+.cs-part [data-fx-part="track"] { width: min(32vw, 220px); opacity: .6; }
+
+/* ── Cathedral map (legend) ── */
+.cs-map {
+  position: fixed; inset: 0; z-index: 80;
+  display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--site-night) 60%, transparent) 6%, color-mix(in oklab, var(--site-night) 92%, transparent) 60%);
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+  opacity: 0; visibility: hidden;
+  transition: opacity .15s, visibility 0s .15s;
+}
+.cs-map.is-open { opacity: 1; visibility: visible; transition: opacity .15s, visibility 0s; }
+.cs-map__panel { width: min(760px, 92vw); display: grid; justify-items: center; gap: 1.1rem; text-align: center; }
+.cs-map__cap { font-size: .66rem; letter-spacing: .55em; text-transform: uppercase; color: color-mix(in oklab, var(--site-gold) 80%, transparent); padding-left: .55em; }
+.cs-map__title { margin: 0; font: 300 clamp(1.8rem, 3.4vw, 2.6rem)/1.15 var(--kf-font-serif); letter-spacing: .14em; text-transform: uppercase; }
+.cs-map__rule { width: 55%; height: 1px; background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--site-gold) 45%, transparent), transparent); }
+.cs-map__plan { width: min(560px, 86vw); height: auto; color: var(--site-cream-dim); }
+.cs-map__plan .room { fill: color-mix(in oklab, var(--kf-ink-soft) 4%, transparent); stroke: currentColor; stroke-width: 1; transition: fill .3s, stroke .3s; cursor: pointer; }
+.cs-map__plan a:hover .room, .cs-map__plan a:focus-visible .room { fill: color-mix(in oklab, var(--site-gold) 22%, transparent); stroke: var(--site-gold); }
+.cs-map__plan text { fill: var(--site-cream); font: 400 13px var(--kf-font-display); letter-spacing: .08em; text-transform: uppercase; pointer-events: none; }
+.cs-map__plan .is-here .room { stroke: var(--site-blood); }
+.cs-map__hint { font-size: .68rem; letter-spacing: .3em; text-transform: uppercase; color: var(--site-faint); }
+.cs-map__close { position: absolute; top: calc(var(--site-bar) + .6rem); right: 1.4rem; border: 0; background: none; color: color-mix(in oklab, var(--site-gold) 55%, transparent); font-size: 1.5rem; line-height: 1; padding: .4rem; transition: color .25s, transform .25s; }
+.cs-map__close:hover { color: var(--site-gold); transform: scale(1.08); }
+
+@media (max-width: 900px) {
+  .cs-head { padding: 0 1.1rem; padding-right: 3.8rem; font-size: .62rem; letter-spacing: .28em; }
+  .cs-foot { padding: 0 1.1rem; }
+  .cs-sound { width: 44px; height: 44px; }
+  .cs-key { top: calc(var(--site-bar) / 2); right: calc(1.1rem - 8px); padding: 8px; }
+  .cs-note { flex-direction: column; align-items: stretch; gap: .35rem; padding: .85rem .9rem .45rem; bottom: calc(3.6rem + env(safe-area-inset-bottom, 0px)); }
+  .cs-note p { font-size: .72rem; }
+  .cs-note__doors button:first-child, .cs-note__doors button:last-child { width: auto; }
+  .cs-note__doors { justify-content: space-around; }
+  .cs-note__doors button { flex: 1 1 0; padding: .7rem .4rem; }
+}
+@media (max-width: 640px) {
+  .cs-part [data-fx-part="title"] { font-size: clamp(1.4rem, 7vw, 2rem); letter-spacing: .14em; white-space: normal; }
+  .cs-part [data-fx-part="caption"] { letter-spacing: .42em; font-size: .62rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs-cine__bar { transform: none !important; animation: none !important; }
+  .cs-head, .cs-key, .cs-foot { animation: none !important; opacity: 1; }
+  .cs-grain { animation: none !important; }
+}
+
+/* Move the library toolbar (list, notes) below the top-left strip so it doesn’t cover the sound button at bottom right */
+.wf-ui { left: 12px; right: auto; top: calc(var(--site-bar) + 8px); bottom: auto; }

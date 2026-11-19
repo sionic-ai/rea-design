@@ -1,0 +1,37 @@
+/* Photo panel — only the current section is visible, while the panel is on screen it shrinks linearly from the zoom value to 1 over dur, then moves to the next (original 5s linear · 1.1) */
+[data-fx~="thumb-stack-autoplay"] [data-fx-part="page"] { position: absolute; inset: 0; visibility: hidden; }
+[data-fx~="thumb-stack-autoplay"] [data-fx-part="page"].fx-on { visibility: visible; }
+[data-fx~="thumb-stack-autoplay"].fx-live [data-fx-part="page"].fx-on { animation: fx-tsa-page var(--fx-dur, 5s) linear both; }
+@keyframes fx-tsa-page { from { transform: scale(var(--fx-zoom, 1.1)); } to { transform: scale(1); } }
+/* Description text — only the current section’s appears at .25s */
+[data-fx~="thumb-stack-autoplay"] [data-fx-part="caption"] { opacity: 0; visibility: hidden; }
+[data-fx~="thumb-stack-autoplay"] [data-fx-part="caption"].fx-on { opacity: 1; visibility: visible; transition: opacity var(--fx-fade, 0.25s) linear; }
+/* Thumbnail stack — behind the current card (a1), the next cards wait overlapped, each offset by --fx-step. Advancing pulls each one forward a step, and the passed card (a0) slides out to the left by --fx-out */
+[data-fx~="thumb-stack-autoplay"] [data-fx-part="thumbs"] { position: relative; overflow: hidden; }
+[data-fx~="thumb-stack-autoplay"] .fx-thumb { position: absolute; left: 0; top: 0; width: var(--fx-thumb, 50px); height: 100%; visibility: hidden; }
+[data-fx~="thumb-stack-autoplay"] .fx-thumb::before { content: ""; position: absolute; left: var(--fx-edge, 4px); top: 0; width: 100%; height: 100%; border-radius: var(--kf-radius-sm); background: var(--fx-edge-color, var(--kf-contrast-bg)); }
+[data-fx~="thumb-stack-autoplay"] .fx-thumb > * { position: relative; z-index: 1; display: block; width: 100%; height: 100%; object-fit: cover; border-radius: var(--kf-radius-sm); }
+[data-fx~="thumb-stack-autoplay"] .fx-thumb > .wf-img::after { display: none; }
+[data-fx~="thumb-stack-autoplay"] .fx-next .fx-a0 { visibility: visible; z-index: 4; transform: translateX(calc(var(--fx-out, 54px) * -1)); animation: fx-tsa-n0 var(--fx-shift, 1s) var(--fx-ease, cubic-bezier(0.19, 1, 0.22, 1)) both; }
+[data-fx~="thumb-stack-autoplay"] .fx-next .fx-a1 { visibility: visible; z-index: 3; animation: fx-tsa-n1 var(--fx-shift, 1s) var(--fx-ease, cubic-bezier(0.19, 1, 0.22, 1)) both; }
+[data-fx~="thumb-stack-autoplay"] .fx-next .fx-a2 { visibility: visible; z-index: 2; animation: fx-tsa-n2 var(--fx-shift, 1s) var(--fx-ease, cubic-bezier(0.19, 1, 0.22, 1)) both; }
+[data-fx~="thumb-stack-autoplay"] .fx-next .fx-a3 { visibility: visible; z-index: 1; animation: fx-tsa-n3 var(--fx-shift, 1s) var(--fx-ease, cubic-bezier(0.19, 1, 0.22, 1)) both; }
+[data-fx~="thumb-stack-autoplay"] .fx-prev .fx-a1 { visibility: visible; z-index: 4; animation: fx-tsa-p1 var(--fx-shift, 1s) var(--fx-ease, cubic-bezier(0.19, 1, 0.22, 1)) both; }
+[data-fx~="thumb-stack-autoplay"] .fx-prev .fx-a2 { visibility: visible; z-index: 3; animation: fx-tsa-p2 var(--fx-shift, 1s) var(--fx-ease, cubic-bezier(0.19, 1, 0.22, 1)) both; }
+[data-fx~="thumb-stack-autoplay"] .fx-prev .fx-a3 { visibility: visible; z-index: 2; animation: fx-tsa-p3 var(--fx-shift, 1s) var(--fx-ease, cubic-bezier(0.19, 1, 0.22, 1)) both; }
+[data-fx~="thumb-stack-autoplay"] .fx-prev .fx-a4 { visibility: visible; z-index: 1; animation: fx-tsa-p4 var(--fx-shift, 1s) var(--fx-ease, cubic-bezier(0.19, 1, 0.22, 1)) both; }
+@keyframes fx-tsa-n0 { from { transform: translateX(0); } to { transform: translateX(calc(var(--fx-out, 54px) * -1)); } }
+@keyframes fx-tsa-n1 { from { transform: translateX(var(--fx-step, 15px)); } to { transform: translateX(0); } }
+@keyframes fx-tsa-n2 { from { transform: translateX(calc(var(--fx-step, 15px) * 2)); } to { transform: translateX(var(--fx-step, 15px)); } }
+@keyframes fx-tsa-n3 { from { transform: translateX(calc(var(--fx-step, 15px) * 3)); } to { transform: translateX(calc(var(--fx-step, 15px) * 2)); } }
+@keyframes fx-tsa-p1 { from { transform: translateX(calc(var(--fx-out, 54px) * -1)); } to { transform: translateX(0); } }
+@keyframes fx-tsa-p2 { from { transform: translateX(0); } to { transform: translateX(var(--fx-step, 15px)); } }
+@keyframes fx-tsa-p3 { from { transform: translateX(var(--fx-step, 15px)); } to { transform: translateX(calc(var(--fx-step, 15px) * 2)); } }
+@keyframes fx-tsa-p4 { from { transform: translateX(calc(var(--fx-step, 15px) * 2)); } to { transform: translateX(calc(var(--fx-step, 15px) * 3)); } }
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="thumb-stack-autoplay"] [data-fx-part="page"], [data-fx~="thumb-stack-autoplay"] .fx-thumb { animation: none !important; }
+  [data-fx~="thumb-stack-autoplay"] .fx-next .fx-a2, [data-fx~="thumb-stack-autoplay"] .fx-prev .fx-a2 { transform: translateX(var(--fx-step, 15px)); }
+  [data-fx~="thumb-stack-autoplay"] .fx-next .fx-a3, [data-fx~="thumb-stack-autoplay"] .fx-prev .fx-a3 { transform: translateX(calc(var(--fx-step, 15px) * 2)); }
+  [data-fx~="thumb-stack-autoplay"] .fx-next .fx-a0 { visibility: hidden; }
+  [data-fx~="thumb-stack-autoplay"] [data-fx-part="caption"].fx-on { transition: none; }
+}

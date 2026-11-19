@@ -1,0 +1,63 @@
+/* Two always-drawn underlines pass the baton — on hover the current line (::before) retreats to the right end, and .2s later a new line (::after) is drawn from the left (.6s).
+   On release the new line folds away to the right, and .2s later the first line is drawn again from the left — either way the line enters from the left and exits to the right */
+[data-fx~="relay-underline-hover"] { position: relative; }
+[data-fx~="relay-underline-hover"]::before,
+[data-fx~="relay-underline-hover"]::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  height: var(--fx-weight, 1px);
+  background: currentColor;
+  transition: width var(--fx-dur, 0.6s) var(--fx-ease, cubic-bezier(0.32, 0.95, 0.6, 1));
+  pointer-events: none;
+}
+[data-fx~="relay-underline-hover"]::before { left: 0; width: 100%; transition-delay: var(--fx-lag, 0.2s); }
+[data-fx~="relay-underline-hover"]::after { right: 0; width: 0; transition-delay: 0s; }
+@media (hover: hover) and (pointer: fine) {
+  [data-fx~="relay-underline-hover"]:hover::before,
+  :is(a, button):hover > [data-fx~="relay-underline-hover"]::before { left: auto; right: 0; width: 0; transition-delay: 0s; }
+  [data-fx~="relay-underline-hover"]:hover::after,
+  :is(a, button):hover > [data-fx~="relay-underline-hover"]::after { left: 0; right: auto; width: 100%; transition-delay: var(--fx-lag, 0.2s); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="relay-underline-hover"]::before, [data-fx~="relay-underline-hover"]::after { transition: none; }
+}
+
+/* ‹sweep› type — a single stroke. On each hover the line retracts to the right end and is redrawn from the left (--fx-dur default .5s · ease · delayed by --fx-lag). On release it stays as is — brand link */
+[data-fx-relay-underline-hover*="look: sweep"]::after { display: none; }
+[data-fx-relay-underline-hover*="look: sweep"]::before { left: 0; right: 0; width: 100%; transition: none; transform-origin: 100% 50%; }
+@media (hover: hover) and (pointer: fine) {
+  [data-fx-relay-underline-hover*="look: sweep"]:hover::before,
+  :is(a, button):hover > [data-fx-relay-underline-hover*="look: sweep"]::before { left: 0; right: 0; width: 100%; animation: fx-relay-sweep var(--fx-dur, 0.5s) var(--fx-sweep-ease, ease) var(--fx-lag, 0s); }
+  [data-fx-relay-underline-hover*="look: sweep"]:hover::after,
+  :is(a, button):hover > [data-fx-relay-underline-hover*="look: sweep"]::after { left: auto; right: 0; width: 0; }
+}
+@keyframes fx-relay-sweep {
+  0% { transform-origin: 100% 50%; transform: scaleX(1); }
+  49.9% { transform-origin: 100% 50%; transform: scaleX(0); }
+  50% { transform-origin: 0 50%; transform: scaleX(0); }
+  100% { transform-origin: 0 50%; transform: scaleX(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fx-relay-underline-hover*="look: sweep"]::before { animation: none !important; }
+}
+
+/* slide type — same length as sweep, but the line slides out to the right (translate 100% + scaleX 0) and is redrawn from the left.
+   The whole is linear, each half uses cubic-bezier(.6,.18,.17,.72) (inside keyframes so it can’t be changed with a variable) — Studio underline-sweep */
+[data-fx-relay-underline-hover*="look: slide"]::after { display: none; }
+[data-fx-relay-underline-hover*="look: slide"]::before { left: 0; right: 0; width: 100%; transition: none; transform-origin: 0 50%; }
+@media (hover: hover) and (pointer: fine) {
+  [data-fx-relay-underline-hover*="look: slide"]:hover::before,
+  :is(a, button):hover > [data-fx-relay-underline-hover*="look: slide"]::before { left: 0; right: 0; width: 100%; animation: fx-relay-slide var(--fx-dur, 0.7s) linear var(--fx-lag, 0s); }
+  [data-fx-relay-underline-hover*="look: slide"]:hover::after,
+  :is(a, button):hover > [data-fx-relay-underline-hover*="look: slide"]::after { left: auto; right: 0; width: 0; }
+}
+@keyframes fx-relay-slide {
+  0% { transform: translateX(0) scaleX(1); animation-timing-function: cubic-bezier(0.6, 0.18, 0.17, 0.72); }
+  50% { transform: translateX(100%) scaleX(0); animation-timing-function: step-end; }
+  50.01% { transform: translateX(0) scaleX(0); animation-timing-function: cubic-bezier(0.6, 0.18, 0.17, 0.72); }
+  100% { transform: translateX(0) scaleX(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fx-relay-underline-hover*="look: slide"]::before { animation: none !important; }
+}

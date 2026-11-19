@@ -1,0 +1,58 @@
+/* Services — seven arched doors standing in a rounded brick cellar wall. Door smoke color rotates only the hue by 51° from the accent (change the skin and the door colors follow) */
+:root {
+  --site-portal-0: oklch(from var(--kf-accent) .66 .13 calc(h + 155));
+  --site-portal-1: oklch(from var(--kf-accent) .55 .2 calc(h + 300));
+  --site-portal-2: oklch(from var(--kf-accent) .72 .14 calc(h + 60));
+  --site-portal-3: oklch(from var(--kf-accent) .55 .17 calc(h + 220));
+  --site-portal-4: oklch(from var(--kf-accent) .52 .19 h);
+  --site-portal-5: oklch(from var(--kf-accent) .58 .16 calc(h + 115));
+  --site-portal-6: oklch(from var(--kf-accent) .5 .2 calc(h + 265));
+}
+html, body { height: 100%; overflow: hidden; }
+.cs-crypt { position: fixed; inset: 0; outline: none; touch-action: pan-y; user-select: none; }
+.cs-crypt__stage { position: absolute; inset: 0; opacity: 0; transition: opacity 1.4s ease .6s; }
+.cs-crypt__stage.is-on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .cs-crypt__stage { opacity: 1; transition: none; } }
+.cs-crypt__stage canvas { display: block; width: 100%; height: 100%; }
+
+/* Center gate name — rune + scratched display-type name + small caption. Floats up only when centered */
+.cs-crypt__label {
+  position: absolute; left: 50%; top: 47%; z-index: 4;
+  display: flex; flex-direction: column; align-items: center; gap: .2rem;
+  transform: translate(-50%, -50%);
+  pointer-events: none; text-align: center;
+  color: var(--site-cream);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, .6);
+  will-change: opacity, filter, transform;
+  transition: opacity .5s, filter 1.7s cubic-bezier(.16, 1, .3, 1), transform .5s;
+}
+/* While turning, the name fades out, once the door stands, the new name rises over the same length */
+.cs-crypt__label.is-moving { opacity: 0; filter: blur(3px); transform: translate(-50%, calc(-50% + 10px)); }
+.cs-crypt__rune { font: 400 clamp(46px, 5vw, 76px)/1 var(--kf-font-rune); color: color-mix(in oklab, var(--site-cream) 92%, transparent); }
+.cs-crypt__name { font: 400 clamp(24px, 2.8vw, 44px)/1 var(--kf-font-display); letter-spacing: .06em; text-transform: uppercase; }
+.cs-crypt__sub { font-size: 10px; letter-spacing: .26em; text-transform: uppercase; color: var(--site-cream-dim); margin-top: .5rem; }
+
+.cs-crypt__hint { position: absolute; bottom: 150px; left: 50%; z-index: 8; display: flex; align-items: center; gap: 12px; transform: translate(-50%, 8px); opacity: 0; font-size: 10px; letter-spacing: .22em; text-transform: uppercase; white-space: nowrap; color: color-mix(in oklab, var(--site-cream) 62%, transparent); text-shadow: 0 2px 12px rgba(0, 0, 0, 1); pointer-events: none; transition: opacity .5s, transform .5s; }
+.cs-crypt__hint i { width: 34px; height: 1px; background: linear-gradient(90deg, transparent, currentColor); }
+.cs-crypt__hint.is-shown { opacity: 1; transform: translate(-50%, 0); }
+.cs-crypt__hint[hidden] { display: none; }
+
+/* Bottom scale — items sit at 50% + (distance × cell), fading with distance (1.15 − |distance|/3.2) */
+.cs-tl { --tl-step: min(14.3vw, 230px); --tl-dot-step: calc(var(--tl-step) * .0625); position: absolute; left: 0; right: 0; bottom: 50px; z-index: 6; height: 86px; overflow: hidden; transition: opacity .35s; }
+.cs-tl__line { position: absolute; left: 0; right: 0; top: 28px; height: 2px; pointer-events: none; background-image: radial-gradient(circle, color-mix(in oklab, var(--kf-ink-soft) 30%, transparent) 1px, transparent 1.4px); background-size: var(--tl-dot-step) 2px; background-repeat: repeat-x; }
+.cs-tl__item { position: absolute; top: 22px; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 0; border: 0; background: none; color: color-mix(in oklab, var(--kf-ink-soft) 40%, transparent); transform: translateX(-50%); will-change: left, opacity; transition: color .2s; }
+/* Original: the first two cells (links) that have an About page have no hover reaction, only the button cell brightens */
+button.cs-tl__item:hover { color: color-mix(in oklab, var(--kf-ink-soft) 72%, transparent); }
+.cs-tl__item.is-active { color: var(--site-cream-hi); }
+.cs-tl__item:focus-visible { outline: 1px solid color-mix(in oklab, var(--site-cream) 72%, transparent); outline-offset: 9px; border-radius: 4px; }
+.cs-tl__dot { width: 14px; height: 14px; border-radius: 999px; background: color-mix(in oklab, var(--kf-ink-soft) 50%, transparent); border: 1px solid color-mix(in oklab, var(--kf-ink-soft) 30%, transparent); transition: background .2s, transform .2s, box-shadow .2s, border-color .2s; }
+.cs-tl__item.is-active .cs-tl__dot { background: var(--site-blood); border-color: oklch(from var(--kf-accent) calc(l + .05) c h); transform: scale(1.5); box-shadow: 0 0 14px color-mix(in oklab, var(--kf-accent) 65%, transparent); }
+.cs-tl__name { font-size: 15px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; }
+
+@media (max-width: 760px) {
+  .cs-tl { --tl-step: clamp(104px, 28vw, 180px); --tl-dot-step: calc(var(--tl-step) * .1); bottom: 20px; }
+  .cs-tl__name { font-size: 12px; letter-spacing: .08em; }
+  .cs-crypt__hint { bottom: 122px; }
+  .cs-crypt__label { top: 44%; }
+}
+@media (prefers-reduced-motion: reduce) { .cs-tl, .cs-crypt__hint { transition-duration: .01ms; } }

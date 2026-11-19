@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>trail-unblur-gl — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); min-height: 100vh; }
+  .demo-hint { position: sticky; top: 0; z-index: 10; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .src { display: none; }
+  .bar { position: fixed; left: 20px; bottom: 20px; display: flex; gap: 8px; }
+  .bar button { padding: 8px 14px; border: 1px solid var(--kf-line); background: var(--kf-surface); color: var(--kf-ink); cursor: pointer; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>trail-unblur-gl</b> — Move the mouse and only the area it passes over becomes sharp on the blurred screen. Swap the source with the buttons below. <span style="color:var(--kf-dim)">(After 1s one more panel comes in, and one leaves 2.5s later)</span></p>
+<canvas class="src" id="a" width="640" height="360"></canvas>
+<canvas class="src" id="b" width="640" height="360"></canvas>
+<div id="bg" data-fx="trail-unblur-gl" data-fx-trail-unblur-gl="source: #a"></div>
+<div data-demo-remove data-fx="trail-unblur-gl" data-fx-trail-unblur-gl="look: local; source: #b" style="width: 320px; height: 180px; top: 80px; right: 20px; left: auto"></div>
+<template data-demo-late><div data-fx="trail-unblur-gl" data-fx-trail-unblur-gl="look: local; source: #b; blur: 3" style="width: 320px; height: 180px; top: 280px; right: 20px; left: auto"></div></template>
+<div class="bar"><button type="button" data-to="a">Source A</button><button type="button" data-to="b">Source B</button></div>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../../_vendor/three@0.186.0/three.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+// Two placeholder videos — canvases where stripes and circles flow slowly (colors are for demo, not skin)
+const draw = (id, k) => {
+  const c = document.getElementById(id), x = c.getContext("2d");
+  const loop = (t) => {
+    const s = t / 1000;
+    x.fillStyle = k ? "#1f3b4d" : "#4d2a1f"; /* Not skin: demo source background */
+    x.fillRect(0, 0, 640, 360);
+    for (let i = 0; i < 9; i++) { x.fillStyle = i % 2 ? "#e8d7b0" : "#7aa6c2"; /* Not skin: demo source line */ x.fillRect(((i * 80 + s * 40) % 720) - 80, 0, 40, 360); }
+    x.beginPath(); x.arc(320 + Math.sin(s) * 160, 180, 70, 0, 7); x.fillStyle = "#f2f2f2"; /* Not skin: demo source circle */ x.fill();
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+};
+draw("a", 0); draw("b", 1);
+document.querySelectorAll("[data-to]").forEach((b) => b.addEventListener("click", () => document.getElementById("bg").dispatchEvent(new CustomEvent("fx:source", { detail: { el: document.getElementById(b.dataset.to) } }))));
+setTimeout(() => document.querySelectorAll("template[data-demo-late]").forEach((t) => t.replaceWith(t.content.cloneNode(true))), 1000);
+setTimeout(() => document.querySelectorAll("[data-demo-remove]").forEach((n) => n.remove()), 2500);
+</script>
+</body>
+</html>

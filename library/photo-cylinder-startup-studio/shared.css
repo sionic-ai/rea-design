@@ -1,0 +1,168 @@
+/* Frame shared by all pages: top pill nav (top · docked · hidden, three states), bottom ‹Book a call› pill, footer pill row and scrapbook spread,
+   A very faint vertical grid line behind the page, cross-document View Transition (old screen fades upward and leaves in .15s · new screen enters from below in .25s, nav and pill stay put) */
+:root {
+  --bk-pad: 24px;
+  --bk-measure: 576px;
+  --bk-gt: 264px;
+  --bk-r-img: 8px;
+  --bk-fs-s: 13px;
+  --bk-lh-s: 18px;
+  --bk-fs-m: 15px;
+  --bk-lh-m: 22px;
+  --site-muted: color-mix(in oklab, var(--kf-ink) 60%, transparent);
+  --site-faint: color-mix(in oklab, var(--kf-ink) 20%, transparent);
+  --site-hair: color-mix(in oklab, var(--kf-ink) 8%, transparent);
+  --site-grid: color-mix(in oklab, var(--kf-ink) 4.5%, transparent);
+  --site-pill-hover: color-mix(in oklab, var(--kf-raised), var(--kf-ink) 5%);
+  --site-photo: color-mix(in oklab, var(--kf-surface), var(--kf-ink) 1%);
+  --site-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (width <= 760px) { :root { --bk-pad: 16px; } }
+
+html { background: var(--kf-bg); }
+body {
+  isolation: isolate;
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font: var(--kf-weight-body) var(--bk-fs-m) / var(--bk-lh-m) var(--kf-font-sans);
+  letter-spacing: -0.006em;
+  font-feature-settings: "ss01", "cv11";
+}
+/* Four vertical grid lines behind the page — 24px at both ends and ±264px from the center */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  --l: linear-gradient(var(--site-grid), var(--site-grid));
+  background:
+    var(--l) max(24px, calc(50% - var(--bk-gt))) 0 / 1px 100% no-repeat,
+    var(--l) min(calc(100% - 24px), calc(50% + var(--bk-gt) - 1px)) 0 / 1px 100% no-repeat,
+    var(--l) 24px 0 / 1px 100% no-repeat,
+    var(--l) calc(100% - 25px) 0 / 1px 100% no-repeat;
+}
+/* The original lays a pale underline color on every link and changes it to ink in .15s on hover — even links with the underline removed, like pills, have the color value change too */
+a { text-decoration-color: var(--site-faint); text-underline-offset: 3px; text-decoration-thickness: 1px; transition: text-decoration-color 0.15s; }
+a:hover { text-decoration-color: var(--kf-ink); }
+/* A part with its underline turned off resets the underline color to the text color with a text-decoration shorthand, like the original — with dark ink text the underline color stays the same on hover */
+.bk-np, .bk-float, .bk-book, .bk-case, .bk-wk, .bk-surprise, .bk-tile, .bk-pill, .bk-nm, .bk-fl-a, .bk-nextcard, .bk-rail a { text-decoration: none; }
+.bk-muted { color: var(--site-muted); }
+.bk-s { font-size: var(--bk-fs-s); line-height: var(--bk-lh-s); }
+.bk-vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* ── Pill */
+.bk-np {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--kf-radius-md);
+  background: var(--kf-raised);
+  color: var(--kf-ink);
+  white-space: nowrap;
+  pointer-events: auto;
+  transition: background-color 0.15s ease-out, box-shadow 0.15s ease-out, scale 0.15s ease-out;
+}
+.bk-np::after { content: ""; position: absolute; inset: -8px 0 0; }
+.bk-np:hover { background: var(--site-pill-hover); }
+.bk-np:active { scale: 0.96; }
+.bk-np:focus-visible { outline: 2px solid var(--kf-ink); outline-offset: 2px; }
+.bk-np[aria-current="page"] { background: var(--site-pill-hover); font-weight: 500; }
+.bk-np.is-go { background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); }
+.bk-np.is-go:hover { background: color-mix(in oklab, var(--kf-contrast-bg), var(--kf-contrast-ink) 11%); }
+
+/* ── Nav: top, stuck (soft shadow on the pill), away (while scrolling the Hero stage, 12px up over .2s) */
+.bk-nav {
+  position: fixed;
+  top: 6px;
+  left: 6px;
+  right: 6px;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  pointer-events: none;
+  transition: opacity 0.3s var(--site-ease), translate 0.3s var(--site-ease);
+  view-transition-name: bk-nav;
+}
+.bk-nav__links { display: flex; gap: 2px; }
+.bk-nav[data-state="away"] { opacity: 0; visibility: hidden; translate: 0 -12px; transition: opacity 0.2s ease-in, translate 0.2s ease-in, visibility 0s 0.2s; }
+.bk-nav[data-state="away"] .bk-np { pointer-events: none; }
+.bk-nav[data-state="stuck"] .bk-np:not(.is-go) { box-shadow: var(--kf-shadow-soft); }
+@media (width <= 640px) { .bk-nav__links .is-more { display: none; } }
+
+/* ── Bottom ”Book a call” pill: turns on after passing the hero and turns off by dropping 16px when it touches the footer */
+.bk-float {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 28px;
+  border-radius: var(--kf-radius-pill);
+  background: var(--kf-contrast-bg);
+  color: var(--kf-contrast-ink);
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  translate: -50%;
+  transition: opacity 0.2s linear, background-color 0.15s ease-out, scale 0.15s ease-out;
+  view-transition-name: bk-float;
+}
+.bk-float.on { opacity: 1; pointer-events: auto; }
+.bk-float.on.foot { opacity: 0; pointer-events: none; translate: -50% 16px; transition: opacity 0.2s ease-in, translate 0.2s ease-in; }
+.bk-float:hover { background: color-mix(in oklab, var(--kf-contrast-bg), var(--kf-contrast-ink) 11%); }
+.bk-float:active { scale: 0.96; }
+.bk-float.home { padding: 0; font-weight: 400; transform-origin: 50% 100%; }
+.bk-float.home:not(.on) { transition: none; }
+
+/* ── Footer pill row + scrapbook spread (.2s) */
+.bk-foot { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 48px; padding: 32px var(--bk-pad) 40px; }
+.bk-foot ul { display: flex; flex-wrap: wrap; gap: 8px 2px; margin: 0; padding: 0; list-style: none; }
+.bk-foot button.bk-np { font: inherit; border: 0; cursor: pointer; gap: 4px; }
+.bk-foot button svg { transition: rotate 0.15s ease-out; }
+.bk-foot button[aria-expanded="true"] svg { rotate: -180deg; }
+.bk-scrap[hidden] { display: none; }
+.bk-scrap:not([hidden]) { animation: bk-scrap-in 0.2s ease-out; }
+@keyframes bk-scrap-in { from { opacity: 0; translate: 0 -4px; } }
+
+/* ── Subpage cell (576px) — attaches to the 24px left margin */
+.bk-col { max-width: var(--bk-measure); margin: 0 auto 0 0; padding: 56px var(--bk-pad) 48px; }
+.bk-col h1, .bk-col h2, .bk-col h3 { font-size: var(--bk-fs-m); line-height: var(--bk-lh-m); font-weight: 400; text-wrap: balance; }
+.bk-lede { color: var(--site-muted); }
+@media (width <= 520px) { .bk-col { padding-top: 32px; } }
+/* Three-column row (name · text · quote) — at 1100px and up it spreads into a full-screen-width strip with a faint line on top */
+.bk-grow { display: grid; gap: 12px; }
+@media (width >= 1100px) {
+  .bk-grow { position: relative; width: calc(100vw - 48px); grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 0 16px; padding-top: 16px; border-top: 1px solid var(--site-hair); }
+}
+.bk-quote { box-sizing: border-box; max-width: var(--bk-measure); margin: 0; padding: 20px; border-radius: var(--bk-r-img); background: var(--kf-surface); }
+.bk-quote blockquote { margin: 0 0 12px; color: var(--site-muted); text-wrap: pretty; }
+.bk-quote blockquote strong { color: var(--kf-ink); font-weight: inherit; }
+.bk-quote figcaption { display: flex; align-items: center; gap: 8px; color: var(--site-muted); font-size: var(--bk-fs-s); line-height: var(--bk-lh-s); }
+.bk-quote figcaption b { color: var(--kf-ink); font-weight: 500; }
+.bk-who { flex: none; width: 24px; height: 24px; border-radius: 50%; }
+
+.bk-ph { position: relative; display: block; width: 100%; height: 100%; border: 0; border-radius: inherit; background-color: var(--site-photo); }
+
+/* ── Page-to-page transition */
+@view-transition { navigation: auto; }
+::view-transition-group(bk-nav), ::view-transition-group(bk-float) { animation: none; }
+::view-transition-old(root) { animation: 0.15s cubic-bezier(0.4, 0, 1, 1) both bk-page-out; }
+::view-transition-new(root) { animation: 0.25s cubic-bezier(0.22, 1, 0.36, 1) both bk-page-in; }
+::view-transition-group(bk-hero) { animation-duration: 0.4s; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+::view-transition-old(bk-hero), ::view-transition-new(bk-hero) { width: 100%; height: 100%; object-fit: cover; animation-duration: 0.4s; }
+@keyframes bk-page-out { to { opacity: 0; filter: blur(3px); translate: 0 -8px; } }
+@keyframes bk-page-in { from { opacity: 0; filter: blur(3px); translate: 0 8px; } }
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+  .bk-nav, .bk-nav[data-state="away"] { translate: none; }
+}
+/* Original scrapbook button doesn’t shrink when pressed (measured: no size change on press) */
+.bk-foot button.bk-np:active { scale: none; }

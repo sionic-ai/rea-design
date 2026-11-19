@@ -1,0 +1,82 @@
+/* Home — an endlessly looping row of project columns. A column holds number · photo · year · description, tapping it brings it to the center and expands it, with the body continuing below */
+/* Set to 100vw but on wide screens it shrinks by the side strip — the unfolded columns stand in the center of the reduced width */
+.ag-reel { flex: 0 1 auto; width: 100vw; min-width: 0; height: calc(100svh - var(--site-side-h)); font-size: var(--site-text-l); }
+@media (min-width: 700px) { .ag-reel { height: 100svh; } }
+.ag-reel__probe { width: calc(var(--site-col) * 6 + var(--site-gutter) * 5); margin: 0 auto; }
+@media (min-width: 700px) { .ag-reel__probe { width: calc(var(--site-col) * 7 + var(--site-gutter) * 6); } }
+@media (min-width: 1000px) { .ag-reel__probe { width: calc(var(--site-col) * 8 + var(--site-gutter) * 7); } }
+
+.ag-col {
+  display: flex;
+  flex-direction: column;
+  width: var(--site-item-w);
+  height: calc(100svh - var(--site-side-h));
+  padding-bottom: 40px;
+  overflow: hidden;
+  border-right: 1px solid;
+  background-color: var(--kf-bg);
+  color: var(--kf-ink);
+  font-size: var(--site-text-small);
+  -webkit-user-select: none;
+  user-select: none;
+  transition: background-color 0.75s var(--site-ease-expo), color 0.75s var(--site-ease-expo);
+}
+@media (min-width: 700px) { .ag-col { height: 100svh; } }
+.ag-reel:not(.is-fx-moving) .ag-col:hover, .ag-col.is-open { background-color: var(--kf-contrast-bg); color: var(--kf-contrast-ink); }
+.ag-col__inner { width: 100%; }
+.ag-col__above { position: relative; display: flex; flex-direction: column; justify-content: space-between; height: calc(100svh - var(--site-side-h)); padding: var(--site-base); }
+@media (min-width: 700px) { .ag-col__above { height: 100svh; } }
+
+.ag-col__index, .ag-col__close { position: absolute; top: var(--site-base); display: flex; font-size: var(--site-text-small); line-height: 1; }
+.ag-col__close { font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); text-transform: uppercase; opacity: 0; }
+@media not (min-width: 700px) { .ag-col__close { display: none; } }
+
+.ag-col__top { height: 80vh; }
+.ag-col__wrap { position: relative; display: flex; justify-content: center; align-items: center; width: calc(var(--site-item-w) - var(--site-gutter) * 2); margin: 100px auto var(--site-base); }
+.ag-col.is-open .ag-col__wrap { width: calc(var(--site-col) * 5 + var(--site-gutter) * 4); height: calc(100svh - var(--site-base) * 4 - var(--site-large)); margin-top: 0; }
+@media (min-width: 700px) { .ag-col.is-open .ag-col__wrap { width: calc(var(--site-col) * 6 + var(--site-gutter) * 5); margin-top: var(--site-medium); } }
+/* The photo box keeps the photo ratio (--ar), but when the panel is spread open it fills the panel height, and a landscape photo shrinks to the panel width and sits centered */
+.ag-col__media { display: flex; align-items: center; justify-content: center; align-self: center; width: 100%; min-width: 0; max-width: 100%; aspect-ratio: var(--ar); transform-origin: center; will-change: transform; transition: filter 0.3s var(--site-ease-ui); }
+.ag-col__media .wf-img { width: 100%; aspect-ratio: var(--ar); border: 0; }
+.ag-col__media + .ag-col__media, .ag-col__media ~ .ag-col__media { position: absolute; max-width: 100%; opacity: 0; }
+.ag-col.is-open .ag-col__media { width: auto; height: 100%; }
+.ag-col .wf-img::after { max-width: 90%; white-space: normal; text-align: center; }
+
+.ag-col__bottom { position: absolute; left: var(--site-gutter); bottom: calc(var(--site-gutter) * 2); display: grid; gap: var(--site-base); }
+@media (min-width: 768px) { .ag-col__bottom { bottom: var(--site-gutter); } }
+.ag-col__year { font-size: var(--site-text-small); }
+.ag-col__desc { max-width: 225px; white-space: break-spaces; }
+
+.ag-col__cta { position: absolute; right: var(--site-gutter); bottom: calc(var(--site-gutter) * 2); display: flex; align-items: center; gap: 0.6rem; width: fit-content; text-transform: uppercase; opacity: 0; visibility: hidden; }
+@media (min-width: 768px) { .ag-col__cta { bottom: var(--site-gutter); } }
+.ag-col.is-open .ag-col__cta { visibility: visible; }
+.ag-col__cta span { font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); font-size: var(--site-text-small); }
+
+/* Thumbnails — vertical column at top right on wide screens, horizontal row on top on phones (ends fade when overflowing) */
+.ag-col__gallery { position: absolute; top: var(--site-base); right: var(--site-base); z-index: var(--site-z-overlay); display: flex; flex-wrap: nowrap; gap: 10px; width: 70vw; overflow: auto hidden; scrollbar-width: none; }
+.ag-col__gallery::-webkit-scrollbar { display: none; }
+.ag-col__gallery.has-end { -webkit-mask-image: linear-gradient(90deg, black 0 88%, transparent); mask-image: linear-gradient(90deg, black 0 88%, transparent); }
+.ag-col__gallery.has-start { -webkit-mask-image: linear-gradient(90deg, transparent 0, black 12% 100%); mask-image: linear-gradient(90deg, transparent 0, black 12% 100%); }
+.ag-col__gallery.has-start.has-end { -webkit-mask-image: linear-gradient(90deg, transparent 0, black 12% 88%, transparent); mask-image: linear-gradient(90deg, transparent 0, black 12% 88%, transparent); }
+@media (min-width: 768px) { .ag-col__gallery { flex-direction: column; width: var(--site-thumb-w); overflow: visible; -webkit-mask-image: none; mask-image: none; } }
+.ag-col__thumb { flex: none; width: var(--site-thumb-w); visibility: hidden; opacity: 0.5; transition: opacity 0.5s var(--site-ease-expo); }
+@media (min-width: 768px) { .ag-col__thumb { width: auto; } }
+@media (hover: hover) { .ag-col__thumb:hover { opacity: 0.8; } }
+.ag-col__thumb.is-active { opacity: 1; }
+.ag-col__thumb .wf-img { display: block; aspect-ratio: var(--ar); border: 0; }
+.ag-col__thumb .wf-img::after { display: none; }
+
+/* Body text continuing below the expanded column */
+.ag-col__content { width: calc(var(--site-col) * 6 + var(--site-gutter) * 5); margin-top: var(--site-large); padding: 0 var(--site-gutter) var(--site-base); }
+@media (min-width: 768px) { .ag-col__content { width: calc(var(--site-col) * 7 + var(--site-gutter) * 6); } }
+@media (min-width: 1024px) { .ag-col__content { width: calc(var(--site-col) * 8 + var(--site-gutter) * 7); } }
+.ag-col__label { display: block; font-size: var(--site-text-small); text-transform: uppercase; }
+.ag-col__big { display: block; margin-bottom: var(--site-large); }
+
+/* If a pillar is open, the other photos go black-and-white, and while the row is stopped, photos outside the hovered pillar go black-and-white too */
+.ag-reel.is-fx-has-open .ag-col:not(.is-open) .ag-col__media,
+.ag-reel:not(.is-fx-moving):has(.ag-col:hover) .ag-col:not(:hover) .ag-col__media { filter: saturate(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-col, .ag-col__media, .ag-col__thumb { transition: none; }
+}

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>grass-turntable-gl — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .demo { display: grid; gap: 20px; max-width: 980px; padding: 32px 20px; }
+  .field { height: 460px; border: 1px solid var(--kf-line); cursor: grab; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .demo-btn { height: 40px; padding: 0 16px; border: 1px solid var(--kf-line); background: var(--kf-surface); color: var(--kf-ink); cursor: pointer; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>grass-turntable-gl</b> — Pass the cursor over the grass (the blades lie down and the trail lasts 20s). Drag the board left or right to rotate 15° at a time, changing the center image.</p>
+<main class="demo">
+  <div class="field" id="field" data-fx="grass-turntable-gl" data-fx-grass-turntable-gl="blades: 90000" tabindex="0">
+    <canvas data-fx-part="scene" width="300" height="200" data-ground=".36"></canvas>
+    <canvas data-fx-part="scene" width="300" height="200" data-ground=".36"></canvas>
+  </div>
+  <div class="row">
+    <button class="demo-btn" type="button" data-act="-1">One column on the left</button>
+    <button class="demo-btn" type="button" data-act="1">One cell on the right</button>
+    <button class="demo-btn" type="button" data-act="walk">Approach / Retreat</button>
+  </div>
+  <div class="field" id="late" data-fx="grass-turntable-gl" data-fx-grass-turntable-gl="blades: 30000; walk: 1"></div>
+  <div data-fx="grass-turntable-gl"></div>
+</main>
+<script>
+(() => {
+  // Center image — two simple flags drawn in skin colors (users put in their own image)
+  const css = getComputedStyle(document.documentElement);
+  document.querySelectorAll('#field [data-fx-part="scene"]').forEach((c, i) => {
+    const x = c.getContext("2d");
+    x.lineWidth = 4; x.strokeStyle = css.getPropertyValue("--kf-ink").trim();
+    x.beginPath(); x.moveTo(150, 128); x.lineTo(150, 40); x.stroke();
+    x.fillStyle = css.getPropertyValue(i ? "--kf-accent" : "--kf-dim").trim();
+    x.beginPath(); x.moveTo(150, 40); x.lineTo(205, 56); x.lineTo(150, 72); x.closePath(); x.fill(); x.stroke();
+  });
+  const f = document.getElementById("field");
+  let walked = 0;
+  document.querySelectorAll("[data-act]").forEach((b) => b.addEventListener("click", () => {
+    if (b.dataset.act === "walk") { walked = 1 - walked; f.dispatchEvent(new CustomEvent("fx:walk", { detail: walked })); return; }
+    f.dispatchEvent(new CustomEvent("fx:turn", { detail: +b.dataset.act }));
+  }));
+  const late = document.getElementById("late");
+  const gone = late.cloneNode(true);
+  gone.removeAttribute("id");
+  late.after(gone);
+  setTimeout(() => { const n = late.cloneNode(true); n.removeAttribute("id"); late.after(n); }, 1000);
+  setTimeout(() => gone.remove(), 600);
+  document.querySelector(".demo-hint").append(" · After 1 second one more panel comes in (a late arrival), and after .6 seconds one drops out (detach).");
+})();
+</script>
+<script src="../../_vendor/three@0.186.0/three.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

@@ -1,0 +1,333 @@
+/* Symptom detail: one-screen simulator → dark panel with a convex curve → cream panel explanations (quote · pinned card · film strip · condition pills · clinical card · help card wheel) → dark photo closing. */
+.det { background: var(--kf-surface); overflow-x: clip; }
+
+/* ── Simulator */
+.sim { position: relative; height: 100vh; height: 100svh; overflow: hidden; background: var(--kf-bg); }
+.sim__scene { position: absolute; inset: 0; }
+/* The view hole shows a bright interior, so the photo slot is also set to a warm mid brightness */
+.sim__scene .sw-img { --wf-fill: color-mix(in srgb, var(--kf-ink-soft) 42%, var(--kf-bg)); --wf-line: color-mix(in srgb, var(--kf-ink-soft) 53%, var(--kf-bg)); --wf-fill-ink: color-mix(in srgb, var(--kf-ink-soft) 30%, var(--kf-ink)); }
+.sim__veil {
+  --r: 27rem;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle var(--r) at 50% 50%, transparent 25%, var(--site-shade) 62%, var(--kf-bg) 100%);
+}
+.sim__veil.is-gl { background: none; }
+.sim__veil canvas { display: block; width: 100%; height: 100%; }
+@media (max-width: 649px) { .sim__veil { --r: 19rem; } }
+
+.sim__ruler {
+  position: absolute;
+  right: 5.4rem;
+  top: 20rem;
+  bottom: 21rem;
+  width: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--kf-ink);
+  z-index: 2;
+}
+.sim__eye { width: 1.4rem; height: 0.9rem; opacity: 0.6; flex: none; }
+.sim__track {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  margin: 1.2rem 0;
+  cursor: pointer;
+  background: radial-gradient(circle, var(--kf-ink) 0 0.22rem, transparent 0.25rem) center top / 100% var(--step, 2.6rem) repeat-y;
+}
+.sim__handle {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 3rem;
+  height: 3rem;
+  translate: -50% -50%;
+  padding: 0;
+  border: 1.5px solid var(--kf-ink);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--kf-bg) 35%, transparent);
+  cursor: grab;
+  touch-action: none;
+}
+.sim__handle i { position: absolute; inset: 0; margin: auto; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--kf-ink); }
+.sim__val { position: absolute; right: calc(100% + 1.2rem); top: 50%; translate: 0 -50%; display: flex; flex-direction: column; align-items: center; color: var(--kf-ink); }
+.sim__val b { font-size: 2.2rem; font-weight: 500; line-height: 1; }
+.sim__val small { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; opacity: 0.8; }
+
+/* Symptom card — original values: 9rem × 13.5rem, on press it expands to min(44rem, screen width − 8rem) in .7s cubic-bezier(.23,1,.32,1), corner 1 → 1.5rem, 
+   Text is pushed 2rem away and returns to place in the same .7s, the plus fades out in .4s */
+.sim__card {
+  --open-w: min(44rem, calc(100vw - 4rem));
+  --w: 9rem;
+  position: absolute;
+  left: 4rem;
+  bottom: 4rem;
+  z-index: 2;
+  overflow: hidden;
+  width: var(--w);
+  height: 13.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 1rem;
+  background: var(--kf-raised);
+  color: var(--kf-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: width .7s cubic-bezier(.23, 1, .32, 1), border-radius .7s cubic-bezier(.23, 1, .32, 1);
+}
+@media (min-width: 650px) { .sim__card { --open-w: min(44rem, calc(100vw - 8rem)); } }
+.sim__card.is-open { --w: var(--open-w); border-radius: 1.5rem; }
+.sim__card-ico { position: absolute; left: 2rem; bottom: 7rem; width: 5rem; height: 5rem; }
+.sim__plus { position: absolute; left: 4.5rem; bottom: 2.5rem; translate: -50% 0; color: var(--kf-accent); font-size: 2.2rem; line-height: 1; transition: opacity .4s cubic-bezier(.23, 1, .32, 1); }
+.sim__card.is-open .sim__plus { opacity: 0; }
+.sim__card-txt { position: absolute; left: 8rem; bottom: 50%; width: calc(var(--open-w) - 10.5rem); display: flex; flex-direction: column; gap: 0.8rem; font-size: 1.4rem; line-height: 1.35; pointer-events: none; translate: 2rem 50%; transition: translate .7s cubic-bezier(.23, 1, .32, 1); }
+.sim__card.is-open .sim__card-txt { translate: 0 50%; }
+
+.sim__cue {
+  position: absolute;
+  left: 50%;
+  bottom: 2.2rem;
+  translate: -50% 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--kf-ink);
+  font-size: 1.1rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.sim__cue svg { width: 2rem; height: 1rem; color: var(--kf-accent); animation: sim-cue-bob 2s ease-in-out infinite; }
+@keyframes sim-cue-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(.5rem); } }
+@media (prefers-reduced-motion: reduce) { .sim__cue svg { animation: none; } }
+.sim__next {
+  position: absolute;
+  right: 4rem;
+  bottom: 3.6rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.4rem;
+  color: var(--kf-ink);
+}
+.sim__next i { display: block; width: 3.4rem; margin-left: 1.4rem; color: var(--kf-accent); transition: transform 0.5s ease-out; }
+.sim__next:hover i { transform: translateX(0.5rem); }
+@media (max-width: 649px) {
+  .sim__ruler { right: 2rem; top: 13rem; bottom: 27rem; }
+  .sim__card { left: 2rem; bottom: 3rem; }
+  .sim__cue { left: auto; right: 2rem; translate: 0; bottom: 3rem; }
+  .sim__cue span { display: none; }
+  .sim__next { display: none; }
+}
+
+/* ── Dark panel: bottom edge is a convex ellipse (curvature flattens with scroll) */
+.seeing {
+  position: relative;
+  z-index: 3;
+  padding: 5rem 0 2rem;
+  background: linear-gradient(var(--kf-bg), var(--kf-surface) 8rem);
+  color: var(--kf-ink);
+  text-align: center;
+}
+.seeing__h { font-size: 5.6rem; }
+.seeing__cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3rem; margin-top: 3.6rem; }
+.seeing__cols li { display: flex; flex-direction: column; gap: 0.4rem; font-size: 1.4rem; line-height: 1.35; }
+.seeing__cols b { font-size: 1.8rem; font-weight: 700; }
+.seeing__curve {
+  --cv: 30vh;
+  position: absolute;
+  left: -15%;
+  right: -15%;
+  top: calc(100% - 1px);
+  height: var(--cv);
+  background: var(--kf-surface);
+  border-radius: 0 0 50% 50% / 0 0 100% 100%;
+  pointer-events: none;
+}
+@media (max-width: 649px) {
+  .seeing { padding-top: 6rem; }
+  .seeing__cols { grid-template-columns: 1fr; gap: 2.4rem; }
+  .seeing__cols span { font-size: 1.6rem; }
+}
+
+/* ── Cream panel */
+.paper-zone { position: relative; z-index: 1; background: var(--site-paper); color: var(--site-paper-ink); overflow-x: clip; }
+.quote { padding: 22rem 2rem 12rem; text-align: center; }
+.quote__t { font-size: 5.6rem; }
+
+.explain { display: flex; justify-content: space-between; align-items: flex-start; gap: 6rem; padding-bottom: 12rem; }
+.explain__main { max-width: 64rem; display: flex; flex-direction: column; gap: 1.6rem; padding-top: 2rem; }
+.explain__h { margin-top: -0.6rem; }
+.explain__warn { margin-top: 1rem; color: var(--kf-accent); font-size: 1.6rem; font-weight: 700; font-style: italic; line-height: 1.35; }
+.explain__dash { font-size: 1.6rem; }
+.dcard {
+  flex: none;
+  width: 37rem;
+  padding: 3rem 3rem 3.4rem;
+  border-radius: 1.6rem;
+  background: var(--kf-surface);
+  color: var(--kf-ink);
+}
+.explain__card { position: sticky; top: 9rem; }
+.dcard__h { margin: 0.8rem 0 2rem; font-size: 3.6rem; }
+.dcard__list li { display: flex; gap: 1.6rem; padding: 1.8rem 0; border-top: 1px solid var(--site-hairline); font-size: 1.3rem; line-height: 1.35; }
+.dcard__list li:first-child { border-top: 0; padding-top: 0.4rem; }
+.dcard__list b { font-size: 1.6rem; }
+.dcard__list strong { display: block; margin-bottom: 0.4rem; font-size: 1.6rem; }
+.dcard__p { margin: -0.8rem 0 2.4rem; font-size: 1.4rem; line-height: 1.4; }
+
+/* ── Film strip */
+.film { position: relative; height: 62rem; overflow: hidden; }
+.film .wf-note { top: 1rem; }
+.film__strip {
+  position: absolute;
+  left: -20%;
+  width: 140%;
+  top: 50%;
+  height: 22rem;
+  margin-top: -11rem;
+  padding: 3.2rem 0;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 1.6rem, color-mix(in srgb, var(--kf-ink) 98%, var(--kf-bg)) 1.6rem 2.8rem) 0 1.1rem / 100% 1.2rem no-repeat,
+    repeating-linear-gradient(90deg, transparent 0 1.6rem, color-mix(in srgb, var(--kf-ink) 98%, var(--kf-bg)) 1.6rem 2.8rem) 0 calc(100% - 1.1rem) / 100% 1.2rem no-repeat,
+    color-mix(in srgb, var(--kf-bg) 98%, var(--kf-ink));
+  transform: rotate(6deg);
+}
+.film__track { display: flex; gap: 1.2rem; height: 100%; }
+.film__frame { position: relative; flex: none; width: 34rem; height: 100%; margin: 0; overflow: visible; }
+.film__frame .wf-img { position: absolute; inset: 0; }
+.film__frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle calc((1 - var(--v)) * 22rem + 6rem) at 50% 50%, transparent 30%, var(--kf-bg) 100%);
+}
+.film__frame figcaption {
+  position: absolute;
+  left: 2rem;
+  bottom: -1.2rem;
+  z-index: 1;
+  padding: 0.3rem 0.8rem;
+  background: var(--site-card);
+  color: var(--site-paper-ink);
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.film__frame:nth-child(even) figcaption { left: auto; right: 2rem; top: -1.2rem; bottom: auto; }
+
+/* ── Condition pills */
+.behind { padding: 6rem 4rem 14rem; display: flex; flex-direction: column; gap: 1.4rem; }
+.behind__row { display: flex; justify-content: space-between; align-items: flex-end; gap: 3rem; }
+.behind__txt { max-width: 60rem; }
+.behind__legend { display: flex; align-items: center; gap: 0.6rem; font-size: 1.2rem; color: var(--kf-danger); white-space: nowrap; }
+.behind__legend i { width: 0.7rem; height: 0.7rem; border-radius: 50%; background: var(--kf-danger); }
+.behind__tags { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-top: 2rem; }
+.behind__tags li {
+  padding: 1rem 2.2rem;
+  border: 1px solid color-mix(in srgb, var(--site-paper-ink) 25%, transparent);
+  border-radius: 999px;
+  font-size: 1.3rem;
+}
+.behind__tags li.is-urgent { border-color: color-mix(in srgb, var(--kf-danger) 45%, transparent); background: color-mix(in oklab, var(--kf-danger) 13%, var(--site-paper)); color: var(--kf-danger); }
+
+/* ── Treatment and clinical cards */
+.treat { display: flex; justify-content: space-between; align-items: flex-start; gap: 6rem; padding-bottom: 16rem; }
+.treat__main { max-width: 64rem; display: flex; flex-direction: column; gap: 1.6rem; }
+.treat__main .t-h2 { margin-bottom: 0.4rem; }
+.treat__card { position: sticky; top: 9rem; width: 34rem; }
+
+/* ── Help card wheel: cards are fanned round the edge of a large dark circle */
+.help { position: relative; padding-top: 4rem; overflow: hidden; }
+.help__head { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.help__stage { --R: 110vw; --cardW: 22rem; position: relative; height: 72rem; margin-top: 4rem; }
+.help__disc {
+  position: absolute;
+  left: 50%;
+  top: 16rem;
+  width: calc(var(--R) * 2);
+  height: calc(var(--R) * 2);
+  translate: -50% 0;
+  border-radius: 50%;
+  background: var(--kf-surface);
+}
+.help__wheel { position: absolute; left: 50%; top: calc(16rem + var(--R)); width: 0; height: 0; }
+.hcard {
+  position: absolute;
+  left: calc(var(--cardW) / -2);
+  bottom: calc(var(--R) - 7rem);
+  width: var(--cardW);
+  min-height: 25rem;
+  padding: 3rem 2.2rem 2.6rem;
+  border-radius: 1rem;
+  background: var(--site-card);
+  color: var(--site-paper-ink);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  transform-origin: 50% calc(100% + var(--R) - 7rem);
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.12);
+}
+.hcard h4 { font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
+.hcard p { flex: 1; font-size: 1.3rem; line-height: 1.4; }
+.hcard .btn-lens { font-size: 1.4rem; padding: 0.9rem 2rem; }
+.help__next {
+  position: absolute;
+  left: 50%;
+  top: 46rem;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  padding: 2rem 2.4rem;
+  border-radius: 1.5rem;
+  background: color-mix(in srgb, var(--kf-ink) 5%, transparent);
+  color: var(--kf-ink);
+  font-size: 1.4rem;
+  white-space: nowrap;
+  transition: background-color 0.5s ease-out;
+}
+.help__next:hover { background: color-mix(in srgb, var(--kf-ink) 10%, transparent); }
+.help__next em { font-style: normal; }
+.help__next-ico { width: 3rem; height: 3rem; }
+.help__next i { display: block; width: 3.4rem; margin-left: 1.6rem; color: var(--kf-accent); transition: transform 0.5s ease-out; }
+.help__next:hover i { transform: translateX(0.5rem); }
+@media (max-width: 649px) {
+  .help__stage { --R: 150vw; --cardW: 24rem; height: 74rem; }
+  .help__next { flex-direction: column; gap: 1rem; top: 48rem; }
+  .help__next i { display: none; }
+}
+
+/* ── Closing photo and footer */
+.outro { position: relative; min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; justify-content: flex-end; background: var(--kf-surface); color: var(--kf-ink); overflow: hidden; }
+.outro__bg { position: absolute; inset: 0; }
+.outro__bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(var(--kf-surface), transparent 30%, transparent 60%, color-mix(in srgb, var(--kf-surface) 70%, transparent)); }
+.outro__in { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 1.4rem; padding-bottom: 10rem; }
+.outro__h { margin-top: -0.4rem; }
+.outro__in .btn-lens { margin-top: 1.2rem; }
+.foot { position: relative; display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 3rem; }
+.foot__c { font-size: 1.2rem; }
+
+/* Phone: description and treatment stack below the body, and the cards release their pinning */
+@media (max-width: 649px) {
+  .quote { padding: 14rem 2rem 8rem; }
+  .quote__t, .seeing__h { font-size: 4.2rem; }
+  .explain, .treat { flex-direction: column; gap: 4rem; padding-bottom: 8rem; }
+  .dcard, .treat__card { position: relative; top: auto; width: 100%; }
+  .film { height: 44rem; }
+  .film__strip { height: 16rem; margin-top: -8rem; }
+  .film__frame { width: 24rem; }
+  .behind { padding: 4rem 2rem 8rem; }
+  .behind__row { flex-direction: column; align-items: flex-start; }
+}

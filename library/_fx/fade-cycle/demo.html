@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>fade-cycle — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .demo { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; padding: 48px 20px; }
+  .shot { aspect-ratio: 3 / 2; display: grid; place-items: center; background: var(--kf-ink); color: var(--kf-bg); font: 600 32px/1 var(--kf-font-sans); }
+  .shot.is-b { background: var(--kf-dim); }
+  .shot.is-c { background: var(--kf-accent); color: var(--kf-on-accent); }
+  .relay { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .meta { display: flex; align-items: center; gap: 12px; margin-top: 12px; font: 12px/1 var(--kf-font-mono); }
+  .meta [data-fx-part="track"] { width: 120px; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>fade-cycle</b> Just watch. Every 3 seconds it fades to the next slide and the bar fills. The third panel is out: hold·zoom-to 1.05. The previous slide stays as it is, and the new slide rises from above over 1s while zooming closer. The two panels below change in turn at 2s and 4s after receiving the signal (fx:play). <span style="color:var(--kf-dim)">(After 1s one more comes in, and after 2.5s one drops out)</span></p>
+<section class="demo">
+  <div data-fx="fade-cycle" data-demo-remove>
+    <div data-fx-part="stage"><div class="shot" data-fx-part="slide">01</div><div class="shot is-b" data-fx-part="slide">02</div><div class="shot is-c" data-fx-part="slide">03</div></div>
+    <p class="meta"><span><span data-fx-part="now">01</span> — <span data-fx-part="total">03</span></span><span data-fx-part="track"><i data-fx-part="bar"></i></span></p>
+  </div>
+  <div data-fx="fade-cycle" data-fx-fade-cycle="every: 4; fade: 3; ease: 0.25,0.1,0.25,1">
+    <div data-fx-part="stage"><div class="shot" data-fx-part="slide">A</div><div class="shot is-b" data-fx-part="slide">B</div></div>
+  </div>
+  <div data-fx="fade-cycle" data-fx-fade-cycle="every: 2.5; fade: 1; ease: none; zoom-to: 1.05; zoom-dur: 2.5; zoom-ease: none; intro: fade; out: hold">
+    <div data-fx-part="stage" style="overflow: hidden"><div data-fx-part="slide"><div class="shot">Zoom-in 1</div></div><div data-fx-part="slide"><div class="shot is-b">Zoom-in 2</div></div><div data-fx-part="slide"><div class="shot is-c">Zoom-in 3</div></div></div>
+  </div>
+  <div class="relay" data-demo-relay>
+    <div data-fx="fade-cycle" data-fx-fade-cycle="every: 6; first: 2; fade: 1.6; ease: 0.25,0.1,0.25,1; on: event"><div data-fx-part="stage"><div class="shot" data-fx-part="slide">1-1</div><div class="shot is-b" data-fx-part="slide">1-2</div></div></div>
+    <div data-fx="fade-cycle" data-fx-fade-cycle="every: 6; first: 4; fade: 1.6; ease: 0.25,0.1,0.25,1; on: event"><div data-fx-part="stage"><div class="shot is-c" data-fx-part="slide">2-1</div><div class="shot" data-fx-part="slide">2-2</div></div></div>
+  </div>
+  <template data-demo-late>
+    <div data-fx="fade-cycle" data-fx-fade-cycle="every: 2">
+      <div data-fx-part="stage"><div class="shot is-c" data-fx-part="slide">1</div><div class="shot" data-fx-part="slide">2</div></div>
+      <p class="meta"><span data-fx-part="now">01</span><span data-fx-part="track"><i data-fx-part="bar"></i></span></p>
+    </div>
+  </template>
+</section>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../../../_shared/vendor/gsap/CustomEase.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+setTimeout(() => document.querySelectorAll("template[data-demo-late]").forEach((t) => t.replaceWith(t.content.cloneNode(true))), 1000);
+// on: two event layers — after one signal is sent they change in turn at 2s and 4s, then every 6s
+setTimeout(() => document.querySelectorAll("[data-demo-relay] [data-fx]").forEach((n) => n.dispatchEvent(new CustomEvent("fx:play"))), 500);
+setTimeout(() => document.querySelectorAll("[data-demo-remove]").forEach((n) => n.remove()), 2500);
+</script>
+</body>
+</html>

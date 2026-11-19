@@ -1,0 +1,45 @@
+/* Pill button: a text cell and an arrow cell. At rest the text cell is pulled left by the arrow cell’s width and sits against the right cell (tail, absolute position), 
+   On hover the text box slides back into place, the left box (lead) scales 0 → 1 from its left edge, and the right box scales 1 → 0 from its right edge — it looks as if the arrow crossed over the button */
+[data-fx~="arrow-swap-pill"] {
+  --fx-h: 3em; --fx-pad: 1.25em; --fx-gap: 0em;
+  --fx-in: 0.735s; --fx-out: 0.6s; --fx-delay: 0.05s; --fx-ease: cubic-bezier(0.625, 0.05, 0, 1);
+  --fx-bg: var(--kf-accent); --fx-ink: var(--kf-on-accent); --fx-arrow-bg: var(--fx-bg); --fx-arrow-ink: var(--fx-ink);
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: var(--fx-gap);
+  height: var(--fx-h); padding: 0; color: var(--fx-ink); line-height: 1; text-decoration: none; user-select: none; -webkit-tap-highlight-color: transparent;
+}
+[data-fx~="arrow-swap-pill"] > [data-fx-part="label"] {
+  display: flex; align-items: center; justify-content: center; height: 100%; padding: 0 var(--fx-pad); white-space: nowrap;
+  background-color: var(--fx-bg); color: var(--fx-ink); border-radius: var(--kf-radius-pill);
+  translate: calc(-1 * (var(--fx-h) + var(--fx-gap))) 0 0;
+  transition: translate var(--fx-out) var(--fx-ease), background-color 0.5s var(--fx-ease), color 0.5s var(--fx-ease), box-shadow 0.5s var(--fx-ease);
+}
+[data-fx~="arrow-swap-pill"] > :is([data-fx-part="lead"], [data-fx-part="tail"]) {
+  display: flex; align-items: center; justify-content: center; height: 100%; aspect-ratio: 1;
+  background-color: var(--fx-arrow-bg); color: var(--fx-arrow-ink); border-radius: var(--kf-radius-pill);
+  transform-origin: left center; scale: 0; will-change: transform;
+  transition: scale var(--fx-out) var(--fx-ease), background-color 0.5s var(--fx-ease), color 0.5s var(--fx-ease), box-shadow 0.5s var(--fx-ease);
+}
+[data-fx~="arrow-swap-pill"] > [data-fx-part="tail"] { position: absolute; right: 0; top: 0; transform-origin: right center; scale: 1; }
+[data-fx~="arrow-swap-pill"] [data-fx-part="arrow"] { width: 1em; height: 1em; rotate: 45deg; transition: rotate var(--fx-out) var(--fx-ease); }
+[data-fx~="arrow-swap-pill"] > [data-fx-part="tail"] [data-fx-part="arrow"] { rotate: 0deg; }
+/* Keyboard focus: outer ring */
+[data-fx~="arrow-swap-pill"]::after {
+  content: ""; position: absolute; inset: -0.125em; border-radius: var(--kf-radius-pill); pointer-events: none;
+  transition: box-shadow 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+[data-fx~="arrow-swap-pill"]:focus-visible { outline: none; }
+[data-fx~="arrow-swap-pill"]:focus-visible::after { box-shadow: 0 0 0 0.125em var(--kf-accent); }
+/* As in the original, while the pointer is over it only the movement has a transition — color changes instantly (if the user tweens the color, it just follows) */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  [data-fx~="arrow-swap-pill"]:is(:hover, :focus-visible) > [data-fx-part="label"] { translate: 0 0 0; transition: translate var(--fx-in) var(--fx-delay) var(--fx-ease); }
+  [data-fx~="arrow-swap-pill"]:is(:hover, :focus-visible) > [data-fx-part="lead"] { scale: 1; transition: scale var(--fx-in) var(--fx-delay) var(--fx-ease); }
+  [data-fx~="arrow-swap-pill"]:is(:hover, :focus-visible) > [data-fx-part="tail"] { scale: 0; transition: scale var(--fx-in) var(--fx-delay) var(--fx-ease); }
+  [data-fx~="arrow-swap-pill"]:is(:hover, :focus-visible) [data-fx-part="arrow"] { rotate: 0deg; transition: rotate var(--fx-in) var(--fx-delay) var(--fx-ease); }
+  [data-fx~="arrow-swap-pill"]:is(:hover, :focus-visible) > [data-fx-part="tail"] [data-fx-part="arrow"] { rotate: 45deg; }
+}
+/* Type: outline only — no fill, thin ring in the text color */
+[data-fx-arrow-swap-pill*="look: ghost"] { --fx-bg: transparent; --fx-ink: var(--kf-ink); }
+[data-fx-arrow-swap-pill*="look: ghost"] > :is([data-fx-part="label"], [data-fx-part="lead"], [data-fx-part="tail"]) { box-shadow: inset 0 0 0 0.0625em var(--fx-ink); }
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="arrow-swap-pill"] > *, [data-fx~="arrow-swap-pill"] [data-fx-part="arrow"] { transition: none; }
+}

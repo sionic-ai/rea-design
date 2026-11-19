@@ -1,0 +1,136 @@
+/* Outer decoration of a one-screen photo wall: footprint loader · lens hole, title at top center · age number strip, vertical text on both sides · scroll bar,
+   Rotating badge at bottom center, [ Back ] · date when a photo enlarges, vignette · noise film. All on-screen text is white. */
+/* Values missing from the skin are exposed here as --kf-* — formulas matched to the original values, so changing theme.css changes them too.
+   The scene (WebGL) can’t read var(), so sr.rgb("--site-…") receives the computed color and passes it to the shader */
+:root {
+  --site-pad-x: clamp(1rem, 4vw, 2.75rem);
+  --site-pad-y: clamp(1rem, 3.2vw, 2.25rem);
+  /* Two background noise colors (original BG_NOISE_LOW · HIGH) with a lavender gray blooming over them, and the zoom-screen background (SLIDE_BG_NOISE_LOW · HIGH) */
+  --site-noise-low: var(--kf-accent-soft);
+  --site-noise-high: var(--kf-bg);
+  --site-lilac: oklch(from var(--kf-accent) calc(l + 0.1730) calc(c * 3.1728) calc(h - 74.40));
+  --site-lilac-veil: oklch(from var(--kf-accent) calc(l + 0.2422) calc(c * 2.4371) calc(h - 69.22));
+  --site-slide-low: oklch(from var(--kf-accent) calc(l + 0.2827) calc(c * 3.0053) calc(h + 0.27));
+  --site-slide-high: var(--kf-bg);
+  /* Light particles (original PARTICLE_COLOR · GLOW_COLOR) · photo border (FRAME_COLOR) · shadow panel (accent color) · paw prints (LOADER_PAW_COLOR) */
+  --site-particle: oklch(from var(--kf-accent) calc(l + 0.2967) calc(c * 6.3128) calc(h - 179.92));
+  --site-particle-glow: var(--kf-accent);
+  --site-frame: var(--kf-surface);
+  --site-shadow: var(--kf-accent);
+  --site-paw: var(--kf-dim);
+  /* Glass icon · bubble (original INSTAGRAM_BASE_COLOR · LINE_COLOR — the bubble is the background color) */
+  --site-glass: var(--kf-surface);
+  --site-glass-line: var(--kf-accent);
+  /* Lens vignette — darkens the edges by 14% */
+  --site-vignette: oklch(from var(--kf-accent) 0 0 h / 0.14);
+  /* Photo placeholder panel: three pale gray gradients, diagonal lines, label text */
+  --site-ph-1a: oklch(from var(--kf-accent) calc(l + 0.2026) calc(c * 1.1870) calc(h - 28.92));
+  --site-ph-1b: oklch(from var(--kf-accent) calc(l + 0.1777) calc(c * 1.8880) calc(h - 112.93));
+  --site-ph-2a: oklch(from var(--kf-accent) calc(l + 0.2039) calc(c * 1.5030) calc(h + 71.30));
+  --site-ph-2b: oklch(from var(--kf-accent) calc(l + 0.1742) calc(c * 1.9640) calc(h - 74.03));
+  --site-ph-3a: oklch(from var(--kf-accent) calc(l + 0.2040) calc(c * 1.2288) calc(h - 125.30));
+  --site-ph-3b: oklch(from var(--kf-accent) calc(l + 0.2009) calc(c * 1.3487) calc(h - 18.58));
+  --site-ph-line: oklch(from var(--kf-accent) calc(l + 0.1928) calc(c * 0.7173) calc(h + 89.15));
+  --site-ph-ink: oklch(from var(--kf-accent) calc(l - 0.1198) calc(c * 0.6426) calc(h + 89.20));
+}
+
+html, body { height: 100%; overflow: hidden; background: var(--kf-bg); }
+body { color: var(--kf-ink); font-family: var(--kf-font-sans); touch-action: none; overscroll-behavior: none; }
+.sr-main { position: relative; width: 100%; height: 100%; overflow: hidden; }
+
+.sr-vignette { position: fixed; inset: 0; z-index: 60; pointer-events: none; background: radial-gradient(circle, transparent 55%, var(--site-vignette) 100%); }
+/* Stand-in for original noise.webp (screen blend .08): newly made SVG noise */
+.sr-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  pointer-events: none;
+  opacity: 0.08;
+  mix-blend-mode: screen;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 120px 120px;
+  animation: sr-grain 0.4s steps(1) infinite;
+}
+@keyframes sr-grain { 0% { background-position: 0 0; } 33% { background-position: 14px -9px; } 66% { background-position: -11px 12px; } }
+
+/* ── Outer UI ── */
+.sr-ui { position: fixed; inset: 0; z-index: 80; pointer-events: none; padding: max(var(--site-pad-y), env(safe-area-inset-top)) max(var(--site-pad-x), env(safe-area-inset-right)) max(var(--site-pad-y), env(safe-area-inset-bottom)) max(var(--site-pad-x), env(safe-area-inset-left)); transition: opacity 0.5s ease-out; }
+.sr-ui.is-dim .sr-title__sub, .sr-ui.is-dim [data-side] { opacity: 0 !important; }
+.sr-ui__in { position: relative; width: 100%; height: 100%; }
+/* Original text shadow (faint gray 1px) — so white text doesn’t get lost on light backgrounds */
+.sr-title__h, .sr-title__sub p, .sr-side p, .sr-back, .sr-modal__date { text-shadow: 0 1px 1px rgb(170 170 170 / 0.2); }
+.sr-title { position: absolute; left: 0; right: 0; top: 0; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.sr-title__h { display: flex; align-items: center; justify-content: center; font: 400 60px/1 var(--kf-font-display); letter-spacing: 0.05em; user-select: none; }
+.sr-title__w { display: inline-flex; }
+.sr-title__w > span { display: inline-block; }
+.sr-star { position: relative; display: inline-block; width: 0.9em; height: 0.9em; margin: 0 0.5rem; pointer-events: auto; cursor: pointer; }
+/* Star · badge icons are glass shapes drawn with three, one canvas each (the original also has two small canvases) */
+.sr-star__gl, .sr-badge__gl { display: block; width: 100%; height: 100%; }
+.sr-title__sub { margin-top: 12px; font: 400 14px/1.5 var(--kf-font-sans); user-select: none; transition: opacity 0.5s ease-out; }
+.sr-age { margin-top: 2px; font-variant-numeric: tabular-nums; }
+/* Age · date number strip: 0–9 stacked vertically and rolled with translateY(−n em) in 420ms */
+.sr-odo { display: inline-flex; vertical-align: top; }
+.sr-digit { position: relative; display: inline-block; width: 0.6em; height: 1.5em; overflow: hidden; vertical-align: top; }
+.sr-digit > span { position: absolute; inset: 0 0 auto 0; transition: transform 420ms ease-out; }
+.sr-digit > span > b { display: block; height: 1.5em; font-weight: inherit; text-align: center; }
+.sr-side { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; transition: opacity 0.5s ease-out; }
+.sr-side.is-l { left: 0; width: 16px; }
+.sr-side.is-l p { rotate: 90deg; white-space: nowrap; font: 400 10px/1 var(--kf-font-sans); }
+.sr-side.is-r { right: 0; width: 12px; }
+.sr-bar { position: relative; display: flex; justify-content: center; width: 24px; height: 256px; pointer-events: auto; cursor: pointer; touch-action: none; user-select: none; opacity: 0; transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+.sr-bar.is-on { opacity: 1; }
+.sr-bar i { width: 6px; height: 100%; border: 1px solid color-mix(in srgb, var(--kf-ink) 20%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--kf-ink) 35%, transparent); backdrop-filter: blur(12px); transition: scale 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+.sr-bar b { position: absolute; top: 0; width: 6px; height: 40px; border: 1px solid color-mix(in srgb, var(--kf-ink) 30%, transparent); border-radius: 999px; background: var(--kf-accent); backdrop-filter: blur(12px); will-change: transform; }
+.sr-bar:hover i, .sr-bar:hover b { scale: 1.25 1; }
+.sr-badge-wrap { position: absolute; bottom: 0; left: 50%; translate: -50% 0; transition: opacity 0.5s ease-out; }
+.sr-badge { position: relative; display: flex; align-items: center; justify-content: center; width: 112px; height: 112px; pointer-events: auto; color: var(--kf-ink); }
+.sr-badge__ring { position: absolute; inset: 0; width: 100%; height: 100%; will-change: transform; filter: drop-shadow(0 1px 1px rgb(170 170 170 / 0.2)); }
+.sr-badge__icon { position: relative; z-index: 1; width: 44px; height: 44px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+@media (hover: hover) { .sr-badge:hover .sr-badge__icon { transform: scale(1.1); } }
+@media (max-width: 640px) {
+  .sr-title__h { font-size: 48px; }
+  .sr-star { width: 1em; height: 1em; margin: 0 0.25rem; }
+  .sr-bar { height: 192px; }
+  .sr-badge { width: 96px; height: 96px; }
+  .sr-badge__icon { width: 40px; height: 40px; }
+}
+
+/* ── Photo Zoom ── */
+.sr-modal { position: fixed; inset: 0; z-index: 85; pointer-events: none; opacity: 0; transition: opacity 0.5s; padding: var(--site-pad-y) var(--site-pad-x); }
+.sr-modal.is-open { opacity: 1; }
+/* As in the original, [ Back ] accepts interaction even when closed (press to close — nothing happens if already closed) */
+.sr-back { pointer-events: auto; }
+.sr-modal__date { position: absolute; left: 50%; bottom: 124px; translate: -50% 0; width: 100%; max-width: 90vw; text-align: center; font: 400 36px/1 var(--kf-font-display); letter-spacing: 0.05em; font-variant-numeric: tabular-nums; }
+.sr-back { position: absolute; right: 32px; bottom: 32px; width: 112px; padding: 6px 0; border: 0; background: none; color: var(--kf-ink); font: 700 16px/1.5 var(--kf-font-display); text-transform: uppercase; cursor: pointer; }
+/* Original: [ Back ] on hover widens its letter spacing .08em → .12em (.3s ease-out) */
+.sr-back span { display: inline-flex; letter-spacing: 0.08em; margin-right: -0.08em; transition: letter-spacing 0.3s ease-out, margin-right 0.3s ease-out; }
+.sr-back:hover span { letter-spacing: 0.12em; margin-right: -0.12em; }
+@media (max-width: 640px) { .sr-modal__date { bottom: 104px; } .sr-back { right: 0; bottom: 20px; width: 96px; } }
+
+/* ── Loader: white panel, footprints, today’s date under a bundle of Polaroids ── */
+.sr-loader { position: fixed; inset: 0; z-index: 90; overflow: hidden; background: var(--kf-bg); cursor: wait; }
+.sr-loader.is-open { pointer-events: none; cursor: auto; }
+.sr-loader.is-gone { display: none; }
+.sr-loader__in { position: relative; width: 100%; height: 100%; }
+.sr-loader__paws { position: absolute; inset: 0; pointer-events: none; }
+.sr-paw { position: absolute; width: 22px; height: 22px; opacity: 0; color: var(--site-paw); }
+.sr-paw svg { width: 100%; height: 100%; }
+.sr-loader__center { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 40px; height: 100%; }
+/* Eight loader photo cards: scattered around the center by hash (±29px horizontal · ±23px vertical · ±8.5°), each dropping in from 28px above at .94 scale every .24s (.75s, original card-drop) */
+.sr-cards { position: relative; width: 100%; height: 210px; }
+.sr-card { position: absolute; top: 50%; left: 50%; width: clamp(100px, 24vw, 152px); aspect-ratio: 3 / 4; box-sizing: border-box; padding: 5px 5px 14px; background: var(--site-frame); box-shadow: 0 10px 20px -4px rgb(135 135 135 / 0.1), 0 4px 10px -2px rgb(135 135 135 / 0.1), 0 0 1px rgb(135 135 135 / 0.1); transform: translate(-50%, -50%) translate3d(var(--card-x), var(--card-y), 0) rotate(var(--card-rotate)); animation: sr-card-drop 0.75s cubic-bezier(0.2, 0.8, 0.25, 1) backwards; }
+.sr-card i { display: block; height: 100%; }
+.sr-card .wf-img::after { font-size: 7px; white-space: normal; width: 80%; text-align: center; }
+@keyframes sr-card-drop { 0% { opacity: 0; transform: translate(-50%, -50%) translate3d(var(--card-x), calc(var(--card-y) + 28px), 0) rotate(var(--card-rotate)) scale(0.94); } }
+@media (max-width: 640px) { .sr-cards { height: 180px; } }
+.sr-date { display: flex; font: 400 36px/1 var(--kf-font-display); color: var(--kf-accent); font-variant-numeric: tabular-nums; transition: opacity 0.5s; }
+.sr-date .sr-digit { height: 1em; }
+.sr-date .sr-digit > span > b { height: 1em; line-height: 1; }
+.sr-date .sr-dot { display: inline-block; width: 0.25em; text-align: center; }
+@media (max-width: 640px) { .sr-date { font-size: 30px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-grain { animation: none; }
+  .sr-card { animation-duration: 10ms; }
+  .sr-digit > span { transition: none; }
+}

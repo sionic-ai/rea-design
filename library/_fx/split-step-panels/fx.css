@@ -1,0 +1,39 @@
+/* Split panel: left color panel (--fx-panel) · right large photo. The current panel and the next one have their photos spread open, while other panels’ photos are folded up to the top edge (.5s linear).
+   The photo flows upward from 30px below at 1.1x scale over 1.2s, and the color panel is painted only when it is the current panel (.5s — switches off immediately when leaving) */
+[data-fx~="split-step-panels"] { position: relative; }
+[data-fx~="split-step-panels"] [data-fx-part="stage"] { position: sticky; top: 0; height: 100svh; overflow: hidden; }
+[data-fx~="split-step-panels"] [data-fx-part="item"] { position: absolute; inset: 0; display: flex; pointer-events: none; }
+[data-fx~="split-step-panels"] [data-fx-part="item"].is-fx-active { pointer-events: auto; }
+[data-fx~="split-step-panels"] [data-fx-part="panel"] {
+  display: flex; flex-shrink: 0; align-items: center; justify-content: center; width: 50%; opacity: 0;
+  transition: background-color var(--fx-fade, .5s) var(--fx-ease, cubic-bezier(.445, .05, .55, .95));
+}
+[data-fx~="split-step-panels"] .is-fx-active [data-fx-part="panel"] {
+  opacity: 1; background-color: var(--fx-panel, var(--kf-surface));
+  transition: opacity var(--fx-fade, .5s) var(--fx-ease, cubic-bezier(.445, .05, .55, .95)), background-color var(--fx-fade, .5s) var(--fx-ease, cubic-bezier(.445, .05, .55, .95));
+}
+[data-fx~="split-step-panels"] .is-fx-active + [data-fx-part="item"] [data-fx-part="panel"] { opacity: 1; }
+[data-fx~="split-step-panels"] [data-fx-part="text"] { opacity: 0; }
+[data-fx~="split-step-panels"] .is-fx-active [data-fx-part="text"] { opacity: 1; }
+[data-fx~="split-step-panels"] [data-fx-part="media"] {
+  flex-shrink: 0; width: 50%; height: 100svh; overflow: hidden;
+  clip-path: polygon(0 0, 100% 0, 100% 0, 0 0); transition: clip-path var(--fx-wipe, .5s) linear;
+}
+[data-fx~="split-step-panels"] [data-fx-part="thumb"] { overflow: hidden; clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%); transition: clip-path var(--fx-wipe, .5s) linear; }
+[data-fx~="split-step-panels"] .is-fx-active [data-fx-part="media"], [data-fx~="split-step-panels"] .is-fx-active + [data-fx-part="item"] [data-fx-part="media"],
+[data-fx~="split-step-panels"] .is-fx-active [data-fx-part="thumb"], [data-fx~="split-step-panels"] .is-fx-active + [data-fx-part="item"] [data-fx-part="thumb"] { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+[data-fx~="split-step-panels"] [data-fx-part="media"] > *, [data-fx~="split-step-panels"] [data-fx-part="thumb"] > * {
+  display: block; width: 100%; height: 100%; object-fit: cover; transition: transform var(--fx-drift, 1.2s) cubic-bezier(.25, .46, .45, .94);
+}
+[data-fx~="split-step-panels"] [data-fx-part="media"] > * { transform: scale(1.1) translateY(var(--fx-shift, 30px)); }
+[data-fx~="split-step-panels"] .is-fx-active [data-fx-part="media"] > * { transform: scale(1.1) translateY(calc(var(--fx-shift, 30px) * -1)); }
+[data-fx~="split-step-panels"] [data-fx-part="thumb"] > * { transform: scale(1.1) translateY(calc(var(--fx-shift, 30px) / 2)); }
+[data-fx~="split-step-panels"] .is-fx-active [data-fx-part="thumb"] > * { transform: scale(1.1) translateY(calc(var(--fx-shift, 30px) / -2)); }
+/* Narrow screens (767 and below) drop the big photo as in the original, and the color panel fills the screen */
+@media (max-width: 767px) {
+  [data-fx~="split-step-panels"] [data-fx-part="panel"] { width: 100%; }
+  [data-fx~="split-step-panels"] [data-fx-part="media"] { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="split-step-panels"] *, [data-fx~="split-step-panels"] [data-fx-part] { transition: none !important; }
+}

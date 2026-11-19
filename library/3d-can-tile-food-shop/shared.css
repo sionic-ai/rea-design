@@ -1,0 +1,281 @@
+/* Shared by all pages — header · mobile menu · cart drawer · overlay panel (barba transition) · footer · loader · button.
+   In the original, 1rem at 1440 = 10px (0.6944vw), 1rem at 1024 and below = 2.6667vw, so every size is measured in rem. */
+:root {
+  --site-hover-green: color-mix(in oklab, var(--kf-bg) 86%, var(--kf-ink));
+  --site-veil: color-mix(in oklab, color-mix(in oklab, var(--kf-bg) 22%, var(--kf-surface)) 88%, var(--kf-ink));
+  --site-skeleton-a: color-mix(in oklab, color-mix(in oklab, var(--kf-bg) 20%, var(--kf-surface)) 90%, var(--kf-ink));
+  --site-skeleton-b: color-mix(in oklab, color-mix(in oklab, var(--kf-bg) 25%, var(--kf-surface)) 55%, var(--kf-ink));
+  --site-qty-hover: color-mix(in oklab, var(--kf-surface) 82%, var(--kf-ink));
+  --site-panel-shadow: 0 0 35px color-mix(in srgb, var(--kf-ink) 25%, transparent);
+  --site-ease: cubic-bezier(0.65, 0.05, 0.36, 1);
+  --site-ease-btn: cubic-bezier(0.1, 0, 0.3, 1);
+  --site-ease-ret: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --site-head: 9.2rem;
+  /* 3D can paint — read by webgl.js */
+  --site-can-paper: var(--kf-surface);
+  --site-can-red: var(--kf-accent);
+  --site-can-green: color-mix(in oklab, var(--kf-bg) 62%, var(--kf-ink));
+  --site-can-metal: color-mix(in oklab, var(--kf-surface) 72%, var(--kf-ink));
+}
+@media (max-width: 1024px) {
+  :root { --site-head: 7.3rem; }
+}
+
+html {
+  font-size: 0.6944444444vw;
+  scrollbar-width: none;
+}
+@media (max-width: 1024px) {
+  html { font-size: 2.6666666667vw; }
+}
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+::-webkit-scrollbar { display: none; }
+
+body {
+  background-color: var(--kf-surface);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  line-height: 1;
+  overflow: hidden;
+  transition: background-color 0.8s var(--site-ease);
+}
+body.is-home { background-color: var(--kf-bg); }
+button, input, textarea { background: none; border: none; color: inherit; font: inherit; outline: none; padding: 0; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--kf-accent); outline-offset: 2px; }
+
+@media (min-width: 1025px) { .is-mobile { display: none !important; } }
+@media (max-width: 1024px) { .is-desktop { display: none !important; } }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; margin: -1px; }
+
+/* Word rise — put one word in a mask and animate yPercent 100 → 0 */
+.lj-split { display: inline-flex; flex-wrap: wrap; }
+.lj-split__mask { display: flow-root; clip-path: inset(-0.2em 0); }
+.lj-split__word { display: inline-block; padding-block: 0.2em; margin-block: -0.2em; transform: translateY(100%); will-change: transform; }
+@media (prefers-reduced-motion: reduce) { .lj-split__word { transform: none; } }
+
+.lj-star { display: inline-block; animation: lj-rotate 4s linear infinite both; animation-direction: var(--star-direction, normal); }
+@keyframes lj-rotate { to { transform: rotate(360deg); } }
+
+/* ── 3D canvas — laid over the whole screen like the original, letting interaction pass through ── */
+#lj-gl { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; }
+
+/* ── Header ── */
+.lj-header {
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 18;
+  width: 100%;
+  padding: 0.4rem 2.2rem 2rem;
+  font-family: var(--kf-font-display);
+  font-weight: var(--kf-weight-display);
+  font-size: 6.8rem;
+  letter-spacing: -1.5px;
+}
+.lj-header__link { color: var(--kf-ink); }
+.lj-header__link.is-current { color: var(--kf-accent); }
+.lj-header__link--about { margin-left: 4.8rem; }
+.lj-header__shop { display: flex; align-items: center; }
+.lj-header__logo { width: 4.9rem; margin-right: 0.8rem; color: var(--kf-bg); transition: color 0.8s var(--site-ease); }
+.lj-header__logo svg { width: 100%; height: auto; }
+.lj-header__logo.is-light { color: var(--kf-surface); }
+.lj-header__locale { display: flex; margin-left: auto; margin-right: 4.5rem; }
+.lj-header__locale-sep { margin: 0 23px; }
+.lj-header__locale button { cursor: pointer; }
+.lj-header__locale .is-active { color: var(--kf-accent); }
+.lj-header__cart { position: relative; width: 6.3rem; height: 6.3rem; margin-top: -1rem; color: var(--kf-ink); }
+.lj-header__cart svg { width: 100%; height: 100%; }
+.lj-header__qty {
+  position: absolute; top: 0.9rem; right: -0.9rem;
+  display: flex; align-items: center; justify-content: center;
+  min-width: 2.6rem; min-height: 2.6rem; border-radius: 100%;
+  background-color: var(--kf-accent); color: var(--kf-on-accent);
+  font: 1.6rem/1 var(--kf-font-sans); letter-spacing: 0;
+  transform: scale(0);
+  transition: transform 0.35s var(--site-ease);
+}
+.lj-header__qty.is-full { transform: scale(1); }
+.lj-header__burger { position: relative; display: block; width: 5.6rem; height: 5rem; }
+.lj-header__bar { position: absolute; left: 0; display: block; width: 100%; height: 2px; background-color: var(--kf-ink); transform-origin: center; }
+.lj-header__bar--top { top: 1.9rem; }
+.lj-header__bar--bottom { top: 3.9rem; }
+.lj-header__home { position: absolute; top: 1.3rem; left: 0; right: 0; width: 5rem; height: 5rem; margin: 0 auto; color: var(--kf-ink); opacity: 0; pointer-events: none; }
+
+@media (min-width: 1025px) {
+  .lj-header__link, .lj-header__locale, .lj-header__cart { transform: translateY(calc(-100% - 2rem)); }
+  .lj-header__shop { position: absolute; left: 50%; margin: 0 auto; transform: translate(-50%, calc(-100% - 2rem)); }
+  html.no-intro .lj-header__link, html.no-intro .lj-header__locale, html.no-intro .lj-header__cart { transform: none; }
+  html.no-intro .lj-header__shop { transform: translate(-50%, 0); }
+}
+@media (max-width: 1024px) {
+  .lj-header { justify-content: space-between; font-size: 4.4rem; padding: 0.4rem 1.6rem 1.6rem; }
+  .lj-header > .lj-header__link--contact, .lj-header > .lj-header__link--about, .lj-header > .lj-header__locale { display: none; }
+  .lj-header__locale-sep { margin: 0 0.8rem; }
+}
+
+/* ── Mobile menu — a white sheet unfolds from the top and words rise from below ── */
+.lj-menu {
+  position: fixed; inset: 0; z-index: 15;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  width: 100vw; height: 100dvh;
+  padding: 1.6rem 1.6rem 2.8rem;
+  font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); font-size: 6.8rem;
+  visibility: hidden; pointer-events: none;
+}
+.lj-menu__bg { position: absolute; inset: 0; z-index: -1; background-color: var(--kf-surface); transform-origin: center top; transform: scaleY(0); }
+.lj-menu .lj-header__link { display: block; margin-bottom: 0.8rem; }
+.lj-menu .lj-header__locale { margin: 0.9rem 0 4.4rem; }
+.lj-menu .lj-foot__wrap { margin-bottom: 3.5rem; }
+
+/* ── Cart Drawer ── */
+.lj-cart { position: fixed; inset: 0; z-index: 50; pointer-events: none; }
+/* The original curtain is an ease-out run by Motion via WAAPI, so it starts from 0 on the frame after the class is added — set as a CSS transition so it is not pre-painted like GSAP’s first tick. Enter .4s · exit .5s */
+.lj-cart__veil { position: absolute; inset: 0; background-color: var(--site-veil); opacity: 0; transition: opacity 0.5s ease-out; }
+.lj-cart.is-open .lj-cart__veil { opacity: 0.95; transition-duration: 0.4s; }
+.lj-cart.is-open .lj-cart__veil, .lj-cart.is-open .lj-cart__box { pointer-events: auto; }
+.lj-cart__box {
+  position: absolute; top: 0; right: 0;
+  display: flex; flex-direction: column;
+  width: 560px; height: 100%; padding: 22px;
+  background-color: var(--kf-surface);
+  border-radius: 36px 0 0 36px;
+  transform: translateX(100%);
+}
+.lj-cart__head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 60px; }
+.lj-cart__title { margin-top: -7px; font: var(--kf-weight-display) 68px/48px var(--kf-font-display); }
+.lj-cart__close { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 1px solid var(--kf-line); border-radius: 100%; background-color: var(--kf-surface); transition: background-color 0.28s var(--site-ease-ret), color 0.28s var(--site-ease-ret); }
+.lj-cart__close svg { width: 55%; }
+.lj-cart__body { flex: 1; overflow-y: auto; }
+.lj-cart__item { display: flex; gap: 22px; padding: 22px 0; border-top: 1px solid var(--kf-line); font-size: 16px; }
+.lj-cart__item .wf-img { width: 64px; height: 64px; flex: none; border-radius: 8px; }
+.lj-cart__item-title { margin-bottom: 9px; text-transform: uppercase; }
+.lj-cart__promo { position: relative; margin-bottom: 22px; }
+.lj-cart__promo input { width: 100%; padding: 11px 13px; border: 1px solid var(--kf-line); border-radius: 4px; font-size: 16px; }
+.lj-cart__promo button { position: absolute; top: 0; right: 0; height: 100%; padding: 0 12px; border: 1px solid var(--kf-line); border-radius: 0 4px 4px 0; text-transform: uppercase; font-size: 16px; }
+.lj-cart__sum { display: flex; justify-content: space-between; padding: 22px 0; border-top: 1px solid var(--kf-line); text-transform: uppercase; font-size: 16px; }
+.lj-cart__checkout { padding: 6px 0 13px; border: 1px solid var(--kf-line); border-radius: 32px; background-color: var(--kf-contrast-bg); color: var(--kf-contrast-ink); text-align: center; font: var(--kf-weight-display) 38px/44px var(--kf-font-display); }
+@media (min-width: 1024px) {
+  .lj-cart__close:hover { background-color: var(--kf-contrast-bg); color: var(--kf-contrast-ink); }
+}
+@media (max-width: 1024px) {
+  .lj-cart__box { left: 0; width: 100vw; height: 100dvh; padding: 16px; border-radius: 0; }
+  .lj-cart__head { padding-bottom: 52px; }
+  .lj-cart__title { font-size: 44px; }
+  .lj-cart__checkout { padding: 3px 0; font: 24px/44px var(--kf-font-sans); }
+}
+
+/* ── Panel — the barba outer frame (.lj-main) fills the screen below the header, and subpages float stacked as rounded-corner panels ── */
+.lj-main {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - var(--site-head));
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-radius: var(--kf-radius-lg) var(--kf-radius-lg) 0 0;
+  transition: border-radius 0.5s var(--site-ease);
+}
+@media (max-width: 1024px) { .lj-main { height: calc(100dvh - var(--site-head)); } }
+.lj-main.no-mask { border-radius: 0; }
+.lj-container {
+  position: absolute; top: 0; left: 0; z-index: 10;
+  width: 100%;
+  height: calc(100vh - var(--site-head));
+  overflow-x: hidden; overflow-y: auto;
+  border-radius: var(--kf-radius-lg) var(--kf-radius-lg) 0 0;
+  box-shadow: var(--site-panel-shadow);
+  transform-origin: center top;
+}
+@media (max-width: 1024px) { .lj-container { height: calc(100dvh - var(--site-head)); } }
+.lj-container.is-home { height: auto; overflow: visible; box-shadow: none; }
+.lj-page { position: relative; width: 100%; border-radius: var(--kf-radius-lg) var(--kf-radius-lg) 0 0; }
+.lj-page--stacked { padding: 0 2.2rem; background-color: var(--kf-bg); }
+@media (max-width: 1024px) { .lj-page--stacked { padding: 0 1.6rem; } }
+
+/* Close button — stays attached to the panel’s top right */
+.lj-return {
+  position: sticky; top: 2.2rem; z-index: 7;
+  display: flex; width: 5.6rem; height: 5.6rem; margin-left: auto;
+  border: 1px solid var(--kf-line); border-radius: 100%;
+  color: var(--kf-ink);
+  transition: background-color 0.28s var(--site-ease-ret);
+}
+/* Original: button text color changes instantly, only the inner icon stroke and border colors follow in .28s */
+.lj-return svg { width: 2.6rem; margin: auto; transition: color 0.28s var(--site-ease-ret); }
+@media (min-width: 1024px) {
+  .lj-return:hover { background-color: var(--kf-contrast-bg) !important; color: var(--kf-contrast-ink); }
+}
+@media (max-width: 1024px) { .lj-return { top: 1.4rem; } }
+
+/* ── Button — on hover a circle fills from below, the text exits upward and re-enters from below ── */
+.lj-btn { position: relative; overflow: hidden; }
+.lj-btn span { position: relative; z-index: 10; display: block; top: -1px; }
+.lj-btn::before, .lj-btn::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.lj-btn::before { width: 150%; height: 0; padding-bottom: 150%; top: -110%; left: -25%; border-radius: 50%; background: var(--kf-surface); transform: translate3d(0, 100%, 0) scale3d(0, 0, 0); }
+.lj-btn.is-full::before { width: 300%; top: -100%; left: -100%; }
+.lj-btn::after { background: var(--kf-surface); transform: translate3d(0, -105%, 0); transition: transform 0.4s var(--site-ease-btn); }
+@media (min-width: 1024px) {
+  .lj-btn:hover::after { transform: translateZ(0); transition-duration: 0.05s; transition-delay: 0.4s; transition-timing-function: linear; }
+  .lj-btn:hover::before { transform: translateZ(0) scaleZ(1); transition: transform 0.4s var(--site-ease-btn); }
+  .lj-btn:hover span { animation: lj-up-out 0.3s forwards, lj-up-in 0.3s forwards 0.3s; }
+}
+@keyframes lj-up-out { to { transform: translate3d(0, -105%, 0) scale3d(1, 2, 1); opacity: 0; color: var(--kf-contrast-ink); } }
+@keyframes lj-up-in {
+  0% { transform: translate3d(0, 100%, 0) scale3d(1, 2, 1); opacity: 0; color: var(--kf-contrast-ink); }
+  to { transform: translateZ(0); opacity: 1; color: var(--kf-ink); }
+}
+
+/* ── Footer — a line is drawn from the left while words rise from below ── */
+.lj-foot { width: 100%; padding: 20rem 0 4rem; }
+.lj-foot__links { font: 1.6rem/1.2 var(--kf-font-sans); }
+.lj-foot__wrap { position: relative; display: flex; margin-bottom: 5rem; }
+.lj-foot__wrap:last-child { margin-bottom: 0; }
+.lj-foot__line { position: absolute; top: -10px; left: 0; width: 100%; height: 1px; background-color: var(--kf-line); transform: scaleX(0); transform-origin: left center; }
+.lj-foot__link { display: inline-block; width: 33.3%; }
+.lj-foot__link--wide { width: 60%; }
+.lj-foot__link--author a { text-decoration: underline; }
+@media (min-width: 1025px) {
+  .lj-foot__link--mid { text-align: center; }
+  .lj-foot__link--end { text-align: right; }
+  .lj-foot--mobile { display: none; }
+}
+@media (max-width: 1024px) {
+  .lj-foot { padding: 8rem 0; }
+  .lj-foot--desktop { display: none; }
+  .lj-foot__wrap { margin-bottom: 8rem; }
+  .lj-foot__link { width: 50%; }
+  .lj-foot__link:nth-child(odd) { text-align: right; }
+  .lj-foot__link:nth-child(2n) { text-align: left; }
+}
+
+/* ── Loader (1025 and up) — on a white curtain the logo letters light up one by one, then scale up into the Hero position ── */
+.lj-loader { position: fixed; inset: 0; z-index: 100; display: flex; place-content: center; align-items: center; padding: 2.2rem; }
+.lj-loader__bg { position: fixed; inset: 0; background-color: var(--kf-surface); }
+.lj-loader .lj-logo { position: relative; width: 118px; }
+.lj-loader .lj-logo__l { opacity: 0; }
+.lj-loader__side { position: relative; display: flex; align-items: center; opacity: 0; }
+.lj-loader__side--left { padding: 0 1.4rem 0 0; }
+.lj-loader__side--right { padding: 0 0 0 1.4rem; }
+@media (max-width: 1024px) { .lj-loader { display: none; } }
+
+/* ── Logo slot — placeholder letters in the same composition as the original wordmark (six high-contrast Didone letters stacked like stairs) ── */
+.lj-logo { position: relative; container-type: inline-size; aspect-ratio: 499 / 516; font-family: var(--kf-font-logo, var(--kf-font-display)); font-weight: 400; color: var(--kf-ink); line-height: 0.8; }
+.lj-logo__l { position: absolute; left: var(--x); top: var(--y); font-size: var(--s, 34cqw); white-space: nowrap; }
+.lj-side-text { display: flex; align-items: center; font: 1.6rem/1 var(--kf-font-sans); }
+.lj-side-text svg { width: 1.8rem; height: 1.8rem; }
+.lj-side-text span { margin: 0 0.2rem; }
+
+.lj-i-ink { fill: var(--kf-ink); }
+.lj-i-cur { fill: currentColor; stroke: var(--kf-ink); stroke-width: 1.4; }
+
+/* Photo·video slot — uses the wire gray as is but borderless like the original */
+.lj-ph { border: 0; }
+.lj-ph video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lj-star, .lj-ig__text { animation: none !important; }
+  .lj-btn::before, .lj-btn::after, .lj-btn span { transition: none !important; animation: none !important; }
+}

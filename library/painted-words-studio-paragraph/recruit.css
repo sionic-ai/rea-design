@@ -1,0 +1,61 @@
+/* Recruit — a narrow text column (516px) with the job text, and below it three tilted image cards. When a file is dragged over the window the screen darkens 3% and the cards fan out */
+:root {
+  --site-card: color-mix(in oklab, var(--kf-ink) 1.5%, var(--kf-bg));
+  --site-card-art: color-mix(in oklab, var(--kf-ink) 8%, var(--kf-bg));
+  --site-ink-90: color-mix(in oklab, var(--kf-ink) 90%, var(--kf-bg));
+  --site-bar: color-mix(in oklab, var(--kf-contrast-bg) 88%, var(--kf-contrast-ink));
+}
+
+.rb-apply__veil { position: fixed; inset: 16px; z-index: 50; border-radius: 12px; background: var(--kf-contrast-bg); opacity: 0; pointer-events: none; transition: opacity 0.3s var(--site-tw); }
+[data-dragging="true"] .rb-apply__veil { opacity: 0.03; pointer-events: auto; }
+
+.rb-apply__top { position: relative; z-index: 20; display: flex; margin: 40px 0 0 24px; }
+@media (min-width: 768px) { .rb-apply__top { margin: 48px 0 0 80px; } }
+
+.rb-apply__main { width: 100%; max-width: 516px; margin: 64px auto 0; padding: 0 24px 112px; }
+.rb-apply__meta { margin-bottom: 4px; font-size: 14px; font-weight: 400; color: var(--site-ink-50); }
+.rb-apply__title { margin-bottom: 20px; font-size: 30px; font-weight: 600; line-height: 1.2; color: var(--site-ink-90); }
+.rb-apply__body { display: flex; flex-direction: column; font-size: 14px; font-weight: 400; line-height: 1.6; color: var(--site-ink-70); word-break: keep-all; }
+.rb-apply__paras { display: flex; flex-direction: column; gap: 20px; }
+.rb-apply__paras b { font-weight: 600; color: var(--kf-ink); }
+.rb-apply__link { position: relative; font-weight: 600; font-style: italic; color: var(--kf-ink); }
+.rb-apply__link::after { content: ""; position: absolute; left: 0; bottom: -2px; width: 100%; height: 2px; border-radius: 999px; background: var(--site-hair); transition: all 0.3s var(--site-tw); }
+.rb-apply__link:hover::after { background: color-mix(in oklab, var(--kf-contrast-bg) 30%, transparent); }
+
+/* Three picture cards: 200px, tilt −6.25°, 8.46°, −6.25°, straightening to −.5° on hover (.3s). While being dragged in they gather to the center and tilt again */
+.rb-drop { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; }
+@media (min-width: 768px) { .rb-drop { flex-direction: row; } }
+.rb-drop__card {
+  position: relative; width: 200px; min-width: 200px; height: 200px; padding: 12px;
+  border: 0; border-radius: 12px; background: var(--site-card);
+  box-shadow: 0 0 0 1px var(--site-hair);
+  transform: rotate(var(--r)); transition: transform 0.3s var(--site-tw); cursor: pointer;
+}
+.rb-drop__card:hover { transform: rotate(-0.5deg); }
+[data-dragging="true"] .rb-drop__card { transform: translateX(var(--x)) rotate(var(--rd)); }
+@media (max-width: 767px) { [data-dragging="true"] .rb-drop__card { transform: rotate(var(--rd)); } }
+.rb-drop__card:focus-visible { outline: 2px solid var(--kf-accent); outline-offset: 3px; }
+.rb-drop__in { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; overflow: hidden; border-radius: 8px; transition: all 0.3s var(--site-tw); }
+.rb-drop__in::after { content: ""; position: absolute; inset: 0; z-index: 10; border: 1px solid var(--site-hair-soft); border-radius: 8px; pointer-events: none; }
+.rb-drop__card:hover .rb-drop__in { background: color-mix(in oklab, var(--kf-ink) 2%, transparent); }
+.rb-drop__art { width: auto; height: auto; fill: var(--site-card-art); transition: opacity 0.3s var(--site-tw); }
+.rb-drop__art--grid { width: 128px; } .rb-drop__art--sun { width: 122px; } .rb-drop__art--slider { width: 146px; }
+.rb-drop__rays { transform-origin: 61px 61px; }
+.rb-drop__pic { position: absolute; inset: 0; display: none; border: 0; background: var(--kf-raised) center / cover no-repeat; }
+.rb-drop__card.is-filled .rb-drop__pic { display: block; }
+.rb-drop__card.is-filled .rb-drop__art { opacity: 0; }
+
+/* Bottom support pill — rises from below once any image arrives (spring .4 bounce .2), and its width changes per step with a spring (.5 bounce .3) */
+.rb-apply-bar { position: fixed; left: 50%; bottom: -60px; z-index: 100; transform: translateX(-50%); }
+.rb-apply-bar__pill { display: flex; align-items: center; justify-content: center; height: 48px; width: 135px; padding: 6px; overflow: hidden; border-radius: var(--kf-radius-pill); background: var(--site-bar); box-shadow: var(--kf-shadow-soft); color: var(--kf-contrast-ink); }
+.rb-apply-bar__step { display: none; align-items: center; gap: 8px; width: 100%; height: 100%; padding: 0 6px 0 14px; font-size: 15px; font-weight: 600; }
+.rb-apply-bar__step.is-on { display: flex; }
+.rb-apply-bar__step input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: none; color: var(--kf-contrast-ink); font: inherit; font-weight: 500; }
+.rb-apply-bar__step input::placeholder { color: color-mix(in oklab, var(--kf-contrast-ink) 45%, transparent); }
+.rb-apply-bar__go { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; flex: none; border-radius: 50%; background: color-mix(in oklab, var(--kf-contrast-ink) 12%, transparent); }
+.rb-apply-bar__spin { width: 16px; height: 16px; border: 2px solid color-mix(in oklab, var(--kf-contrast-ink) 25%, transparent); border-top-color: var(--kf-contrast-ink); border-radius: 50%; }
+.rb-apply-bar__send { width: 100%; height: 100%; border: 0; border-radius: var(--kf-radius-pill); background: var(--kf-contrast-ink); color: var(--kf-contrast-bg); font: 600 15px/1 var(--kf-font-sans); cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rb-apply__veil, .rb-drop__card, .rb-drop__in, .rb-apply__link::after { transition: none; }
+}

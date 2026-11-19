@@ -1,0 +1,264 @@
+/* One panel per screen — the document doesn’t scroll (original overflow hidden), wheel and drag are taken by the grid */
+html, body { height: 100%; overflow: hidden; }
+.al-shell { position: relative; height: 100dvh; overflow: hidden; background: var(--kf-bg); }
+.al-shell[data-turning] { background: radial-gradient(120% 90% at 50% 45%, var(--kf-raised), var(--kf-bg) 70%); }
+
+/* Box flip: current and next faces sit on the box’s two sides and rotate ±90° */
+.al-stage { position: relative; z-index: 1; height: 100%; perspective: 170vw; perspective-origin: 50%; transition: opacity 0.28s; }
+.al-shell[data-boot="wait"] .al-stage, .al-shell[data-boot="load"] .al-stage, .al-shell[data-boot="clear"] .al-stage { opacity: 0; visibility: hidden; }
+.al-cube { position: relative; height: 100%; transform-style: preserve-3d; transform: translateZ(calc(-50vw - var(--pull, 0vw))) rotateY(var(--angle, 0deg)); will-change: transform; }
+.al-face { position: absolute; inset: 0; overflow: hidden; backface-visibility: hidden; transform: translateZ(50vw); background: var(--kf-bg); }
+.al-face > * { height: 100%; }
+.al-face[data-role="to"] { transform: rotateY(calc(var(--dir, 1) * 90deg)) translateZ(50vw); }
+.al-face::after { content: ""; position: absolute; inset: 0; z-index: 100; opacity: 0; pointer-events: none; background: var(--kf-bg); }
+.al-face[data-role="from"]::after { opacity: var(--shade-from, 0); }
+.al-face[data-role="to"]::after { opacity: var(--shade-to, 0); }
+.al-cube.is-turning .al-face { pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .al-cube, .al-face { transform: none; transform-style: flat; will-change: auto; } }
+
+/* ── Work Grid ── */
+.al-work { position: relative; width: 100%; height: 100%; background: var(--kf-bg); overflow: hidden; }
+
+/* ── Hint pill: ‹Scroll or drag to explore› glass pill, words float up one by one and a light streak sweeps once ── */
+.al-hint { position: absolute; inset: 0; z-index: 6; display: grid; place-items: center; pointer-events: none; }
+.al-hint__float { position: relative; opacity: 0; will-change: transform, opacity; }
+.al-hint__pill {
+  position: relative; display: flex; align-items: center; overflow: hidden; padding: 1.15rem 2.3rem; border-radius: var(--kf-radius-pill);
+  color: var(--kf-ink); white-space: nowrap; will-change: transform;
+  background: linear-gradient(170deg, color-mix(in srgb, var(--kf-ink) 16%, transparent), color-mix(in srgb, var(--kf-ink) 3%, transparent) 45%, color-mix(in srgb, var(--kf-ink) 8%, transparent)), color-mix(in srgb, var(--kf-raised) 32%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6);
+}
+.al-hint__pill::before, .al-hint__pill::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
+.al-hint__pill::before {
+  padding: 1px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--kf-ink) 75%, transparent) 0%, color-mix(in srgb, var(--kf-ink) 16%, transparent) 30%, color-mix(in srgb, var(--kf-ink) 4%, transparent) 55%, color-mix(in srgb, var(--kf-ink) 16%, transparent) 80%, color-mix(in srgb, var(--kf-ink) 60%, transparent) 100%);
+  -webkit-mask: linear-gradient(var(--kf-ink) 0 0) content-box, linear-gradient(var(--kf-ink) 0 0); -webkit-mask-composite: xor; mask: linear-gradient(var(--kf-ink) 0 0) content-box exclude, linear-gradient(var(--kf-ink) 0 0);
+}
+.al-hint__pill::after { box-shadow: inset 0 1px color-mix(in srgb, var(--kf-ink) 50%, transparent), inset 1.5px 2px 3px -1px color-mix(in srgb, var(--kf-ink) 35%, transparent), inset -1.5px -2px 3px -1px color-mix(in srgb, var(--kf-ink) 18%, transparent), inset 0 -12px 18px -14px color-mix(in srgb, var(--kf-ink) 22%, transparent); }
+.al-hint__sheen { position: absolute; inset: -20% -10%; opacity: 0; pointer-events: none; background: linear-gradient(105deg, transparent 38%, color-mix(in srgb, var(--kf-ink) 28%, transparent) 50%, transparent 62%); }
+.al-hint__text { position: relative; font-size: clamp(1.1rem, 1.45vw, 1.32rem); font-weight: 500; letter-spacing: -0.01em; text-shadow: 0 1px 2px color-mix(in srgb, var(--kf-bg) 45%, transparent); }
+.al-hint__word { display: inline-block; opacity: 0; }
+@media (width <= 720px) { .al-hint__pill { padding: 1rem 1.8rem; } }
+
+/* ── Career: the big year on the left flips letter by letter with top and bottom half panels (original split-flap), the role of that year on the right, a time ruler bar below ── */
+.al-xp { --pad-x: clamp(1.25rem, 5vw, 5rem); position: relative; width: 100%; height: 100%; background: var(--kf-bg); color: var(--kf-ink); }
+.al-xp__stage { position: absolute; left: var(--pad-x); right: calc(var(--pad-x) + 3.5rem); top: calc(var(--site-hud-y) + 3.4rem); bottom: calc(var(--site-hud-y) + 12.6rem); display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: center; gap: clamp(1.5rem, 5vw, 5rem); container-type: inline-size; }
+.al-xp__year { margin: 0; display: flex; font-size: min(clamp(5rem, min(20vw, 34vh), 17rem), 22.29cqi - clamp(1.5rem, 5vw, 5rem) / 4.48632); font-weight: 620; line-height: 1; letter-spacing: -0.075em; font-variant-numeric: tabular-nums; }
+.al-xp__digit { position: relative; display: inline-block; height: 1em; line-height: 1em; perspective: 2.6em; --flap: 0.52s; }
+.al-xp__digit-size { visibility: hidden; display: block; }
+.al-xp__leaf { position: absolute; inset: 0; display: block; backface-visibility: hidden; background: var(--site-board, var(--kf-bg)); }
+.al-xp__leaf.is-top { clip-path: inset(-0.02em -0.3em 50%); transform-origin: 50%; }
+.al-xp__leaf.is-bottom { clip-path: inset(calc(50% - 0.008em) -0.3em -0.02em); transform-origin: 50%; }
+.al-xp__leaf.is-fold { animation: al-fold-down calc(var(--flap) * 0.5) cubic-bezier(0.55, 0, 0.9, 0.45) both; }
+.al-xp__leaf.is-unfold { animation: al-unfold-down calc(var(--flap) * 0.5) cubic-bezier(0.2, 0.75, 0.35, 1.25) calc(var(--flap) * 0.5) both; }
+.al-xp__digit.is-up .al-xp__leaf.is-fold { animation-name: al-fold-up; }
+.al-xp__digit.is-up .al-xp__leaf.is-unfold { animation-name: al-unfold-up; }
+@keyframes al-fold-down { 0% { opacity: 1; transform: rotateX(0); } 100% { opacity: 0; transform: rotateX(-90deg); } }
+@keyframes al-unfold-down { 0% { opacity: 0.2; transform: rotateX(90deg); } 100% { opacity: 1; transform: rotateX(0); } }
+@keyframes al-fold-up { 0% { opacity: 1; transform: rotateX(0); } 100% { opacity: 0; transform: rotateX(90deg); } }
+@keyframes al-unfold-up { 0% { opacity: 0.2; transform: rotateX(-90deg); } 100% { opacity: 1; transform: rotateX(0); } }
+.al-xp__post { max-width: 34rem; }
+.al-xp__when { margin: 0; font: 400 0.72rem / 1.3 var(--kf-font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--site-ink-30); }
+.al-xp__post h2 { margin: 0.55rem 0 0; font-size: clamp(1.9rem, 3.4vw, 3rem); font-weight: 560; line-height: 1.12; letter-spacing: -0.04em; }
+.al-xp__role { margin: 0.6rem 0 0; font-size: clamp(1rem, 1.35vw, 1.2rem); color: var(--site-ink-60); }
+.al-xp__text { margin: 1.1rem 0 0; font-size: var(--site-text-body); line-height: 1.7; color: var(--site-ink-60); }
+.al-xp__post.is-swap > * { animation: 0.5s both al-xp-rise; }
+.al-xp__post.is-swap > *:nth-child(2) { animation-delay: 0.06s; }
+.al-xp__post.is-swap > *:nth-child(3) { animation-delay: 0.12s; }
+.al-xp__post.is-swap > *:nth-child(4) { animation-delay: 0.18s; }
+@keyframes al-xp-rise { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: none; } }
+.al-xp__steps { position: absolute; z-index: 3; right: clamp(0.75rem, 2.5vw, 2rem); top: 50%; transform: translateY(-58%); display: flex; flex-direction: column; gap: 0.5rem; }
+.al-xp__step { width: 2.75rem; height: 2.75rem; display: grid; place-items: center; border-radius: var(--kf-radius-pill); border: 1px solid color-mix(in srgb, var(--kf-ink) 16%, transparent); background: color-mix(in srgb, var(--kf-raised) 55%, transparent); color: color-mix(in srgb, var(--kf-ink) 86%, transparent); cursor: pointer; -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%); transition: background 0.25s, border-color 0.25s, color 0.25s, transform 0.15s; }
+.al-xp__step svg { width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 1.8px; stroke-linecap: round; stroke-linejoin: round; }
+.al-xp__step:hover, .al-xp__step:focus-visible { border-color: color-mix(in srgb, var(--kf-ink) 40%, transparent); background: color-mix(in srgb, var(--kf-ink) 14%, transparent); color: var(--kf-ink); outline: none; }
+.al-xp__step:active { transform: scale(0.94); }
+.al-xp__step[aria-disabled="true"] { opacity: 0.3; pointer-events: none; }
+.al-xp__ruler { position: absolute; left: var(--pad-x); right: var(--pad-x); bottom: calc(var(--site-hud-y) + 5.6rem); height: 5.9rem; }
+.al-xp__ticks { position: absolute; inset: 0 0 auto; height: 1.6rem; }
+.al-xp__tick { position: absolute; bottom: 0; width: 1px; height: 0.4rem; background: color-mix(in srgb, var(--kf-ink) 18%, transparent); transform: translate(-0.5px); }
+.al-xp__tick.is-major { height: 0.8rem; }
+.al-xp__tick i { position: absolute; left: 0; bottom: 1rem; transform: translate(-50%); font: normal 0.62rem / 1 var(--kf-font-mono); letter-spacing: 0.06em; color: var(--site-ink-30); }
+.al-xp__posts { position: absolute; inset: 2.4rem 0 0; margin: 0; padding: 0; list-style: none; }
+.al-xp__posts li { position: absolute; top: 0; height: 100%; padding-right: 3px; box-sizing: border-box; }
+.al-xp__posts li[data-lane="1"] { top: 1.95rem; }
+.al-xp__posts button { width: 100%; height: 100%; display: flex; flex-direction: column; gap: 0.45rem; margin: 0; padding: 0; border: 0; background: transparent; color: var(--site-ink-30); font: inherit; text-align: left; cursor: pointer; transition: color 0.26s; }
+.al-xp__posts button:hover, .al-xp__posts button:focus-visible { color: var(--site-ink-60); outline: none; }
+.al-xp__bar { display: block; height: 0.5rem; border-radius: var(--kf-radius-pill); background: color-mix(in srgb, var(--kf-accent) 50%, transparent); transition: background-color 0.3s, height 0.38s var(--site-ease); }
+.al-xp__posts button.is-on { color: var(--kf-ink); }
+.al-xp__posts button.is-on .al-xp__bar { height: 0.8rem; background: var(--kf-accent); box-shadow: 0 0 22px color-mix(in srgb, var(--kf-accent) 60%, transparent); }
+.al-xp__name { display: block; font: 400 0.62rem / 1 var(--kf-font-mono); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; opacity: 0.9; }
+.al-xp__posts button.is-on .al-xp__name { color: var(--kf-accent-text); }
+@media (width <= 860px) {
+  .al-xp__stage { right: var(--pad-x); bottom: calc(var(--site-hud-y) + 13.4rem); grid-template-columns: 1fr; align-content: center; gap: 0.8rem; }
+  .al-xp__year { font-size: min(clamp(4.4rem, 36vw, 10rem), 42.5532cqi); }
+  .al-xp__post h2 { font-size: clamp(1.5rem, 6vw, 2.2rem); }
+  .al-xp__ruler { bottom: calc(var(--site-hud-y) + 5.2rem); height: 4.4rem; }
+  .al-xp__steps { top: auto; bottom: calc(var(--site-hud-y) + 10.2rem); right: 0.75rem; flex-direction: row; transform: none; }
+  .al-xp__step svg { transform: rotate(-90deg); }
+  .al-xp__name { display: none; }
+}
+
+/* ── Time machine: past panels in the same glass panel grid (4 columns) ── */
+.al-tm { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 1.5rem; padding: calc(var(--site-hud-y) + 4.5rem) var(--site-hud-x) calc(var(--site-hud-y) + 6rem); background: radial-gradient(90% 70% at 50% 50%, color-mix(in srgb, var(--kf-accent) 14%, var(--kf-bg)), var(--kf-bg) 70%); }
+.al-tm__head { text-align: center; }
+.al-tm__eyebrow { margin: 0; font: 400 var(--site-text-label) / 1.3 var(--kf-font-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--site-ink-30); }
+.al-tm__head h2 { margin: 0.4rem 0 0; font-size: clamp(1.6rem, 3vw, 2.6rem); font-weight: 650; letter-spacing: -0.03em; }
+.al-tm__lattice { width: min(1100px, 100%); margin: 0 auto; background: transparent; }
+
+/* ── Contact: two blueprint panels with handles (to-do row · side work column) ── */
+.al-cb { position: relative; width: 100%; height: 100%; overflow: auto; background: var(--kf-bg); --cb-line: color-mix(in srgb, var(--kf-ink) 18%, transparent); }
+.al-cb__board { position: absolute; top: calc(50% - 1.2rem); left: 50%; transform: translate(-50%, -50%); z-index: 2; width: min(62rem, 100% - 2 * var(--site-hud-x)); display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); gap: clamp(1rem, 2.4vw, 2rem); }
+.al-cb__slab { position: relative; min-width: 0; display: flex; flex-direction: column; padding: 1.35rem 1.45rem 1.45rem; border: 1px solid color-mix(in srgb, var(--kf-ink) 30%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); animation: 0.9s var(--site-ease) both al-cb-rise; box-shadow: 0 28px 50px -28px color-mix(in srgb, var(--kf-bg) 70%, transparent); }
+.al-cb__slab.is-actions { background-color: color-mix(in srgb, var(--kf-raised) 70%, transparent); background-image: linear-gradient(color-mix(in srgb, var(--kf-ink) 6%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--kf-ink) 6%, transparent) 1px, transparent 1px); background-size: 18px 18px; }
+.al-cb__slab.is-side { background-color: color-mix(in srgb, var(--kf-raised) 42%, transparent); border-style: dashed; border-color: color-mix(in srgb, var(--kf-ink) 18%, transparent); animation-delay: 0.12s; }
+.al-cb__handle { position: absolute; width: 7px; height: 7px; border: 1px solid color-mix(in srgb, var(--kf-ink) 60%, transparent); background: var(--kf-bg); }
+.al-cb__handle:nth-child(1) { top: -4px; left: -4px; } .al-cb__handle:nth-child(2) { top: -4px; right: -4px; } .al-cb__handle:nth-child(3) { bottom: -4px; left: -4px; } .al-cb__handle:nth-child(4) { bottom: -4px; right: -4px; }
+.al-cb__head { display: flex; align-items: baseline; gap: 0.6rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--cb-line); }
+.al-cb__title { margin: 0; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--site-ink-60); }
+.al-cb__note { font: 400 0.68rem / 1.2 var(--kf-font-mono); color: var(--site-ink-30); }
+.al-cb__rows { margin: 1.15rem 0 0; padding: 0; list-style: none; border-top: 1px solid var(--cb-line); }
+.al-cb__rows a { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; padding: 0.95rem 0.2rem; border-bottom: 1px solid var(--cb-line); color: inherit; text-decoration: none; font-size: clamp(1rem, 1.4vw, 1.25rem); font-weight: 560; letter-spacing: -0.02em; }
+.al-cb__rows li:last-child a { border-bottom: 0; }
+.al-cb__rows a > * { position: relative; z-index: 1; }
+.al-cb__rows a::before { content: ""; position: absolute; inset: 0; z-index: 0; background: color-mix(in srgb, var(--kf-ink) 8%, transparent); transform: scaleX(0); transform-origin: 0; transition: transform 0.45s var(--site-ease); pointer-events: none; }
+.al-cb__go { width: 1.8rem; height: 1.8rem; display: grid; place-items: center; border-radius: 50%; opacity: 0.4; transition: opacity 0.3s, background 0.3s, color 0.3s, transform 0.45s var(--site-ease); }
+@media (hover: hover) { .al-cb__rows a:hover::before { transform: scaleX(1); } .al-cb__rows a:hover .al-cb__go { opacity: 1; background: var(--kf-ink); color: var(--kf-bg); transform: translate(3px); } }
+.al-cb__rows a:focus-visible::before { transform: scaleX(1); }
+.al-cb__tiles { flex: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 0.5rem; margin: 1.1rem 0 0; padding: 0; list-style: none; }
+.al-cb__tiles li { display: grid; }
+.al-cb__tiles a { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0.6rem; padding: 0.8rem 0.9rem; border: 1px solid var(--cb-line); color: inherit; text-decoration: none; font-weight: 560; transition: border-color 0.3s, background 0.3s, transform 0.45s var(--site-ease); }
+.al-cb__mark { font: 400 0.68rem / 1 var(--kf-font-mono); color: var(--site-ink-30); transition: color 0.3s; }
+.al-cb__out { opacity: 0; transform: translate(-3px, 3px); transition: opacity 0.3s, transform 0.45s var(--site-ease); }
+@media (hover: hover) { .al-cb__tiles a:hover { background: color-mix(in srgb, var(--kf-ink) 7%, transparent); border-color: color-mix(in srgb, var(--kf-ink) 40%, transparent); transform: translateY(-2px); } .al-cb__tiles a:hover .al-cb__mark { color: var(--kf-ink); } .al-cb__tiles a:hover .al-cb__out { opacity: 1; transform: none; } }
+.al-cb__social { margin-top: 1rem; padding-top: 0.9rem; border-top: 1px solid var(--cb-line); }
+.al-cb__social-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; margin: 0.55rem 0 0; padding: 0; list-style: none; }
+.al-cb__social-grid a { display: block; padding: 0.55rem 0.7rem; border: 1px solid color-mix(in srgb, var(--kf-ink) 18%, transparent); background: color-mix(in srgb, var(--kf-ink) 6%, transparent); color: var(--kf-ink); text-decoration: none; font-size: 0.85rem; letter-spacing: -0.01em; transition: background 0.3s, border-color 0.3s; }
+.al-cb__social-grid a:hover { background: color-mix(in srgb, var(--kf-ink) 14%, transparent); border-color: color-mix(in srgb, var(--kf-ink) 40%, transparent); }
+@keyframes al-cb-rise { 0% { opacity: 0; transform: translateY(14px); } 100% { opacity: 1; transform: none; } }
+@media (width <= 860px), (height <= 560px) {
+  .al-cb__board { position: relative; top: auto; left: auto; transform: none; width: auto; margin: calc(var(--site-hud-y) + 4.4rem) var(--site-hud-x) calc(var(--site-hud-y) + 6.2rem); grid-template-columns: 1fr; gap: 1.1rem; }
+  .al-cb__slab { padding: 1.1rem 1.15rem 1.2rem; }
+}
+@media (prefers-reduced-motion: reduce) { .al-cb__slab { animation: none; } .al-xp__leaf { animation: none !important; } }
+
+/* ── Floor of the three dock screens: navy blueprint panel — back wall grid and a floor grid lying in perspective ── */
+.al-board { --site-board: oklch(from var(--kf-accent) calc(l - 0.43) calc(c * 0.35) calc(h - 34)); --site-board-line: color-mix(in srgb, var(--kf-ink) 10%, transparent); position: relative; background: var(--site-board) !important; overflow: hidden; }
+.al-board::before { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(var(--site-board-line) 1px, transparent 1px), linear-gradient(90deg, var(--site-board-line) 1px, transparent 1px); background-size: 56px 56px; background-position: center; }
+.al-board__floor { position: absolute; left: -50%; right: -50%; bottom: -10%; height: 55%; pointer-events: none; transform: perspective(520px) rotateX(64deg); transform-origin: 50% 100%; background-image: linear-gradient(var(--site-board-line) 1px, transparent 1px), linear-gradient(90deg, var(--site-board-line) 1px, transparent 1px); background-size: 56px 56px; -webkit-mask-image: linear-gradient(to top, var(--kf-ink) 30%, transparent); mask-image: linear-gradient(to top, var(--kf-ink) 30%, transparent); }
+.al-xp__tags { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+.al-xp__tags li { padding: 0.18rem 0.55rem; border: 1px solid color-mix(in srgb, var(--kf-ink) 40%, transparent); border-radius: var(--kf-radius-pill); font: 400 0.62rem / 1.4 var(--kf-font-mono); color: var(--site-ink-92); }
+.al-xp__org { margin: 0.35rem 0 0; color: var(--site-ink-30); font-size: 0.95rem; }
+.al-xp__posts li[data-hue] .al-xp__bar { --c: oklch(from var(--kf-accent) 0.72 0.13 calc(h + var(--hue))); background: color-mix(in srgb, var(--c) 70%, transparent); }
+.al-xp__posts li[data-hue] button.is-on .al-xp__bar { background: var(--c); box-shadow: 0 0 22px color-mix(in srgb, var(--c) 60%, transparent); }
+.al-xp__posts li[data-hue] button.is-on .al-xp__name { color: var(--c); }
+
+/* ── Time machine: rotating stage of 3D laptops and monitors showing old versions, year pills on top ── */
+.al-tm { padding: 0; display: block; }
+.al-tm__scene { position: absolute; inset: 0; z-index: 1; cursor: grab; touch-action: pan-y; }
+.al-tm__scene:active { cursor: grabbing; }
+.al-tm__scene canvas { display: block; width: 100%; height: 100%; }
+.al-tm__pills { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.al-tm__pill { position: absolute; left: 0; top: 0; padding: 0.4rem 0.95rem; border-radius: var(--kf-radius-pill); border: 1px solid color-mix(in srgb, var(--kf-ink) 26%, transparent); background: color-mix(in srgb, var(--kf-bg) 45%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: var(--kf-ink); font-size: 0.95rem; font-weight: 600; white-space: nowrap; transform: translate(-50%, -100%); will-change: transform, opacity; }
+.al-tm__arrows { position: absolute; z-index: 3; left: 0; right: 0; top: 50%; display: flex; justify-content: space-between; padding: 0 var(--site-hud-x); pointer-events: none; }
+.al-tm__arrow { pointer-events: auto; width: 2.75rem; height: 2.75rem; display: grid; place-items: center; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--kf-ink) 16%, transparent); background: color-mix(in srgb, var(--kf-raised) 55%, transparent); color: var(--kf-ink); cursor: pointer; -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); transition: background 0.25s, border-color 0.25s, opacity 0.25s; }
+.al-tm__arrow:hover { background: color-mix(in srgb, var(--kf-ink) 14%, transparent); border-color: color-mix(in srgb, var(--kf-ink) 40%, transparent); }
+.al-tm__arrow[aria-disabled="true"] { opacity: 0.3; pointer-events: none; }
+.al-tm__arrow svg { width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.al-tm__caption { position: absolute; z-index: 2; left: 50%; bottom: calc(var(--site-hud-y) + 7rem); transform: translate(-50%); margin: 0; text-align: center; }
+.al-tm__caption b { display: block; font-size: 2.4rem; font-weight: 650; letter-spacing: -0.03em; }
+.al-tm__caption span { font: 400 0.72rem / 1.3 var(--kf-font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--site-ink-30); }
+.al-cb__kicker { margin: 1.1rem 0 0; font: 400 0.62rem / 1.3 var(--kf-font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--site-ink-30); }
+.al-cb__mail { display: block; margin: 0.35rem 0 0.4rem; color: var(--kf-ink); text-decoration: none; font-size: clamp(1.3rem, 2vw, 1.75rem); font-weight: 600; letter-spacing: -0.03em; }
+.al-cb__rows b, .al-cb__tiles b { display: block; font-weight: 560; }
+.al-cb__rows small, .al-cb__tiles small { display: block; margin-top: 0.15rem; font: 400 0.58rem / 1.2 var(--kf-font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--site-ink-30); }
+.al-cb__rows a { font-size: 0.95rem; padding: 0.7rem 0.2rem; }
+.al-cb__tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.al-cb__tiles a { font-size: 0.85rem; }
+.al-cb__social-grid a { border-radius: var(--kf-radius-pill); text-align: center; }
+.al-cb__appearance { display: flex; align-items: center; justify-content: space-between; }
+.al-cb__switch { display: inline-flex; padding: 3px; border-radius: var(--kf-radius-pill); border: 1px solid color-mix(in srgb, var(--kf-ink) 18%, transparent); }
+.al-cb__switch button { padding: 0.3rem 0.75rem; border: 0; border-radius: var(--kf-radius-pill); background: transparent; color: var(--site-ink-60); font-size: 0.72rem; cursor: pointer; transition: background 0.3s, color 0.3s; }
+.al-cb__switch button.is-on { background: var(--kf-ink); color: var(--kf-bg); }
+
+/* ── Cinema (original .cine): a movie frame takes the place of the flown-in card, with close · title · control bar around it and three other cases on the right ── */
+.al-cine { --cine-amt: 0; --cine-ease: cubic-bezier(0.22, 1, 0.36, 1); --cine-ink: var(--kf-contrast-bg); --cine-ink-2: color-mix(in srgb, var(--kf-contrast-bg) 62%, transparent); position: fixed; inset: 0; z-index: 200; cursor: zoom-out; touch-action: none; user-select: none; }
+/* A closed window still reserves its space — unfolding the whole window at the moment of press would delay the first frame, so the three-panel right side turns on at its own size */
+.al-cine.is-closed { visibility: hidden; pointer-events: none; }
+/* The surrounding darkness deepens following the card’s fly-in progress (1.15s, cubic-bezier(.5,0,.12,1)) */
+.al-cine::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: var(--cine-amt); background: radial-gradient(120% 95%, transparent 45%, color-mix(in srgb, var(--kf-bg) 55%, transparent)); transition: opacity 1.15s cubic-bezier(0.5, 0, 0.12, 1); }
+.al-cine.is-out::before { transition-duration: 0.95s; }
+.al-cine__frame { position: fixed; top: 0; left: 0; cursor: default; opacity: 0; border-radius: 18px; box-shadow: 0 0 transparent; transition: opacity 0.5s var(--cine-ease), box-shadow 0.8s var(--cine-ease); }
+.al-cine.is-landed .al-cine__frame { opacity: 1; box-shadow: 0 60px 140px -40px color-mix(in srgb, var(--kf-bg) 75%, transparent); }
+.al-cine.is-out .al-cine__frame { opacity: 0; transition: opacity 0.26s; }
+.al-cine__frame:focus, .al-cine__frame:focus-visible { outline: none; }
+.al-cine__frame.is-idle, .al-cine__frame.is-idle .al-cine__slot { cursor: none; }
+.al-cine__frame:fullscreen { background: var(--kf-bg); border-radius: 0 !important; }
+.al-cine__slot { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; cursor: pointer; }
+/* The original mixes the film into the card shader (.22s time constant) — the copy overlays a video in the same rounded frame on the flattened card and brightens it at that tempo */
+.al-cine__slot video { width: 100%; height: 100%; object-fit: contain; display: block; opacity: 0; transition: opacity 0.66s cubic-bezier(0.2, 0.7, 0.3, 1); }
+.al-cine__slot.is-rolling video { opacity: 1; }
+.al-cine__chrome { position: absolute; left: 0; right: 0; bottom: 0; padding: 3.4rem 1.1rem 0.85rem; border-bottom-left-radius: inherit; border-bottom-right-radius: inherit; color: var(--cine-ink); opacity: 0; pointer-events: none; translate: 0 0.6rem; background: linear-gradient(transparent, color-mix(in srgb, var(--kf-bg) 28%, transparent) 45%, color-mix(in srgb, var(--kf-bg) 62%, transparent)); transition: opacity 0.45s var(--cine-ease), translate 0.6s var(--cine-ease); }
+.al-cine.is-landed .al-cine__frame:not(.is-idle) .al-cine__chrome { opacity: 1; pointer-events: auto; translate: 0; transition-delay: 0.25s; }
+.al-cine__frame.is-idle .al-cine__chrome { transition-duration: 0.8s; }
+.al-cine__scrub { position: relative; height: 1.1rem; margin: 0 0.25rem 0.35rem; cursor: pointer; touch-action: none; outline: none; }
+.al-cine__scrub span { position: absolute; top: 50%; left: 0; height: 3px; border-radius: 999px; translate: 0 -50%; transition: height 0.25s var(--cine-ease); }
+.al-cine__scrub .al-cine__track { right: 0; background: color-mix(in srgb, var(--kf-ink) 20%, transparent); }
+.al-cine__scrub .al-cine__buf { width: var(--b, 0%); background: color-mix(in srgb, var(--kf-ink) 28%, transparent); }
+.al-cine__scrub .al-cine__fill { width: var(--p, 0%); background: var(--kf-ink); box-shadow: 0 0 14px color-mix(in srgb, var(--kf-ink) 45%, transparent); }
+.al-cine__scrub .al-cine__knob { left: var(--p, 0%); width: 13px; height: 13px; border-radius: 50%; background: var(--kf-ink); translate: -50% -50%; scale: 0; transition: scale 0.25s var(--cine-ease); box-shadow: 0 2px 10px color-mix(in srgb, var(--kf-bg) 45%, transparent); }
+.al-cine__scrub:hover span:not(.al-cine__knob), .al-cine__scrub:focus-visible span:not(.al-cine__knob) { height: 5px; }
+.al-cine__scrub:hover .al-cine__knob, .al-cine__scrub:focus-visible .al-cine__knob { scale: 1; }
+.al-cine__bar { display: flex; align-items: center; gap: 0.35rem; }
+.al-cine__spacer { flex: 1; }
+.al-cine__btn { width: 2.5rem; height: 2.5rem; display: grid; place-items: center; padding: 0; border: 0; border-radius: 999px; background: transparent; color: inherit; cursor: pointer; transition: background 0.2s ease, scale 0.2s var(--cine-ease); }
+.al-cine__btn svg { width: 18px; height: 18px; fill: currentColor; grid-area: 1 / 1; }
+.al-cine__btn:hover { background: color-mix(in srgb, var(--kf-ink) 14%, transparent); }
+.al-cine__btn:active { scale: 0.92; }
+.al-cine__btn:focus-visible { outline: none; box-shadow: 0 0 0 2px color-mix(in srgb, var(--kf-ink) 60%, transparent); }
+.al-cine__ico-play, .al-cine.is-paused .al-cine__ico-pause { display: none; }
+.al-cine.is-paused .al-cine__ico-play { display: block; }
+.al-cine.is-muted .al-cine__wave { opacity: 0.25; }
+.al-cine__time { margin-left: 0.3rem; font-family: var(--kf-font-mono); font-size: 0.74rem; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; color: color-mix(in srgb, var(--kf-ink) 86%, transparent); }
+.al-cine__time i { opacity: 0.45; margin: 0 0.15rem; font-style: normal; }
+.al-cine__close { position: absolute; bottom: calc(100% + 0.85rem); left: 0; display: inline-flex; align-items: center; gap: 0.35rem; height: 2.35rem; padding: 0 0.95rem 0 0.7rem; border: 0; border-radius: 999px; font: inherit; font-size: 0.82rem; color: var(--cine-ink); background: color-mix(in srgb, var(--kf-raised) 62%, transparent); backdrop-filter: blur(16px) saturate(1.4); box-shadow: inset 0 1px color-mix(in srgb, var(--kf-ink) 28%, transparent), 0 10px 28px color-mix(in srgb, var(--kf-bg) 30%, transparent); cursor: pointer; opacity: 0; translate: 0 0.5rem; transition: opacity 0.4s var(--cine-ease), translate 0.6s var(--cine-ease), background 0.2s ease; }
+.al-cine__close svg { width: 15px; height: 15px; }
+.al-cine__close:hover { background: color-mix(in srgb, var(--kf-raised) 80%, transparent); }
+.al-cine__close:focus-visible { outline: none; box-shadow: inset 0 1px color-mix(in srgb, var(--kf-ink) 28%, transparent), 0 0 0 2px color-mix(in srgb, var(--kf-ink) 55%, transparent); }
+.al-cine__caption { position: absolute; top: calc(100% + 1rem); left: 0; right: 0; display: flex; color: var(--cine-ink); pointer-events: none; opacity: 0; translate: 0 -0.4rem; transition: opacity 0.5s var(--cine-ease), translate 0.7s var(--cine-ease); }
+.al-cine.is-landed .al-cine__close, .al-cine.is-landed .al-cine__caption { opacity: 1; translate: 0; transition-delay: 0.2s; }
+.al-cine.is-out .al-cine__close, .al-cine.is-out .al-cine__caption { transition-duration: 0.2s; transition-delay: 0s; }
+.al-cine.is-landed .al-cine__title { pointer-events: auto; }
+.al-cine__title { --pad: 0.45rem; flex: 1; min-width: 0; display: flex; align-items: center; gap: 0.85rem; margin: calc(var(--pad) * -1); padding: var(--pad); border-radius: 16px; color: inherit; text-decoration: none; transition: background 0.25s, box-shadow 0.3s; }
+.al-cine__title:hover, .al-cine__title:focus-visible { outline: none; background: color-mix(in srgb, var(--kf-ink) 7%, transparent); box-shadow: inset 0 1px color-mix(in srgb, var(--kf-ink) 16%, transparent); }
+.al-cine__title:hover strong, .al-cine__title:focus-visible strong { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+.al-cine__title:hover .al-cine__go, .al-cine__title:focus-visible .al-cine__go { opacity: 1; background: color-mix(in srgb, var(--kf-ink) 18%, transparent); }
+.al-cine__title:hover .al-cine__go svg, .al-cine__title:focus-visible .al-cine__go svg { translate: 2px -2px; }
+.al-cine__icon { flex: none; width: 2.75rem; height: 2.75rem; display: grid; place-items: center; border-radius: 0.66rem; overflow: hidden; font-size: 1.15rem; font-weight: 650; color: var(--kf-ink); background: linear-gradient(145deg, color-mix(in srgb, var(--kf-ink) 18%, transparent), color-mix(in srgb, var(--kf-bg) 32%, transparent)), var(--kf-accent); box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--kf-ink) 18%, transparent), 0 6px 16px -6px color-mix(in srgb, var(--kf-bg) 50%, transparent); }
+.al-cine__text { min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.9rem; }
+.al-cine__text strong { font-size: clamp(1rem, 1.5vw, 1.35rem); font-weight: 650; letter-spacing: -0.02em; }
+.al-cine__text span { font-size: 0.86rem; color: var(--cine-ink-2); }
+.al-cine__go { flex: none; margin-left: auto; display: inline-flex; align-items: center; gap: 0.4rem; height: 2rem; padding: 0 0.7rem 0 0.9rem; border-radius: 999px; font-size: 0.82rem; font-weight: 550; letter-spacing: -0.005em; white-space: nowrap; color: var(--cine-ink); opacity: 0.85; background: color-mix(in srgb, var(--kf-ink) 10%, transparent); box-shadow: inset 0 1px color-mix(in srgb, var(--kf-ink) 18%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--kf-ink) 8%, transparent); transition: opacity 0.2s, background 0.2s; }
+.al-cine__go svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; transition: translate 0.35s var(--cine-ease); }
+.al-cine__rail { position: fixed; inset: 0; pointer-events: none; }
+.al-cine:not(.has-rail) .al-cine__rail { display: none; }
+.al-cine__rail-title { position: fixed; margin: 0; translate: 0 calc(-100% - 0.7rem); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; color: var(--cine-ink-2); pointer-events: none; opacity: 0; transition: opacity 0.55s var(--cine-ease); }
+.al-cine.is-landed .al-cine__rail-title { opacity: 1; transition-delay: 0.28s; }
+.al-cine.is-out .al-cine__rail-title { opacity: 0; transition-duration: 0.3s; transition-delay: 0s; }
+.al-cine__rail-glass { position: fixed; pointer-events: none; opacity: 0; filter: blur(8px); translate: 2.2rem; transition: opacity 0.55s var(--cine-ease), translate 0.9s var(--cine-ease), filter 0.6s var(--cine-ease); }
+.al-cine.is-landed .al-cine__rail-glass { opacity: 1; filter: none; pointer-events: auto; translate: 0; transition-delay: 0.28s; }
+.al-cine.is-out .al-cine__rail-glass { opacity: 0; translate: 1.2rem; transition-duration: 0.3s, 0.5s, 0.3s; transition-delay: 0s; }
+/* When cinema opens the dock slides down and disappears (original html[data-cinema] .page-dock) — attached only to the dock so the whole html isn’t recalculated */
+.al-dock.is-cinema { opacity: 0; pointer-events: none; translate: 0 1.6rem; }
+@media (max-width: 720px) {
+  .al-cine__close { height: 2.1rem; }
+  .al-cine__chrome { padding: 2.4rem 0.5rem 0.4rem; }
+  .al-cine__btn { width: 2.2rem; height: 2.2rem; }
+}
+/* On short screens there is no room above and below the frame, so close goes inside the frame at top left and the title is dropped */
+@media (max-height: 500px) {
+  .al-cine__close { z-index: 2; top: 0.6rem; bottom: auto; left: 0.6rem; height: 2.1rem; }
+  .al-cine__caption { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .al-cine__close, .al-cine__caption, .al-cine__chrome { transition-duration: 0.01ms !important; transition-delay: 0s !important; }
+}

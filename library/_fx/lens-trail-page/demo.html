@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lens-trail-page — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-accent); font: 700 16px/1 var(--kf-font-sans); letter-spacing: -.06em; cursor: crosshair; margin: 0; }
+  .demo-hint { position: relative; z-index: 100; padding: 12px 20px; background: var(--kf-surface); color: var(--kf-ink); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); letter-spacing: 0; }
+  .demo-hint b { font-weight: 700; }
+  .board { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 46px); }
+  .board nav { display: flex; flex-direction: column; gap: 6px; padding: 40px 24px; }
+  .board nav h2 { font-size: 32px; letter-spacing: -.1em; margin: 0 0 6px; }
+  .board nav a { color: inherit; text-decoration: none; font-size: 22px; width: max-content; }
+  .letters { display: grid; grid-template-columns: repeat(6, 72px); gap: 16px; align-content: center; justify-content: center; }
+  .letters > * { aspect-ratio: 1; display: grid; place-items: center; color: inherit; text-decoration: none; font-size: 18px; }
+  .gone { position: absolute; top: 60px; right: 20px; font-size: 14px; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>lens-trail-page</b> — Sweep the mouse across the screen — the path you pass swells into lens marks and then cools. Press and hold for a big magnifier, hover the left menu and a band wipes in while the dotted text grows. Click a menu item and the cells scatter and regroup. <span style="color:var(--kf-dim)">(After 1s a panel comes in, and 2.5s later the small panel above leaves)</span></p>
+<div class="gone" data-demo-remove data-fx="lens-trail-page"><span>Removed in 2.5s</span></div>
+<template data-demo-late>
+  <div class="board" data-fx="lens-trail-page" data-fx-lens-trail-page="grid: 40 24">
+    <nav data-fx-part="chrome">
+      <h2>Index</h2>
+      <a href="#a"><span data-fx-part="wipe" aria-current="page">Section One</span></a>
+      <a href="#b"><span data-fx-part="wipe">Second Entry</span></a>
+      <a href="#c"><span data-fx-part="wipe">Third Title Here</span></a>
+      <a href="#d"><span data-fx-part="wipe">Fourth</span></a>
+    </nav>
+    <main class="letters">
+      <span>A</span><span>B</span><a href="#c"><span data-fx-part="dot">C</span></a><span>D</span><span>E</span><span>F</span>
+      <span>G</span><a href="#h"><span data-fx-part="dot">H</span></a><span>I</span><span>J</span><a href="#k"><span data-fx-part="dot">K</span></a><span>L</span>
+      <span>M</span><span>N</span><span>O</span><span>P</span><span>Q</span><span>R</span>
+    </main>
+  </div>
+</template>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+// Pressing the menu sends fx:leave to the panel, and when fx:left arrives the cells are attached once more so they regroup (instead of a page move)
+document.addEventListener("click", (e) => {
+  const a = e.target.closest(".board nav a");
+  if (!a) return;
+  e.preventDefault();
+  const board = a.closest(".board");
+  board.querySelectorAll("[aria-current]").forEach((n) => n.removeAttribute("aria-current"));
+  board.addEventListener("fx:left", () => {
+    a.querySelector("[data-fx-part=wipe]").setAttribute("aria-current", "page");
+    board.setAttribute("data-fx-lens-trail-page", "grid: 40 24; enter: swap");
+    board.setAttribute("data-fx", "");
+    requestAnimationFrame(() => board.setAttribute("data-fx", "lens-trail-page"));
+  }, { once: true });
+  board.dispatchEvent(new CustomEvent("fx:leave"));
+});
+// Checks that late-arriving elements are picked up and removed ones are detached — adds [data-demo-late] after 1 second and removes [data-demo-remove] after 2.5 seconds.
+setTimeout(() => document.querySelectorAll("template[data-demo-late]").forEach((t) => t.replaceWith(t.content.cloneNode(true))), 1000);
+setTimeout(() => document.querySelectorAll("[data-demo-remove]").forEach((n) => n.remove()), 2500);
+</script>
+</body>
+</html>

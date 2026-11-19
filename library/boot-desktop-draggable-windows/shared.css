@@ -1,0 +1,162 @@
+/* Desktop set: BIOS loader · header chips · toolbar · window shell · cursor · bottom chips. Values as in the original (window 20px grid · 12 columns, header 40px, button 32px). */
+:root {
+  --site-pad: 20px;
+  --site-gap: 20px;
+  --site-cell: 20px;
+  --site-glass: color-mix(in srgb, var(--kf-contrast-ink) 30%, transparent);
+  --site-btn: color-mix(in srgb, var(--kf-contrast-ink) 20%, transparent);
+  --site-btn-hover: color-mix(in srgb, var(--kf-contrast-ink) 50%, transparent);
+  --site-btn-soft: color-mix(in srgb, var(--kf-ink) 5%, transparent);
+  --site-btn-soft-hover: color-mix(in srgb, var(--kf-ink) 20%, transparent);
+  --site-head-off: color-mix(in srgb, var(--kf-contrast-bg) 50%, transparent);
+  --site-ink-50: color-mix(in srgb, var(--kf-ink) 50%, transparent);
+  --site-ink-20: color-mix(in srgb, var(--kf-ink) 20%, transparent);
+  --site-on-head-50: color-mix(in srgb, var(--kf-contrast-ink) 50%, transparent);
+  --site-chip: color-mix(in srgb, var(--kf-raised) 70%, transparent);
+  --site-ease: cubic-bezier(0.33, 0, 0, 1);
+  --site-p2out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --site-p4out: cubic-bezier(0.3, 1, 0.7, 1);
+  --site-p4io: cubic-bezier(0.83, 0, 0.17, 1);
+}
+[data-theme="dark"] { --site-glass: color-mix(in srgb, var(--kf-ink-soft) 30%, transparent); --site-btn: color-mix(in srgb, var(--kf-ink) 20%, transparent); --site-btn-hover: color-mix(in srgb, var(--kf-ink) 50%, transparent); }
+
+html { scrollbar-width: none; }
+html::-webkit-scrollbar { display: none; }
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-size: 14px;
+  letter-spacing: var(--kf-tracking);
+  text-transform: uppercase;
+  transition: background-color 0.6s var(--site-ease);
+}
+html.is-locked, html.is-locked body { overflow: hidden; }
+::selection { background: var(--kf-ink); color: var(--kf-bg); }
+button { background: none; border: 0; padding: 0; cursor: pointer; text-transform: inherit; letter-spacing: inherit; }
+.mc-sm { font-size: 10px; }
+.mc-xs { font-size: 8px; }
+
+/* ── BIOS loader ── plate in background color, text at top left 20px, 3 columns wide */
+.mc-bios { position: fixed; inset: 0; z-index: 9999; pointer-events: none; }
+.mc-bios__panel {
+  position: absolute; top: 20px; left: 20px; width: min(calc((100vw - 40px - 220px) / 12 * 3 + 40px), calc(100vw - 40px));
+  display: flex; flex-direction: column; gap: 2px; line-height: 1.5; color: var(--site-ink-50); pointer-events: auto;
+}
+.mc-bios__line { white-space: pre; min-height: 1.5em; }
+.mc-bios__line[data-spacer] { min-height: 0; height: 1em; }
+.mc-bios__key { background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); padding: 0 2px; }
+.mc-bios__caret { display: inline-block; width: 0.55ch; height: 1em; margin-left: 1px; vertical-align: baseline; translate: 0 1px; background: currentColor; }
+.mc-bios [data-fx-part="line"] { opacity: 1; }
+
+/* ── 3D scene · physics box canvas ── on wide screens scene below the window · boxes above the window, on phones both sit behind ── */
+.mc-scene { position: fixed; inset: 0; z-index: 10; width: 100%; height: 100%; display: block; cursor: grab; touch-action: pan-y; }
+.mc-scene.is-grab { cursor: grabbing; }
+.mc-cubes { position: fixed; inset: 0; z-index: 20; width: 100%; height: 100%; pointer-events: none; }
+
+/* ── Header ── */
+.mc-head {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 500; display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; padding: var(--site-pad); pointer-events: none;
+}
+.mc-head > * { pointer-events: auto; }
+.mc-chips { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; flex: 1; }
+.mc-chip {
+  position: relative; display: flex; align-items: center; height: 40px; padding: 0 8px; border-radius: var(--kf-radius-md);
+  background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); white-space: nowrap; cursor: pointer;
+}
+.mc-chip--dim { color: var(--site-on-head-50); }
+.mc-chips > :nth-child(1) { min-width: 139px; }
+.mc-chips > :nth-child(2) { min-width: 153px; }
+.mc-chips > :nth-child(3) { min-width: 186px; }
+.mc-chips > :nth-child(4) { min-width: 118px; }
+.mc-chip--drop { padding: 4px 4px 4px 8px; gap: 12px; flex-direction: column; align-items: stretch; height: auto; min-height: 40px; overflow: hidden; }
+.mc-chip__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 32px; }
+.mc-chip__row span { color: var(--site-on-head-50); transition: color 0.3s; }
+.mc-chip__row span:hover { color: color-mix(in srgb, var(--kf-contrast-ink) 70%, transparent); }
+.mc-chip__panel { width: 0; min-width: 100%; height: 0; overflow: hidden; border-radius: var(--kf-radius-sm); }
+.mc-chip__panel svg { width: 362px; height: 230px; display: block; }
+
+/* 32px glass button — shared by window header, chips and toolbar */
+.mc-ico { position: relative; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; flex: none; color: var(--kf-contrast-ink); }
+.mc-ico__bg { position: absolute; inset: 0; border-radius: var(--kf-radius-sm); background-color: var(--site-btn); backdrop-filter: blur(24px); transition: background-color 0.5s var(--site-p2out); }
+.mc-ico.is-hot > .mc-ico__bg, .is-hot .mc-ico__bg { background-color: var(--site-btn-hover); }
+.mc-ico > :not(.mc-ico__bg) { position: relative; }
+.mc-ico svg { width: 18px; height: 18px; }
+.mc-plus { position: relative; width: 10px; height: 10px; }
+.mc-plus::before, .mc-plus::after { content: ""; position: absolute; background: currentColor; border-radius: 9px; }
+.mc-plus::before { top: 50%; left: 0; width: 100%; height: 1px; translate: 0 -50%; }
+.mc-plus::after { left: 50%; top: 0; height: 100%; width: 1px; translate: -50% 0; transition: transform 0.3s var(--site-p2out); }
+[aria-expanded="true"] .mc-plus::after { transform: scaleY(0); }
+
+.mc-tools { display: flex; gap: 4px; padding: 4px; border-radius: var(--kf-radius-md); background: var(--kf-contrast-bg); flex: none; }
+.mc-tool .mc-lottie { width: 18px; height: 18px; color: var(--kf-contrast-ink); }
+.mc-lottie svg path { stroke: currentColor; }
+.mc-lottie svg [fill]:not([fill="none"]) { fill: currentColor; }
+.mc-tool.is-off .mc-lottie { opacity: 0.4; }
+.mc-tool .mc-lottie { transition: opacity 0.3s var(--site-p2out), transform 0.3s var(--site-p2out); }
+.mc-tool__swap { position: relative; width: 18px; height: 18px; }
+.mc-tool__swap .mc-lottie { position: absolute; inset: 0; }
+.mc-tool__swap .is-sun, [data-theme="dark"] .mc-tool__swap .is-moon { transform: scale(0); }
+[data-theme="dark"] .mc-tool__swap .is-sun { transform: scale(1); }
+
+/* ── Bottom ── */
+.mc-foot {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 500; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+  padding: var(--site-pad); pointer-events: none;
+}
+.mc-foot > * { pointer-events: auto; }
+.mc-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.mc-link {
+  display: flex; align-items: center; gap: 12px; height: 40px; padding: 4px 4px 4px 8px; border-radius: var(--kf-radius-md);
+  background: var(--site-chip); backdrop-filter: blur(24px); color: var(--kf-ink);
+}
+.mc-link .mc-ico { color: var(--kf-ink); }
+.mc-link .mc-ico__bg { background-color: var(--site-btn-soft); }
+.mc-link.is-hot .mc-ico__bg { background-color: var(--site-btn-soft-hover); }
+.mc-link .mc-ico svg { width: 12px; height: 12px; transition: transform 0.5s var(--site-p4out); }
+.mc-link:hover .mc-ico svg { transform: translate(2px, -2px); }
+.mc-credit { color: var(--site-ink-50); white-space: nowrap; }
+.mc-credit a { color: var(--kf-ink); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── Cursor: four navy corners + name tag, with coordinate markers and a dotted line at passed spots ── */
+.mc-cursor { position: fixed; top: 0; left: 0; z-index: 9998; pointer-events: none; opacity: 0; }
+.mc-cursor__box { position: relative; }
+.mc-cursor__c { position: absolute; top: 0; left: 0; width: 5px; height: 5px; border: 0 solid var(--kf-accent); }
+.mc-cursor__c:nth-child(1) { border-top-width: 1px; border-left-width: 1px; }
+.mc-cursor__c:nth-child(2) { border-top-width: 1px; border-right-width: 1px; }
+.mc-cursor__c:nth-child(3) { border-bottom-width: 1px; border-left-width: 1px; }
+.mc-cursor__c:nth-child(4) { border-bottom-width: 1px; border-right-width: 1px; }
+.mc-cursor__label {
+  position: absolute; top: 24px; left: 0; translate: -50% 0; padding: 4px 8px; border-radius: var(--kf-radius-sm); white-space: nowrap; line-height: 1;
+  background: var(--kf-accent); color: var(--kf-on-accent); opacity: 0; visibility: hidden;
+}
+.mc-trail { position: fixed; inset: 0; z-index: 9997; pointer-events: none; width: 100%; height: 100%; overflow: visible; }
+.mc-trail line { stroke: var(--site-ink-50); stroke-dasharray: 3 4; stroke-width: 1; fill: none; }
+.mc-mark { position: absolute; z-index: 9998; pointer-events: none; translate: -50% -50%; }
+.mc-mark__box { width: 10px; height: 10px; border: 1px solid var(--kf-accent); }
+.mc-mark__xy { position: absolute; top: 100%; left: 100%; margin-left: 2px; font-size: 10px; line-height: 1.1; color: var(--kf-ink); font-variant-numeric: tabular-nums; letter-spacing: 0; }
+
+@media (max-width: 1024px) {
+  .mc-scene { z-index: -5; }
+  .mc-cubes { z-index: -4; }
+  .mc-head { position: absolute; }
+  .mc-foot { position: relative; flex-direction: column; align-items: flex-start; padding-top: 40px; }
+}
+@media (max-width: 639px) {
+  .mc-chips .mc-chip:not(:first-child) { display: none; }
+  .mc-tools [data-tool="lang"], .mc-tools [data-tool="grid"] { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mc-ico__bg, .mc-plus::after, .mc-tool .mc-lottie, .mc-link .mc-ico svg { transition: none; }
+}
+
+/* Shuffle letter cell — the invisible original letters hold the width and the shuffling letters sit on top so the line doesn’t wobble */
+.mc-sc { position: relative; display: inline-block; white-space: pre; }
+.mc-sc__w { visibility: hidden; }
+.mc-sc__c { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.mc-mark__in { transform-origin: 50% 50%; }
+/* As in the original, the whole desktop is non-selectable — so the selection highlight doesn’t spread while dragging or press-rotating */
+.mc-head, .mc-desk, .mc-foot, .mc-bios { -webkit-user-select: none; user-select: none; }
+/* While the loader runs the window can’t be clicked (original html[data-loader-lock] [data-loader=widget]) */
+html.is-locked .mc-win { pointer-events: none; }

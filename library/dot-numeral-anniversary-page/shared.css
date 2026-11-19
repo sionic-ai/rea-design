@@ -1,0 +1,92 @@
+/* Common — 1rem = screen width/144 (10px at 1440), width/75 at 960 and below · width/37.5 at 560 and below. Noise curtain · number loader · header · progress bar · section title · dot button · footer */
+:root {
+  --mc-white-fade: color-mix(in srgb, var(--kf-surface) 10%, transparent);
+  --mc-shadow-card: 0 0 1.2rem 1.2rem color-mix(in srgb, var(--kf-ink) 4%, transparent);
+  --mc-shadow-img: 0 0.4rem 3.2rem 0 color-mix(in srgb, var(--kf-dim) 10%, transparent);
+  --mc-shadow-story: 0 0 2.4rem 0 color-mix(in srgb, var(--kf-dim) 24%, transparent);
+  --mc-veil: color-mix(in srgb, var(--kf-ink) 80%, transparent);
+  --mc-veil-hover: color-mix(in srgb, var(--kf-ink) 32%, transparent);
+}
+html { font-size: calc(100vw / 144); }
+@media (max-width: 960px) { html { font-size: calc(100vw / 75); } }
+@media (max-width: 560px) { html { font-size: calc(100vw / 37.5); } }
+body { background: var(--kf-bg); color: var(--kf-ink); font-family: var(--kf-font-sans); font-size: 1.6rem; line-height: 1; letter-spacing: 0.05em; }
+.sm-only { display: none; }
+@media (max-width: 960px) { .lg-only { display: none !important; } .sm-only { display: revert; } }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--kf-accent); }
+.mc-inner { width: min(100% - 3.2rem, 132rem); margin: 0 auto; }
+.mc-inner.is-narrow { width: min(100% - 3.2rem, 96rem); }
+
+/* Noise film — the original lays a 400px noise image at .16. The same texture is made here with an SVG noise */
+.mc-noise {
+  position: fixed; inset: 0; z-index: 99999; pointer-events: none; opacity: 0.16;
+  background-size: 400px 400px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncA type='table' tableValues='0 .55'/></feComponentTransfer></filter><rect width='400' height='400' filter='url(%23n)'/></svg>");
+}
+
+/* Number loader: each digit slot has two 0–9 strips rolling by -50% to show the current number */
+.mc-loader { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.mc-loader__box { display: flex; align-items: flex-end; justify-content: center; gap: 1.6rem; }
+.mc-loader__num { --size: 8rem; display: flex; height: var(--size); overflow: hidden; font: var(--kf-weight-display) var(--size)/var(--size) var(--kf-font-display); }
+.mc-loader__digit { display: block; height: var(--size); overflow: hidden; opacity: 0; }
+.mc-loader__strip { display: flex; flex-direction: column; }
+.mc-loader__strip span { display: block; height: var(--size); }
+.mc-loader__pct { margin-bottom: 1.2rem; font: 2.4rem/1 var(--kf-font-display); opacity: 0; }
+@media (max-width: 560px) { .mc-loader__box { gap: 0.8rem; } .mc-loader__num { --size: 4rem; } .mc-loader__pct { margin-bottom: 0.5rem; font-size: 1.8rem; } }
+html.is-loading { overflow: hidden; }
+html.is-waking body { opacity: 0; }
+
+/* Header: logo + vertical line + site name, appears in .8s after the loader ends */
+.mc-head { position: absolute; top: 0; z-index: 9000; padding: 2.4rem 4rem; opacity: 0; }
+.mc-head__logo { display: flex; align-items: center; gap: 2.4rem; }
+.mc-head__mark { display: flex; align-items: center; gap: 1rem; width: 40rem; color: var(--kf-ink); }
+.mc-head__mark svg { width: 2.8rem; height: 2.8rem; flex-shrink: 0; }
+.mc-head__mark b { font: 600 2.2rem/1 var(--kf-font-display); letter-spacing: 0.02em; white-space: nowrap; }
+.mc-head__mark i { font-style: normal; font: 600 1.7rem/1 var(--kf-font-sans); letter-spacing: 0.08em; white-space: nowrap; }
+.mc-head__logo h1 { position: relative; padding-left: 2.4rem; font-size: 1.5rem; font-weight: 500; white-space: nowrap; }
+.mc-head__logo h1::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 1px; height: 2.4rem; margin: auto; background: var(--kf-ink); }
+@media (max-width: 960px) { .mc-head { padding: 2.4rem 1.6rem; } .mc-head__logo { gap: 1.2rem; } .mc-head__mark { width: 18rem; } .mc-head__mark b { font-size: 1.6rem; } .mc-head__mark i { font-size: 1.2rem; } .mc-head h1 { display: none; } }
+
+/* Progress bar: a red 8px bar that fills from the top of the screen as you scroll past the first section */
+.mc-progress { position: fixed; top: 0; left: 0; z-index: 999999; width: 0; height: 8px; border-radius: 0 4px 4px 0; background: var(--kf-accent); opacity: 0; pointer-events: none; will-change: width; }
+
+/* Section title: large English (letter-break entrance) + small Korean + a gray line is drawn and a red dot pops out at the end */
+.mc-heading { position: relative; z-index: 1; display: flex; align-items: center; gap: 8rem; width: 100%; }
+.mc-heading__titles { display: flex; flex-shrink: 0; align-items: baseline; gap: 1.6rem; }
+.mc-heading__title { font: italic var(--kf-weight-display) 8rem/1 var(--kf-font-display); letter-spacing: -0.02em; }
+.mc-heading__title [data-fx-part="char"] { margin-left: -4px; padding-right: 4px; }
+.mc-heading__sub { font-size: 1.4rem; }
+.mc-heading__divider { display: flex; align-items: center; width: 100%; gap: 1.6rem; }
+.mc-heading__line { width: 0; height: 1px; background: var(--kf-line); }
+.mc-heading__dot { flex-shrink: 0; width: 0.8rem; height: 0.8rem; border-radius: 50%; background: var(--kf-accent); opacity: 0; transform: scale(0); }
+.mc-heading.is-white { color: var(--kf-surface); }
+.mc-heading.is-white .mc-heading__line, .mc-heading.is-white .mc-heading__dot { background: var(--kf-surface); }
+@media (max-width: 960px) { .mc-heading { gap: 2.4rem; } .mc-heading__title { font-size: 4.8rem; } .mc-heading__sub { font-size: 1.2rem; } .mc-heading__divider { gap: 1.2rem; } }
+
+/* Dot button: white pill + red dot — on hover the dot grows 2.4x and the arrow inside enters from the bottom left (.4s cubic-bezier(.33,1,.68,1)) */
+.mc-btnwrap { display: flex; justify-content: flex-end; }
+.mc-btn { --h: 6.4rem; display: flex; align-items: center; justify-content: center; gap: 1.6rem; height: var(--h); padding: 0 4rem; border-radius: var(--h); background: var(--kf-surface); color: var(--kf-ink); pointer-events: auto; }
+.mc-btn__text { font: 500 1.8rem/1 var(--kf-font-display); }
+.mc-dot { position: relative; display: block; width: 0.8rem; height: 0.8rem; overflow: hidden; border-radius: 50%; background: var(--kf-accent); transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1); }
+.mc-dot svg { position: absolute; inset: 0; width: 50%; height: auto; margin: auto; visibility: hidden; opacity: 0; transform: translate(-0.4rem, 0.4rem); transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1), visibility 0.4s cubic-bezier(0.33, 1, 0.68, 1), opacity 0.4s cubic-bezier(0.33, 1, 0.68, 1); }
+@media (hover: hover) {
+  .mc-btn:hover .mc-dot, a:hover > .mc-dotwrap .mc-dot { transform: scale(2.4); }
+  .mc-btn:hover .mc-dot svg, a:hover > .mc-dotwrap .mc-dot svg { visibility: visible; opacity: 1; transform: translate(0); }
+}
+@media (max-width: 960px) { .mc-btn { --h: 5.6rem; padding: 0 3.2rem; } .mc-btn__text { font-size: 1.6rem; } }
+
+/* Footer: logo + English menu + an empty stage where dots gather again into ”50” */
+.mc-foot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8rem; margin-top: 16rem; padding: 0 1.6rem 10svh; overflow: hidden; }
+.mc-foot__nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10.4rem; }
+.mc-foot__nav a { display: flex; align-items: baseline; gap: 0.8rem; font: var(--kf-weight-display) 3.2rem/1 var(--kf-font-display); transition: opacity 0.4s cubic-bezier(0.33, 1, 0.68, 1); }
+.mc-foot__nav a svg { width: 1.2rem; height: auto; }
+@media (hover: hover) { .mc-foot__nav a:hover { opacity: 0.8; } }
+.mc-foot__stage { width: 100%; height: 40svh; }
+@media (max-width: 960px) { .mc-foot .mc-head__logo { gap: 1.2rem; } .mc-foot .mc-head__mark { width: auto; } .mc-foot h1 { font-size: 1.1rem; padding-left: 1.2rem; } .mc-foot { margin-top: 12rem; gap: 4rem; } .mc-foot__nav { gap: 2.4rem; } .mc-foot__nav a { font-size: 2.4rem; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .mc-head, .mc-loader__digit, .mc-loader__pct { opacity: 1; }
+  .mc-heading__line { width: 100%; }
+  .mc-heading__dot { opacity: 1; transform: none; }
+  .mc-dot, .mc-dot svg { transition: none; }
+}

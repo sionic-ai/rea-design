@@ -1,0 +1,47 @@
+/* The gradient panel behind the photo rotates once in 24 seconds so the 8px border color flows slowly. On hover the card grows to 1.08x and
+   The panel shrinks to .85x and its border hides behind the photo (both .4s ease). With look: line, there is no hand reaction and only the panel turns inside a thin line.
+   The panel color is --fx-gradient (default: a conic of ink, accent, white and accent text colors), and the turn direction is --fx-turn (default 1turn, -1turn reverses) */
+@keyframes fx-sgf-spin {
+  from { transform: translate(-50%, -50%) scale(var(--fx-zoom, 1.1)) rotate(0turn); }
+  to { transform: translate(-50%, -50%) scale(var(--fx-zoom, 1.1)) rotate(var(--fx-turn, 1turn)); }
+}
+[data-fx~="spin-gradient-frame"] {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform var(--fx-dur, .4s) var(--fx-ease, ease);
+}
+[data-fx~="spin-gradient-frame"] > [data-fx-part="ring"] {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: var(--fx-base, var(--kf-ink));
+  pointer-events: none;
+  transition: transform var(--fx-dur, .4s) var(--fx-ease, ease);
+}
+[data-fx~="spin-gradient-frame"] > [data-fx-part="ring"]::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--fx-size, 112%);
+  aspect-ratio: 1;
+  background: var(--fx-gradient, conic-gradient(from 20deg, var(--kf-ink), var(--kf-accent) 25%, var(--kf-surface) 45%, var(--kf-accent-text) 70%, var(--kf-ink)));
+  transform: translate(-50%, -50%) scale(var(--fx-zoom, 1.1));
+  animation: fx-sgf-spin var(--fx-spin, 24s) linear infinite;
+}
+[data-fx-spin-gradient-frame*="look: line"] { transition: none; }
+[data-fx-spin-gradient-frame*="look: line"] > [data-fx-part="ring"] { z-index: 0; }
+[data-fx-spin-gradient-frame*="look: line"] > [data-fx-part="ring"]::before { width: var(--fx-size, 100%); }
+@media (hover: hover) {
+  [data-fx~="spin-gradient-frame"]:not([data-fx-spin-gradient-frame*="look: line"]):hover,
+  [data-fx~="spin-gradient-frame"]:not([data-fx-spin-gradient-frame*="look: line"]):focus-visible { transform: scale(var(--fx-grow, 1.08)); }
+  [data-fx~="spin-gradient-frame"]:not([data-fx-spin-gradient-frame*="look: line"]):hover > [data-fx-part="ring"],
+  [data-fx~="spin-gradient-frame"]:not([data-fx-spin-gradient-frame*="look: line"]):focus-visible > [data-fx-part="ring"] { transform: scale(var(--fx-shrink, .85)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="spin-gradient-frame"], [data-fx~="spin-gradient-frame"] > [data-fx-part="ring"] { transition: none; }
+  [data-fx~="spin-gradient-frame"] > [data-fx-part="ring"]::before { animation: none; }
+}

@@ -1,0 +1,79 @@
+{
+  "kind": "Hand",
+  "trigger": [
+    "load",
+    "loop",
+    "hover",
+    "drag",
+    "click"
+  ],
+  "fits": [
+    "Section",
+    "Photo",
+    "Card"
+  ],
+  "what": "Four logo stickers gathered at one center point rise into place from 400px below at .5x and transparent over 1s with curve (.19,1,.22,1) (starting .25s later, .075s apart), and each bobs up and down 10px every 1.25s, delayed .5s per sticker. On hover it grows 1.075x (.1s easeOut) and a name pill appears above (from 2rem below, .2s). Grabbing and dragging tilts it 10° at 1.05x and follows the hand exactly, then on release it springs back into place (stiffness 600, damping 20). On press the chosen sticker moves to left center (−gap/2.15) at 1x (normally .5x) and wobbles ±tilt×2 for 2.5s, while the others line up in a row at 500px spacing to its right and fade to .2 (position 1s, scale .5s expo, fade .3s starting .05s later). Left and right arrow keys or fx:step go to next and previous, Esc or fx:pick -1 closes. At widths of 920 and under they sit in a 2×2 grid (.33x), only the chosen one stays at the top at .55x, and the rest vanish with .1s easeOut (position .4s)",
+  "ease": {
+    "Rise · stagger · scale": "cubic-bezier(0.19,1,0.22,1)",
+    "Float · Sway": "cubic-bezier(0.42,0,0.58,1)",
+    "Hover · press · hidden on phone": "cubic-bezier(0,0,0.58,1)",
+    "Overcast": "cubic-bezier(0.25,0.1,0.35,1)",
+    "Placing": "spring(1,600,20)"
+  },
+  "duration": {
+    "Rising": 1,
+    "Floating": 2.5,
+    "Line up": 1,
+    "Magnification": 0.5,
+    "Overcast": 0.3,
+    "Placing": 0.69,
+    "Hover": 0.1
+  },
+  "needs": [
+    "gsap"
+  ],
+  "options": {
+    "gap": "Gap between stickers when lined up (px), default 500",
+    "shift": "Share of the gap that moves the picked sticker left (gap ÷ shift), default 2.15",
+    "small": "Normal scale, default .5",
+    "big": "Chosen sticker scale, default 1",
+    "dim": "Uneven sticker opacity, default .2",
+    "dur": "Line stagger length (s), default 1 — shorten it if picked often, as in an app",
+    "m-small": "Narrow screen normal scale, default .33",
+    "m-big": "Narrow screen selected scale, default .55",
+    "m-dur": "Narrow-screen duration (s), default .4",
+    "narrow": "Narrow-screen threshold (px), default 920",
+    "rise": "Rise distance (px), default 400",
+    "from": "Rise start scale, default .5",
+    "delay": "First sticker delay (s), default .25",
+    "each": "Delay between stickers (sec), default .075",
+    "bob": "Float height (px), default 10",
+    "beat": "Duration of one float-and-sway round trip (sec), default 2.5",
+    "bob-lag": "Floating delay per sticker (sec), default .5",
+    "tilt": "Tilt while turning off (deg), default 10",
+    "lean": "late mode: the face does not apply its own tilt (data-rot) at first, and applies it in one frame on the first press · fx:lean — the original (framer) only applies the tilt when it redraws. By default it is applied from the start",
+    "back": "Spring mass, stiffness and damping on release — default 1,600,20",
+    "ease": "Rise and stagger curve, default ”0.19,1,0.22,1”",
+    "[data-fx-part=item]": "One sticker — data-x, data-y, data-rot, data-z (wide-screen position, px and degrees from the board center), data-mx, data-my, data-mrot, data-mz (narrow screen). The motion part wraps the art inside in a shell.",
+    "[data-fx-part=label]": "(If any) Name pill inside the sticker — <span> Place one. It stands at the top 85% of the picture box before shrinking",
+    "--fx-glow": "Glow color that spreads when picked by keyboard, default --kf-accent",
+    "--fx-pill": "Name pill background, default --kf-surface"
+  },
+  "events": {
+    "fx:focus": "When the selection changes — detail { index (−1 when closed), item, why: click·key·forward·back·close·api }",
+    "fx:press": "Press start",
+    "fx:grab": "Drag Start",
+    "fx:drop": "Drag and Drop",
+    "fx:pick": "(Received) pick by detail number, −1 closes",
+    "fx:step": "(Receives) detail ±1 for next/previous",
+    "fx:lean": "(received) lean: if late, apply its own tilt right now"
+  },
+  "use": "<ul data-fx=\"sticker-focus-row\"><li data-fx-part=\"item\" data-x=\"-246\" data-y=\"-15\" data-rot=\"0\" data-z=\"5\" data-mx=\"-90\" data-my=\"-40\" data-mrot=\"-4\"><svg>…Sticker…</svg><div data-fx-part=\"label\"><span>Brand One</span></div></li> …</ul>",
+  "note": "The original uses framer-motion (drag, dragSnapToOrigin, dragTransition bounceStiffness 600 and bounceDamping 20, whileHover 1.075, whileTap 1.05, whileDrag rotate 10 scale 1.05). Curves were matched by measuring the original with motion-probe — transitions given only a duration (hover .1s, phone fade-out .1s) use easeOut(0,0,.58,1), and the blur given only a delay uses framer’s default opacity curve (.3s, .25,.1,.35,1). Like framer, pick and hover update the indicator (--fx-focus, --fx-hover) before anything moves, and picking happens on the click event that follows pointerup, not on pointerup itself (same timing as framer onClick). The drag threshold is the same 3px as framer — release after moving less than that and it counts as a press. While picked, drag and press are off, and even after picking, the hover scale on the drag shell stays until the hand leaves (as in the original). The caller listens for fx:focus, fx:press, fx:grab and fx:drop to attach the description panel, the left and right buttons and the sound effects. Drag works on devices without hover too (touch-action: none only on the sticker) — pushing outside the panel scrolls the page. To use GSAP like framer, the caller sets gsap.ticker.lagSmoothing(40, 40) (caps one frame of progress at 40ms) (Brand shared.js). The name pill stands at 85% up the box (anchor) of the pre-shrink image size — floating above the sticker like the original.",
+  "from": [
+    {
+      "slug": "draggable-sticker-holding-company",
+      "where": "index.html .ax-stage — four Hero logo stickers (info panel, left/right buttons and sound effects are in index.js)"
+    }
+  ]
+}

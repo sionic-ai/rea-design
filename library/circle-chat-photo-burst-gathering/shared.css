@@ -1,0 +1,318 @@
+/* The original sets the html font size to 10px and measures in rem — changed by the same step at each width */
+html { font-size: 10px; }
+@media (min-width: 1600px) { html { font-size: 12px; } }
+@media (max-width: 1200px) { html { font-size: 9px; } }
+@media (max-width: 1023px) { html { font-size: 14px; } }
+@media (max-width: 800px) { html { font-size: 12px; } }
+@media (max-width: 600px) { html { font-size: 10px; } }
+
+:root {
+  --site-green: var(--kf-accent);
+  --site-green-deep: var(--kf-raised);
+  --site-green-bright: oklch(from var(--kf-accent) calc(l * 1.22) calc(c * 1.05) calc(h - 6));
+  --site-green-teal: oklch(from var(--kf-accent) calc(l * 1.12) calc(c * 0.62) calc(h + 22));
+  --site-green-moss: oklch(from var(--kf-accent) calc(l * 0.92) calc(c * 0.7) calc(h + 18));
+  --site-pale: var(--kf-accent-soft);
+  --site-gold: oklch(from var(--kf-accent) calc(l * 1.18) calc(c * 0.76) calc(h - 65));
+  --site-white: var(--kf-surface);
+  --site-dim-70: color-mix(in oklab, var(--kf-contrast-bg) 70%, transparent);
+  --site-dim-60: color-mix(in oklab, var(--kf-contrast-bg) 60%, transparent);
+  --site-dim-50: color-mix(in oklab, var(--kf-contrast-bg) 50%, transparent);
+  --site-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  line-height: 2;
+  letter-spacing: 0.03em;
+  font-feature-settings: "palt";
+  word-break: keep-all;
+}
+p { font-size: 1.6rem; line-height: 2; }
+@media (max-width: 1023px) { p { font-size: 1.3rem; } }
+
+.sr-en {
+  font-family: var(--kf-font-display);
+  font-stretch: 125%;
+  font-weight: var(--kf-weight-display);
+  line-height: 1.5;
+  letter-spacing: 0.03em;
+}
+.sr-hand { font-family: var(--kf-font-hand, var(--kf-font-display)); }
+.pc-only { display: block; }
+.sp-only { display: none; }
+@media (max-width: 1023px) { .pc-only { display: none !important; } .sp-only { display: block; } }
+br.sp-only { display: none; }
+@media (max-width: 1023px) { br.sp-only { display: inline; } br.pc-only { display: none; } }
+
+.js-final { opacity: 0; }
+
+/* Photo slot: the original photo has 16px rounded corners */
+.sr-ph { border-radius: 1.6rem; overflow: hidden; }
+.sr-ph .wf-img { height: 100%; border: 0; }
+
+/* Hand-drawn circle button — hover redraws the line (.5s ease-in-out, phone .8s) */
+.sr-draw { position: relative; display: inline-block; text-align: center; cursor: pointer; }
+.sr-draw svg { width: 100%; height: auto; overflow: visible; }
+.sr-draw svg.pc-only { display: block; }
+.sr-draw svg.sp-only { display: none; }
+@media (max-width: 1023px) { .sr-draw svg.pc-only { display: none; } .sr-draw svg.sp-only { display: block; } }
+.sr-draw__path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 600;
+  stroke-dashoffset: 0;
+}
+.sr-draw.is-thin .sr-draw__path { stroke-width: 1; }
+.sr-draw:hover .sr-draw__path { animation: sr-redraw 0.5s ease-in-out forwards; }
+@keyframes sr-redraw { 0% { stroke-dashoffset: 600; } 100% { stroke-dashoffset: 0; } }
+.sr-draw__txt {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 1.6rem;
+  line-height: 1.5;
+}
+@media (max-width: 1023px) {
+  .sr-draw__path { stroke-width: 1.2px; }
+  .sr-draw:hover .sr-draw__path { animation-duration: 0.8s; }
+  .sr-draw__txt { top: 46%; }
+}
+
+/* ── Header: hamburger (Lottie) on the left · logo in the center · hand-drawn circle on the right ── */
+/* Do not create a stacking context as in the original — so the hamburger (z 10001) stays above the open menu (z 9999) */
+.sr-header { position: absolute; top: 0; left: 0; width: 100%; }
+.sr-header__logo {
+  width: 15.3rem;
+  position: absolute;
+  left: 50%;
+  top: 3rem;
+  transform: translateX(-50%);
+  z-index: 10;
+  color: var(--site-white);
+}
+.sr-header__inq {
+  width: 18.5rem;
+  position: fixed;
+  right: 2.43%;
+  top: 3rem;
+  z-index: 9998;
+  color: var(--site-white);
+  transition: color 0.8s var(--site-ease);
+}
+.sr-header__inq .sr-draw { display: block; width: 100%; }
+.sr-header__inq .sr-draw__path { transition: stroke 0.8s var(--site-ease); }
+body.is-dark .sr-header__inq { color: var(--site-green); }
+body.is-light .sr-header__inq { color: var(--site-white); }
+.sr-burger {
+  width: 5.5rem;
+  height: 5.5rem;
+  position: fixed;
+  left: 3.47rem;
+  top: 4.6rem;
+  z-index: 10001;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+/* Lottie writes transform directly onto the svg, so override with !important like the original */
+.sr-burger svg { transform: scale(1) !important; transition: transform 0.8s var(--site-ease); }
+@media (hover: hover) and (pointer: fine) { .sr-burger:hover svg { transform: scale(1.1) !important; } }
+.sr-burger svg path { fill: var(--site-white) !important; transition: fill 0.8s var(--site-ease); }
+body.is-dark .sr-burger svg path { fill: var(--site-green) !important; }
+body.is-light .sr-burger svg path, body.open .sr-burger svg path { fill: var(--site-white) !important; }
+@media (max-width: 1023px) {
+  .sr-header__logo { width: 9.5rem; }
+  .sr-header__inq { width: 9.5rem; right: 1.28%; top: 1.2rem; z-index: 13; }
+  .sr-header__inq .sr-draw__txt { font-size: 1.3rem; line-height: 1.4; }
+  .sr-burger { width: 4rem; height: 4rem; left: 1.47rem; top: 1.6rem; }
+}
+
+/* ── Menu: the panel slides in from the left and a vertical line grows, then the list is revealed from the top ── */
+@property --mask-level { syntax: "<percentage>"; initial-value: 0%; inherits: false; }
+.sr-nav { position: fixed; top: 0; left: 0; z-index: 9999; width: 100%; height: 100vh; height: 100dvh; pointer-events: none; }
+.sr-nav::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--site-dim-70);
+  opacity: 0;
+  transition: opacity 0.6s var(--site-ease) 0s;
+}
+body.open .sr-nav::before { opacity: 1; }
+body.open .sr-nav { pointer-events: visible; }
+.sr-nav__inner {
+  display: flex;
+  width: 85.2rem;
+  height: 100vh;
+  padding-left: 13.6rem;
+  position: relative;
+  align-items: center;
+}
+.sr-nav__bg {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: transform 0.8s var(--site-ease) 0s, opacity 0.8s var(--site-ease) 0s;
+}
+.sr-nav__bg svg { width: 100%; height: 100%; display: block; }
+body.open .sr-nav__bg { transform: translateX(0%); opacity: 1; }
+.sr-nav__item { width: 28rem; padding: 2.5rem 0 2.5rem 4.2rem; position: relative; z-index: 3; }
+.sr-nav__item + .sr-nav__item { margin-left: 6rem; }
+.sr-nav__item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 0;
+  background: var(--site-white);
+  transition: height 0s var(--site-ease) 0s;
+}
+body.open .sr-nav__item::before { height: 100%; transition: height 0.6s var(--site-ease) 0.4s; }
+body.open .sr-nav__item:nth-child(3)::before { transition-delay: 0.5s; }
+.sr-nav__main {
+  --mask-level: 0%;
+  -webkit-mask-image: linear-gradient(to bottom, var(--kf-ink) 0%, var(--kf-ink) var(--mask-level), transparent calc(var(--mask-level) + 0%), transparent 100%);
+  mask-image: linear-gradient(to bottom, var(--kf-ink) 0%, var(--kf-ink) var(--mask-level), transparent calc(var(--mask-level) + 0%), transparent 100%);
+  transition: --mask-level 0s var(--site-ease) 0s;
+}
+body.open .sr-nav__main { --mask-level: 100%; transition: --mask-level 0.6s var(--site-ease) 0.6s; }
+body.open .sr-nav__item:nth-child(3) .sr-nav__main { transition-delay: 0.7s; }
+.sr-nav__main li + li { margin-top: 3rem; }
+.sr-nav__main a { display: block; color: var(--site-white); }
+.sr-nav__main .sr-en { display: block; font-size: 3rem; line-height: 1.2; position: relative; }
+.sr-nav__line { display: block; width: 100%; position: absolute; left: 0; top: 47%; line-height: 0; }
+.sr-nav__line svg { width: 100%; height: 4px; }
+.sr-nav__line line { stroke: var(--site-white); stroke-width: 1; stroke-dasharray: 1 2; stroke-dashoffset: 1; transition: stroke-dashoffset 0.2s ease-in-out; }
+.sr-nav__main a:hover .sr-nav__line line { stroke-dashoffset: 0; }
+.sr-nav__main .ja { display: block; font-size: 1.6rem; line-height: 1.2; transition: transform 0.3s var(--site-ease); }
+.sr-nav__main a:hover .ja { opacity: 0.7; }
+@media (max-width: 1023px) {
+  .sr-nav::before { transition: opacity 0.4s var(--site-ease) 0s; }
+  .sr-nav__inner { display: block; width: 79.48%; padding: 12rem 0 0 7.69%; }
+  .sr-nav__item { width: 100%; padding: 0; }
+  .sr-nav__item::before { display: none; }
+  .sr-nav__item + .sr-nav__item { margin-left: 0; }
+  .sr-nav__main { --mask-level: 100%; opacity: 0; pointer-events: none; transition: opacity 0s var(--site-ease) 0s; }
+  body.open .sr-nav__main { opacity: 1; pointer-events: visible; transition: opacity 0.5s var(--site-ease) 0.6s; }
+  body.open .sr-nav__item:nth-child(3) .sr-nav__main { transition-delay: 0.6s; }
+  .sr-nav__main li { margin: 0 0 2rem; }
+  .sr-nav__main li + li { margin-top: 2rem; }
+  .sr-nav__main .sr-en { font-size: 2rem; }
+  .sr-nav__main .ja { font-size: 1.3rem; }
+}
+
+/* ── Footer: contact on a green slab panel + black strip ── */
+.sr-foot-inq {
+  position: relative;
+  height: calc(900 / 1440 * 100vw);
+  margin-top: calc(-100 / 1440 * 100vw);
+  padding-top: calc(242 / 1440 * 100vw);
+  text-align: center;
+  color: var(--site-white);
+  z-index: 3;
+}
+.sr-foot-inq__bg { position: absolute; inset: 0; z-index: -1; }
+.sr-foot-inq__bg svg { width: 100%; height: 100%; display: block; }
+.sr-foot-inq .sr-logo { width: 25.6rem; margin: 0 auto; }
+.sr-foot-inq .read { margin: 4rem 0; }
+.sr-btns { display: flex; justify-content: center; font-size: 1.6rem; color: var(--site-white); }
+.sr-btns .sr-draw { width: 23.3rem; }
+.sr-btns .sr-draw + .sr-draw { margin-left: 3.2rem; }
+.sr-tel { margin-top: 3rem; font-size: 1.6rem; line-height: 1.2; }
+.sr-tel .num { font-size: 3.6rem; letter-spacing: 0.3rem; margin: 0.4rem 0; }
+.sr-foot-nav {
+  position: relative;
+  z-index: 4;
+  background: var(--kf-contrast-bg);
+  margin-top: calc(-30 / 1440 * 100vw);
+  padding: calc(40 / 1440 * 100vw) calc(50 / 1440 * 100vw);
+  color: var(--kf-contrast-ink);
+  font-size: 1.6rem;
+  line-height: 2;
+}
+.sr-foot-nav__inner { display: flex; justify-content: space-between; }
+.sr-foot-nav a { display: inline-block; }
+.sr-foot-nav a + a { padding-left: 2em; position: relative; }
+.sr-foot-nav a + a::before { content: "｜"; position: absolute; left: 0.5em; }
+@media (max-width: 1023px) {
+  .sr-foot-inq { height: auto; margin-top: calc(-100 / 390 * 100vw); padding: calc(162 / 390 * 100vw) 0 calc(80 / 390 * 100vw); }
+  .sr-foot-inq .sr-logo { width: 20.8rem; }
+  .sr-foot-inq .read { margin: 3rem 0; }
+  .sr-btns .sr-draw { width: 15.6rem; line-height: 1.5; }
+  .sr-btns .sr-draw + .sr-draw { margin-left: 2rem; }
+  .sr-tel { font-size: 1.3rem; }
+  .sr-tel .num { font-size: 2.6rem; }
+  .sr-foot-nav { margin-top: calc(-10 / 390 * 100vw); padding: calc(20 / 390 * 100vw) 0; font-size: 1.3rem; text-align: center; }
+  .sr-foot-nav__inner { flex-direction: column; }
+  .sr-foot-nav .copy { margin-top: 1.5rem; }
+}
+
+/* Shared section title: wide English grotesque + one line */
+.sr-hd .sr-en { display: block; font-size: 7rem; line-height: 1.2; }
+.sr-hd .ja { font-size: 2.4rem; margin-top: 1rem; font-weight: 700; line-height: 1.5; }
+@media (max-width: 1200px) { .sr-hd .sr-en { font-size: 6rem; } .sr-hd .ja { font-size: 2rem; } }
+@media (max-width: 1023px) { .sr-hd .sr-en { font-size: 3rem; } .sr-hd .ja { font-size: 1.5rem; } }
+
+/* Round arrow button (slider) — only background and border change in .3s, the arrow stroke changes instantly (as in the original) */
+.sr-arrow {
+  box-sizing: content-box;
+  width: 6rem;
+  height: 6rem;
+  position: absolute;
+  z-index: 10;
+  border: 2px solid var(--site-green);
+  border-radius: 50%;
+  background: var(--site-white);
+  cursor: pointer;
+  transition: background 0.3s var(--site-ease) 0s, border 0.3s var(--site-ease) 0s;
+}
+.sr-arrow svg { width: 1.5rem; height: 2.5rem; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.sr-arrow path { fill: none; stroke: var(--site-green); stroke-width: 2; }
+.sr-arrow:hover { background: var(--site-green); border: 2px solid var(--site-white); }
+.sr-arrow:hover path { stroke: var(--site-white); }
+@media (max-width: 1023px) {
+  .sr-arrow { width: 3rem; height: 3rem; border-width: 1px; }
+  .sr-arrow:hover { border-width: 1px; }
+  .sr-arrow svg { width: 0.75rem; height: 1.25rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-nav__bg, .sr-nav::before, .sr-nav__item::before, .sr-nav__main { transition: none !important; }
+  .sr-draw:hover .sr-draw__path { animation: none; }
+}
+
+/* Illustration fill: original hand-drawn four greens + pale yellow */
+.tone-main, .sr-blob path { fill: var(--site-green); }
+.tone-deep { fill: var(--site-green-deep); }
+.tone-bright, .sr-blob[data-tone="bright"] path { fill: var(--site-green-bright); }
+.tone-teal, .sr-blob[data-tone="teal"] path { fill: var(--site-green-teal); }
+.tone-moss, .sr-blob[data-tone="moss"] path { fill: var(--site-green-moss); }
+.tone-mint { fill: color-mix(in oklab, var(--site-green-teal) 35%, var(--kf-surface)); }
+.tone-pale { fill: var(--site-pale); }
+.sr-blob { display: block; }
+.sr-blob svg { width: 100%; height: 100%; display: block; }
+.sr-nav__bg path { fill: var(--site-green); }
+
+.sr-logo { display: block; color: inherit; }
+.sr-logo svg { width: 100%; height: auto; overflow: visible; }
+.sr-logo text { fill: currentColor; }
+.sr-logo__arc { font-family: var(--kf-font-display); font-stretch: 125%; font-weight: 600; letter-spacing: 0.08em; }
+.sr-logo__small, .sr-logo__by { font-family: var(--kf-font-sans); font-weight: 700; }
+.sr-logo__big { font-family: var(--kf-font-hand, var(--kf-font-display)); font-weight: 700; }
+
+/* Panel with only a logo in the head, like the contact page: centered in the flow */
+.sr-header.is-static { position: relative; text-align: center; margin: 7rem 0; }
+.sr-header.is-static .sr-header__logo { position: static; display: inline-block; transform: none; width: 15.3rem; }
+@media (max-width: 767px) { .sr-header.is-static { margin: 5rem 0; } .sr-header.is-static .sr-header__logo { width: 12.3rem; } }

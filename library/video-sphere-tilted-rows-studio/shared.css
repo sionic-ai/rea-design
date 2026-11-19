@@ -1,0 +1,162 @@
+/* This site’s colors that are not in the skin are made from the skin — swap the skin and they change together. */
+:root {
+  /* Header band and pinned title use white text with difference blending so they show as the inverse of the backdrop — must be white on every skin for the flip to work */
+  --site-flip: oklch(from var(--kf-ink) 1 0 h);
+  --site-glass: color-mix(in oklab, var(--kf-ink) 10%, transparent);
+  --site-card: oklch(from var(--kf-raised) calc(l * 0.88) c h / 0.2);
+  --site-pill: oklch(from var(--kf-raised) calc(l * 1.21) c h / 0.1);
+  --site-skin: color-mix(in oklab, var(--kf-bg) 88%, var(--kf-ink));
+  --site-gutter: 10px;
+  --site-radius: 30px;
+
+  --wf-fill: color-mix(in oklab, var(--kf-raised) 45%, var(--kf-bg));
+  --wf-fill-ink: color-mix(in oklab, var(--kf-ink) 55%, var(--kf-bg));
+  --wf-line: color-mix(in oklab, var(--kf-ink) 22%, transparent);
+  --wf-mono: var(--kf-font-mono);
+}
+@media (min-width: 1024px) { :root { --site-gutter: 20px; } }
+
+html { scrollbar-gutter: auto; }
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  font-size: 14px;
+  line-height: 16px;
+  text-rendering: optimizeLegibility;
+  word-break: keep-all;
+}
+b, strong { font-weight: 700; }
+em { font-style: italic; }
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+
+/* Underline link — on hover the underline disappears to 0 (original :hover:after width 0, no transition) */
+.lt-uline { position: relative; display: inline-block; font-weight: 700; }
+.lt-uline::after { content: ""; position: absolute; left: 0; bottom: -1px; width: 100%; height: 1px; background: currentColor; }
+.lt-uline:hover::after { width: 0; }
+
+/* ── Header band: four words spread by four auto margins, placed at the 25% and 75% positions ── */
+.lt-head {
+  position: fixed; top: 0; left: 0; z-index: 15; width: 100%;
+  mix-blend-mode: difference; pointer-events: none;
+}
+.lt-head__bar {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 15px var(--site-gutter) 0;
+}
+.lt-head__bar > * { pointer-events: auto; color: var(--site-flip); font-size: 14px; line-height: 12px; }
+.lt-head__bar > :nth-child(1), .lt-head__bar > :nth-child(2) { margin-right: auto; }
+.lt-head__bar > :nth-child(3), .lt-head__bar > :nth-child(4) { margin-left: auto; text-align: right; }
+@media (min-width: 768px) { .lt-head__bar { padding-top: 12px; } }
+
+/* Center head character — the original is a 3.04s animation where the head spins twice, here a sphere is rotated on a canvas and redrawn from scratch */
+.lt-mark {
+  position: fixed; top: 0; left: 50%; z-index: 7; transform: translate(-50%);
+  display: block; cursor: pointer;
+}
+.lt-mark canvas { display: block; width: 52px; height: 52px; margin: 12px auto 0; }
+@media (min-width: 768px) { .lt-mark canvas { width: 62px; height: 62px; } }
+
+/* ── News drawer: 375px frosted glass panel on the right ── */
+.lt-news {
+  position: fixed; top: 0; right: 0; z-index: 15;
+  width: 100%; height: 100dvh; overflow-x: hidden; overflow-y: scroll;
+  -webkit-backdrop-filter: blur(24.5px); backdrop-filter: blur(24.5px);
+  background: var(--site-glass);
+  opacity: 0; visibility: hidden;
+  transition: opacity var(--kf-dur-base) ease, visibility 0s linear var(--kf-dur-base);
+}
+.lt-news.is-open { opacity: 1; visibility: visible; transition: opacity var(--kf-dur-base) ease, visibility 0s; }
+.lt-news::-webkit-scrollbar { width: 3px; }
+.lt-news::-webkit-scrollbar-thumb, .lt-news::-webkit-scrollbar-track { background-color: transparent; }
+@media (min-width: 768px) { .lt-news { width: 375px; } }
+.lt-news__head {
+  position: sticky; top: 0; z-index: 3;
+  display: flex; justify-content: space-between; padding: 10px 10px 0; font-weight: 700;
+}
+.lt-news__head button:hover { color: var(--kf-ink); }
+.lt-news__list { display: flex; flex-direction: column; row-gap: 10px; padding: 20px 10px 10px; }
+.lt-news__link { display: block; width: 100%; padding: 10px 10px 20px; border-radius: var(--site-radius); background: var(--site-card); color: var(--kf-ink); }
+.lt-news__fig { margin-bottom: 11px; border-radius: var(--kf-radius-md); overflow: hidden; }
+.lt-news__fig .wf-img { border: 0; }
+.lt-news__link h3 { font-weight: 700; }
+.lt-news__link p { margin-top: 12px; }
+
+/* ── Contact speech bubble: click to copy the email and show ”Copied” for 5 seconds ── */
+.lt-tip {
+  position: fixed; inset: 0; z-index: 6; display: none;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  background: var(--site-glass);
+}
+.lt-tip.is-open { display: block; }
+.lt-tip__inner {
+  position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  padding: 10px 15px 11px; border: 1px solid var(--kf-ink); background: var(--kf-bg); color: var(--kf-ink); cursor: pointer;
+}
+.lt-tip__inner b { font-weight: 700; }
+@media (min-width: 1024px) {
+  .lt-tip { -webkit-backdrop-filter: none; backdrop-filter: none; background: transparent; }
+  .lt-tip__inner { left: auto; right: 20px; top: 37px; transform: none; }
+}
+
+/* ── Work list tile (first page 「Project Index」 · 「View more」 below detail pages) ── */
+.lt-works { background: var(--kf-bg); color: var(--kf-ink); border-top: 1px solid var(--kf-line); padding: 0 0 89px; }
+.lt-works__head--slug { border-bottom: 1px solid var(--kf-line); margin-bottom: 26px; padding: 13px 0 15.02px; text-align: center; font-weight: 700; }
+.lt-works__tiles { display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 11px; row-gap: 40px; padding: 0 var(--site-gutter); }
+@media (min-width: 768px) { .lt-works__tiles { grid-template-columns: repeat(3, 1fr); column-gap: 20px; } }
+@media (min-width: 1024px) { .lt-works__tiles { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 1280px) { .lt-works__tiles { grid-template-columns: repeat(5, 1fr); } }
+.lt-tile, .lt-tile__link { display: block; width: 100%; }
+.lt-tile[hidden] { display: none; }
+/* Hovering one tile blurs the rest, original .tile.blur: 42.5px·.5, .2s ease-in-out delayed by .22s. 
+   The transition applies only in the blurred state, so the blur lifts right away when you let go (as in the original) */
+.lt-tile.is-blur { filter: blur(42.5px); opacity: 0.5; transition: all 0.2s ease-in-out 0.22s; }
+.lt-tile__media { aspect-ratio: 14 / 9; border-radius: 40px; overflow: hidden; }
+.lt-tile__media.wf-img { border: 0; }
+.lt-tile__media.wf-img::after { font-size: 10px; white-space: normal; text-align: center; width: 80%; }
+@media (min-width: 1024px) { .lt-tile__media { border-radius: var(--kf-radius-lg); } }
+.lt-tile__title { padding-top: 8px; color: var(--kf-ink); }
+@media (prefers-reduced-motion: reduce) { .lt-tile.is-blur { transition: none; } }
+
+/* ── Footer: contact row·big wordmark·one-line intro·collaboration·copyright, a 1px line for each row ── */
+.lt-foot { position: relative; display: flex; flex-direction: column; width: 100%; background: var(--kf-bg); color: var(--kf-ink); }
+.lt-foot__contact {
+  display: grid; grid-template-areas: "figure figure" "primary secondary";
+  padding: 43.85px var(--site-gutter) 18px;
+}
+.lt-foot__aside { display: flex; column-gap: 4px; font-weight: 700; }
+.lt-foot__aside--1 { grid-area: primary; }
+.lt-foot__aside--2 { grid-area: secondary; justify-content: flex-end; }
+.lt-foot__aside a { color: var(--kf-ink); }
+.lt-foot__fig { grid-area: figure; position: relative; width: 100%; max-width: 865px; margin-bottom: 16px; }
+@media (min-width: 1024px) {
+  .lt-foot__contact { display: flex; justify-content: space-between; column-gap: var(--site-gutter); padding: 19px var(--site-gutter) 14px; }
+  .lt-foot__fig { margin-bottom: 0; }
+  .lt-foot__aside { display: initial; align-self: flex-end; }
+  .lt-foot__aside--2 { text-align: right; }
+}
+/* Wordmark — the original stacks one bold sans uppercase word over one thin serif word. Rebuilt with text */
+.lt-wordmark { display: flex; flex-direction: column; align-items: center; color: var(--kf-ink); container-type: inline-size; }
+.lt-wordmark__a {
+  font-family: var(--kf-font-display); font-weight: 300; letter-spacing: -0.035em;
+  font-size: 40cqw; line-height: 0.76; margin-top: 0.06em;
+}
+.lt-wordmark__b {
+  font-family: var(--kf-font-mark, var(--kf-font-sans)); font-weight: 700; letter-spacing: -0.035em;
+  font-size: 22.6cqw; line-height: 0.86;
+}
+.lt-foot__about {
+  border-top: 1px solid var(--kf-line); padding: 18px 26.38px 18px 25.62px; text-align: center; white-space: pre-wrap;
+  font-family: var(--kf-font-display); font-size: 44px; font-weight: var(--kf-weight-display); letter-spacing: -3.75px; line-height: 36px;
+}
+@media (min-width: 1024px) { .lt-foot__about { padding: 23px 0 21px; font-size: 76px; letter-spacing: -5px; line-height: 60px; } }
+.lt-foot__part { border-top: 1px solid var(--kf-line); padding: 16px 37px 19px 36px; text-align: center; font-weight: 700; }
+.lt-foot__copy { border-top: 1px solid var(--kf-line); padding: 14px 25px 18px 30px; text-align: center; font-weight: 700; }
+@media (min-width: 1024px) {
+  .lt-foot__part { padding: 16px 0 19px; }
+  .lt-foot__copy { padding: 16.14px 0 18px; }
+}
+
+/* Body wrapper — so tilted work photos spilling sideways don’t cause horizontal overflow (original .container.home overflow-x) */
+.lt-page { overflow-x: clip; }

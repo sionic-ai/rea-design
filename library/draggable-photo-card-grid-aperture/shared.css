@@ -1,0 +1,107 @@
+/* Photo diary: one full-screen WebGL panel (photo card grid). Layers over the panel: intro photo pile, panel where the pressed card grows, shutter blades, drag hint */
+:root {
+  --site-hint-bg: color-mix(in oklab, var(--kf-contrast-bg) 50%, transparent);
+  --site-blade: var(--kf-ink);
+}
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+.pi-main { position: relative; height: 100%; }
+
+/* WebGL canvas — one fixed full-screen layer */
+.pi-gl { position: fixed; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+.pi-gl.is-drag { cursor: grabbing; }
+
+/* Intro — 35vmin photo cards at the center of a white curtain stack up one by one every .9s, then scatter in all directions */
+.pi-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--kf-bg);
+  pointer-events: none;
+}
+.pi-intro.is-hidden { opacity: 0; }
+.pi-intro__card {
+  position: absolute;
+  width: 35vmin;
+  height: 35vmin;
+  object-fit: cover;
+  opacity: 0;
+  will-change: transform, opacity;
+  box-shadow: var(--kf-shadow-soft);
+}
+
+/* Photo card — white board with small text above and below, photo in the middle 86.7% slot (ratio from --ar) */
+.pi-intro__card { display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--kf-bg); }
+.pi-card__top, .pi-card__bottom { position: absolute; left: 0; right: 0; font-size: calc(35vmin * 0.027); line-height: 1; text-align: center; color: var(--kf-ink); white-space: nowrap; }
+.pi-card__top { top: 4%; }
+.pi-card__bottom { bottom: 4%; }
+.pi-card__photo { position: relative; display: block; width: 86.7%; max-height: 86.7%; aspect-ratio: var(--ar, 3 / 2); overflow: hidden; }
+.pi-intro__card[style*="2 / 3"] .pi-card__photo, .pi-intro__card[style*="1 / 1"] .pi-card__photo { width: auto; height: 86.7%; }
+.pi-card__photo .wf-img { position: absolute; inset: 0; height: 100%; border: 0; }
+.pi-card__photo .wf-img::after { white-space: normal; text-align: center; max-width: 90%; font-size: 10px; }
+
+/* Pressed card — grows from the card spot to a 90% square of the screen over 2s */
+.pi-photo { position: fixed; inset: 0; z-index: 50; pointer-events: none; opacity: 0; }
+.pi-photo.is-active { opacity: 1; }
+.pi-photo__img { position: absolute; object-fit: cover; will-change: transform; }
+.pi-photo__img.is-animating { transition: all 2s cubic-bezier(0.25, 0.1, 0.25, 1); }
+
+/* Shutter — six blades close in within a 20vmax circle. A coarse grain texture is laid over the blades */
+.pi-shutter {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  opacity: 0;
+}
+.pi-shutter.is-active { opacity: 1; }
+.pi-shutter__svg { width: 20vmax; height: 20vmax; }
+.pi-shutter__blades path { fill: var(--site-blade); }
+
+/* Drag hint — after the intro ends, for 3s a hand or cursor draws a figure 8 over a translucent panel (one loop every 4s) */
+.pi-hint {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 40;
+  width: calc(336 / 375 * 100vw);
+  height: calc(200 / 375 * 100vw);
+  margin: auto;
+  background: var(--site-hint-bg);
+  border-radius: var(--kf-radius-md);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.is-intro-done .pi-hint { opacity: 1; visibility: visible; }
+.pi-hint__track { fill: none; stroke: transparent; stroke-width: 1.5; stroke-dasharray: 6 4; }
+.pi-hint__icon { color: var(--kf-contrast-ink); filter: drop-shadow(var(--kf-shadow-lift)); }
+.pi-hint__svg { display: block; width: min(calc(50 / 375 * 100vw), 50px); margin: auto; max-inline-size: none; }
+.pi-hint__pc { display: none; }
+@media (min-width: 768px) {
+  .pi-hint { width: calc(500 / 1440 * 100vw); height: calc(300 / 1440 * 100vw); }
+  .pi-hint__phone { display: none; }
+  .pi-hint__pc { display: block; }
+  .pi-hint__svg { width: min(calc(30 / 1440 * 100vw), 30px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pi-photo__img.is-animating, .pi-hint { transition: none; }
+}

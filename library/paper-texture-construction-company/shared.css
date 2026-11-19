@@ -1,0 +1,182 @@
+/* Shared by all pages — paper-grain background, thin-line header, black pill buttons, menu panel, blur reveal, black footer + CONTACT cell */
+:root {
+  --site-paper: var(--kf-bg);
+  --site-white: var(--kf-on-accent);
+  --site-black: var(--kf-contrast-bg);
+  --site-on-black: var(--kf-contrast-ink);
+  --site-soft-line: color-mix(in oklab, var(--kf-ink) 22%, transparent);
+  --site-on-black-line: color-mix(in oklab, var(--kf-contrast-ink) 25%, transparent);
+  --ud-ease: cubic-bezier(0.4, 0.4, 0, 1);
+  --ud-head: 72px;
+}
+
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font: var(--kf-weight-body) 15px/1.9 var(--kf-font-display);
+  letter-spacing: 0.04em;
+}
+/* Original background is a paper-grain image — the same grain is laid with a noise filter (translucent black, so it takes the skin color as is) */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.55;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .16 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+body > * { position: relative; z-index: 1; }
+.ud-latin { font-family: var(--kf-font-latin); letter-spacing: 0.02em; }
+.ud-gothic { font-family: var(--kf-font-sans); }
+
+/* Photo slot — label says which photo */
+.ud-ph { position: relative; overflow: hidden; background: color-mix(in oklab, var(--kf-dim) 30%, var(--kf-bg)); }
+.ud-ph::after {
+  content: attr(data-label); position: absolute; left: 50%; top: 50%; translate: -50% -50%; max-width: 86%;
+  padding: 0.35em 0.7em; text-align: center; background: color-mix(in oklab, var(--kf-bg) 80%, transparent);
+  color: var(--kf-dim); font: 500 11px/1.4 var(--kf-font-mono); letter-spacing: 0.02em; pointer-events: none;
+}
+.ud-ph > .in { position: absolute; inset: 0; background: inherit; transition: transform 0.6s var(--ud-ease); }
+
+/* ---------------- Header row ---------------- */
+.ud-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between;
+  height: var(--ud-head); border-bottom: 1px solid var(--kf-line); background: var(--kf-bg);
+}
+.ud-logo { display: flex; flex-direction: column; align-items: center; padding: 0 0 0 40px; color: var(--kf-ink); }
+.ud-logo .jp { font-size: 20px; line-height: 1.2; letter-spacing: 0.04em; }
+.ud-logo .en { font-size: 10px; line-height: 1.4; letter-spacing: 0.06em; }
+.ud-head-r { display: flex; align-items: center; height: 100%; }
+.ud-pill {
+  display: inline-flex; align-items: center; justify-content: center; gap: 22px; height: 48px; padding: 0 22px 0 46px;
+  border: 1px solid var(--kf-ink); border-radius: var(--kf-radius-pill); background: var(--kf-ink); color: var(--site-white); font: 400 14px/1 var(--kf-font-sans);
+  transition: background-color 0.4s var(--ud-ease), color 0.3s var(--ud-ease);
+}
+.ud-pill svg { width: 16px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.4; }
+/* Original: on hover the black pill empties (transparent) and the text turns black */
+@media (hover: hover) { .ud-pill:hover { background: transparent; color: var(--kf-ink); } }
+.ud-head-r .ud-pill { margin: 0 20px 0 0; }
+.ud-menu-btn {
+  position: relative; display: flex; flex-direction: column; justify-content: center; gap: 4px; width: 72px; height: 100%; padding: 0 20px;
+  border: 0; border-left: 1px solid var(--kf-line); background: var(--kf-bg); cursor: pointer; transition: background-color 0.3s var(--ud-ease);
+}
+.ud-menu-btn i { display: block; height: 1px; background: var(--kf-ink); transition: background-color 0.3s var(--ud-ease); }
+.ud-menu-btn.is-covered, .ud-menu-btn.is-covered:hover { background: var(--kf-bg); transition: background-color 0.3s var(--ud-ease); }
+.ud-menu-btn.is-covered i, .ud-menu-btn.is-covered:hover i { background: var(--kf-ink); transition: background-color 0.3s var(--ud-ease); }
+/* Original: on enter the hover rule’s .3s ease-in-out, on leave the base rule’s .3s cubic-bezier(.4,.4,0,1) */
+@media (hover: hover) { .ud-menu-btn:hover { background: var(--kf-ink); transition: background-color 0.3s ease-in-out; } .ud-menu-btn:hover i { background: var(--kf-bg); transition: background-color 0.3s ease-in-out; } }
+
+/* Menu panel — like the original STUDIO modal, a paper-colored panel floats up in .4s: link rows on the left, an architect card, two small buttons and a recruiting card on the right */
+.ud-menu {
+  position: fixed; inset: 0; z-index: 30; display: grid; grid-template-columns: 1fr 320px; grid-template-rows: auto 1fr; gap: 30px 40px;
+  padding: 18px 60px 40px 40px; background: var(--kf-bg); color: var(--kf-ink); overflow: auto;
+  opacity: 0; visibility: hidden; transition: opacity 0.4s var(--ud-ease), visibility 0s linear 0.4s;
+}
+/* In the original, the modal is raised a frame or two after the press. The hand stays over the button in between, so when the modal covers it the button hover is released */
+.ud-menu.open { opacity: 1; visibility: visible; transition: opacity 0.4s var(--ud-ease) 0.05s, visibility 0s linear 0.06s; }
+.ud-menu-top { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; }
+.ud-menu-top .ud-logo { padding: 0; }
+.ud-menu-close { position: relative; width: 48px; height: 48px; border: 0; background: var(--kf-ink); cursor: pointer; }
+.ud-menu-close::before, .ud-menu-close::after { content: ""; position: absolute; left: 50%; top: 50%; width: 20px; height: 1px; background: var(--kf-bg); translate: -50% -50%; rotate: 45deg; }
+.ud-menu-close::after { rotate: -45deg; }
+.ud-menu .ud-links { margin: 0; align-self: start; }
+.ud-menu .ud-links li { border-color: var(--site-soft-line); }
+.ud-menu .ud-links a { color: var(--kf-ink); }
+.ud-menu-side { display: flex; flex-direction: column; gap: 12px; }
+.ud-menu-side .card { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px solid var(--site-soft-line); color: var(--kf-ink); text-align: center; font-size: 13px; }
+.ud-menu-side .card .ud-ph { aspect-ratio: 3 / 2; }
+.ud-menu-side .card.dark .ud-ph { background: color-mix(in oklab, var(--kf-ink) 70%, var(--kf-dim)); }
+.ud-menu-side .card .h.on { position: absolute; left: 0; right: 0; top: 50%; translate: 0 -50%; color: var(--site-white); font-size: 20px; letter-spacing: 0.1em; }
+.ud-menu-side .mini { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border: 1px solid var(--site-soft-line); color: var(--kf-ink); font: 400 11px/1.4 var(--kf-font-sans); transition: opacity 0.4s var(--ud-ease); }
+.ud-menu-side svg { width: 14px; height: 10px; fill: none; stroke: currentColor; stroke-width: 1.2; }
+@media (hover: hover) { .ud-menu-side a:hover { opacity: 0.5; } }
+
+/* Link row (shared by menu · footer) — text over a thin line, arrow at right */
+.ud-links li { border-bottom: 1px solid var(--site-on-black-line); }
+.ud-links a, .ud-links .row { display: flex; align-items: center; gap: 28px; padding: 18px 0; color: var(--site-on-black); font-size: 13px; }
+.ud-links .main { flex: 1; display: flex; align-items: center; justify-content: space-between; }
+.ud-links a { transition: opacity 0.4s var(--ud-ease); }
+.ud-links svg { width: 16px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.2; }
+.ud-links .subs { display: flex; gap: 22px; font-size: 11px; opacity: 0.85; }
+.ud-links .subs a { padding: 0; }
+@media (hover: hover) { .ud-links a:hover { opacity: 0.5; } }
+
+/* Photo card (three Home cases · case list) — category · date above, title below. Original: on hover the card background turns paper color and the photo vanishes (hover rule 1s),
+   On release it returns with the base rule’s .3s. Text turns dark gray in .3s */
+.ud-card { position: relative; display: block; color: var(--kf-ink); overflow: hidden; background-color: transparent; }
+.ud-card { transition: background-color 0.3s var(--ud-ease); }
+.ud-card.ap { transition: background-color 0.3s var(--ud-ease), opacity 1s var(--ud-ease) 0.5s, filter 1s var(--ud-ease) 0.5s; }
+.ud-card .ud-ph { transition: opacity 0.3s var(--ud-ease); }
+.ud-card .meta, .ud-card .t { z-index: 1; transition: color 0.3s var(--ud-ease); }
+.ud-card .meta { position: absolute; left: 14px; right: 14px; top: 14px; display: flex; justify-content: space-between; color: var(--site-white); font-size: 11px; }
+.ud-card .tag { padding: 2px 8px; background: var(--kf-ink); }
+.ud-card .t { padding: 14px 16px; font-size: 14px; }
+@media (hover: hover) {
+  .ud-card:hover { background-color: var(--kf-bg); transition: background-color 1s var(--ud-ease); }
+  .ud-card.ap:hover { transition: background-color 1s var(--ud-ease), opacity 1s var(--ud-ease) 0.5s, filter 1s var(--ud-ease) 0.5s; }
+  .ud-card:hover .ud-ph { opacity: 0; transition: opacity 1s var(--ud-ease); }
+  .ud-card:hover .meta, .ud-card:hover .t { color: var(--kf-ink-soft); }
+}
+/* Outline pill button */
+.ud-outline { display: inline-flex; align-items: center; gap: 14px; padding: 10px 22px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-pill); color: var(--kf-ink); font: 400 12px/1 var(--kf-font-sans); transition: all 0.4s var(--ud-ease); }
+.ud-outline svg { width: 14px; height: 10px; fill: none; stroke: currentColor; stroke-width: 1.2; }
+@media (hover: hover) { .ud-outline:hover { background: var(--kf-ink); color: var(--site-white); } }
+
+/* ---------------- Sub-page section title ---------------- */
+.ud-ttl { padding: calc(var(--ud-head) + 70px) 40px 0; }
+.ud-ttl-b { max-width: 1290px; margin: 0 auto; }
+.ud-ttl .kick { font: 400 11px/1 var(--kf-font-latin); }
+.ud-ttl .kick::before { content: ""; display: inline-block; width: 14px; height: 1px; margin: 0 8px 3px 0; background: var(--kf-ink); vertical-align: middle; }
+.ud-ttl h1 { margin: 22px 0 0; font-size: 40px; font-weight: 400; line-height: 1.3; }
+.ud-pk { display: flex; justify-content: flex-end; gap: 10px; margin: 40px 0 0; font: 400 10px/1 var(--kf-font-sans); }
+.ud-pk li + li::before { content: "—"; margin: 0 10px 0 0; }
+
+/* ---------------- Blur appear (STUDIO appear) ---------------- */
+.ap { transition: opacity 1s var(--ud-ease) 0.5s, filter 1s var(--ud-ease) 0.5s, transform 1s var(--ud-ease) 0.5s; }
+.ap.is-pre { opacity: 0; filter: blur(4px); }
+.ap-fade { transition: opacity 0.8s linear 1s; }
+.ap-fade.is-pre { opacity: 0; }
+.ap-pop { transition: opacity 0.5s var(--ud-ease) 1.5s, filter 0.5s var(--ud-ease) 1.5s, scale 0.5s var(--ud-ease) 1.5s; }
+.ap-pop.is-pre { opacity: 0; filter: blur(2px); scale: 0.7; }
+.ap-tilt { transition: opacity 0.4s var(--ud-ease) 0.6s, rotate 0.4s var(--ud-ease) 0.6s, scale 0.4s var(--ud-ease) 0.6s; }
+.ap-tilt.is-pre { opacity: 0; rotate: 5deg; scale: 0.9; }
+@media (prefers-reduced-motion: reduce) { .ap, .ap-fade, .ap-pop, .ap-tilt { transition: none !important; opacity: 1 !important; filter: none !important; scale: 1 !important; rotate: 0deg !important; } }
+
+/* ---------------- Footer ---------------- */
+.ud-footer { display: flex; min-height: 640px; margin: 0; border-top: 1px solid var(--kf-line); }
+.ud-f-l { width: 50%; padding: 70px 60px 40px; background: var(--site-black); color: var(--site-on-black); }
+.ud-f-l .ud-logo { padding: 0; color: var(--site-on-black); }
+.ud-f-l .ud-links { margin: 50px 0 0; }
+.ud-f-l .cr { margin: 40px 0 0; text-align: center; font: 400 10px/1 var(--kf-font-sans); opacity: 0.7; }
+.ud-f-r { flex: 1; display: flex; padding: 40px; }
+/* CONTACT cell — on hover a blurred dark photo rises in 1s, the black text disappears and the white text remains (original values) */
+.ud-contact { position: relative; flex: 1; display: grid; place-items: center; border: 1px solid var(--kf-line); color: var(--kf-ink); text-align: center; overflow: hidden; transition: background 1s var(--ud-ease); }
+.ud-contact > * { grid-area: 1 / 1; }
+.ud-contact .bg { position: absolute; inset: 0; opacity: 0; filter: blur(3px) brightness(70%); transition: opacity 1s var(--ud-ease); }
+.ud-contact .bg::after { top: auto; bottom: 14px; translate: -50% 0; }
+.ud-contact .copy { position: relative; display: flex; flex-direction: column; align-items: center; transition: opacity 1s var(--ud-ease); }
+.ud-contact .copy.on-dark { color: var(--site-white); opacity: 0; }
+.ud-contact .en { font: 400 34px/1 var(--kf-font-latin); letter-spacing: 0.02em; }
+.ud-contact .jp { margin: 8px 0 0; font-size: 13px; }
+.ud-contact .desc { margin: 24px 0 0; font: 400 11px/2 var(--kf-font-sans); }
+.ud-contact svg { width: 18px; height: 14px; margin: 24px 0 0; fill: none; stroke: currentColor; stroke-width: 1.3; }
+@media (hover: hover) {
+  .ud-contact:hover { background: var(--kf-bg); }
+  .ud-contact:hover .bg { opacity: 1; }
+  .ud-contact:hover .copy.on-light { opacity: 0; }
+  .ud-contact:hover .copy.on-dark { opacity: 1; }
+}
+
+@media (max-width: 860px) {
+  .ud-footer { flex-direction: column-reverse; }
+  .ud-f-l { width: 100%; padding: 50px 24px 30px; }
+  .ud-f-r { padding: 24px; min-height: 280px; }
+}
+@media (max-width: 540px) {
+  :root { --ud-head: 60px; }
+  .ud-logo { padding: 0 0 0 16px; }
+  .ud-logo .jp { font-size: 16px; }
+  .ud-logo .en { font-size: 8px; }
+  .ud-head-r .ud-pill { height: 36px; padding: 0 14px 0 18px; gap: 10px; margin: 0 10px 0 0; font-size: 11px; }
+  .ud-menu-btn { width: 56px; padding: 0 14px; }
+  .ud-menu { grid-template-columns: 1fr; padding: 30px 24px; }
+  .ud-ttl { padding: calc(var(--ud-head) + 40px) 20px 0; }
+  .ud-ttl h1 { font-size: 28px; }
+  .ud-links .subs { display: none; }
+}

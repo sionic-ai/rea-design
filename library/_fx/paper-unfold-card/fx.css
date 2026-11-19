@@ -1,0 +1,53 @@
+/* Pinned or [data-fx-paper-unfold-card~=…] when it comes to look like: the card sits apart folded (three layers) (.6s rebound), the middle layer after .24s and the top layer after .6s unfold on the bottom hinge over .62s, and
+   (−180° → −86° → 0 → −5° → 0, inner fold shade .14), the shade lays down at .95s and the text is written from 1.02s in .07s steps from 6px below. With data-exit it folds backward and moves out. */
+[data-fx~="paper-unfold-card"] {
+  --lift: cubic-bezier(0.6, 0, 0.4, 1);
+  --fall: cubic-bezier(0.55, 0, 1, 0.45);
+  --rebound: cubic-bezier(0.2, 0.6, 0.35, 1);
+  --resettle: cubic-bezier(0.45, 0, 0.55, 1);
+  --fx-set-down: linear(0, 0.22 7%, 0.58 17%, 0.86 28%, 1.02 40%, 1.035 48%, 1.01 62%, 0.998 76%, 1);
+  perspective: 1100px;
+  perspective-origin: 50% 100%;
+  animation: fx-paper-arrive calc(0.6s * var(--fx-speed, 1)) var(--fx-set-down) both;
+}
+:where([data-fx~="paper-unfold-card"]) { position: relative; }
+[data-fx~="paper-unfold-card"] > [data-fx-part="paper"] { position: absolute; inset: 0; pointer-events: none; transform-style: preserve-3d; }
+[data-fx~="paper-unfold-card"] > [data-fx-part="paper"]::before { content: ""; position: absolute; inset: 0; border-radius: var(--kf-radius-md); box-shadow: var(--kf-shadow-soft); animation: fx-paper-shadow calc(0.5s * var(--fx-speed, 1)) var(--kf-ease-out) calc(0.95s * var(--fx-speed, 1)) both; }
+[data-fx~="paper-unfold-card"] [data-fx-part="fold"] { position: absolute; left: 0; right: 0; height: 33.3333%; border: 1px solid var(--kf-line); background: var(--kf-bg); transform-style: preserve-3d; transform-origin: 50% 100%; }
+[data-fx~="paper-unfold-card"] [data-fx-part="fold"]::after { content: ""; position: absolute; inset: 0; opacity: 0; pointer-events: none; background: linear-gradient(to bottom, transparent, var(--kf-ink)); }
+[data-fx~="paper-unfold-card"] [data-fx-part="fold"][data-key="base"] { bottom: 0; border-top-color: transparent; border-radius: 0 0 var(--kf-radius-md) var(--kf-radius-md); transform-origin: 50% 0; }
+[data-fx~="paper-unfold-card"] [data-fx-part="fold"][data-key="middle"] { top: 33.3333%; border-block-color: transparent; animation: fx-paper-unfold calc(0.62s * var(--fx-speed, 1)) linear calc(0.24s * var(--fx-speed, 1)) both; }
+[data-fx~="paper-unfold-card"] [data-fx-part="fold"][data-key="top"] { bottom: 100%; left: -1px; right: -1px; height: 100%; border-bottom-color: transparent; border-radius: var(--kf-radius-md) var(--kf-radius-md) 0 0; animation: fx-paper-unfold calc(0.62s * var(--fx-speed, 1)) linear calc(0.6s * var(--fx-speed, 1)) both; }
+[data-fx~="paper-unfold-card"] [data-fx-part="fold"]:not([data-key="base"])::after { animation: fx-paper-shade calc(0.62s * var(--fx-speed, 1)) linear both; animation-delay: inherit; }
+[data-fx~="paper-unfold-card"] > [data-fx-part="content"] { position: relative; }
+[data-fx~="paper-unfold-card"] > [data-fx-part="content"] > * { animation: fx-paper-write calc(0.55s * var(--fx-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1) calc((1.02s + var(--fx-i, 0) * 0.07s) * var(--fx-speed, 1)) both; }
+[data-fx~="paper-unfold-card"][data-exit] > [data-fx-part="content"] > * { animation: fx-paper-unwrite 0.16s cubic-bezier(0.4, 0, 1, 1) both; }
+[data-fx~="paper-unfold-card"][data-exit] [data-fx-part="fold"][data-key="top"] { animation: fx-paper-fold 0.5s linear 0.1s both; }
+[data-fx~="paper-unfold-card"][data-exit] [data-fx-part="fold"][data-key="middle"] { animation: fx-paper-fold 0.5s linear 0.42s both; }
+[data-fx~="paper-unfold-card"][data-exit] > [data-fx-part="paper"]::before { animation: fx-paper-unshadow 0.3s both; }
+[data-fx~="paper-unfold-card"][data-exit] { animation: fx-paper-aside 0.46s cubic-bezier(0.55, 0, 0.8, 0.35) 0.94s both; }
+@keyframes fx-paper-arrive { 0% { opacity: 0; transform: translate(-4px, 22px) rotate(-3deg); } 30% { opacity: 1; } }
+@keyframes fx-paper-shadow { 0% { opacity: 0; } }
+@keyframes fx-paper-unfold {
+  0% { animation-timing-function: var(--lift); transform: rotateX(-180deg) translateZ(-1px); }
+  44% { animation-timing-function: var(--fall); transform: rotateX(-86deg) translateZ(-1px); }
+  76% { animation-timing-function: var(--rebound); transform: rotateX(0); }
+  87% { animation-timing-function: var(--resettle); transform: rotateX(-5deg); }
+  to { transform: rotateX(0); }
+}
+@keyframes fx-paper-shade { 0%, 76%, to { opacity: 0; } 44% { opacity: 0.14; } 87% { opacity: 0.03; } }
+@keyframes fx-paper-write { 0% { opacity: 0; transform: translateY(6px); } }
+@keyframes fx-paper-unwrite { to { opacity: 0; } }
+@keyframes fx-paper-fold {
+  0% { animation-timing-function: var(--lift); transform: rotateX(0); }
+  44% { animation-timing-function: var(--fall); transform: rotateX(-94deg) translateZ(-1px); }
+  78% { animation-timing-function: var(--rebound); transform: rotateX(-180deg) translateZ(-1px); }
+  89% { animation-timing-function: var(--resettle); transform: rotateX(-175deg) translateZ(-1px); }
+  to { transform: rotateX(-180deg) translateZ(-1px); }
+}
+@keyframes fx-paper-unshadow { to { opacity: 0; } }
+@keyframes fx-paper-aside { to { opacity: 0; transform: translate(-8px, 44px) rotate(-4deg); } }
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="paper-unfold-card"], [data-fx~="paper-unfold-card"] > [data-fx-part="content"] > *, [data-fx~="paper-unfold-card"][data-exit] { animation: 0.2s both fx-paper-shadow; }
+  [data-fx~="paper-unfold-card"] [data-fx-part="fold"], [data-fx~="paper-unfold-card"] [data-fx-part="fold"]::after, [data-fx~="paper-unfold-card"] > [data-fx-part="paper"]::before { animation: none !important; }
+}

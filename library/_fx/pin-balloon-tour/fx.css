@@ -1,0 +1,60 @@
+/* The pin drops from 60px above and bounces (.6s overshoot curve) · the speech bubble pops out .5→1.08→.97→1 (.45s) and shrinks in .2s when closing */
+[data-fx~="pin-balloon-tour"] [data-fx-part="pin"] {
+  opacity: 0;
+  transform: translateY(var(--fx-drop, -60px));
+  cursor: pointer;
+  z-index: 10;
+}
+[data-fx~="pin-balloon-tour"] [data-fx-part="pin"].is-in {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition: opacity var(--fx-fade, 0.4s) ease, transform var(--fx-dur, 0.6s) cubic-bezier(0.34, 1.8, 0.64, 1);
+}
+[data-fx~="pin-balloon-tour"] [data-fx-part="pin"].is-open { z-index: 20; }
+[data-fx~="pin-balloon-tour"] [data-fx-part="icon"] {
+  display: inline-flex;
+  transition: transform 0.3s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  [data-fx~="pin-balloon-tour"] [data-fx-part="pin"]:hover [data-fx-part="icon"] { transform: scale(1.1); }
+}
+@media (hover: none), (pointer: coarse) {
+  [data-fx~="pin-balloon-tour"] [data-fx-part="pin"].is-open [data-fx-part="icon"] { transform: scale(1.1); }
+}
+
+[data-fx~="pin-balloon-tour"] [data-fx-part="balloon"] {
+  --fx-from: translate(-8px, -8px);
+  position: absolute;
+  z-index: -1;
+  opacity: 0;
+  transform: scale(0.5) var(--fx-from);
+  transform-origin: left top;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+[data-fx~="pin-balloon-tour"] [data-fx-part="pin"].is-open [data-fx-part="balloon"] {
+  opacity: 1;
+  transform: scale(1) translate(0, 0);
+  pointer-events: auto;
+  animation: fx-balloon-pop var(--fx-pop, 0.45s) cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+/* Which side of the pin the speech bubble attaches to — pushes out from the pin side with the opposite corner as the axis */
+[data-fx~="pin-balloon-tour"] [data-dir="top-right"] [data-fx-part="balloon"] { transform-origin: left bottom; --fx-from: translate(-8px, 8px); }
+[data-fx~="pin-balloon-tour"] [data-dir="right"] [data-fx-part="balloon"] { transform-origin: left center; --fx-from: translate(-12px, 0); }
+[data-fx~="pin-balloon-tour"] [data-dir="bottom-left"] [data-fx-part="balloon"] { transform-origin: right top; --fx-from: translate(8px, -8px); }
+[data-fx~="pin-balloon-tour"] [data-dir="bottom"] [data-fx-part="balloon"] { transform-origin: center top; --fx-from: translate(0, -12px); }
+[data-fx~="pin-balloon-tour"] [data-dir="left"] [data-fx-part="balloon"] { transform-origin: right center; --fx-from: translate(12px, 0); }
+
+@keyframes fx-balloon-pop {
+  0% { opacity: 0; transform: scale(0.5); }
+  60% { opacity: 1; transform: scale(1.08); }
+  80% { transform: scale(0.97); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="pin-balloon-tour"] [data-fx-part="pin"],
+  [data-fx~="pin-balloon-tour"] [data-fx-part="pin"].is-in,
+  [data-fx~="pin-balloon-tour"] [data-fx-part="icon"],
+  [data-fx~="pin-balloon-tour"] [data-fx-part="balloon"] { transition: none; animation: none; }
+  [data-fx~="pin-balloon-tour"] [data-fx-part="pin"] { opacity: 1; transform: none; }
+}

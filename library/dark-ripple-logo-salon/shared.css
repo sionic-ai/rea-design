@@ -1,0 +1,411 @@
+/* Shared by all pages: background·text, header, button, section title, reveal effect, loader, big reservation band, footer, photo distortion canvas */
+
+/* The original’s gray steps are made from skin variables — swap the skin and they follow. Original values are in comments */
+:root {
+  --site-shade-deep: oklch(from var(--kf-bg) calc(l * 0.785) c h);                  /* #222 loader digits and text */
+  --site-shade-curtain: color-mix(in srgb, var(--kf-ink) 16.7%, var(--kf-bg));      /* #555 loader veil */
+  --site-shade-hover: color-mix(in srgb, var(--kf-ink) 25%, var(--kf-bg));          /* #666 button hover */
+  --site-shade-mark: color-mix(in srgb, var(--kf-ink) 27%, var(--kf-bg));           /* #6a6a6a reservation band text */
+  --site-copy-ink: color-mix(in srgb, var(--kf-ink) 11.3%, var(--kf-bg));           /* #4a4a4a large copyright text */
+  /* Hero mark — opaque dark brown. On the background it shows its own color, on a photo it uses overlay so the photo shows through */
+  --site-mark-ink: oklch(from var(--kf-bg) calc(l * 0.52) calc(c + 0.025) 45); /* rgb(24,13,9) */
+  --wf-bg: var(--kf-bg);
+  --wf-surface: var(--kf-surface);
+  --wf-ink: var(--kf-ink);
+  --wf-sub: var(--kf-dim);
+  --wf-line: color-mix(in srgb, var(--kf-ink) 17.6%, var(--kf-bg));                 /* #575757 */
+  --wf-fill: color-mix(in srgb, var(--kf-ink) 8.3%, var(--kf-bg));                  /* #444 */
+  --wf-fill-ink: color-mix(in srgb, var(--kf-ink) 57.4%, var(--kf-bg));             /* #a8a8a8 */
+  /* The original stretches a 1366-wide design with vw — to get the same proportions, 1px units are tied to the screen width */
+  --px: calc(100vw / 1366);
+}
+@media (max-width: 767px) {
+  :root { --px: calc(100vw / 375); }
+}
+
+html { font-size: 62.5%; }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+/* Background is painted only on the root — if body paints it too, it covers the fixed canvas laid behind (-1) */
+html { background: var(--kf-bg); }
+body {
+  background: none;
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-size: calc(16 * var(--px));
+  line-height: 2;
+  font-feature-settings: "palt";
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+  overflow-x: hidden;
+}
+@media (max-width: 767px) {
+  body { font-size: calc(14 * var(--px)); }
+}
+#bodyset { overflow: hidden; }
+
+.sz-c {
+  position: relative;
+  width: calc(1200 * var(--px));
+  margin: 0 auto;
+}
+@media (max-width: 767px) {
+  .sz-c { width: 100%; padding: 0 calc(24 * var(--px)); }
+}
+
+/* External link arrow (↗) — button · text link · large booking strip share the same shape */
+:root {
+  --sz-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='m4 16l12-12m-9 0h9v9' fill='none' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E");
+}
+.sz-arrow-icon {
+  display: block;
+  background: currentColor;
+  -webkit-mask: var(--sz-arrow) no-repeat center / contain;
+  mask: var(--sz-arrow) no-repeat center / contain;
+}
+
+/* Header — logo top left, pill button top right. Not fixed, only in the hero */
+.sz-header { width: 100%; padding: calc(24 * var(--px)); position: relative; z-index: 30; }
+.sz-header__in { display: grid; grid-template-columns: 1fr 1fr; align-items: center; }
+.sz-logo { width: calc(112 * var(--px)); line-height: 0; opacity: 0; }
+.sz-nav { display: grid; justify-content: end; }
+@media (max-width: 767px) {
+  .sz-header { padding: calc(16 * var(--px)); }
+  .sz-logo { width: calc(100 * var(--px)); }
+}
+
+/* Logo slot: short text wordmark + small line below */
+.sz-wordmark { display: block; color: var(--kf-ink); line-height: 1; }
+.sz-wordmark b {
+  display: block;
+  font: 700 calc(26 * var(--px)) / 0.9 var(--kf-font-sans);
+  letter-spacing: -0.02em;
+}
+.sz-wordmark small {
+  display: block;
+  margin-top: calc(3 * var(--px));
+  font: 700 calc(5.6 * var(--px)) / 1 var(--kf-font-sans);
+  letter-spacing: 0.32em;
+}
+@media (max-width: 767px) {
+  .sz-wordmark b { font-size: calc(23 * var(--px)); }
+  .sz-wordmark small { font-size: calc(5 * var(--px)); }
+}
+
+/* Pill button — white border, on hover it fills with a one-step lighter gray and the arrow moves to the upper right */
+.sz-btn { display: inline-block; position: relative; overflow: hidden; line-height: 0; }
+.sz-btn a {
+  display: block;
+  min-width: calc(160 * var(--px));
+  padding: calc(20 * var(--px)) calc(20 * var(--px)) calc(20 * var(--px)) calc(24 * var(--px));
+  border: 1px solid var(--kf-ink);
+  border-radius: var(--kf-radius-pill);
+  color: var(--kf-ink);
+  font-weight: 700;
+  text-align: left;
+  transition: all 0.3s ease-out 0s;
+}
+.sz-btn__txt {
+  position: relative;
+  display: block;
+  padding-right: calc(24 * var(--px));
+  font: 700 calc(14 * var(--px)) / 1 var(--kf-font-sans);
+}
+.sz-btn__txt::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: calc(10 * var(--px));
+  height: calc(10 * var(--px));
+  translate: 0 -50%;
+  background: currentColor;
+  -webkit-mask: var(--sz-arrow) no-repeat center / contain;
+  mask: var(--sz-arrow) no-repeat center / contain;
+  transition: all 0.3s ease-out 0s;
+}
+@media (any-hover: hover) {
+  .sz-btn a:hover { background: var(--site-shade-hover); }
+  .sz-btn a:hover .sz-btn__txt::after { top: calc(50% - 2 * var(--px)); right: calc(-4 * var(--px)); }
+}
+@media (max-width: 767px) {
+  .sz-btn a { min-width: calc(120 * var(--px)); padding: calc(18 * var(--px)) calc(12 * var(--px)) calc(18 * var(--px)) calc(20 * var(--px)); }
+  .sz-btn__txt { padding-right: calc(20 * var(--px)); font-size: calc(14 * var(--px)); }
+}
+
+/* Text link — the underline slides out to the right and is redrawn from the left */
+.sz-textlink { display: flex; flex-wrap: wrap; justify-content: flex-start; }
+.sz-textlink a { position: relative; padding-right: calc(24 * var(--px)); color: var(--kf-ink); }
+.sz-textlink a::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: calc(10 * var(--px));
+  height: calc(10 * var(--px));
+  margin-top: calc(-6 * var(--px));
+  translate: 0 -50%;
+  background: currentColor;
+  -webkit-mask: var(--sz-arrow) no-repeat center / contain;
+  mask: var(--sz-arrow) no-repeat center / contain;
+  transition: all 0.3s ease-out 0s;
+}
+.sz-textlink__txt {
+  position: relative;
+  display: inline-block;
+  padding-bottom: calc(6 * var(--px));
+  overflow: hidden;
+  font-size: calc(14 * var(--px));
+  line-height: 1;
+}
+.sz-textlink__txt::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--kf-ink);
+  transform-origin: right;
+  transition: transform 0.2s ease-in-out 0s;
+}
+@keyframes sz-line {
+  0% { transform: translate(0); }
+  30% { transform: translate(110%); }
+  30.1% { transform: translate(-110%); }
+  to { transform: translate(0); }
+}
+@media (any-hover: hover) {
+  .sz-textlink a:hover .sz-textlink__txt::after { transform-origin: left; animation: sz-line 0.5s ease 0s 1 normal forwards; }
+  .sz-textlink a:hover::after { margin-top: calc(-10 * var(--px)); right: calc(-4 * var(--px)); }
+}
+@media (max-width: 767px) {
+  .sz-textlink a { padding-right: calc(24 * var(--px)); }
+  .sz-textlink__txt { padding-bottom: calc(6 * var(--px)); font-size: calc(14 * var(--px)); }
+}
+
+/* Section title — ( 01 ) number and name, with a thin line drawn rightward over 2s */
+.sz-ahead { position: relative; margin-bottom: calc(90 * var(--px)); }
+.sz-ahead::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: calc(16 * var(--px));
+  width: 0;
+  height: 1px;
+  background: var(--kf-line);
+  transition: width 2s cubic-bezier(0.22, 1, 0.36, 1) 0.5s;
+}
+.sz-ahead.is-show::after { width: 100%; }
+.sz-ahead__t {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  padding-right: calc(24 * var(--px));
+  overflow: hidden;
+  background: var(--kf-bg);
+  font: 700 calc(14 * var(--px)) / 1 var(--kf-font-sans);
+}
+.sz-num {
+  display: block;
+  padding-bottom: calc(3 * var(--px));
+  font: 400 calc(16 * var(--px)) / 1 var(--kf-font-display);
+}
+@media (max-width: 767px) {
+  .sz-ahead { margin-bottom: calc(36 * var(--px)); }
+  .sz-ahead::after { bottom: calc(16 * var(--px)); }
+  .sz-ahead__t { font-size: calc(14 * var(--px)); }
+  .sz-num { font-size: calc(16 * var(--px)); }
+}
+
+/* Split-text title: overflowing characters stay hidden, then rise from 305% below */
+.sz-split { overflow: hidden; }
+.sz-split .ch-wrap { display: inline-block; }
+.sz-split .ch { display: inline-block; }
+
+/* Block entrance — 0.5s from 30px below */
+@keyframes sz-tween { 0% { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.sz-tw { position: relative; opacity: 0; }
+.sz-tw.is-show { animation: sz-tween 0.5s ease-out 0s 1 forwards; }
+
+/* Character by character: appears gray, then turns white */
+.sz-rc { display: inline; }
+
+/* Small text · list */
+.sz-attn { margin-left: 0.9em; text-indent: -0.9em; font-size: calc(14 * var(--px)); }
+.sz-attn::before { content: "※"; font-weight: 400; }
+.sz-bullets { margin: 0; text-align: left; }
+.sz-bullets li { position: relative; padding-left: calc(12 * var(--px)); line-height: 1.6; }
+.sz-bullets li + li { margin-top: calc(6 * var(--px)); }
+.sz-bullets li::before {
+  content: "";
+  position: absolute;
+  top: calc(12 * var(--px));
+  left: 0;
+  width: calc(3 * var(--px));
+  height: calc(3 * var(--px));
+  border-radius: 50%;
+  background: var(--kf-ink);
+}
+@media (max-width: 767px) {
+  .sz-attn { font-size: calc(14 * var(--px)); }
+  .sz-bullets li { padding-left: calc(12 * var(--px)); }
+  .sz-bullets li::before { width: calc(6 * var(--px)); height: calc(6 * var(--px)); top: calc(9 * var(--px)); }
+}
+
+/* Photo slot + distortion canvas drawn over it. When the canvas is ready the box below is hidden (the canvas draws the same image) */
+.sz-fig { position: relative; display: block; margin: 0; }
+.sz-fig .wf-img { height: 100%; border: 0; }
+.sz-fig.is-gl > .sz-ph { opacity: 0; }
+.sz-fig__gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+/* Screen-fixed canvas that draws the info photo — laid behind the text (-1) so the curved edge extends over the background outside the cell */
+.sz-gl-fixed { position: fixed; top: 0; left: 0; z-index: -1; width: 100vw; height: 100vh; pointer-events: none; }
+.sz-gl-fixed canvas { display: block; width: 100%; height: 100%; }
+
+/* Loader — gray curtain, big number counter, store name marquee. At 100 two curtains with curved bottoms lift upward */
+.sz-loader { position: fixed; inset: 0; z-index: 9999; pointer-events: none; }
+.sz-loader__overlay { position: absolute; inset: 0; z-index: 1; background: var(--site-shade-curtain); }
+.sz-loader__curtain { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.sz-loader__curtain--accent { z-index: 1; fill: var(--kf-bg); }
+.sz-loader__curtain--main { z-index: 2; fill: var(--site-shade-curtain); }
+.sz-loader__count {
+  position: absolute;
+  right: calc(12 * var(--px));
+  bottom: calc(160 * var(--px));
+  z-index: 2;
+  color: var(--site-shade-deep);
+  font: 700 calc(200 * var(--px)) / 1 var(--kf-font-sans);
+}
+.sz-loader__text {
+  position: absolute;
+  left: 0;
+  bottom: calc(12 * var(--px));
+  z-index: 2;
+  display: flex;
+  color: var(--site-shade-deep);
+  font: 700 calc(150 * var(--px)) / 1 var(--kf-font-sans);
+  white-space: nowrap;
+}
+.sz-loader__track { display: flex; will-change: transform; }
+.sz-loader__group { display: flex; gap: 0.4em; padding-right: 0.4em; }
+.sz-loader__word { display: inline-flex; overflow: hidden; }
+.sz-loader__ch { display: inline-block; }
+@media (max-width: 767px) {
+  .sz-loader__count { right: calc(12 * var(--px)); bottom: calc(100 * var(--px)); font-size: calc(120 * var(--px)); }
+  .sz-loader__text { bottom: calc(24 * var(--px)); font-size: calc(90 * var(--px)); }
+}
+.sz-loading .sz-header__in { opacity: 0; }
+
+/* Big booking band — full-width serif text and arrows flow slowly */
+.sz-band {
+  position: relative;
+  margin: 0 auto;
+  background: var(--kf-surface);
+  border-top: 1px solid var(--kf-line);
+  border-bottom: 1px solid var(--kf-line);
+}
+.sz-band a { display: flex; padding: calc(100 * var(--px)) 0; color: inherit; transition: all 0.3s ease-out 0s; }
+.sz-band__txt {
+  position: relative;
+  flex: none;
+  padding-right: calc(200 * var(--px));
+  color: var(--site-shade-mark);
+  font: 400 calc(200 * var(--px)) / 1 var(--kf-font-display);
+  white-space: nowrap;
+  transition: all 0.3s ease-out 0s;
+}
+.sz-band__txt::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: calc(30 * var(--px));
+  width: calc(150 * var(--px));
+  height: calc(150 * var(--px));
+  translate: 0 -50%;
+  background: currentColor;
+  -webkit-mask: var(--sz-arrow) no-repeat center / contain;
+  mask: var(--sz-arrow) no-repeat center / contain;
+  transition: all 0.3s ease-out 0s;
+}
+@media (any-hover: hover) {
+  /* Original: global a:hover turns link text to the ground color (#333) — it survives only in the band, so border·underline colors follow along */
+  .sz-band a:hover { color: var(--kf-bg); }
+  .sz-band a:hover .sz-band__txt { color: var(--kf-line); }
+  .sz-band a:hover .sz-band__txt::after { margin-top: calc(-10 * var(--px)); right: calc(10 * var(--px)); }
+}
+@media (max-width: 767px) {
+  .sz-band a { padding: calc(36 * var(--px)) 0; }
+  .sz-band__txt { padding-right: calc(80 * var(--px)); font-size: calc(70 * var(--px)); }
+  .sz-band__txt::after { width: calc(50 * var(--px)); height: calc(50 * var(--px)); right: calc(15 * var(--px)); }
+}
+@media (max-width: 767px) and (any-hover: hover) {
+  .sz-band a:hover .sz-band__txt::after { margin-top: calc(-10 * var(--px)); right: calc(25 * var(--px)); }
+}
+
+/* Marquee row common — the same content is joined three times and the first copy is pushed left */
+.sz-marquee { display: flex; white-space: nowrap; }
+
+/* Footer: logo · address on the left, numbered anchor menu on the right, huge clipped copyright text at the very bottom */
+.sz-footer { position: relative; width: 100%; color: var(--kf-ink); }
+.sz-footer__in {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: calc(48 * var(--px));
+  padding-top: calc(60 * var(--px));
+}
+.sz-footer__logo { display: flex; align-items: center; gap: calc(10 * var(--px)); width: calc(236 * var(--px)); margin: 0; }
+.sz-footer__logo svg { width: calc(52 * var(--px)); height: auto; flex: none; }
+.sz-footer__logo .sz-wordmark b { font-size: calc(40 * var(--px)); }
+.sz-footer__logo .sz-wordmark small { font-size: calc(8.4 * var(--px)); margin-top: calc(4 * var(--px)); }
+.sz-footer__addr { padding-top: calc(12 * var(--px)); font-size: calc(14 * var(--px)); }
+.sz-fnav { padding-top: calc(24 * var(--px)); }
+.sz-fnav li { padding-top: calc(12 * var(--px)); font: 700 calc(14 * var(--px)) / 1 var(--kf-font-sans); }
+.sz-fnav .sz-num { display: inline; padding: 0 calc(6 * var(--px)) 0 0; }
+.sz-fnav a { color: var(--kf-ink); }
+.sz-fnav__txt {
+  position: relative;
+  display: inline-block;
+  padding-bottom: calc(6 * var(--px));
+  background: linear-gradient(90deg, var(--kf-ink), var(--kf-ink)) no-repeat left bottom / 0 1px;
+  transition: background-size 0.5s;
+}
+@media (any-hover: hover) {
+  .sz-fnav a:hover .sz-fnav__txt { background-size: 100% 1px; }
+}
+.sz-copy {
+  width: 100vw;
+  padding-top: calc(90 * var(--px));
+  overflow: hidden;
+  line-height: 0;
+  opacity: 0;
+}
+.sz-copy span {
+  position: relative;
+  bottom: calc(-22 * var(--px));
+  display: block;
+  color: var(--site-copy-ink);
+  font: 700 calc(112 * var(--px)) / 0.82 var(--kf-font-sans);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+@media (max-width: 767px) {
+  .sz-footer__in { grid-template-columns: 1fr; gap: calc(24 * var(--px)); padding-top: calc(48 * var(--px)); }
+  .sz-footer__logo { width: calc(200 * var(--px)); }
+  .sz-footer__logo svg { width: calc(44 * var(--px)); }
+  .sz-footer__logo .sz-wordmark b { font-size: calc(34 * var(--px)); }
+  .sz-footer__logo .sz-wordmark small { font-size: calc(7 * var(--px)); }
+  .sz-footer__addr { padding-top: calc(12 * var(--px)); font-size: calc(14 * var(--px)); }
+  .sz-fnav { padding-top: calc(24 * var(--px)); }
+  .sz-fnav li { padding-top: calc(12 * var(--px)); font-size: calc(14 * var(--px)); }
+  .sz-fnav .sz-num { font-size: calc(16 * var(--px)); }
+  .sz-copy { padding-top: calc(48 * var(--px)); }
+  .sz-copy span { bottom: 0; font-size: calc(31 * var(--px)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sz-tw { opacity: 1; }
+  .sz-tw.is-show { animation: none; }
+  .sz-ahead::after { width: 100%; transition: none; }
+  .sz-logo, .sz-copy { opacity: 1; }
+}

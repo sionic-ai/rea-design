@@ -1,0 +1,219 @@
+/* Curtain that covers while loading — twenty coins fall one by one from above (.13s apart) and stack in four rows of five (on landing, the flat face turns into the thickness seen from the side),
+   Every 5 seconds the stack vanishes and piles up again. Pure CSS, so it keeps running while scripts do heavy work. Once loaded, the veil lifts over .5s after .12s (fx.js) */
+[data-fx~="coin-pile-loader"] {
+  position: fixed; inset: 0; z-index: 40;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px;
+  background: var(--kf-bg); color: var(--kf-ink);
+  font: 800 12px/1 var(--kf-font-sans); letter-spacing: 0.14em; text-transform: uppercase;
+  opacity: 1; transition: opacity var(--fx-fade, 500ms) ease var(--fx-fade-delay, 120ms);
+}
+[data-fx~="coin-pile-loader"].is-done { opacity: 0; pointer-events: none; }
+[data-fx~="coin-pile-loader"][hidden] { display: none; }
+[data-fx~="coin-pile-loader"] [data-fx-part="pile"] {
+  position: relative; width: 300px; height: 190px; perspective: 700px; perspective-origin: 50% 60%;
+  animation: fx-cpl-wipe 5s linear infinite;
+}
+@keyframes fx-cpl-wipe { 0%, 85% { opacity: 1; } 93%, 100% { opacity: 0; } }
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"] {
+  --lift: calc(var(--h) * -12px);
+  position: absolute; left: 50%; bottom: 34px; width: 46px; height: 46px; margin-left: -23px; opacity: 0;
+  animation-duration: 5s; animation-timing-function: linear; animation-iteration-count: infinite;
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"] svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+[data-fx~="coin-pile-loader"] .fx-cpl-face { fill: var(--kf-surface); stroke: var(--kf-ink); stroke-width: 3; }
+[data-fx~="coin-pile-loader"] .fx-cpl-mark { fill: none; stroke: var(--kf-ink); stroke-width: 2.4; stroke-linecap: round; }
+[data-fx~="coin-pile-loader"] .fx-cpl-flat { animation: fx-cpl-face 5s linear infinite var(--d); }
+[data-fx~="coin-pile-loader"] .fx-cpl-solid { opacity: 0; animation: fx-cpl-solid 5s linear infinite var(--d); }
+@keyframes fx-cpl-face { 0%, 19% { opacity: 1; } 23%, 100% { opacity: 0; } }
+@keyframes fx-cpl-solid { 0%, 19% { opacity: 0; } 23%, 100% { opacity: 1; } }
+[data-fx~="coin-pile-loader"] [data-fx-part="label"]::after { content: ""; animation: fx-cpl-dots 1.4s steps(4, end) infinite; }
+@keyframes fx-cpl-dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
+/* Same shape for every leaf, differing only in when it falls — all share one 5s cycle so the pile is wiped away at once (the reason keyframes are split instead of using delays) */
+
+@keyframes fx-cpl-drop-0 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  1.6% { opacity: 1; }
+  21% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  23% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  25%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(1) { animation-name: fx-cpl-drop-0; }
+@keyframes fx-cpl-drop-1 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; }
+  2.6% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  4.2% { opacity: 1; }
+  23.6% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  25.6% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  27.6%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(2) { animation-name: fx-cpl-drop-1; }
+@keyframes fx-cpl-drop-2 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; }
+  5.2% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  6.8% { opacity: 1; }
+  26.2% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  28.2% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  30.2%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(3) { animation-name: fx-cpl-drop-2; }
+@keyframes fx-cpl-drop-3 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; }
+  7.8% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  9.4% { opacity: 1; }
+  28.8% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  30.8% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  32.8%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(4) { animation-name: fx-cpl-drop-3; }
+@keyframes fx-cpl-drop-4 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; }
+  10.4% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  12% { opacity: 1; }
+  31.4% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  33.4% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  35.4%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(5) { animation-name: fx-cpl-drop-4; }
+@keyframes fx-cpl-drop-5 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; }
+  13% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  14.6% { opacity: 1; }
+  34% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  36% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  38%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(6) { animation-name: fx-cpl-drop-5; }
+@keyframes fx-cpl-drop-6 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; }
+  15.6% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  17.2% { opacity: 1; }
+  36.6% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  38.6% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  40.6%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(7) { animation-name: fx-cpl-drop-6; }
+@keyframes fx-cpl-drop-7 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; }
+  18.2% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  19.8% { opacity: 1; }
+  39.2% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  41.2% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  43.2%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(8) { animation-name: fx-cpl-drop-7; }
+@keyframes fx-cpl-drop-8 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; }
+  20.8% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  22.4% { opacity: 1; }
+  41.8% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  43.8% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  45.8%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(9) { animation-name: fx-cpl-drop-8; }
+@keyframes fx-cpl-drop-9 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; }
+  23.4% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  25% { opacity: 1; }
+  44.4% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  46.4% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  48.4%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(10) { animation-name: fx-cpl-drop-9; }
+@keyframes fx-cpl-drop-10 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; }
+  26% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  27.6% { opacity: 1; }
+  47% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  49% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  51%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(11) { animation-name: fx-cpl-drop-10; }
+@keyframes fx-cpl-drop-11 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; }
+  28.6% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  30.2% { opacity: 1; }
+  49.6% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  51.6% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  53.6%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(12) { animation-name: fx-cpl-drop-11; }
+@keyframes fx-cpl-drop-12 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; }
+  31.2% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  32.8% { opacity: 1; }
+  52.2% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  54.2% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  56.2%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(13) { animation-name: fx-cpl-drop-12; }
+@keyframes fx-cpl-drop-13 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; }
+  33.8% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  35.4% { opacity: 1; }
+  54.8% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  56.8% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  58.8%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(14) { animation-name: fx-cpl-drop-13; }
+@keyframes fx-cpl-drop-14 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; }
+  36.4% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  38% { opacity: 1; }
+  57.4% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  59.4% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  61.4%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(15) { animation-name: fx-cpl-drop-14; }
+@keyframes fx-cpl-drop-15 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; }
+  39% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  40.6% { opacity: 1; }
+  60% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  62% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  64%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(16) { animation-name: fx-cpl-drop-15; }
+@keyframes fx-cpl-drop-16 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; }
+  41.6% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  43.2% { opacity: 1; }
+  62.6% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  64.6% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  66.6%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(17) { animation-name: fx-cpl-drop-16; }
+@keyframes fx-cpl-drop-17 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; }
+  44.2% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  45.8% { opacity: 1; }
+  65.2% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  67.2% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  69.2%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(18) { animation-name: fx-cpl-drop-17; }
+@keyframes fx-cpl-drop-18 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; }
+  46.8% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  48.4% { opacity: 1; }
+  67.8% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  69.8% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  71.8%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(19) { animation-name: fx-cpl-drop-18; }
+@keyframes fx-cpl-drop-19 {
+  0% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; }
+  49.4% { transform: translate3d(var(--x), calc(var(--lift) - 200px), 90px) rotate(var(--spin)); opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.42); }
+  51% { opacity: 1; }
+  70.4% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); animation-timing-function: ease-out; }
+  72.4% { transform: translate3d(var(--x), calc(var(--lift) - 8px), var(--z)) rotate(var(--tilt)); }
+  74.4%, 100% { transform: translate3d(var(--x), var(--lift), var(--z)) rotate(var(--tilt)); opacity: 1; }
+}
+[data-fx~="coin-pile-loader"] [data-fx-part="coin"]:nth-child(20) { animation-name: fx-cpl-drop-19; }
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="coin-pile-loader"] { transition: none; }
+  [data-fx~="coin-pile-loader"] [data-fx-part="pile"] { animation: none; opacity: 1; }
+  [data-fx~="coin-pile-loader"] [data-fx-part="coin"] { animation: none; opacity: 1; transform: translate3d(var(--x), var(--lift), var(--z)); }
+  [data-fx~="coin-pile-loader"] .fx-cpl-flat { display: none; }
+  [data-fx~="coin-pile-loader"] .fx-cpl-solid { animation: none; opacity: 1; }
+  [data-fx~="coin-pile-loader"] [data-fx-part="label"]::after { animation: none; content: "..."; }
+}

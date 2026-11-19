@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rain-glass-gl — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .demo { display: grid; gap: 20px; max-width: 900px; padding: 48px 20px; }
+  .glass { height: 420px; border: 1px solid var(--kf-line); overflow: hidden; }
+  .glass canvas[data-fx-part] { display: block; width: 100%; height: 100%; }
+  .demo-btn { justify-self: start; height: 40px; padding: 0 16px; border: 1px solid var(--kf-line); background: var(--kf-surface); color: var(--kf-ink); cursor: pointer; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>rain-glass-gl</b> Light-pattern canvas seen through wet glass. Press ”Glass Walk” and it sharpens in 1.2s.</p>
+<main class="demo">
+  <div class="glass" id="g1" data-fx="rain-glass-gl"><canvas data-fx-part="source" width="900" height="420"></canvas></div>
+  <button class="demo-btn" type="button" id="clear">Glass Wipe / Cover</button>
+  <div class="glass" id="g2" data-fx="rain-glass-gl" data-fx-rain-glass-gl="intensity: .7; blur: 3.5; size: 1"><canvas data-fx-part="source" width="900" height="420"></canvas></div>
+  <div data-fx="rain-glass-gl"></div>
+</main>
+<script>
+(() => {
+  // Picture behind the glass — a 2D canvas painting light blobs in the Skin’s accent and text colors (moves occasionally)
+  const css = getComputedStyle(document.documentElement);
+  const colors = ["--kf-accent", "--kf-ink", "--kf-accent-text", "--kf-dim"].map((v) => css.getPropertyValue(v).trim() || "gray");
+  const paint = (c, t) => {
+    const x = c.getContext("2d");
+    x.fillStyle = css.getPropertyValue("--kf-contrast-bg").trim() || "black";
+    x.fillRect(0, 0, c.width, c.height);
+    for (let i = 0; i < 14; i++) {
+      x.fillStyle = colors[i % colors.length];
+      const px = ((i * 137 + t * 20) % c.width), py = 60 + (i * 71) % (c.height - 120);
+      x.fillRect(px, py, 18 + (i % 4) * 22, 8 + (i % 3) * 30);
+    }
+  };
+  const canvases = [...document.querySelectorAll(".glass canvas")];
+  const tick = (now) => { canvases.forEach((c) => c.isConnected && paint(c, now / 1000)); requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
+  let on = true;
+  document.getElementById("clear").addEventListener("click", () => { document.getElementById("g1").dispatchEvent(new CustomEvent(on ? "fx:clear" : "fx:fog")); on = !on; });
+  const host = document.getElementById("g2");
+  const make = () => { const d = host.cloneNode(true); d.removeAttribute("id"); canvases.push(d.querySelector("canvas")); return d; };
+  const gone = make();
+  host.after(gone);
+  setTimeout(() => host.after(make()), 1000);
+  setTimeout(() => gone.remove(), 600);
+  document.querySelector(".demo-hint").append(" · After 1s one more glass panel comes in (a late arrival), and after .6s one drops out (detach).");
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

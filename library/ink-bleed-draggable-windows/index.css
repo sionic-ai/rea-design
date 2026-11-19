@@ -1,0 +1,90 @@
+/* First page — intro paragraph (max 50ch), view button, three-column work cards (corner ticks 3vh) ↔ one-line list, card hover cover */
+.ag-main { position: relative; display: flex; flex-direction: column; row-gap: var(--ag-bar-3); margin: var(--ag-margin); }
+.ag-intro { position: relative; max-width: 50ch; display: flex; flex-direction: column; row-gap: var(--ag-bar-2); line-height: 1.4; }
+.ag-links { display: flex; flex-direction: column; gap: calc(var(--ag-bar-0) * 0.4); align-items: flex-start; }
+.ag-time { font: smaller/1.4 var(--kf-font-mono); }
+
+.ag-projects { position: relative; display: flex; flex-direction: column; gap: var(--ag-bar-2); }
+.ag-view { display: flex; gap: var(--ag-bar-1); font: var(--ag-caption) / 1.2 var(--kf-font-mono); }
+.ag-view__btn { padding: 0.15rem 0.4rem; border: var(--ag-line); color: var(--kf-dim); transition: background-color 300ms ease, color 300ms ease; }
+.ag-view__btn.is-on { background: var(--kf-ink); color: var(--kf-bg); }
+@media (hover: hover) { .ag-view__btn:not(.is-on):hover { color: var(--kf-ink); } }
+
+/* Card corner ticks — top and left on every card, right and bottom only on the outer edges (original 3vh line ends as is) */
+.ag-list { display: grid; grid-template-columns: repeat(3, 1fr); }
+.ag-card {
+  --_cc: var(--kf-dim); --_cs: 3vh;
+  position: relative; display: flex; padding: var(--ag-bar-2); color: var(--kf-ink); outline-offset: -2px;
+  transition: background-color 400ms var(--ag-ease);
+}
+.ag-card::before, .ag-card::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
+.ag-card::before {
+  background:
+    linear-gradient(to right, var(--_cc) var(--_cs), transparent var(--_cs)) top left / 100% 1px no-repeat,
+    linear-gradient(to bottom, var(--_cc) var(--_cs), transparent var(--_cs)) top left / 1px 100% no-repeat,
+    linear-gradient(to left, var(--_cc) var(--_cs), transparent var(--_cs)) top right / 100% 1px no-repeat,
+    linear-gradient(to top, var(--_cc) var(--_cs), transparent var(--_cs)) bottom left / 1px 100% no-repeat;
+}
+.ag-card:nth-child(3n)::after, .ag-card:nth-last-child(-n + 3)::after { --_r: linear-gradient(to bottom, var(--_cc) var(--_cs), transparent var(--_cs)) top right / 1px 100% no-repeat, linear-gradient(to top, var(--_cc) var(--_cs), transparent var(--_cs)) bottom right / 1px 100% no-repeat; --_b: linear-gradient(to right, var(--_cc) var(--_cs), transparent var(--_cs)) bottom left / 100% 1px no-repeat, linear-gradient(to left, var(--_cc) var(--_cs), transparent var(--_cs)) bottom right / 100% 1px no-repeat; }
+.ag-card:nth-child(3n)::after { background: var(--_r); }
+.ag-card:nth-last-child(-n + 3)::after { background: var(--_b); }
+.ag-card:nth-child(3n):nth-last-child(-n + 3)::after { background: var(--_r), var(--_b); }
+.ag-card__info { display: flex; flex-direction: column; justify-content: space-between; width: 100%; }
+.ag-card__text { display: flex; flex-direction: column; gap: var(--ag-bar-0); }
+.ag-card__title { display: flex; gap: var(--ag-bar-1); transition: color 400ms var(--ag-ease); filter: blur(var(--ag-blur)); }
+/* In the original, the color transition rule on .cardinfo p overrides the arrow’s opacity transition (1.2s), so the arrow turns on immediately */
+.ag-card__arrow { opacity: 0; }
+.ag-card__cover { position: fixed; top: 0; left: 0; z-index: 10; width: 20rem; pointer-events: none; border-radius: 0.1rem; opacity: 0; scale: 0.9; translate: -50% -50%; transition: opacity 300ms ease-in-out, scale 300ms ease-in-out; }
+.ag-card__static { width: 100%; margin-top: var(--ag-bar-2); border-radius: 0.1rem; pointer-events: none; transition: opacity 300ms ease-in-out; }
+@media (hover: hover) {
+  .ag-card:hover { background: var(--kf-ink); }
+  .ag-card:hover .ag-card__title, .ag-card:hover .ag-tags span { color: var(--kf-bg); filter: blur(0); }
+  .ag-card:hover .ag-card__cover { opacity: 1; scale: 1; }
+  .ag-card:hover .ag-card__static { opacity: 0; }
+  .ag-card:hover .ag-card__arrow { opacity: 1; }
+}
+
+/* Single-line list view */
+.ag-list[data-view="list"] { grid-template-columns: 1fr; }
+.ag-list[data-view="list"] .ag-card { flex-direction: row; align-items: center; justify-content: space-between; padding-block: var(--ag-bar-1); border: var(--ag-line); }
+.ag-list[data-view="list"] .ag-card + .ag-card { border-top: 0; }
+.ag-list[data-view="list"] .ag-card::before, .ag-list[data-view="list"] .ag-card::after { display: none; }
+.ag-list[data-view="list"] .ag-card__info { flex-direction: row; align-items: center; justify-content: space-between; gap: var(--ag-bar-2); }
+.ag-list[data-view="list"] .ag-card__text { flex-direction: row; align-items: baseline; justify-content: space-between; width: 100%; }
+.ag-list[data-view="list"] .ag-tags { flex-wrap: nowrap; }
+.ag-list[data-view="list"] .ag-card__static { display: none; }
+.ag-list[data-view="list"] .ag-card__arrow { opacity: 1; }
+
+/* Only what’s on screen is sharp — intro paragraph .4→1 · .97→1x scale, card .4→1 + inner .97→1x (.6s) */
+@media (min-width: 700px) {
+  .ag-intro p { opacity: 0.4; transform: scale(0.97); transition: opacity 600ms var(--ag-ease), transform 600ms var(--ag-ease); }
+  .ag-intro p.in-view { opacity: 1; transform: none; }
+  .ag-card { opacity: 0.4; transition: opacity 600ms var(--ag-ease), background-color 400ms var(--ag-ease); }
+  .ag-card .ag-card__info { transform: scale(0.97); transition: transform 600ms var(--ag-ease); }
+  .ag-card.in-view { opacity: 1; }
+  .ag-card.in-view .ag-card__info { transform: none; }
+}
+@media (min-width: 700px) and (max-width: 1099px) {
+  .ag-list { grid-template-columns: repeat(2, 1fr); }
+  .ag-card:nth-child(3n)::after, .ag-card:nth-last-child(-n + 3)::after { background: none; }
+  .ag-card:nth-child(2n)::after { background: var(--_r); }
+  .ag-card:nth-last-child(-n + 2)::after { background: var(--_b); }
+  .ag-card:nth-child(2n):nth-last-child(-n + 2)::after { background: var(--_r), var(--_b); }
+  .ag-card:nth-child(2n)::after, .ag-card:nth-last-child(-n + 2)::after { --_r: linear-gradient(to bottom, var(--_cc) var(--_cs), transparent var(--_cs)) top right / 1px 100% no-repeat, linear-gradient(to top, var(--_cc) var(--_cs), transparent var(--_cs)) bottom right / 1px 100% no-repeat; --_b: linear-gradient(to right, var(--_cc) var(--_cs), transparent var(--_cs)) bottom left / 100% 1px no-repeat, linear-gradient(to left, var(--_cc) var(--_cs), transparent var(--_cs)) bottom right / 100% 1px no-repeat; }
+}
+@media (max-width: 699px) {
+  .ag-view { display: none; }
+  .ag-list, .ag-list[data-view="list"] { grid-template-columns: 1fr; }
+  .ag-card { padding: calc(var(--ag-bar-3) * 0.6) 0; }
+  .ag-card::after { background: linear-gradient(to bottom, var(--_cc) var(--_cs), transparent var(--_cs)) top right / 1px 100% no-repeat, linear-gradient(to top, var(--_cc) var(--_cs), transparent var(--_cs)) bottom right / 1px 100% no-repeat !important; }
+  .ag-card:last-child::after { background: linear-gradient(to bottom, var(--_cc) var(--_cs), transparent var(--_cs)) top right / 1px 100% no-repeat, linear-gradient(to top, var(--_cc) var(--_cs), transparent var(--_cs)) bottom right / 1px 100% no-repeat, linear-gradient(to right, var(--_cc) var(--_cs), transparent var(--_cs)) bottom left / 100% 1px no-repeat, linear-gradient(to left, var(--_cc) var(--_cs), transparent var(--_cs)) bottom right / 100% 1px no-repeat !important; }
+  .ag-card__info { row-gap: var(--ag-bar-2); }
+  .ag-card__cover { display: none; }
+  .ag-card__arrow { opacity: 1; }
+  .ag-card__title { filter: none; }
+  .ag-card .ag-card__info, .ag-intro p, .ag-link { filter: blur(var(--ag-blur)); transition: filter 500ms ease; }
+  .ag-card.in-view .ag-card__info, .ag-intro p.in-view, .ag-link.in-view { filter: blur(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ag-intro p, .ag-card, .ag-card .ag-card__info, .ag-card__cover, .ag-card__static { transition: none; }
+}

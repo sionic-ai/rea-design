@@ -1,0 +1,305 @@
+/* Shared by all pages: nav (difference blend), phone menu drawer, underline hover, line masks, buttons, footer (name switch, text pile), page transition curtain */
+
+/* The original’s three panels (gray · white · black) and pale lines — values are derived from the skin. They resolve down from :root so they don’t loop even if body.t-* changes --kf-bg */
+:root {
+  --site-brand: var(--kf-accent);
+  --site-black: var(--kf-contrast-bg);
+  --site-white: var(--kf-contrast-ink);
+  --site-grey: var(--kf-accent-soft);
+  --site-faded-light: color-mix(in oklab, var(--kf-contrast-ink) 10%, transparent);
+  --site-faded-dark: color-mix(in oklab, var(--kf-contrast-bg) 10%, transparent);
+  --site-ease-gl: cubic-bezier(0.4, 0, 0, 1);
+
+  /* Type size grows linearly from 320px to 1920px like the original (value = clamp(min, intercept + slope vw, max)) */
+  --site-fs-display: clamp(2.3125rem, 1.275rem + 5.1875vw, 7.5rem);
+  --site-fs-h1: clamp(1.5rem, 0.675rem + 4.125vw, 5.625rem);
+  --site-fs-h2: clamp(1.25rem, 0.65rem + 3vw, 4.25rem);
+  --site-fs-h3: clamp(1.1875rem, 0.925rem + 1.3125vw, 2.5rem);
+  --site-fs-h4: clamp(1.25rem, 1.1rem + 0.75vw, 2rem);
+  --site-fs-xlarge: clamp(1.85rem, 1.42rem + 2.15vw, 4rem);
+  --site-fs-large: clamp(0.875rem, 0.65rem + 1.125vw, 2rem);
+  --site-fs-medium: clamp(0.6875rem, 0.525rem + 0.8125vw, 1.5rem);
+  --site-fs-main: clamp(0.7475rem, 0.697rem + 0.2525vw, 1rem);
+  --site-fs-small: clamp(0.65rem, 0.61rem + 0.2vw, 0.85rem);
+
+  /* Original --site--margin: the combined margin of both screen sides (24px at 1440 → 12px per side) */
+  --site-margin: clamp(0.5rem, 0.2143rem + 1.4286vw, 1.5rem);
+  --site-side: calc(var(--site-margin) / 2);
+  --site-gutter: 1rem;
+  --site-size-1: clamp(0.625rem, 0.55rem + 0.375vw, 1rem);
+}
+
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-size: var(--site-fs-main);
+  font-weight: var(--kf-weight-body);
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+body.t-brand { --kf-bg: var(--site-brand); --kf-ink: var(--site-white); }
+body.t-dark { --kf-bg: var(--site-black); --kf-ink: var(--site-white); }
+.t-sec-brand { background: var(--site-brand); color: var(--site-white); }
+.t-sec-light { background: var(--site-white); color: var(--site-black); }
+.t-sec-dark { background: var(--site-black); color: var(--site-white); }
+
+.c-wrap { width: calc(100% - var(--site-margin)); margin-inline: auto; position: relative; }
+.c-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--site-gutter);
+}
+@media (max-width: 767px) {
+  .c-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.t-display { font-size: var(--site-fs-display); line-height: 1; letter-spacing: -0.03em; font-weight: 500; }
+.t-h1 { font-size: var(--site-fs-h1); line-height: 1; letter-spacing: -0.03em; font-weight: 500; }
+.t-h2 { font-size: var(--site-fs-h2); line-height: 1; letter-spacing: -0.03em; font-weight: 500; }
+.t-h3 { font-size: var(--site-fs-h3); line-height: 1.1; letter-spacing: -0.02em; font-weight: 500; }
+.t-h4 { font-size: var(--site-fs-h4); line-height: 1.1; letter-spacing: -0.02em; font-weight: 500; }
+.t-xl { font-size: var(--site-fs-xlarge); line-height: 1; letter-spacing: -0.03em; }
+.t-lg { font-size: var(--site-fs-large); line-height: 1.1; letter-spacing: -0.02em; }
+.t-md { font-size: var(--site-fs-medium); line-height: 1.3; letter-spacing: -0.01em; }
+.t-sm { font-size: var(--site-fs-small); line-height: 1; }
+/* The original’s ”paragraph with a big first-line indent”: after the number, the first line is indented about half a column and the line spacing is tight */
+.t-indent { text-indent: var(--indent, 12.5em); }
+.t-indent .num { display: inline-block; text-indent: 0; }
+
+/* Line mask — SplitText wraps each line, and the line rises from below (115%) */
+.line-mask { overflow: clip; padding-bottom: 0.2em; margin-bottom: -0.2em; }
+.line-child { display: block; padding-bottom: 0.2em; margin-bottom: -0.2em; }
+
+/* Underline hover: folds away to the right, then is drawn from the left (.45s ease-out-quart) */
+[data-underline] { position: relative; }
+[data-underline]::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.45s var(--kf-ease-out);
+  pointer-events: none;
+}
+[data-underline="med"]::after { height: 2.5px; }
+[data-underline].is-active::after { transform: scaleX(1); }
+[data-underline]:hover::after,
+a:hover > [data-underline]::after { transform: scaleX(1); transform-origin: left; }
+
+/* ── Nav: white text with difference blend, so it automatically turns black on white, dark gray on gray, and white on black */
+.nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 60;
+  color: #fff; /* Not skin: a difference blend must be white so it inverts the plate color below as is */
+  mix-blend-mode: difference;
+  pointer-events: none;
+}
+.nav__in {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-block: var(--site-size-1);
+}
+.nav a, .nav button { pointer-events: auto; }
+.nav__logo { display: inline-flex; align-items: flex-start; gap: 0.6rem; line-height: 1; }
+.nav__mark { width: 5.75rem; height: auto; }
+.nav__name { font-size: var(--site-fs-main); line-height: 1; padding-top: 0.05em; }
+.nav__links { display: flex; align-items: center; gap: 2rem; font-size: var(--site-fs-main); padding-top: 0.3em; }
+.nav__links sup { font-size: 0.5em; vertical-align: top; margin-left: 0.05em; }
+.nav__menu {
+  display: none;
+  position: relative;
+  overflow: clip;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: var(--site-fs-h6, 1rem);
+}
+.nav__menu span { display: block; transition: transform 0.6s var(--site-ease-gl); }
+.nav__menu span + span { position: absolute; inset: 0; transform: translateY(110%); }
+.is-menu-open .nav__menu span:first-child { transform: translateY(-110%); }
+.is-menu-open .nav__menu span + span { transform: translateY(0); }
+@media (max-width: 767px) {
+  .nav__name, .nav__links a { display: none; }
+  .nav__mark { width: 3.1rem; }
+  .nav__menu { display: block; }
+}
+
+/* ── Phone menu drawer: opens top to bottom with clip-path (1s power4.inOut), big text lines rise from 115% below at .09 intervals */
+.mmenu {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: var(--site-brand);
+  color: var(--site-white);
+  clip-path: inset(0% 0% 100% 0%);
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 5.5rem var(--site-side) var(--site-side);
+}
+.is-menu-open .mmenu { pointer-events: auto; }
+.mmenu__list { display: flex; flex-direction: column; }
+.mmenu__item {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0.6rem 0 0.5rem;
+}
+.mmenu__txt { display: block; overflow: clip; font-size: 3.4rem; line-height: 1; letter-spacing: -0.03em; }
+.mmenu__txt > span { display: block; }
+.mmenu__small { font-size: 0.9rem; align-self: flex-start; margin-left: 0.3rem; margin-right: auto; overflow: clip; }
+.mmenu__small > span { display: block; }
+.mmenu__dot { width: 0.9rem; height: 0.9rem; border-radius: 50%; background: currentColor; opacity: 0; margin-bottom: 0.6rem; }
+.mmenu__item.is-current .mmenu__dot { opacity: 1; }
+.mmenu__line { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: currentColor; transform-origin: left; transform: scaleX(0); }
+.mmenu__bottom { background: var(--site-white); color: var(--site-black); padding: 1rem; }
+
+/* ── Button: black text on white, the arrow slides out to the right and a new arrow enters from the left */
+.c-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--site-white);
+  color: var(--site-black);
+  border: 1px solid var(--site-white);
+  line-height: 1;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 0.4s var(--site-ease-gl), color 0.4s var(--site-ease-gl);
+}
+.c-arrow { position: relative; display: inline-flex; overflow: clip; width: 1em; height: 1em; }
+.c-arrow svg { width: 100%; height: 100%; transition: transform 0.5s var(--kf-ease-out); }
+.c-arrow svg + svg { position: absolute; inset: 0; transform: translateX(-110%); }
+:is(a, button):hover > .c-arrow svg:first-child,
+:is(a, button):hover .c-arrow svg:first-child { transform: translateX(110%); }
+:is(a, button):hover > .c-arrow svg + svg,
+:is(a, button):hover .c-arrow svg + svg { transform: translateX(0); transition-delay: 0.1s; }
+
+/* Gray square arrows (slide prev/next): on hover black fills in from the outer direction and the arrow turns white */
+.c-sq {
+  position: relative;
+  overflow: hidden;
+  display: inline-grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0;
+  padding: 0;
+  background: var(--site-grey);
+  color: var(--site-black);
+  cursor: pointer;
+}
+.c-sq::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--site-black);
+  transform: scaleX(0);
+}
+.c-sq svg { position: relative; z-index: 1; width: 1rem; height: 1rem; transition: color 0.4s var(--site-ease-gl); }
+.c-sq[data-dir="prev"]::before { transform-origin: left; transition: transform 0.4s var(--site-ease-gl); }
+.c-sq[data-dir="next"]::before { transform-origin: right; transition: transform 0.4s var(--site-ease-gl); }
+.c-sq[data-dir="prev"]:hover::before { transform: scaleX(1); transform-origin: right; }
+.c-sq[data-dir="next"]:hover::before { transform: scaleX(1); transform-origin: left; }
+.c-sq:hover svg { color: var(--site-white); }
+
+/* Section header marker: filled dot + ring containing a number */
+.c-mark { display: inline-flex; align-items: center; gap: 0.15rem; }
+.c-mark i { width: 1.5rem; height: 1.5rem; border-radius: 50%; background: currentColor; }
+.c-mark b {
+  display: grid; place-items: center;
+  width: 1.5rem; height: 1.5rem; border-radius: 50%;
+  border: 1px solid currentColor;
+  font: 500 0.7rem/1 var(--kf-font-sans);
+}
+
+/* Photo slot — in the original the photo sits inside a black Polaroid border */
+.wf-img { --wf-fill: color-mix(in oklab, var(--site-brand) 88%, var(--site-black)); --wf-line: color-mix(in oklab, var(--site-brand) 68%, var(--site-white)); --wf-fill-ink: color-mix(in oklab, var(--site-white) 95%, var(--site-brand)); }
+.c-frame { background: var(--site-black); padding: 1.4rem; }
+.c-frame .wf-img { height: 100%; border: 0; }
+
+/* ── Footer: top half is a logo·name switch (DES/DEV spot), bottom half is a black box where letters pour in and pile up */
+.footer { background: var(--site-white); color: var(--site-black); position: relative; }
+.footer__top { min-height: 50vh; padding-top: 2.5rem; position: relative; z-index: 1; background: var(--site-white); }
+.footer__logo { grid-column: 1 / span 6; display: inline-flex; align-items: flex-start; gap: 0.6rem; }
+.footer__logo .nav__mark { width: 5.9rem; }
+.footer__logo span { font-size: 1.15rem; line-height: 1; }
+.footer__right { grid-column: 7 / span 6; display: grid; grid-template-columns: 1fr 1fr; column-gap: var(--site-gutter); row-gap: 2.3rem; }
+.footer__switch { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: flex-start; }
+.footer__switch-btns { display: flex; align-items: center; gap: 0.4rem; font-family: var(--kf-font-mark); font-stretch: 125%; font-weight: 900; font-size: 3rem; line-height: 0.85; letter-spacing: -0.02em; }
+.footer__switch-btns button {
+  border: 0; background: none; padding: 0; cursor: pointer; color: var(--site-black);
+  opacity: 0.25; transition: opacity 0.4s var(--site-ease-gl);
+  font: inherit; font-stretch: 125%;
+}
+.footer__switch-btns button.is-active { opacity: 1; }
+.footer__switch-btns i { font-style: normal; opacity: 0.25; }
+.footer__dot { width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--site-black); }
+.footer__col { opacity: 0.1; transition: opacity 0.4s var(--site-ease-gl); }
+.footer__col.is-active { opacity: 1; }
+.footer__col p { padding-bottom: 1.1rem; }
+.footer__line { height: 1.5px; background: var(--site-brand); margin-bottom: 1.2rem; }
+.footer__line > span { display: block; height: 100%; background: var(--site-black); transform: scaleX(0); transform-origin: left; transition: transform 0.6s var(--site-ease-gl); }
+.footer__col.is-active .footer__line > span { transform: scaleX(1); }
+.footer__col ul { display: flex; flex-direction: column; gap: 0.35rem; padding-left: 0.25rem; }
+.footer__bottom { height: 50vh; display: flex; flex-direction: column; padding-bottom: var(--site-side); position: sticky; bottom: 0; z-index: 0; }
+.footer__row { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--site-gutter); padding: 0.4rem 0 1rem; }
+.footer__row > :nth-child(2) { grid-column: 7 / span 3; }
+.footer__row > :last-child { grid-column: 10 / span 3; justify-self: end; }
+.footer__pile { flex: 1; position: relative; background: var(--site-black); overflow: hidden; }
+.footer__pile canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+@media (max-width: 767px) {
+  .footer__logo, .footer__right { grid-column: 1 / -1; }
+  .footer__logo { margin-bottom: 2.5rem; }
+  .footer__switch-btns { font-size: 1.6rem; }
+  .footer__row { grid-template-columns: 1fr 1fr; row-gap: 0.4rem; }
+  .footer__row > :nth-child(2) { grid-column: 1; }
+  .footer__row > :last-child { grid-column: 2; grid-row: 1; }
+}
+
+/* Button that follows the mouse (cursor reveal) — visible only inside its area */
+[data-cursor-area] { position: absolute; inset: 0; }
+[data-cursor-item] { position: absolute; top: 0; left: 0; visibility: hidden; pointer-events: auto; }
+
+/* Page transition scrim: in the original the GL scene blurs out with .5s sine.inOut and the new page’s GL rises again */
+.page-veil {
+  position: fixed; inset: 0; z-index: 80;
+  background: var(--veil, var(--kf-bg));
+  opacity: 0; pointer-events: none;
+}
+.is-leaving .page-veil { pointer-events: auto; }
+
+/* Fixed canvas where the original GL scene is drawn */
+.gl-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+.gl-canvas.is-curtain { z-index: 70; }
+main { position: relative; z-index: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-underline]::after, .c-btn, .c-arrow svg, .c-sq::before, .footer__col, .footer__line > span { transition: none; }
+}
+/* The wordmark’s stencil gaps are filled with the background color (nav uses difference blending so black = background shows through) */
+.footer__logo { --cut: var(--site-white); }
+
+/* Indent is an inherited property, so it would be re-applied to each split word·line — keep it only on the first line of a paragraph */
+.t-indent * { text-indent: 0; }
+.t-indent > .line-mask:first-child,
+.t-indent > .line-mask:first-child > .line-child { text-indent: var(--indent, 12.5em); }
+@media (min-width: 768px) { .mmenu { display: none; } }
+.mmenu__bottom { display: grid; grid-template-columns: 1fr 1fr; column-gap: var(--site-gutter); row-gap: 1.4rem; }
+.mmenu__bottom .footer__switch-btns { font-size: 1.6rem; }
+
+/* Page transition (original Taxi): the new screen is attached at screen size over the old one during the transition, and the body board color changes in .6s */
+.is-transition { position: fixed; inset: 0; z-index: 10; overflow: hidden; }
+body.is-theme-switching, body.is-theme-switching * {
+  transition: background-color 0.6s var(--site-ease-gl), color 0.6s var(--site-ease-gl), border-color 0.6s var(--site-ease-gl), fill 0.6s var(--site-ease-gl), stroke 0.6s var(--site-ease-gl);
+}

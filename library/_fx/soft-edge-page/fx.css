@@ -1,0 +1,28 @@
+/* The curtain hides with a 200% height gradient mask (opaque top → transparent bottom), and the mask position is moved so a soft edge sweeps past */
+.fx-sep { position: fixed; left: 0; top: 0; z-index: 2147482000; width: 100vw; height: 100lvh; overflow: hidden; pointer-events: auto; }
+.fx-sep__in, .fx-sep__out { position: absolute; inset: 0; }
+.fx-sep__in { z-index: 1; }
+.fx-sep__out { z-index: 2; }
+.fx-sep__cover, .fx-sep__mark { -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: 100% 200%; mask-size: 100% 200%; }
+.fx-sep__cover { position: absolute; inset: 0; z-index: 1; background: var(--fx-veil, var(--kf-bg)); }
+.fx-sep__mark { position: absolute; left: 50%; top: 50%; z-index: 2; translate: -50% -50%; color: var(--kf-ink); }
+.fx-sep__mark > * { opacity: var(--fx-mark-opacity, 0.2); }
+.fx-sep__in > * { -webkit-mask-image: linear-gradient(var(--kf-ink), var(--kf-ink) 50%, transparent); mask-image: linear-gradient(var(--kf-ink), var(--kf-ink) 50%, transparent); -webkit-mask-position: 0 0; mask-position: 0 0; }
+.fx-sep__out > * { -webkit-mask-image: linear-gradient(transparent, var(--kf-ink) 50%, var(--kf-ink)); mask-image: linear-gradient(transparent, var(--kf-ink) 50%, var(--kf-ink)); -webkit-mask-position: 0 -100%; mask-position: 0 -100%; }
+/* When the collapse ends, fold the width to 0 to get off the screen */
+.fx-sep.is-in { width: 0; pointer-events: none; transition: width 0s linear var(--fx-done, 3.575s); }
+.fx-sep.is-in .fx-sep__in > .fx-sep__mark { animation: fx-sep-in var(--fx-mark-in, 1s) var(--fx-ease) 0s 1 normal both; }
+.fx-sep.is-in .fx-sep__in > .fx-sep__cover { animation: fx-sep-in var(--fx-in, 3.375s) var(--fx-ease) var(--fx-delay, 0.2s) 1 normal both; }
+.fx-sep.is-done { display: none; }
+.fx-sep.is-cover { width: 100vw !important; pointer-events: auto !important; transition: none !important; }
+.fx-sep.is-cover .fx-sep__in { display: none; }
+.fx-sep.is-out .fx-sep__out > .fx-sep__cover { animation: fx-sep-out var(--fx-cover, 0.9s) var(--fx-ease) 0s 1 normal both; }
+.fx-sep.is-out .fx-sep__out > .fx-sep__mark { animation: fx-sep-out var(--fx-cover, 0.9s) var(--fx-ease) var(--fx-mark-delay, 0.2s) 1 normal both; }
+@keyframes fx-sep-in { from { -webkit-mask-position: 0 0; mask-position: 0 0; } to { -webkit-mask-position: 0 200%; mask-position: 0 200%; } }
+@keyframes fx-sep-out { from { -webkit-mask-position: 0 -100%; mask-position: 0 -100%; } to { -webkit-mask-position: 0 100%; mask-position: 0 100%; } }
+[data-fx~="soft-edge-page"] > [data-fx-part="mark"] { display: none; }
+@media (prefers-reduced-motion: reduce) { .fx-sep { display: none; } }
+/* Cover from the very first paint, before the part attaches its curtain — the script sits at the end, so this keeps the body from painting once without a curtain. If the script never runs, it lifts after 3s */
+[data-fx~="soft-edge-page"]:not(.fx-sep-ready)::after { content: ""; position: fixed; inset: 0; z-index: 2147482001; background: var(--fx-veil, var(--kf-bg)); pointer-events: none; animation: fx-sep-fallback 0s linear 3s forwards; }
+@keyframes fx-sep-fallback { to { opacity: 0; visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { [data-fx~="soft-edge-page"]:not(.fx-sep-ready)::after { display: none; } }

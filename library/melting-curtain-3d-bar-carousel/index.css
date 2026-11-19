@@ -1,0 +1,73 @@
+/* Hero — one screen with no document scroll. Wheel and drag go to the 3D carousel */
+:root {
+  /* Colors the 3D scene reads as a canvas — all built from the Skin */
+  --site-choco-lit: oklch(from var(--kf-bg) calc(l * 1.22) calc(c * 2.1) calc(h - 6));
+  --site-choco-deep: oklch(from var(--kf-bg) calc(l * 0.62) calc(c * 1.7) calc(h - 12));
+  --site-curtain: oklch(from var(--kf-bg) calc(l * 0.72) calc(c * 1.8) calc(h - 10));
+  --site-radial-in: oklch(from var(--kf-bg) calc(l * 1.16) calc(c * 1.8) h);
+  --site-radial-out: oklch(from var(--kf-bg) calc(l * 0.68) calc(c * 1.27) calc(h - 20));
+  --site-wrap-1: oklch(from var(--kf-accent) calc(l * 0.62) calc(c * 0.45) calc(h + 150));
+  --site-wrap-2: oklch(from var(--kf-accent) calc(l * 0.9) calc(c * 1.05) calc(h - 22));
+  --site-wrap-3: oklch(from var(--kf-accent) calc(l * 0.86) calc(c * 0.8) calc(h - 80));
+  --site-wrap-4: oklch(from var(--kf-accent) calc(l * 0.7) calc(c * 0.7) calc(h + 205));
+  --site-wrap-5: oklch(from var(--kf-accent) calc(l * 0.76) calc(c * 0.95) calc(h - 60));
+}
+
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+.fx-home { touch-action: none; }
+
+/* Background — round brown glow, bright in the center + dark edges */
+.fx-bg { position: fixed; inset: 0; z-index: 0; background: radial-gradient(87.78% 115.72% at 50.46% 42.72%, var(--site-radial-in) 0%, var(--site-radial-out) 100%); }
+body.fx-home::after { z-index: 1; }
+.fx-bg::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, transparent 55%, color-mix(in oklab, var(--kf-on-accent) 35%, transparent) 100%); }
+
+.fx-main { position: relative; z-index: 2; width: 100%; height: 100svh; overflow: clip; color: var(--site-cream); pointer-events: none; }
+.fx-stage { pointer-events: auto; }
+.fx-stage { position: absolute; inset: 0; user-select: none; }
+.fx-stage__tilt { position: absolute; inset: 0; transform: perspective(900px) scale(1.025); }
+.fx-stage__canvas { width: 100%; height: 100%; display: block; }
+.fx-stage.is-hover { cursor: pointer; }
+.fx-stage.is-drag { cursor: grabbing; }
+
+/* Bottom name strip — only the chosen name is gold, the rest are .26 */
+.fx-names { --inactive: 0.26; pointer-events: none; opacity: 0; transition: opacity 1s; }
+.fx-names.is-on { opacity: 1; }
+.fx-names__view { position: fixed; bottom: 5.5rem; width: 100%; overflow: hidden; mask-image: linear-gradient(to right, transparent 0%, black 25%, black 75%, transparent 100%); }
+.fx-names__track { display: flex; align-items: flex-start; min-height: 32px; font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); }
+.fx-name { flex: none; display: flex; flex-direction: column; align-items: center; margin-inline: 36.5px; }
+.fx-name b { font-size: 24px; text-transform: uppercase; letter-spacing: 0.025em; line-height: 1.5; color: var(--site-cream); opacity: var(--inactive); transition: color 1s, opacity 1s; user-select: none; }
+.fx-name small { font-size: 13px; font-weight: 600; letter-spacing: 0.025em; white-space: nowrap; color: var(--site-sand); opacity: var(--inactive); transition: opacity 1s; }
+.fx-name.is-on b { color: var(--site-gold); opacity: 1; }
+.fx-name.is-on small { opacity: 0.8; }
+
+.fx-scrim { display: none; }
+
+/* Loader — percent on a dark chocolate panel, once full it lifts away over 1s after .3s */
+.fx-loader { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: var(--site-dark); transition: opacity 1s 0.3s; }
+.fx-loader.is-done { opacity: 0; pointer-events: none; }
+.fx-loader__pct { font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); font-size: 2.4rem; color: color-mix(in oklab, var(--site-cream) 28%, transparent); font-variant-numeric: tabular-nums; }
+
+/* Logo curtain — logo rises from below and vanishes, then the curtain lifts up */
+.fx-cover { position: fixed; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
+.fx-cover__sheet { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--site-curtain); will-change: transform; }
+.fx-cover__logo { width: 16rem; height: auto; opacity: 0; transform: translateY(100%); }
+.fx-cover.is-gone { display: none; }
+
+@media (max-width: 767px) {
+  .fx-names__view { position: fixed; inset: auto 0 auto 0; top: 70%; mask-image: none; overflow: visible; transform: translateY(-50%); }
+  .fx-names__track { display: block; position: relative; height: 44px; }
+  .fx-name { position: absolute; left: 50%; top: 0; margin: 0; transform: translate(-50%, 0); transition: transform 0.7s ease-out, opacity 0.7s ease-out; }
+  .fx-name b { font-size: 18px; transition-duration: 0.7s; }
+  .fx-name small { font-size: 11px; }
+  .fx-names { --inactive: 0; }
+  .fx-scrim { display: block; position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity 1s; }
+  .fx-scrim.is-on { opacity: 1; }
+  .fx-scrim i { position: absolute; inset-inline: 0; }
+  .fx-scrim i:first-child { top: 0; height: 13rem; background: linear-gradient(to bottom, var(--site-radial-out) 0%, color-mix(in oklab, var(--site-radial-out) 85%, transparent) 45%, transparent 100%); }
+  .fx-scrim i:last-child { bottom: 0; height: 17rem; background: linear-gradient(to top, var(--site-radial-out) 0%, color-mix(in oklab, var(--site-radial-out) 85%, transparent) 45%, transparent 100%); }
+  .fx-cover__logo { width: 12rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-names, .fx-name b, .fx-name small, .fx-loader { transition: none; }
+}

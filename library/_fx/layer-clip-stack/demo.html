@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>layer-clip-stack — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-spacer { height: 90vh; display: grid; place-items: center; color: var(--kf-dim); }
+  .demo-stack { height: 800vh; overflow: hidden; }
+  .demo-layer { display: flex; align-items: center; padding: 0 6vw; background: var(--kf-bg); }
+  .demo-layer:nth-child(2) { background: var(--kf-surface); }
+  .demo-layer:nth-child(3) { background: var(--kf-raised); }
+  .demo-layer h3 { font: 500 32px/1.15 var(--kf-font-display); max-width: 14em; }
+  .demo-image { display: grid; place-items: center; }
+  .demo-image .wf-img { width: min(40vh, 60vw); aspect-ratio: 1; }
+  .demo-bar { width: min(40vh, 60vw); height: 6px; background: var(--kf-line); }
+  .demo-bar i { display: block; height: 100%; width: 0; background: var(--kf-accent); }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>layer-clip-stack</b> — Scroll and the screen holds while text panels and images cover it from below, one layer at a time. The last layer fills the bar (the frame group slot).</p>
+<div class="demo-spacer">Scroll down ↓</div>
+<section class="demo-stack" data-fx="layer-clip-stack">
+  <div data-fx-part="pin">
+    <article class="demo-layer" data-fx-part="layer"><h3>Your first layer sentence here, in two lines.</h3></article>
+    <article class="demo-layer" data-fx-part="layer"><h3>Your second layer sentence here, in two lines.</h3></article>
+    <article class="demo-layer" data-fx-part="layer"><h3>Third layer sentence here — the bar fills up.</h3></article>
+    <figure class="demo-image" data-fx-part="image"><div class="wf-img" data-label="Figure 1"></div></figure>
+    <figure class="demo-image" data-fx-part="image"><div class="demo-bar"><i></i></div></figure>
+  </div>
+</section>
+<div class="demo-spacer"></div>
+<script>
+(() => {
+  document.addEventListener("fx:frame", (e) => { const i = e.target.querySelector(".demo-bar i"); if (i) i.style.width = `${e.detail.progress * 100}%`; }, true);
+  const src = document.querySelector('[data-fx~="layer-clip-stack"]');
+  const html = src.outerHTML;
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = html; const el = t.content.firstElementChild; el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => document.body.append(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1 second one more of the same comes in at the bottom (late arrival), and after 2.5 seconds one drops out (removal).");
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../../../_shared/vendor/gsap/ScrollTrigger.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

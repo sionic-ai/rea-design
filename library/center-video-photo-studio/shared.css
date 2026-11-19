@@ -1,0 +1,195 @@
+/* Frame shared by all pages — first-visit curtain · page fade, difference-blend header bar (logo · three-group menu · 1ms clock · day/night dot), drawer menu, footer laid underneath and revealed on scroll, grain background */
+:root {
+  --site-on-media: color-mix(in srgb, var(--kf-contrast-ink) 94%, var(--kf-contrast-bg));
+  --site-on-media-dim: color-mix(in srgb, var(--kf-contrast-ink) 72%, var(--kf-contrast-bg));
+  --site-foot-ink: color-mix(in srgb, var(--kf-contrast-ink) 60%, transparent);
+  --site-foot-faint: color-mix(in srgb, var(--kf-contrast-ink) 30%, transparent);
+  --site-foot-line: color-mix(in srgb, var(--kf-contrast-ink) 10%, transparent);
+  --site-ease-line: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --site-header-h: 78px;
+}
+
+html { font-size: 16px; }
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  line-height: 1.6;
+}
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+/* On a first visit (arriving from elsewhere or refreshing) the background-color curtain lifts over 1.5s after .5s, and when navigating within the site the board brightens over .6s after .1s */
+.kw-page { position: relative; z-index: 1; width: 100%; opacity: 0; }
+.kw-intro { position: fixed; inset: 0; z-index: 10011; pointer-events: none; }
+.kw-intro__overlay { position: fixed; inset: 0; z-index: 10010; background: var(--kf-bg); }
+
+/* Grain background — original noise image .2 (1 at night) */
+.kw-main { position: relative; }
+.kw-main::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: url("noise.svg") 0 0 / 240px repeat;
+  opacity: 0.08;
+  pointer-events: none;
+  transition: opacity 1.2s var(--site-ease-line);
+}
+:root[data-theme="dark"] .kw-main::before { opacity: 0.16; }
+
+/* Link whose underline is drawn from the left in .7s — shared across the whole original site */
+.kw-line { position: relative; display: inline-flex; color: inherit; }
+.kw-line::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 0%;
+  height: 1px;
+  background: currentColor;
+  transition: width 0.7s var(--site-ease-line);
+}
+.kw-line:hover::before, .kw-line:focus-visible::before { width: 100%; }
+.kw-line.is-current { opacity: 0.4; pointer-events: none; }
+
+/* Header bar — difference blend, so it reads black on light panels and white over photos */
+.kw-header { position: fixed; top: 0; z-index: 100; width: 100%; mix-blend-mode: difference; }
+.kw-header__wrapper {
+  display: grid;
+  grid-template-columns: 200px 1fr 100px 13px;
+  grid-template-areas: "logo gnav time button";
+  align-items: flex-start;
+  height: var(--site-header-h);
+  padding: 40px 45px;
+  color: var(--site-on-media);
+}
+.kw-logo { grid-area: logo; display: inline-block; line-height: 1; color: inherit; }
+.kw-logo svg { width: 119px; height: 10px; display: block; }
+.kw-header__gnav { grid-area: gnav; display: flex; justify-content: flex-end; padding-right: 100px; gap: 70px; }
+.kw-header__gnav ul { display: block; }
+.kw-header__gnav a { font-weight: var(--kf-weight-display); font-size: 1.0625rem; letter-spacing: 0.02em; line-height: 1.3; }
+.kw-header__time { grid-area: time; padding-right: 20px; color: var(--site-on-media-dim); font-size: 0.9375rem; letter-spacing: 0.03em; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.kw-switch { grid-area: button; margin-top: 6px; width: 13px; height: 13px; display: block; cursor: pointer; }
+/* Hidden checkbox — original form checkbox look: light input background (#f1f1f1) and border regardless of skin, and once checked it goes straight to the input accent color */
+.kw-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  appearance: none;
+  background-color: color-mix(in srgb, var(--kf-contrast-ink) 94.5%, var(--kf-contrast-bg));
+  border: 1px solid color-mix(in srgb, var(--kf-contrast-ink) 93%, var(--kf-contrast-bg));
+}
+.kw-switch input:checked { background-color: var(--kf-accent); border-color: var(--kf-accent); }
+.kw-switch span { display: block; width: 13px; height: 13px; border-radius: var(--kf-radius-pill); background: var(--site-on-media); }
+.kw-switch:has(input:focus-visible) span { outline: 1px solid currentColor; outline-offset: 3px; }
+.kw-header__hamburger { grid-area: hamburger; display: none; justify-content: flex-end; }
+.kw-hamburger { position: relative; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; }
+.kw-hamburger__bars { position: absolute; top: 50%; width: 24px; height: 1px; }
+.kw-hamburger__bars i { position: absolute; left: 0; width: 100%; height: 1px; background: var(--kf-dim); }
+.kw-hamburger__bars i:nth-child(1) { top: -5px; }
+.kw-hamburger__bars i:nth-child(2) { top: 0; }
+.kw-hamburger__bars i:nth-child(3) { top: 5px; }
+@media (min-width: 1024px) { .kw-header.is-top { display: none; } }
+@media (max-width: 1023.98px) {
+  .kw-header__wrapper { grid-template-columns: 1fr var(--site-header-h); grid-template-areas: "logo hamburger"; align-items: center; padding: 30px; }
+  .kw-header__gnav, .kw-header__time, .kw-header .kw-switch { display: none; }
+  .kw-header__hamburger { display: flex; }
+}
+@media (max-width: 575.98px) { .kw-header__wrapper { padding: 30px 5%; } }
+
+/* Drawer — micromodal 0.4.10. The backdrop turns on in 1s (expo), the inner panel in .8s after .4s, and the items from -20px at .04s steps */
+.kw-drawer { display: none; position: fixed; inset: 0; z-index: 10000; overflow: hidden; }
+.kw-drawer.is-open { display: block; }
+.kw-drawer__bg { position: fixed; inset: 0; z-index: 0; background: var(--kf-bg); }
+.kw-drawer__container { position: relative; z-index: 1; height: 100%; overflow-y: auto; opacity: 0; }
+.kw-drawer[aria-hidden="false"] .kw-drawer__bg { animation: kwFadeIn 1s var(--kf-ease-out-expo) both; }
+.kw-drawer[aria-hidden="false"] .kw-drawer__container { animation: kwFadeIn 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) 0.4s both; }
+.kw-drawer[aria-hidden="true"] .kw-drawer__bg { animation: kwFadeOut 0.6s var(--kf-ease-in-out) both; }
+.kw-drawer[aria-hidden="true"] .kw-drawer__container { animation: kwFadeOut 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) 0.6s both; }
+.kw-drawer__header { display: grid; grid-template-columns: 1fr var(--site-header-h); align-items: center; height: var(--site-header-h); padding: 30px; }
+.kw-drawer__header .kw-logo { color: var(--kf-ink); }
+.kw-drawer__hamburger { display: flex; justify-content: flex-end; }
+.kw-drawer__content { width: 100%; margin: 140px 0 60px; padding: 0 30px; }
+.kw-drawer__nav { display: grid; grid-template-columns: 1fr 1fr; }
+.kw-drawer__nav li + li { margin-top: 25px; }
+.kw-drawer__nav a { color: var(--kf-ink); font-size: 1.25rem; line-height: 1.3; letter-spacing: 0.05em; }
+.kw-drawer__sub li { opacity: 0.6; }
+.kw-drawer__sub a { color: var(--kf-dim); font-size: 1rem; letter-spacing: 0.05em; }
+.kw-drawer__bottom { display: flex; align-items: center; margin-top: 60px; gap: 30px; }
+.kw-drawer__time { flex: 0 0 90px; color: var(--kf-dim); font-size: 1rem; line-height: 1; letter-spacing: 0.03em; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.kw-drawer .kw-switch span { background: var(--kf-ink); }
+.kw-drawer__copyright { margin-top: 40px; padding: 0 30px 30px; color: var(--kf-dim); font-size: 0.8125rem; }
+@media (min-width: 1024px) {
+  .kw-drawer__container { display: grid; grid-template-rows: 60px 1fr 100px; }
+  .kw-drawer__content { margin-top: 5vw; margin-bottom: 0; padding: 0 60px; }
+}
+@media (max-width: 767.98px) { .kw-drawer__nav { grid-template-columns: 1fr; } .kw-drawer__sub { margin-top: 60px; } }
+@keyframes kwFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes kwFadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+/* Footer — at 1024px and up it is stuck to the bottom of the screen from the start (original pin · no pinSpacing · bottom 0), hidden behind the body (z 1), and revealed as the end of the body rises.
+   In the original, ScrollTrigger pin has a pin-spacer parent, so it was pinned to the bottom with top: inherit, while here the same panel is output with sticky bottom 0 */
+.kw-footer { position: relative; z-index: 0; }
+@media (min-width: 1024px) { .kw-footer { position: sticky; bottom: 0; } }
+.kw-main { z-index: 1; }
+.kw-footer__wrapper { position: relative; z-index: 1; padding: 94px 7%; background: var(--kf-contrast-bg); color: var(--site-foot-ink); }
+.kw-footer__wrapper::before { content: ""; position: absolute; inset: 0; z-index: -1; background: url("noise.svg") 0 0 / 240px repeat; opacity: 0.12; }
+.kw-footer__content { display: flex; position: relative; flex-wrap: wrap; min-height: 420px; }
+.kw-footer__left { display: flex; flex: 0 0 56%; flex-direction: column; justify-content: space-between; }
+.kw-footer__right { display: flex; flex: 0 0 44%; flex-direction: column; justify-content: space-between; }
+.kw-footer__nav li { margin-top: 0.6rem; }
+.kw-footer__nav a { font-size: 1rem; letter-spacing: 0.02em; }
+.kw-footer .kw-logo { margin-top: 50px; color: var(--site-foot-ink); }
+.kw-footer .kw-logo svg { width: 120px; height: auto; }
+.kw-footer__contact { margin-bottom: 64px; }
+.kw-footer__contact a { display: block; position: relative; padding-bottom: 5px; border-bottom: 1px solid var(--site-foot-line); font-size: 1.25rem; letter-spacing: 0.02em; }
+.kw-footer__grid { display: grid; grid-template-columns: 6fr 3fr 3fr; gap: 20px; }
+.kw-footer__address, .kw-footer__tel { font-size: 0.8125rem; line-height: 180%; letter-spacing: 0.03em; }
+.kw-footer__tel div { display: flex; white-space: nowrap; }
+.kw-footer__tel span { flex: 0 0 26px; }
+.kw-footer__sns { text-align: right; font-size: 0.8125rem; }
+.kw-footer__bottom { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 60px; }
+.kw-footer__pp { font-size: 0.9375rem; letter-spacing: 0.02em; transition: color 0.3s var(--kf-ease-out-expo); }
+.kw-footer__pp:hover, .kw-footer__pp:focus-visible { color: color-mix(in srgb, var(--kf-contrast-ink) 70%, transparent); }
+.kw-footer__copyright { color: var(--site-foot-faint); font-size: 0.8125rem; letter-spacing: 0.02em; text-transform: uppercase; }
+@media (max-width: 1023.98px) { .kw-footer__left { flex: 0 0 35%; } .kw-footer__right { flex: 0 0 65%; } }
+@media (max-width: 767.98px) {
+  .kw-footer__left { display: none; }
+  .kw-footer__right { flex: 0 0 100%; }
+  .kw-footer__grid { grid-template-columns: 1fr; }
+  .kw-footer__sns { text-align: left; }
+}
+
+/* Once when visible — enters above the bottom 20% of the screen, rises from 8% below in 1s / brightens in 1s */
+[data-scroll-trigger="top"] { transform: translateY(8%); opacity: 0; transition: opacity 1s var(--site-ease-line), transform 1s var(--site-ease-line); }
+[data-scroll-trigger="opacity"] { opacity: 0; transition: opacity 1s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+[data-scroll-trigger].is-visible { transform: none; opacity: 1; }
+
+/* Shared panel for lower pages */
+.kw-lower {
+  padding-top: clamp(7.5rem, 3.409rem + 20.45vw, 18.75rem);
+  padding-bottom: clamp(7.5rem, 4.545rem + 14.77vw, 15.625rem);
+  background: var(--kf-bg);
+  transition: background-color 1.2s var(--site-ease-line), color 1.2s var(--site-ease-line);
+}
+.kw-container { width: 100%; margin: 0 auto; padding: 0 20px; }
+@media (min-width: 768px) { .kw-container { width: 768px; } }
+@media (min-width: 1024px) { .kw-container { width: 1024px; } }
+@media (min-width: 1280px) { .kw-container { width: 1230px; } }
+@media (min-width: 1440px) { .kw-container { width: 1360px; } }
+.wf-img { border: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .kw-page { opacity: 1; }
+  .kw-intro { display: none; }
+  [data-scroll-trigger] { transform: none; opacity: 1; transition: none; }
+  .kw-line::before, body, .kw-lower { transition: none; }
+  .kw-drawer[aria-hidden] .kw-drawer__bg, .kw-drawer[aria-hidden] .kw-drawer__container { animation-duration: 0.01s; animation-delay: 0s; }
+}
+.kw-logo text { font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); }
+.u-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko" data-theme="app">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Project Name 01 — Case mockup</title>
+  <link rel="stylesheet" href="../../_shared/wire.css">
+  <link rel="stylesheet" href="../../_shared/kf-defaults.css">
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="detail.css">
+</head>
+<body class="ct" data-view="live">
+
+<!-- Case study page = Animated app mockup. Translucent panels (left column, header row, bottom card panel, right detail panel) float over a 3D city map -->
+<div class="ct-stage" id="stage" data-slot="map-3d">
+  <canvas id="gl" role="img" aria-label="3D map of the delivery network and depot. Drag to rotate, scroll wheel to zoom, click a vehicle to select it"></canvas>
+  <div class="ct-gl-off" id="glOff" hidden><p>WebGL is turned off in this browser, so the 3D map can’t be drawn. Everything else works as normal.</p></div>
+</div>
+<div class="ct-labels" id="labels" aria-hidden="true"></div>
+
+<nav class="ct-rail ct-panel" aria-label="Main menu" data-slot="rail">
+  <div class="ct-logo" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M30 11.5A12 12 0 1 0 30 28.5" fill="none" stroke-width="7.5" stroke-linecap="round"/></svg></div>
+  <div class="ct-rail__items">
+    <button class="ct-rail__btn" type="button" data-view-go="live" aria-current="page"><svg class="ct-i" data-i="map"></svg><span class="ct-tip">Live Map</span></button>
+    <button class="ct-rail__btn" type="button" data-view-go="yard"><svg class="ct-i" data-i="truck"></svg><span class="ct-tip">Depot Yard</span></button>
+    <button class="ct-rail__btn" type="button" data-view-go="loads"><svg class="ct-i" data-i="box"></svg><span class="ct-tip">New Load</span></button>
+    <button class="ct-rail__btn" type="button" data-view-go="auto"><svg class="ct-i" data-i="flow"></svg><span class="ct-tip">Automations</span></button>
+  </div>
+  <div class="ct-me" title="Your user name here">AB</div>
+</nav>
+
+<header class="ct-top" data-slot="topbar">
+  <div class="ct-title">
+    <h1 id="viewTitle" data-label="Screen English Name">Live Map</h1>
+    <p class="ct-sub"><span class="ct-live" id="liveDot"></span><span id="updated">Location Just Updated</span></p>
+  </div>
+  <div class="ct-search ct-pill ct-panel">
+    <svg class="ct-i is-s" data-i="search"></svg>
+    <input id="search" type="search" autocomplete="off" placeholder="Find delivery·vehicle·driver" aria-label="Find delivery·vehicle·driver" aria-controls="results" aria-expanded="false">
+    <kbd aria-hidden="true">/</kbd>
+    <div class="ct-results ct-panel" id="results" role="listbox" hidden></div>
+  </div>
+  <div class="ct-clock ct-pill ct-panel" aria-label="Base Time"><b id="fleetClock">--:--</b><span>Base Time</span></div>
+  <div class="ct-seg ct-pill ct-panel" role="group" aria-label="Playback speed">
+    <button type="button" data-speed="1" aria-pressed="false">Real time</button>
+    <button type="button" data-speed="30" aria-pressed="true">30×</button>
+  </div>
+  <div class="ct-bell-wrap">
+    <button class="ct-icon-pill ct-panel" id="bellBtn" type="button" aria-label="Automatic Processing Log" aria-expanded="false" aria-controls="bellPop"><svg class="ct-i" data-i="bell"></svg><span class="ct-badge" id="bellBadge" hidden>0</span></button>
+    <div class="ct-pop ct-panel" id="bellPop" hidden>
+      <h2>Recent auto-processing</h2>
+      <ul class="ct-log" id="bellList"></ul>
+      <button class="ct-btn is-grow" type="button" data-view-go="auto">Open Auto Rules</button>
+    </div>
+  </div>
+</header>
+
+<div class="ct-kpis" id="kpis" data-slot="kpi-row"></div>
+
+<div class="ct-flow">
+  <section class="ct-sheet ct-panel" id="sheet" aria-labelledby="sheetTitle" data-slot="card-sheet">
+    <button class="ct-handle" id="handle" type="button" aria-label="Fold panel" aria-expanded="true"><span></span></button>
+    <div class="ct-sheet__head">
+      <h2 id="sheetTitle">Deliveries in transit</h2>
+      <p id="sheetMeta"></p>
+      <div class="ct-tools" id="tools" role="group" aria-label="Filtering"></div>
+    </div>
+    <div class="ct-sheet__body">
+      <div class="ct-sec is-on" data-for="live"><div class="ct-cards" id="shipCards"></div></div>
+      <div class="ct-sec" data-for="yard"><div class="ct-cards" id="vehCards"></div></div>
+      <div class="ct-sec" data-for="loads">
+        <form class="ct-loads" id="loadForm" novalidate>
+          <div class="ct-drop" id="drop">
+            <div class="ct-drop__fold"><svg class="ct-i" data-i="upload"></svg></div>
+            <p>Choose a file or drag it here</p>
+            <small>JPEG·PNG·PDF, up to 50MB</small>
+            <label class="ct-btn"><input type="file" id="fileIn" class="ct-sr" multiple accept=".pdf,.png,.jpg,.jpeg">Choose File</label>
+          </div>
+          <div class="ct-files" id="files" aria-live="polite"></div>
+          <div class="ct-fields">
+            <div class="ct-field"><label for="fFirst">Article name</label><input id="fFirst" value="Driver" autocomplete="off"></div>
+            <div class="ct-field"><label for="fLast">Knight castle</label><input id="fLast" value="Name" autocomplete="off"></div>
+            <div class="ct-field"><label for="fPhone">Phone</label><input id="fPhone" value="+00 000 0000 0000" inputmode="tel" autocomplete="off"></div>
+            <div class="ct-field"><label for="fLic">License number</label><input id="fLic" value="D0000000" autocomplete="off"></div>
+            <div class="ct-field"><label for="fVeh">Vehicle</label><select id="fVeh"></select></div>
+            <div class="ct-field"><label for="fCust">Pickup point</label><input id="fCust" value="Customer 07" autocomplete="off"></div>
+            <div class="ct-field"><label for="fFrom">Where it’s placed</label><select id="fFrom"></select></div>
+            <div class="ct-field"><label for="fTo">Drop-off point</label><select id="fTo"></select></div>
+          </div>
+          <div class="ct-assign">
+            <p id="assignSummary"></p>
+            <button type="submit" class="ct-btn is-primary is-lg">Assign luggage</button>
+          </div>
+        </form>
+      </div>
+      <div class="ct-sec" data-for="auto"><div class="ct-cards" id="ruleCards"></div></div>
+    </div>
+  </section>
+
+  <aside class="ct-side ct-panel" id="side" aria-label="Details" data-slot="detail-pane">
+    <div class="ct-pane" id="paneDetail"></div>
+    <div class="ct-pane" id="paneChat" hidden></div>
+    <div class="ct-pane" id="paneLog" hidden>
+      <div class="ct-ph"><div class="is-grow"><h2>Activity log</h2><p>Automatic processing, newest first</p></div></div>
+      <div class="ct-pane__scroll"><ul class="ct-log" id="logList"></ul></div>
+    </div>
+  </aside>
+</div>
+
+<div class="ct-toasts" id="toasts" aria-live="polite"></div>
+
+<script src="../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../_vendor/three@0.128.0/build/three.min.js"></script>
+<script src="detail.js"></script>
+<script src="../../_shared/wire.js"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>noise-dither-cover — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); margin: 0; min-height: 100vh; }
+  .demo-hint { padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-row { display: flex; gap: 16px; padding: 40px 20px; flex-wrap: wrap; }
+  .demo-soft-text { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000; opacity: 0; pointer-events: none; font-weight: 600; font-size: 18px; }
+  .demo-row a, .demo-row button { display: inline-flex; align-items: center; height: 40px; padding: 0 20px; border: 1px solid currentColor; border-radius: 20px; color: inherit; background: none; font: inherit; cursor: pointer; text-decoration: none; }
+</style>
+</head>
+<body>
+<div data-fx="noise-dither-cover" data-demo-root>
+<p class="demo-hint"><b>noise-dither-cover</b> — Click the link below and dots spread into a cloud pattern covering the screen, then clear on the reopened page. The button only covers with the curtain and lifts.</p>
+<div class="demo-row">
+  <a href="demo.html?p=2">Reopen the same page</a>
+  <button type="button" data-demo-cover>Walk with only the curtain drawn</button>
+</div>
+<div class="demo-row" data-demo-late-host></div>
+</div>
+<div class="demo-row" data-fx="noise-dither-cover" data-fx-noise-dither-cover="nav: off; look: soft" data-demo-soft>
+  <button type="button" data-demo-soft-btn>Cover with a light noise film (look: soft), then clear it away</button>
+  <p class="demo-soft-text" data-fx-part="text">Loading</p>
+</div>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+const root = document.querySelector("[data-demo-root]");
+document.querySelector("[data-demo-cover]").addEventListener("click", () => {
+  root.dispatchEvent(new CustomEvent("fx:cover", { detail: { done: () => root.dispatchEvent(new CustomEvent("fx:uncover")) } }));
+});
+const soft = document.querySelector("[data-demo-soft]");
+document.querySelector("[data-demo-soft-btn]").addEventListener("click", () => {
+  soft.dispatchEvent(new CustomEvent("fx:cover", { detail: { done: () => soft.dispatchEvent(new CustomEvent("fx:uncover")) } }));
+});
+// Attach separately to one late-arriving board, detach after 2.5 sec (does detaching remove the curtain?)
+setTimeout(() => {
+  const d = document.createElement("div");
+  d.dataset.fx = "noise-dither-cover";
+  d.dataset.fxNoiseDitherCover = "nav: off";
+  d.textContent = "Late-arriving panel (nav: off)";
+  document.querySelector("[data-demo-late-host]")?.append(d);
+  setTimeout(() => d.remove(), 1500);
+}, 1000);
+</script>
+</body>
+</html>

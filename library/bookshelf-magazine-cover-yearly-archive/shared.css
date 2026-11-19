@@ -1,0 +1,423 @@
+/* Each year has one cover color, and that year’s article header and transition panel wear it. All values are derived by rotating the accent (this year’s yellow), so changing the skin turns them together. */
+:root {
+  --site-year-1: var(--kf-accent);
+  --site-year-2: oklch(from var(--kf-accent) calc(l * .981) calc(c * .075) calc(h - 39.7));
+  --site-year-3: oklch(from var(--kf-accent) calc(l * .884) calc(c * .618) calc(h + 54.9));
+  --site-year-4: oklch(from var(--kf-accent) calc(l * .402) calc(c * .994) calc(h + 155.7));
+  --site-year-5: oklch(from var(--kf-accent) calc(l * .939) calc(c * .443) calc(h - 79.2));
+  --site-year-6: oklch(from var(--kf-accent) calc(l * .893) calc(c * .28) calc(h - 18.9));
+  --site-brand: var(--site-year-4);
+  --site-sky: oklch(from var(--kf-accent) calc(l * .76) calc(c * .81) calc(h + 135.9));
+  --site-grid: color-mix(in oklab, var(--site-sky) 22%, transparent);
+  --site-paper: color-mix(in oklab, var(--kf-accent) 13%, var(--kf-surface));
+  --site-red: oklch(from var(--kf-accent) calc(l * .65) calc(c * 1.45) calc(h - 80));
+  --site-cyan: oklch(from var(--kf-accent) calc(l * .79) calc(c * .85) calc(h + 120));
+  --site-green: oklch(from var(--kf-accent) calc(l * .69) calc(c * .98) calc(h + 45));
+  --site-veil: color-mix(in oklab, var(--kf-line) 55%, var(--kf-bg));
+  --site-year: var(--kf-bg);
+  --site-header-h: 110px;
+}
+body[data-year="1"] { --site-year: var(--site-year-1); }
+body[data-year="6"] { --site-year: var(--site-year-6); }
+
+body {
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  color: var(--kf-ink);
+  background: var(--kf-surface);
+  font-size: 14px;
+  line-height: 1.8;
+}
+body.pp-home { background: var(--kf-bg); }
+
+/* ── Header: masthead plate at top left + round menu button at top right. Both hide upward on scroll down and return on scroll up ── */
+.pp-header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: var(--site-header-h);
+  z-index: 1000;
+  pointer-events: none;
+}
+.pp-header__title {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 110px;
+  overflow: hidden;
+  z-index: 2;
+}
+.pp-header__frame {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 30px;
+  background: var(--site-year);
+  pointer-events: auto;
+  transition: transform .5s;
+}
+.pp-home .pp-header__frame { background: var(--kf-bg); }
+.pp-header__controls {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 150px;
+  overflow: hidden;
+  z-index: 1;
+}
+.pp-header__controls-frame {
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: 20px 40px 0 0;
+  pointer-events: auto;
+  transition: transform .5s;
+}
+.pp-header.is-hidden:not(.is-menu) .pp-header__frame,
+.pp-header.is-hidden:not(.is-menu) .pp-header__controls-frame { transform: translateY(-100%); }
+
+/* Masthead slot: top-line title (193px wide), year, and a tiny one-line intro below */
+.pp-mark {
+  display: grid;
+  grid-template: auto auto / auto auto;
+  gap: 11px 14px;
+  align-items: end;
+}
+.pp-mark__name {
+  font-family: var(--kf-font-display);
+  font-weight: 700;
+  font-size: 21px;
+  line-height: 22px;
+  letter-spacing: .06em;
+  white-space: nowrap;
+}
+.pp-mark__year {
+  font-family: var(--kf-font-display);
+  font-size: 25px;
+  line-height: 18px;
+}
+.pp-mark__sub {
+  grid-column: span 2;
+  font-size: 8px;
+  line-height: 10px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+
+.pp-burger {
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--kf-surface);
+  border: 2px solid var(--kf-line);
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+}
+.pp-burger__bar {
+  position: relative;
+  width: 21px;
+  height: 2px;
+  background: var(--kf-ink);
+  transition: background-color .3s, transform .3s;
+}
+.pp-burger__bar::before,
+.pp-burger__bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--kf-ink);
+  transition: transform .3s;
+}
+.pp-burger__bar::before { transform: translateY(-350%); }
+.pp-burger__bar::after { transform: translateY(350%); }
+.is-menu .pp-burger__bar { background: transparent; transform: rotate(45deg); }
+.is-menu .pp-burger__bar::before { transform: rotate(90deg); }
+.is-menu .pp-burger__bar::after { transform: none; }
+
+/* ── Menu drawer: full-screen panel sliding in from the right in 300ms. Each category has article rows and year tags ── */
+.pp-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: var(--kf-bg);
+  padding: 132px 0 0 47px;
+  transform: translateX(100%);
+  transition: transform .3s, visibility 0s .3s;
+  overflow: hidden;
+  visibility: hidden;
+}
+.pp-menu.is-open { transform: none; visibility: visible; transition: transform .3s; }
+.pp-menu::before {
+  content: "";
+  position: absolute;
+  top: 138px;
+  left: 148px;
+  right: 0;
+  height: 2px;
+  background: var(--kf-line);
+}
+.pp-menu__inner {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 45px;
+  height: 100%;
+}
+.pp-menu__top {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: normal;
+}
+.pp-menu__top::before { content: "〉"; }
+.pp-menu__cols {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 41px 26px;
+  padding: 27px 0 44px;
+  height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+.pp-menu__group { width: 43%; }
+.pp-menu__group h3 {
+  color: var(--kf-dim);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: normal;
+  padding-bottom: 10px;
+}
+.pp-menu__links {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-left: 20px;
+}
+.pp-menu__links li { display: flex; align-items: center; gap: 10px; }
+.pp-menu__links a {
+  position: relative;
+  padding-left: 1em;
+  font-size: 13px;
+  line-height: normal;
+  transition: opacity .3s;
+}
+.pp-menu__links a::before { content: "〉"; position: absolute; left: 0; }
+.pp-menu__links a:hover { opacity: .7; }
+.pp-tag {
+  font-size: 9px;
+  line-height: 1;
+  padding: 1px 5px;
+  background: var(--kf-surface);
+  white-space: nowrap;
+}
+
+/* Subpage menu: only that year’s articles are expanded, other years are collapsed rows. Links are dark boards in that year’s color, and the masthead board folds to 50px */
+body:not(.pp-home) { --site-menu-link: oklch(from var(--site-year) calc(l * .62) c h); }
+body[data-year="1"] { --site-menu-link: var(--kf-accent-text); }
+body:not(.pp-home) .pp-menu { padding: 132px 47px 0; }
+body:not(.pp-home) .pp-menu::before { display: none; }
+body:not(.pp-home) .pp-menu__inner { max-width: 1180px; margin: 0 auto; height: auto; column-gap: 78px; }
+body:not(.pp-home) .pp-menu__cols { flex-direction: column; height: auto; max-height: 410px; padding: 0 0 44px; overflow: visible; column-gap: 49px; }
+body:not(.pp-home) .pp-menu__group { width: auto; }
+body:not(.pp-home) .pp-menu__links a { color: var(--site-menu-link); }
+.pp-menu__years { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 38px; }
+.pp-menu__years a { font-size: 18px; font-weight: 700; line-height: normal; transition: opacity .3s; }
+.pp-menu__years a::before { content: "〉"; }
+.pp-menu__years a:hover { opacity: .7; }
+body:not(.pp-home) .pp-header__title { transition: height .3s; }
+body:not(.pp-home) .pp-header.is-menu .pp-header__title { height: 50px; }
+body:not(.pp-home) .pp-mark__sub { transition: opacity .3s .3s; }
+body:not(.pp-home) .pp-header.is-menu .pp-mark__sub { opacity: 0; }
+
+/* ── Bottom: yellow ‹Learn more› band (this year’s articles only) · two buttons · company logo · copyright ── */
+.pp-more {
+  background: var(--kf-accent);
+  color: var(--kf-on-accent);
+  text-align: center;
+  padding: 60px 0 40px;
+  margin: 0 0 60px;
+}
+.pp-more h2 { font-size: 16px; font-weight: 700; margin: 0 0 60px; }
+.pp-more__grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 96%;
+  margin: 0 auto;
+}
+.pp-more__block { width: calc(25% - 40px); margin: 0 20px 30px; }
+.pp-more__block h3 { font-size: 14px; font-weight: 700; margin: 0 0 20px; }
+.pp-more__btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  margin: 0 0 10px;
+  padding: 5px 0;
+  border: 1px solid var(--kf-ink);
+  font-size: 13px;
+  line-height: 1.5;
+  transition: opacity .3s;
+}
+.pp-more__btn::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  border-style: solid;
+  border-width: 0 0 10px 10px;
+  border-color: transparent transparent var(--kf-ink) transparent;
+}
+.pp-more__btn:hover { opacity: .4; }
+.pp-more__block p { font-size: 14px; text-align: left; line-height: 1.6; }
+
+.pp-jump {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  z-index: 900;
+  background: var(--kf-accent);
+  color: var(--kf-on-accent);
+  text-align: center;
+  padding: 16px 14px 24px;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1.2;
+  transform: translateY(calc(100% + 20px));
+  opacity: 0;
+  pointer-events: none;
+  transition: transform .4s, opacity .4s;
+}
+.pp-jump.is-show { transform: none; opacity: 1; pointer-events: auto; }
+.pp-jump::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 11px;
+  transform: translateX(-50%);
+  border-style: solid;
+  border-width: 6px 6px 0 6px;
+  border-color: var(--kf-on-accent) transparent transparent transparent;
+}
+
+.pp-foot { padding-bottom: 89px; text-align: center; }
+.pp-foot__btns { display: flex; justify-content: center; gap: 30px; padding-top: 20px; }
+.pp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 0 9px 0 14px;
+  border: 1px solid var(--kf-line);
+  font-size: 11px;
+  line-height: normal;
+  background: transparent;
+  transition: opacity .3s;
+}
+.pp-btn::after { content: "》"; }
+.pp-foot__logo, .pp-home-foot__logo {
+  display: block;
+  margin: 0 auto;
+  width: fit-content;
+  color: var(--site-brand);
+  font-weight: 700;
+  font-size: 19px;
+  line-height: 21px;
+  letter-spacing: .04em;
+}
+.pp-foot__logo { padding-top: 40px; padding-bottom: 12px; }
+.pp-copy { font-size: 10px; line-height: normal; }
+
+/* ── Common photo slot: gray X box. Wrapped so zoom and blur-release motion happen inside the outer frame ── */
+.pp-ph { overflow: hidden; position: relative; }
+.pp-ph > .wf-img { width: 100%; height: 100%; }
+
+/* Photo reveal veil (shared.js attaches it inside the photo frame): two gray veils wipe off to the right, and the white veil passes through as a diagonal gradient */
+.pp-zoom-cover { position: absolute; inset: 0; pointer-events: none; }
+.pp-zoom-cover--veil { background: var(--site-veil); transform-origin: right; opacity: .8; }
+.pp-zoom-cover--b { opacity: .5; }
+.pp-zoom-cover--sweep {
+  --a: 100;
+  --b: 100;
+  background: linear-gradient(110deg, transparent calc(var(--a) * 1%), var(--kf-surface) calc(var(--b) * 1%));
+}
+
+/* Original text reveal where the body is wiped in by a -70 degree diagonal mask */
+.pp-mask {
+  -webkit-mask-image: linear-gradient(-70deg, transparent 47.5%, #000 52.5%); /* Not skin: mask only uses alpha */
+  mask-image: linear-gradient(-70deg, transparent 47.5%, #000 52.5%); /* Not skin: mask only uses alpha */
+  -webkit-mask-size: 250% 100%;
+  mask-size: 250% 100%;
+  -webkit-mask-position: 100%;
+  mask-position: 100%;
+  opacity: 0;
+  transition: opacity 1s ease-in-out 1.5s;
+}
+.pp-mask.is-act { animation: pp-text-mask 2.5s 1.5s both; opacity: 1; }
+@keyframes pp-text-mask {
+  from { -webkit-mask-position: 100%; mask-position: 100%; }
+  to { -webkit-mask-position: 0; mask-position: 0; }
+}
+
+/* Curtain on the page reached by pressing a cover, where that year’s color panel shrinks into the masthead spot */
+.pp-arrive {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1001;
+  pointer-events: none;
+  background: var(--pp-arrive, var(--site-year));
+}
+.pp-arrive svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+@media (max-width: 768px) {
+  :root { --site-header-h: 65px; }
+  .pp-header__title { height: 65px; }
+  .pp-header__frame { padding: 0 0 0 20px; background: transparent; }
+  .pp-header__controls { width: 100%; }
+  .pp-header__controls-frame {
+    width: 100%;
+    padding: 0;
+    display: flex;
+    justify-content: flex-end;
+    background: var(--site-year);
+  }
+  .pp-home .pp-header__controls-frame { background: var(--kf-bg); }
+  .pp-header.is-hidden:not(.is-menu) .pp-header__controls-frame { transform: translateY(-100%); }
+  .pp-mark { gap: 8.7px; }
+  .pp-mark__name { font-size: 16px; line-height: 17px; }
+  .pp-mark__year { font-size: 20px; }
+  .pp-mark__sub { grid-column: 1; font-size: 6px; line-height: 7.6px; }
+  .pp-burger { width: 65px; height: 65px; border: 0; border-radius: 0; background: transparent; }
+  .pp-burger__bar { width: 20px; }
+  .pp-menu { padding: 121px 5px 60px 20px; overflow-y: auto; }
+  .pp-menu::before { top: 126px; left: 61px; }
+  .pp-menu__inner { display: block; height: auto; }
+  .pp-menu__top { font-size: 11px; padding-bottom: 12px; }
+  .pp-menu__cols { height: auto; overflow: visible; flex-direction: column; flex-wrap: nowrap; row-gap: 29px; padding: 0 0 0 21px; }
+  .pp-menu__group { width: 100%; }
+  .pp-menu__group h3, .pp-menu__links a { font-size: 11px; }
+  .pp-menu__links { padding-left: 10px; }
+  body:not(.pp-home) .pp-menu { padding: 104px 10px 50px 51px; }
+  body:not(.pp-home) .pp-menu__cols { max-height: none; padding-left: 21px; }
+  body:not(.pp-home) .pp-header.is-menu .pp-header__title { height: 65px; }
+  body:not(.pp-home) .pp-header.is-menu .pp-mark__sub { opacity: 1; }
+  body:not(.pp-home) .pp-header.is-menu .pp-header__controls-frame { box-shadow: 0 4px 4px rgba(0, 0, 0, .25); }
+  .pp-menu__years { gap: 12px; margin-top: 30px; }
+  .pp-menu__years a { font-size: 11px; }
+  .pp-more { padding: 60px 0; }
+  .pp-more__grid { display: block; }
+  .pp-more__block { width: 90%; margin: 0 auto; }
+  .pp-more__block p { margin: 0 0 20px; }
+  .pp-more__btn { height: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pp-mask { opacity: 1; -webkit-mask-image: none; mask-image: none; transition: none; }
+  .pp-menu, .pp-header__frame, .pp-header__controls-frame { transition: none; }
+}

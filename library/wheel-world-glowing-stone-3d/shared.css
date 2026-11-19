@@ -1,0 +1,135 @@
+/* Shared by all pages: one-screen 3D stage (canvas), single-line header band with name and menu (hover makes the word crack and split into two pieces), 
+   Sound button, first-visit loader (stone outline → render-stage window → pixel cells clearing away), page-transition pixel curtain, cylinder heading. */
+
+:root {
+  /* Site-specific colors made from the skin — original #fff hover (pushes text color all the way: white on a light skin, black on a dark one) · #fff1e0 outline end · warm ink of the spot image */
+  --site-ink-hi: oklch(from var(--kf-ink) round(l, 1) 0 h);
+  --site-tip: color-mix(in oklab, var(--kf-accent) 65%, var(--kf-ink));
+  --wf-fill: color-mix(in oklab, var(--kf-bg) 90%, var(--kf-accent-soft));
+  --wf-line: color-mix(in oklab, var(--kf-bg) 78%, var(--kf-accent-soft));
+  --wf-fill-ink: color-mix(in oklab, color-mix(in oklab, var(--kf-ink) 85%, var(--kf-accent-soft)) 64%, var(--kf-bg));
+  /* Bouncy hover (.3,2.2,.45,1) · exit acceleration (.55,0,.75,.2) · soft deceleration (.165,.84,.44,1) */
+  --site-ease-pop: cubic-bezier(0.3, 2.2, 0.45, 1);
+  --site-ease-in: cubic-bezier(0.55, 0, 0.75, 0.2);
+  --site-ease-soft: cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+html { background: var(--kf-bg); overscroll-behavior: none; }
+body {
+  height: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+}
+button { background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer; }
+:focus-visible { outline: 1px solid color-mix(in srgb, var(--kf-ink) 70%, transparent); outline-offset: 4px; }
+.gc-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.gc-gl { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; touch-action: none; cursor: grab; }
+body.is-dragging .gc-gl { cursor: grabbing; }
+
+/* ── Header band ── */
+.gc-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 15;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 24px 30px;
+  font-size: .875rem;
+  pointer-events: none;
+}
+.gc-header a { position: relative; pointer-events: auto; color: color-mix(in srgb, var(--kf-ink) 92%, transparent); transition: color .25s ease; }
+.gc-header a::after { content: ""; position: absolute; inset: -14px -10px; }
+.gc-header a:hover { color: var(--site-ink-hi); }
+.gc-brand { display: inline-block; font-weight: 600; line-height: 1.2; }
+.gc-nav { display: inline-block; color: color-mix(in srgb, var(--kf-ink) 62%, transparent) !important; transition: color .25s ease; }
+.gc-nav:hover, .gc-nav:focus-visible { color: var(--kf-accent) !important; }
+.gc-nav--close { color: color-mix(in srgb, var(--kf-ink) 92%, transparent) !important; }
+/* The word is split into top and bottom pieces by a zigzag cut, and on hover the two pieces twist slightly in opposite directions and bounce back */
+.gc-word { position: relative; display: inline-block; color: transparent; }
+.gc-word::before, .gc-word::after {
+  content: attr(data-word);
+  position: absolute;
+  inset: 0;
+  color: color-mix(in srgb, var(--kf-ink) 62%, transparent);
+  transition: transform .3s var(--site-ease-soft), color .25s ease;
+}
+.gc-nav--close .gc-word::before, .gc-nav--close .gc-word::after { color: color-mix(in srgb, var(--kf-ink) 92%, transparent); }
+.gc-word::before { clip-path: polygon(-30% -30%, 130% -30%, 130% 38%, 70% 50%, 62% 40%, 34% 62%, 26% 52%, -30% 66%); transform-origin: 30% 30%; }
+.gc-word::after { clip-path: polygon(-30% 66%, 26% 52%, 34% 62%, 62% 40%, 70% 50%, 130% 38%, 130% 130%, -30% 130%); transform-origin: 70% 70%; }
+@media (hover: hover) {
+  .gc-nav:hover .gc-word::before, .gc-nav:hover .gc-word::after { color: var(--kf-accent); transition: transform .5s var(--site-ease-pop), color .2s ease; }
+  .gc-nav:hover .gc-word::before { transform: translate(-.5px, -1.1px) rotate(-1.2deg); }
+  .gc-nav:hover .gc-word::after { transform: translate(.5px, 1.1px) rotate(.8deg); }
+}
+.gc-nav:focus-visible .gc-word::before, .gc-nav:focus-visible .gc-word::after { color: var(--kf-accent); }
+
+/* ── Sound button: speaker + two waves / X when muted — erase the lines and redraw ── */
+.gc-sound {
+  position: fixed;
+  right: 28px;
+  bottom: 26px;
+  z-index: 15;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  color: color-mix(in srgb, var(--kf-ink) 62%, transparent);
+  transition: color .25s ease;
+}
+.gc-sound::after { content: ""; position: absolute; inset: -4px; }
+.gc-sound:hover { color: var(--site-ink-hi); }
+.gc-sound svg { width: 20px; height: 20px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.gc-sound .wave, .gc-sound .cross { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .28s var(--site-ease-soft); }
+.gc-sound .cross-1 { stroke-dashoffset: 0; transition-delay: .16s; }
+.gc-sound .cross-2 { stroke-dashoffset: 0; transition-delay: .24s; }
+.gc-sound .wave-1 { transition-delay: .06s; }
+.gc-sound.is-on .wave { stroke-dashoffset: 0; transition-duration: .4s; }
+.gc-sound.is-on .wave-1 { transition-delay: .1s; }
+.gc-sound.is-on .wave-2 { transition-delay: .2s; }
+.gc-sound.is-on .cross { stroke-dashoffset: 1; transition-delay: 0s; transition-duration: .16s; }
+.gc-sound .speaker { transform-box: fill-box; transform-origin: 60% 50%; animation: gc-pop .42s var(--site-ease-pop); }
+.gc-sound.is-on .speaker { animation-name: gc-pop-on; }
+@keyframes gc-pop { from { transform: scale(.82); } }
+@keyframes gc-pop-on { from { transform: scale(.82); } }
+@media (pointer: coarse) { .gc-sound { display: none; } }
+
+/* While the loader runs, the headband and sound button stay hidden, then float up over .9s */
+body.is-intro .gc-header, body.is-intro .gc-sound { opacity: 0; visibility: hidden; }
+body.is-ui .gc-header, body.is-ui .gc-sound { animation: gc-ui-in .9s ease-out backwards; }
+@keyframes gc-ui-in { from { opacity: 0; } }
+
+/* ── Loader 1: the stone outline is drawn as far as the progress, and a glowing endpoint runs along the line ── */
+.gc-outline { position: fixed; top: 7.5vh; left: 50%; height: 80.5vh; transform: translateX(-50%); overflow: visible; pointer-events: none; z-index: 4; }
+.gc-outline path { fill: none; stroke-linecap: round; transition: stroke-dashoffset .6s var(--kf-ease-out); }
+.gc-outline .flank { stroke: color-mix(in srgb, var(--kf-accent-soft) 55%, transparent); stroke-width: .13; stroke-dasharray: 1 1; stroke-dashoffset: calc(1 - var(--p, .02)); }
+.gc-outline .tip { stroke: var(--site-tip); stroke-width: .22; stroke-dasharray: .025 1; stroke-dashoffset: calc(.025 - var(--p, .02)); filter: drop-shadow(0 0 6px rgba(255, 170, 110, .9)); }
+body.is-wired .gc-outline { opacity: 0; transition: opacity .5s ease-out; }
+.gc-about .gc-outline { top: 8.08vh; left: calc(50% + 34.6vh); height: 74.9vh; }
+@media (max-aspect-ratio: 4/5) {
+  .gc-outline { top: calc(50vh - 53.91vw); left: calc(50% - 1.13vw); height: 105.55vw; }
+  .gc-about .gc-outline { display: none; }
+}
+
+/* ── Loader 2: small windows showing the same scene at different render stages (three dots + label). The picture inside is painted by the canvas ── */
+.gc-windows { position: fixed; inset: 0; z-index: 5; pointer-events: none; }
+.gc-window { position: absolute; top: 0; left: 0; opacity: 0; border: 1px solid color-mix(in srgb, var(--kf-accent-soft) 22%, transparent); }
+.gc-window__bar { position: absolute; left: 0; right: 0; bottom: 100%; display: flex; align-items: center; gap: 5px; height: 20px; padding: 0 8px; background: color-mix(in srgb, var(--kf-bg) 82%, transparent); border: 1px solid color-mix(in srgb, var(--kf-accent-soft) 22%, transparent); border-bottom: 0; margin: 0 -1px; }
+.gc-window__bar i { width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--kf-accent-soft) 32%, transparent); }
+.gc-window__bar span { margin-left: 6px; color: color-mix(in srgb, var(--kf-ink) 55%, transparent); font-size: 10px; letter-spacing: .06em; white-space: nowrap; }
+
+/* ── Loader 3 · page turn: 20px black cells ── */
+.gc-pixels { position: fixed; inset: 0; z-index: 30; width: 100vw; height: 100vh; pointer-events: none; }
+
+/* ── Cylinder title: names wrap around a vertical-axis cylinder, only the front one is filled and the neighbors are outline only ── */
+.gc-wheel { position: fixed; left: 0; right: 0; bottom: 4.5vh; z-index: 10; height: 1.75em; font: 900 clamp(40px, 6.8vw, 124px) / .86 var(--kf-font-display); font-stretch: 125%; text-transform: uppercase; perspective: 1400px; pointer-events: none; }
+.gc-wheel__gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+@media (max-width: 768px) {
+  .gc-wheel { bottom: 4vh; font-size: 40px; perspective: 700px; }
+}

@@ -1,0 +1,188 @@
+/* Page-wide pieces — number loader, fixed header, fixed news line, footer, About panel (ABOUT US), notice modal, bar under section titles, download section, next section */
+:root {
+  --site-panel: color-mix(in oklab, var(--kf-ink) 15%, var(--kf-bg));
+  --site-loader-ink: color-mix(in oklab, var(--kf-ink) 6%, var(--kf-bg));
+  --site-veil: color-mix(in oklab, var(--kf-bg) 50%, transparent);
+  --site-cover: color-mix(in oklab, var(--kf-accent) 90%, transparent);
+  --site-ease: cubic-bezier(0.36, 0.01, 0.29, 0.99);
+  --site-ease-ui: cubic-bezier(0.48, 0.06, 0.14, 1);
+  --site-ease-bar: cubic-bezier(0.39, 0.02, 0.21, 1);
+}
+html { -webkit-text-size-adjust: 100%; background: var(--kf-bg); }
+body { margin: 0; background: var(--kf-bg); color: var(--kf-ink); font-family: var(--kf-font-sans); font-weight: var(--kf-weight-body); overflow-x: clip; }
+:where(.ot-page) a { color: inherit; text-decoration: none; }
+:where(.ot-page) :is(h1, h2, h3, p, ul, figure) { margin: 0; padding: 0; }
+:where(.ot-page) ul { list-style: none; }
+:where(.ot-page) button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+.ot-din { font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* ── Number loader: on a black panel a two-digit number 30% of the screen width counts up at center, and when full it recedes backward (z −200) and disappears ── */
+.ot-loader { position: fixed; inset: 0; z-index: 950; background: var(--kf-bg); display: grid; place-items: center; perspective: 1000px;
+  transition: opacity 0.6s cubic-bezier(0.56, 0.01, 0.32, 1), visibility 0s 0.6s; }
+.ot-loader.is-gone { opacity: 0; visibility: hidden; transition: none; }
+.ot-loader__num { display: flex; font: var(--kf-weight-display) 30vw/1 var(--kf-font-display); color: var(--site-loader-ink); height: 30vw; letter-spacing: 0; }
+.ot-loader__num span { display: block; min-width: 0.5em; text-align: center; transition: opacity 0.4s var(--site-ease-bar), transform 0.5s cubic-bezier(0.64, 0.01, 0.32, 1); }
+.ot-loader.is-end .ot-loader__num span { opacity: 0; transform: translate3d(0, 0, -200px); }
+.ot-loader.is-end .ot-loader__num span + span { transition-delay: 0.05s; }
+.ot-loader__logo { position: absolute; left: 50%; top: 50%; width: 68px; translate: -50% -50%; }
+.ot-logo--draw rect { stroke-dasharray: 160 160; stroke-dashoffset: 160; transition: stroke-dashoffset 1.2s var(--site-ease); }
+.ot-logo--draw text { opacity: 0; transition: opacity 0.6s 0.8s var(--site-ease); }
+.is-drawn .ot-logo--draw rect { stroke-dashoffset: 0; }
+.is-drawn .ot-logo--draw text { opacity: 1; }
+
+/* ── Header row: ABOUT US on the left · vertical logo in the center · GET THE APP on the right. After passing the hero a black panel comes down from the top ── */
+.ot-head { position: fixed; inset: 0 0 auto; z-index: 60; height: 70px; padding: 0 25px; color: var(--kf-ink); overflow: hidden; }
+.ot-head::before { content: ""; position: absolute; inset: 0; background: var(--kf-bg); transform: translate3d(0, -100%, 0); transition: transform 0.6s var(--site-ease-bar); }
+.ot-head.is-solid::before { transform: translate3d(0, 0, 0); }
+.ot-head__about, .ot-head__app { position: absolute; top: 25px; font: var(--kf-weight-display) 14px/1 var(--kf-font-display); letter-spacing: 0.1em; text-transform: uppercase; }
+.ot-head__about { left: 25px; }
+.ot-head__app { right: 25px; }
+.ot-head__logo { position: absolute; top: 13px; left: 50%; width: 34px; margin-left: -17px; transition: opacity 0.4s var(--site-ease-bar); }
+.ot-home .ot-head__logo { opacity: 0; pointer-events: none; }
+.ot-logo { display: block; width: 100%; height: auto; }
+.ot-logo rect { fill: none; stroke: currentColor; stroke-width: 3; }
+.ot-logo text { font: 700 11px/1 var(--kf-font-display); fill: currentColor; letter-spacing: 0.04em; }
+
+/* Underline — on hover a red 2px line fills from the left in .4s, and on release it leaves toward the right end in .4s (original anim-underline) */
+.ot-uline { position: relative; display: inline-block; padding-bottom: 3px; overflow: hidden; cursor: pointer; }
+.ot-uline::before, .ot-uline::after { content: ""; position: absolute; bottom: 0; height: 2px; width: 0; background: var(--kf-accent); pointer-events: none; }
+.ot-uline::before { left: 0; transition: width 0s cubic-bezier(0.42, 0.12, 0.31, 0.99); }
+.ot-uline::after { right: 0; transition: width 0.4s cubic-bezier(0.42, 0.12, 0.31, 0.99); }
+.ot-head .ot-uline { position: absolute; }
+@media (hover: hover) {
+  .ot-uline:hover::before { width: 100%; transition: width 0.4s cubic-bezier(0.42, 0.12, 0.31, 0.99); }
+  .ot-uline:hover::after { width: 100%; background: transparent; transition: all 0s; }
+}
+
+/* ── Fixed news-line footer ── */
+.ot-foot { position: fixed; inset: auto 0 0; z-index: 60; height: 80px; padding: 0 25px; color: var(--kf-ink); clip-path: inset(0 0 0 0); transition: clip-path 0.6s var(--site-ease-bar); }
+.ot-foot.is-hidden { clip-path: inset(100% 0 0 0); }
+.ot-foot::before { content: ""; position: absolute; inset: 0; background: var(--kf-bg); }
+.ot-foot__news { position: absolute; left: 25px; top: 50%; translate: 0 -50%; font-size: 12px; white-space: nowrap; }
+.ot-foot__news b { margin-left: 10px; font-weight: 700; }
+.ot-foot__news .ot-uline { margin-left: 15px; }
+.ot-foot__copy { position: absolute; right: 25px; top: 50%; translate: 0 -50%; font-size: 10px; letter-spacing: 0.04em; }
+
+/* Section title — text lines rise from below (.7s) and a red 4px bar grows over .8s after .5s */
+.ot-copy { position: relative; display: inline-block; overflow: hidden; padding-bottom: 20px; }
+.ot-copy::after { content: ""; position: absolute; left: 0; bottom: 0; width: 80px; height: 4px; background: var(--kf-accent); transform: translate3d(0, 100%, 0); }
+.ot-copy--full::after { width: 0; right: 0; left: auto; }
+.ot-copy span { position: relative; display: inline-block; opacity: 0; transform: translate3d(0, 100%, 0); transition: opacity 0.4s var(--site-ease), transform 0.7s var(--site-ease); }
+.ot-copy.is-in span { opacity: 1; transform: translate3d(0, 0, 0); }
+.ot-copy.is-in span + span { transition-delay: 0.05s; }
+.ot-copy.is-in::after { transform: translate3d(0, 0, 0); transition: transform 0.5s cubic-bezier(0.47, 0.16, 0.24, 1); }
+.ot-copy--full.is-in::after { width: 100%; transition: width 0.8s 0.5s var(--site-ease), transform 0.5s cubic-bezier(0.47, 0.16, 0.24, 1); }
+.ot-summary { color: var(--kf-dim); font-size: 13px; line-height: 2.5; letter-spacing: 0.04em; }
+
+/* Photo Slot */
+.ot-ph { position: relative; overflow: hidden; background: color-mix(in oklab, var(--kf-ink) 20%, var(--kf-bg)); }
+.ot-ph::after { content: attr(data-label); position: absolute; left: 12px; right: 12px; bottom: 10px; font: 500 11px/1.4 var(--kf-font-sans); color: color-mix(in oklab, var(--kf-ink) 55%, transparent); }
+
+/* Cover — hovering over a photo makes a red 90% plate and a + grow while rotating, and the text rises (.4s cubic-bezier(.48,.06,.14,1)) */
+.ot-cover { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; text-align: center; font-size: 18px; letter-spacing: 0.1em; color: var(--kf-on-accent); transition: background-color 0.4s var(--site-ease-ui); }
+.ot-cover::before, .ot-cover::after { content: ""; position: absolute; left: 50%; top: 50%; width: 30px; height: 3px; margin: -30px 0 0 -15px; border-radius: 10px; background: var(--kf-on-accent); transform: scale(0) rotate(0); transition: transform 0.4s var(--site-ease-ui); }
+.ot-cover::after { transform: scale(0) rotate(90deg); }
+.ot-cover > span { opacity: 0; transform: translate3d(0, 20px, 0); transition: opacity 0.3s var(--site-ease-ui), transform 0.4s var(--site-ease-ui); }
+@media (hover: hover) {
+  .ot-sv__img:hover .ot-cover, .ot-issue a:hover .ot-cover { background: var(--site-cover); }
+  .ot-sv__img:hover .ot-cover::before, .ot-issue a:hover .ot-cover::before { transform: scale(1) rotate(0); }
+  .ot-sv__img:hover .ot-cover::after, .ot-issue a:hover .ot-cover::after { transform: scale(1) rotate(90deg); }
+  .ot-sv__img:hover .ot-cover > span, .ot-issue a:hover .ot-cover > span { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* ── Get section · next section · language ── */
+.ot-dl { position: relative; display: grid; grid-template-columns: 350px 593px; justify-content: center; gap: 50px; align-items: end; height: 660px; padding: 100px 0 0; box-sizing: border-box; background: color-mix(in oklab, var(--kf-ink) 10%, var(--kf-bg)); overflow: hidden; }
+.ot-dl__phone { width: 350px; height: 560px; border-radius: 48px 48px 0 0; border: 12px solid color-mix(in oklab, var(--kf-ink) 85%, var(--kf-bg)); border-bottom: 0; box-sizing: border-box; }
+.ot-dl__body { align-self: start; padding: 50px 20px 0; text-align: center; }
+.ot-dl__mark { display: inline-grid; place-items: center; width: 100px; height: 100px; border-radius: 20px; background: var(--kf-ink); color: var(--kf-bg); font: 700 22px/1 var(--kf-font-display); letter-spacing: 0.04em; text-align: center; }
+.ot-dl__en { margin-top: 70px; font: var(--kf-weight-display) 16px/24px var(--kf-font-display); letter-spacing: 0.1em; text-transform: uppercase; }
+.ot-dl__jp { margin-top: 10px; font-size: 22px; line-height: 54px; letter-spacing: 0.1em; }
+.ot-dl__apps { display: flex; justify-content: center; gap: 12px; margin-top: 50px; }
+.ot-dl__apps a { display: inline-flex; align-items: center; justify-content: center; width: 200px; height: 59px; padding: 0 16px; box-sizing: border-box; border-radius: 10px; border: 1px solid var(--kf-ink); font-size: 12px; letter-spacing: 0.04em; transition: background-color 0.3s var(--site-ease-ui), color 0.3s var(--site-ease-ui); }
+@media (hover: hover) { .ot-dl__apps a:hover { background: var(--kf-ink); color: var(--kf-bg); } }
+
+.ot-next { position: relative; display: block; height: 181px; text-align: center; cursor: pointer; overflow: hidden; }
+.ot-next__img { position: absolute; inset: 0; transition: transform 1.2s var(--site-ease-ui); }
+.ot-next__img::before { content: ""; position: absolute; inset: 0; z-index: 1; background: var(--site-veil); }
+.ot-next::after { content: ""; position: absolute; left: 50%; top: 0; width: 2px; height: 75px; margin-left: -1px; translate: 0 -35px; background: var(--kf-accent); z-index: 2; transition: height 0.3s var(--site-ease-ui); }
+.ot-next__body { position: relative; z-index: 2; display: grid; place-content: center; height: 100%; gap: 14px; }
+.ot-next__small { display: none; }
+.ot-next__big { font: var(--kf-weight-display) 34px/41px var(--kf-font-display); letter-spacing: 0.04em; text-transform: uppercase; }
+@media (hover: hover) { .ot-next:hover .ot-next__img { transform: scale(1.06); } .ot-next:hover::after { height: 110px; } }
+.ot-lang { height: 60px; text-align: center; font: var(--kf-weight-display) 16px/63px var(--kf-font-display); letter-spacing: 0.1em; }
+.ot-lang a { color: var(--kf-dim); }
+.ot-lang a[aria-current] { color: var(--kf-ink); }
+
+/* ── Notice modal: 290px panel, photo strip on top + white text panel + red button ── */
+.ot-modal { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; }
+.ot-modal.is-open { display: flex; }
+.ot-modal__bg { position: absolute; inset: 0; background: var(--site-veil); }
+.ot-modal__inner { position: relative; z-index: 1; width: 290px; text-align: right; }
+.ot-modal__close { position: relative; width: 40px; height: 40px; transition: opacity 0.4s; }
+.ot-modal__close::before, .ot-modal__close::after { content: ""; position: absolute; left: 0; top: 50%; width: 100%; height: 2px; margin-top: -1px; background: var(--kf-ink); }
+.ot-modal__close::before { rotate: 45deg; } .ot-modal__close::after { rotate: -45deg; }
+@media (hover: hover) { .ot-modal__close:hover { opacity: 0.5; } }
+.ot-modal__img { position: relative; height: 145px; display: grid; place-content: center; text-align: center; gap: 4px; color: var(--kf-ink); }
+.ot-modal__img::after { display: none; }
+.ot-modal__img small { position: relative; z-index: 1; font-size: 13px; font-weight: 700; }
+.ot-modal__img b { position: relative; z-index: 1; font: 700 56px/1 var(--kf-font-display); letter-spacing: 0.02em; }
+.ot-modal__body { padding: 25px 18px; background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); text-align: center; }
+.ot-modal__text { display: inline-block; padding-bottom: 0.25em; border-bottom: 1px solid currentColor; font-size: 11px; line-height: 1.35; margin-bottom: 1.5em; }
+.ot-modal__heading { font-size: 14px; line-height: 1.92; font-weight: 400; margin-bottom: 1.5em; }
+.ot-modal__btn { display: flex; justify-content: center; align-items: center; width: 100%; height: 37px; background: var(--kf-accent); color: var(--kf-on-accent); font-size: 14px; letter-spacing: 0.1em; transition: opacity 0.4s; }
+@media (hover: hover) { .ot-modal__btn:hover { opacity: 0.5; } }
+
+/* ── About panel (ABOUT US): black panel sliding in from the left ── */
+.ot-about { position: fixed; inset: 0; z-index: 80; background: var(--kf-bg); overflow-y: auto; overscroll-behavior: contain; visibility: hidden; transform: translate3d(-100%, 0, 0); transition: visibility 0s 0.8s; }
+.ot-about.is-open { visibility: visible; transform: translate3d(0, 0, 0); transition: none; }
+.ot-about__close { position: fixed; left: 25px; top: 30px; z-index: 2; padding-left: 19px; font: var(--kf-weight-display) 14px/1 var(--kf-font-display); letter-spacing: 0.2em; text-transform: uppercase; }
+.ot-about__close::before, .ot-about__close::after { content: ""; position: absolute; left: 0; top: 6px; width: 12px; height: 2px; background: currentColor; }
+.ot-about__close::before { rotate: 45deg; } .ot-about__close::after { rotate: -45deg; }
+.ot-about__cover { position: relative; height: 100vh; display: grid; place-content: center; text-align: center; }
+.ot-about__cover .ot-ph { position: absolute; inset: 0; }
+.ot-about__cover .ot-ph::before { content: ""; position: absolute; inset: 0; background: var(--site-veil); }
+.ot-about__title { position: relative; z-index: 1; }
+.ot-about__title .ot-logo { width: 100px; margin: 0 auto; }
+.ot-about__title p { margin-top: 20px; font-size: 42px; letter-spacing: 0.08em; }
+.ot-about__main { position: relative; max-width: 977px; margin: 0 auto; padding: 150px 40px 0; }
+.ot-about__main::before { content: ""; position: absolute; left: 50%; top: 0; width: 2px; height: 75px; translate: -1px -50%; background: var(--kf-accent); }
+.ot-about__sec + .ot-about__sec { margin-top: 300px; }
+.ot-about__bg { display: block; font: var(--kf-weight-display) 150px/1 var(--kf-font-display); letter-spacing: 0.2em; color: color-mix(in oklab, var(--kf-ink) 15%, var(--kf-bg)); text-transform: uppercase; }
+.ot-about__sec:nth-child(even) .ot-about__bg { text-align: right; }
+.ot-about__copy { margin-top: 20px; font-size: 28px; line-height: 1.5; }
+.ot-about__img { height: 420px; margin-top: 40px; }
+.ot-about__sum { margin-top: 40px; column-count: 2; column-gap: 2em; color: var(--kf-dim); font-size: 14px; line-height: 2; letter-spacing: 0.1em; }
+.ot-about__closeb { display: block; width: max-content; margin: 100px auto 50px; padding-left: 19px; position: relative; font: var(--kf-weight-display) 14px/1 var(--kf-font-display); letter-spacing: 0.2em; text-transform: uppercase; }
+.ot-about__closeb::before, .ot-about__closeb::after { content: ""; position: absolute; left: 0; top: 6px; width: 12px; height: 2px; background: currentColor; }
+.ot-about__closeb::before { rotate: 45deg; } .ot-about__closeb::after { rotate: -45deg; }
+
+@media (max-width: 768px) {
+  .ot-head { height: 60px; padding: 0 15px; }
+  .ot-head__about, .ot-head__app { top: 22px; font-size: 12px; }
+  .ot-head__about { left: 15px; } .ot-head__app { right: 15px; }
+  .ot-head__logo { width: 28px; margin-left: -14px; }
+  .ot-foot { height: 60px; padding: 0 15px; }
+  .ot-foot__news { left: 15px; right: 15px; translate: 0 -50%; }
+  .ot-foot__news b { display: inline-block; max-width: 52vw; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
+  .ot-foot__news .ot-uline { float: right; margin-top: 2px; }
+  .ot-foot__copy { display: none; }
+  .ot-dl { grid-template-columns: 1fr; gap: 0; height: auto; padding: 60px 20px 0; }
+  .ot-dl__phone { justify-self: center; width: 220px; height: 320px; order: 2; margin-top: 40px; }
+  .ot-dl__body { padding: 0; }
+  .ot-dl__en { margin-top: 30px; }
+  .ot-dl__jp { font-size: 18px; }
+  .ot-next { height: 140px; }
+  .ot-next__big { font-size: 26px; }
+  .ot-about__title p { font-size: 24px; }
+  .ot-about__main { padding: 50px 20px 0; }
+  .ot-about__sec + .ot-about__sec { margin-top: 120px; }
+  .ot-about__bg { font-size: 80px; letter-spacing: 0.1em; }
+  .ot-about__copy { font-size: 16px; }
+  .ot-about__img { height: 220px; }
+  .ot-about__sum { column-count: 1; font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ot-loader, .ot-loader__num span, .ot-head::before, .ot-copy span, .ot-copy::after, .ot-next__img, .ot-next::after, .ot-uline::before, .ot-uline::after { transition: none !important; }
+  .ot-copy span { opacity: 1; transform: none; }
+  .ot-cover, .ot-cover::before, .ot-cover::after, .ot-cover > span { transition: none !important; }
+}

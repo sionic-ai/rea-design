@@ -1,0 +1,56 @@
+/* Two-color cell — a strip three cells long is laid with a [on | off] two-cell pattern, and on hover the opposite-color cell slides in from the left (background .3s · pattern .06s later at .4s, easeOutQuint)
+   Position changes, and when interaction is released it is pushed one more step in the same direction (background .28s · pattern .04s later at .3s, easeOutQuart) and returns to the original color — it always pushes only from left to right.
+   The pattern (arrow) is a mask for shape only, with color painted per cell by a variable, so it changes along with the skin */
+[data-fx~="tile-push-hover"] {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  overflow: hidden;
+  width: var(--fx-size, 26px);
+  height: var(--fx-size, 26px);
+  border-radius: var(--fx-radius, 37%);
+  vertical-align: middle;
+}
+[data-fx~="tile-push-hover"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border: 1px solid var(--fx-line, var(--fx-off, var(--kf-accent)));
+  border-radius: inherit;
+  pointer-events: none;
+}
+[data-fx~="tile-push-hover"] > [data-fx-part="bg"],
+[data-fx~="tile-push-hover"] > [data-fx-part="mark"] {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 300%;
+  height: 100%;
+  background-repeat: repeat-x;
+  background-size: calc(100% / 3 * 2) 100%;
+}
+[data-fx~="tile-push-hover"] > [data-fx-part="bg"] {
+  background-image: linear-gradient(90deg, var(--fx-on, var(--kf-surface)) 50%, var(--fx-off, var(--kf-accent)) 50%);
+}
+[data-fx~="tile-push-hover"] > [data-fx-part="mark"] {
+  z-index: 1;
+  background-image: linear-gradient(90deg, var(--fx-mark-on, var(--fx-off, var(--kf-accent))) 50%, var(--fx-mark-off, var(--fx-on, var(--kf-surface))) 50%);
+  mask: var(--fx-mark, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 40'%3E%3Cpath d='M25 20.5 17 25l1.4-4.5L17 16zM65 20.5 57 25l1.4-4.5L57 16z'/%3E%3C/svg%3E")) repeat-x 0 0 / calc(100% / 3 * 2) 100%;
+}
+[data-fx~="tile-push-hover"] > [data-fx-part="bg"] { animation: fx-tile-push-out var(--fx-out, 0.28s) cubic-bezier(0.165, 0.84, 0.44, 1) forwards; }
+[data-fx~="tile-push-hover"] > [data-fx-part="mark"] { animation: fx-tile-push-out var(--fx-mark-out, 0.3s) cubic-bezier(0.165, 0.84, 0.44, 1) var(--fx-mark-lag-out, 0.04s) forwards; }
+@media (hover: hover) and (pointer: fine) {
+  :is(a, button, label):hover [data-fx~="tile-push-hover"] > [data-fx-part="bg"],
+  [data-fx~="tile-push-hover"]:hover > [data-fx-part="bg"] { animation: fx-tile-push-in var(--fx-in, 0.3s) cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+  :is(a, button, label):hover [data-fx~="tile-push-hover"] > [data-fx-part="mark"],
+  [data-fx~="tile-push-hover"]:hover > [data-fx-part="mark"] { animation: fx-tile-push-in var(--fx-mark-in, 0.4s) cubic-bezier(0.23, 1, 0.32, 1) var(--fx-mark-lag, 0.06s) forwards; }
+}
+:is(a, button):focus-visible [data-fx~="tile-push-hover"] > [data-fx-part="bg"] { animation: fx-tile-push-in var(--fx-in, 0.3s) cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+:is(a, button):focus-visible [data-fx~="tile-push-hover"] > [data-fx-part="mark"] { animation: fx-tile-push-in var(--fx-mark-in, 0.4s) cubic-bezier(0.23, 1, 0.32, 1) var(--fx-mark-lag, 0.06s) forwards; }
+/* The two-cell pattern repeats every two cells, so −200% and 0 are the same picture — on exit too it pushes right and returns to the off cell */
+@keyframes fx-tile-push-out { 0% { left: -200%; } 100% { left: -100%; } }
+@keyframes fx-tile-push-in { 0% { left: -100%; } 100% { left: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="tile-push-hover"] > [data-fx-part] { animation: none !important; }
+}

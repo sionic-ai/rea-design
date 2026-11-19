@@ -1,0 +1,155 @@
+/* HUD shared by three pages — four corner labels, center pill menu, black curtain transition.
+   All dimensions are written in px of the 1440 design width (--px). Below 1440 it is 1, above, it scales proportionally up to 2560. */
+:root {
+  --design-width: 1440;
+  --container: clamp(1440px, 100vw, 2560px);
+  --px: calc(var(--container) / var(--design-width));
+  --cap-bold: 0.0215em;
+  --cap-mono: 0.143em;
+  --cap-height: 0.715em;
+  --ink-12: color-mix(in srgb, var(--kf-ink) 12%, transparent);
+  /* Photo slot boxes also fit the dark stage — made from the skin */
+  --wf-fill: oklch(from var(--kf-raised) calc(l + .025) c h);
+  --wf-fill-ink: color-mix(in srgb, var(--kf-ink) 55%, transparent);
+  --wf-line: color-mix(in srgb, var(--kf-ink) 16%, transparent);
+}
+
+html, body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+p, h2 { margin: 0; font-weight: inherit; }
+
+/* All text blends with difference so on photos, light areas read dark and dark areas read lime */
+.blend {
+  position: fixed;
+  mix-blend-mode: difference;
+  color: var(--kf-ink);
+}
+.h3 {
+  font-family: var(--kf-font-sans);
+  font-weight: 700;
+  font-size: calc(14 * var(--px));
+  line-height: 0.8;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.mono {
+  font-family: var(--kf-font-mono);
+  font-weight: 500;
+  font-size: calc(10 * var(--px));
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.corner { margin-top: calc(-1 * var(--cap-bold)); z-index: 11; }
+.corner--tl { top: calc(16 * var(--px)); left: calc(16 * var(--px)); }
+.corner--tr { top: calc(16 * var(--px)); right: calc(16 * var(--px)); text-align: right; }
+.corner--bl { top: calc(100% - 26 * var(--px)); left: calc(16 * var(--px)); }
+.corner--br { top: calc(100% - 26 * var(--px)); right: calc(16 * var(--px)); text-align: right; }
+.progress, .progress > .ui-in { display: flex; justify-content: flex-end; gap: calc(4 * var(--px)); }
+
+.menu {
+  top: calc(13 * var(--px));
+  left: 50%;
+  z-index: 11;
+  display: flex;
+  gap: calc(4 * var(--px));
+  transform: translateX(-50%);
+}
+.menu > .ui-in { display: flex; gap: inherit; }
+.pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: calc(16 * var(--px));
+  padding: 0 calc(4.5 * var(--px));
+  border-radius: calc(2 * var(--px));
+  background-color: var(--ink-12);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-mono);
+  font-weight: 500;
+  font-size: calc(10 * var(--px));
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+.pill:hover, .pill.is-active { background-color: var(--kf-ink); color: var(--kf-bg); }
+/* Text knockout (original knockout): if the pill can be measured, empty the background and text, and an SVG with only the text shape punched out of an ink-colored plate appears in .2s */
+.pill-knock { position: absolute; top: 0; left: 0; opacity: 0; pointer-events: none; transition: opacity 0.2s ease-in-out; }
+.pill-knock-fill { fill: var(--kf-ink); }
+.pill.is-knocked:hover, .pill.is-knocked.is-active { background-color: transparent; color: transparent; }
+.pill.is-knocked:hover .pill-knock, .pill.is-knocked.is-active .pill-knock { opacity: 1; }
+.pill.is-knocked.is-active .pill-dot { visibility: hidden; }
+.pill--menu { width: calc(120 * var(--px)); justify-content: space-between; }
+.pill-label { display: flex; align-items: flex-start; gap: calc(1 * var(--px)); }
+.pill-count { margin-top: calc(0.572 * var(--px)); font-size: calc(6 * var(--px)); line-height: 1; }
+.pill-dot { display: none; width: calc(3.89 * var(--px)); height: calc(5 * var(--px)); fill: var(--kf-bg); }
+.pill.is-active .pill-dot { display: block; }
+
+/* Hover where the underline exits to the right and is drawn again from the left — 0.735s cubic-bezier(.625,.05,0,1) */
+.uline { position: relative; display: inline-block; }
+.uline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--cap-bold) + var(--cap-height) + var(--uline-gap, 4) * var(--px));
+  height: calc(1.5 * var(--px));
+  background: var(--kf-ink);
+  transform: scaleX(0) rotate(0.001deg);
+  transform-origin: right;
+  transition: transform 0.735s var(--kf-ease-in-out);
+}
+/* The current item keeps its right-hand axis — so when it switches to another it exits to the right. Only the hovered one is drawn in from the left */
+.uline.is-active::after { transform: scaleX(1) rotate(0.001deg); }
+.uline:hover::after { transform: scaleX(1) rotate(0.001deg); transform-origin: left; }
+
+/* Page transition: on exit a black curtain covers the screen for 0.4s, and on the new page it lifts over 1s with power2.out */
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: var(--kf-bg);
+  opacity: 0;
+  pointer-events: none;
+}
+.veil-in .veil { opacity: 1; }
+.veil-in [data-swap] { visibility: hidden; }
+
+/* Line mask: reveals by pushing the inner text up with yPercent */
+.ui-mask { clip-path: inset(-0.15em 0); }
+.ui-in { display: block; padding: 0.15em 0; margin: -0.15em 0; }
+.ui-mask > .ui-in { will-change: transform; }
+.line { display: block; position: relative; overflow: hidden; }
+.line.is-in { overflow: visible; }
+.line-inner { display: block; padding-bottom: var(--ext, 0.12em); white-space: nowrap; }
+
+.wf-img::after { white-space: normal; text-align: center; max-width: 86%; }
+
+@media (max-width: 600px) {
+  :root { --design-width: 375; --container: 100vw; }
+  .menu {
+    top: auto;
+    bottom: calc(16 * var(--px));
+    left: calc(16 * var(--px));
+    right: calc(16 * var(--px));
+    transform: none;
+  }
+  .menu > .ui-in { width: 100%; }
+  .pill--menu { flex: 1 1 0; width: auto; min-width: 0; }
+  .mono { font-size: calc(12 * var(--px)); }
+  .pill {
+    height: calc(19.2 * var(--px));
+    padding: 0 calc(5.4 * var(--px));
+    font-size: calc(12 * var(--px));
+  }
+  .pill-count { font-size: calc(7.2 * var(--px)); }
+  .pill-dot { width: calc(4.67 * var(--px)); height: calc(6 * var(--px)); }
+  .corner--bl, .corner--br { display: none; }
+}

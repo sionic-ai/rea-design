@@ -1,0 +1,199 @@
+/* Shared by the whole site — two-column header (name · local time | intro), sticky one-line menu (on phone a round menu button at bottom center), two-column contact, final ‹Next —› photo strip.
+   Only the first page is the purple stage (body.is-stage) — the same header, menu and contact change into the stage colors */
+:root {
+  --site-pad: 16px;
+  /* Stage: the bottom is the accent color, the top is the accent darkened to #551698 · faint text on the stage #b74aff */
+  --site-stage-top: oklch(from var(--kf-accent) calc(l - 0.1047) calc(c - 0.0641) calc(h - 5.24));
+  --site-stage-dim: oklch(from var(--kf-accent) calc(l + 0.1458) calc(c + 0.0046) calc(h + 4.44));
+  /* Sub page faint text #cfcfcf · faint words in big sentences #d1d3d6 · description gray #868686 */
+  --site-dim: color-mix(in srgb, var(--kf-ink) 18.8%, var(--kf-bg));
+  --site-mute: color-mix(in srgb, var(--kf-ink) 17%, var(--kf-bg));
+  --site-gray: color-mix(in srgb, var(--kf-ink) 47.5%, var(--kf-bg));
+  --site-ink: var(--kf-ink-soft);
+  --site-line: color-mix(in oklab, var(--kf-ink) 6%, transparent);
+  --site-card: color-mix(in srgb, var(--kf-ink) 6%, var(--kf-bg));
+  /* Logo shader palette — original rgb(208,138,255)·(170,43,255)·(152,32,232)·(137,17,217), made from the accent by rotating in OKLCH */
+  --site-nu-1: oklch(from var(--kf-accent) calc(l + 0.2571) calc(c - 0.0767) calc(h + 6.64));
+  --site-nu-2: oklch(from var(--kf-accent) calc(l + 0.1047) calc(c + 0.0294) calc(h + 2.24));
+  --site-nu-3: oklch(from var(--kf-accent) calc(l + 0.0571) calc(c + 0.0134) calc(h + 1.76));
+  --site-nu-4: oklch(from var(--kf-accent) calc(l + 0.0183) calc(c + 0.0055) calc(h + 0.49));
+  /* Framer interaction curve (value stamped in the original css): 650ms smooth approach, cards overshoot slightly at 400ms */
+  --site-spring: linear(0 0%, 0.0212 1.56%, 0.0703 3.13%, 0.1328 4.69%, 0.2001 6.25%, 0.2675 7.81%, 0.3323 9.38%, 0.3932 10.94%, 0.4496 12.5%, 0.5015 14.06%, 0.5488 15.63%, 0.5919 17.19%, 0.6311 18.75%, 0.6665 20.31%, 0.6986 21.88%, 0.7277 23.44%, 0.7539 25%, 0.7991 28.13%, 0.836 31.25%, 0.8662 34.38%, 0.8908 37.5%, 0.9109 40.63%, 0.9272 43.75%, 0.9406 46.88%, 0.9515 50%, 0.9604 53.13%, 0.9677 56.25%, 0.9736 59.38%, 0.9785 62.5%, 0.9824 65.63%, 0.9857 68.75%, 0.9883 71.88%, 0.9905 75%, 0.9936 81.25%, 0.9958 87.5%, 0.9972 93.75%, 1 100%);
+  /* When the home page heading letters return — a spring that overshoots slightly (2.8%) (damping ratio .75 · 20rad/s) */
+  --site-spring-head: linear(0 0%, 0.097 3.8%, 0.298 7.7%, 0.514 11.5%, 0.700 15.4%, 0.839 19.2%, 0.933 23.1%, 0.989 26.9%, 1.017 30.8%, 1.027 34.6%, 1.028 38.5%, 1.023 42.3%, 1.017 46.2%, 1.011 50%, 1.006 53.8%, 1.003 57.7%, 1.001 61.5%, 1 65.4%, 1 100%);
+  /* 10% overshoot bounce (damping ratio .59 · 17rad/s) — card landing · subpage heading letters */
+  --site-spring-bounce: linear(0 0%, 0.036 4.2%, 0.127 8.3%, 0.251 12.5%, 0.391 16.7%, 0.532 20.8%, 0.665 25%, 0.783 29.2%, 0.882 33.3%, 0.961 37.5%, 1.02 41.7%, 1.061 45.8%, 1.086 50%, 1.098 54.2%, 1.1 58.3%, 1.095 62.5%, 1.085 66.7%, 1.072 70.8%, 1.058 75%, 1.043 79.2%, 1.03 83.3%, 1.019 87.5%, 1.01 91.7%, 1.002 95.8%, 1 100%);
+  --site-spring-card: linear(0 0%, 0.0235 2.56%, 0.083 5.13%, 0.1647 7.69%, 0.2582 10.26%, 0.3557 12.82%, 0.4517 15.38%, 0.5423 17.95%, 0.6252 20.51%, 0.6991 23.08%, 0.7636 25.64%, 0.8186 28.21%, 0.8647 30.77%, 0.9025 33.33%, 0.933 35.9%, 0.9571 38.46%, 0.9756 41.03%, 0.9895 43.59%, 0.9996 46.15%, 1.0065 48.72%, 1.0111 51.28%, 1.0137 53.85%, 1.0149 56.41%, 1.0151 58.97%, 1.0146 61.54%, 1.0136 64.1%, 1.0123 66.67%, 1.0093 71.79%, 1.0066 76.92%, 1.0043 82.05%, 1.0025 87.18%, 1.0013 92.31%, 1.0006 97.44%, 1 100%);
+  --site-tween: cubic-bezier(0.44, 0, 0.56, 1);
+}
+
+body {
+  background: var(--kf-bg);
+  color: var(--site-ink);
+  font: var(--kf-weight-body) 16px/1.3 var(--kf-font-sans);
+}
+body.is-stage {
+  --site-ink: var(--kf-on-accent);
+  --site-dim: var(--site-stage-dim);
+  --site-line: color-mix(in oklab, var(--kf-on-accent) 6%, transparent);
+  background: linear-gradient(to bottom, var(--site-stage-top) 0, var(--kf-accent) 700px) var(--kf-accent);
+}
+
+/* ---------- Header ---------- */
+.gu-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 140px;
+  padding: 16px var(--site-pad) 0;
+  border-bottom: 1px solid var(--site-line);
+  font-size: 22px;
+  line-height: 26px;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+}
+/* Hovering a header cell darkens the faded text — subpages use a spring on enter and .18s on leave, the first page (stage) uses values timed the opposite way */
+.gu-head__dim { color: var(--site-dim); transition: color .45s var(--site-spring-card); }
+.gu-head:hover .gu-head__dim { color: var(--site-ink); transition: color .5s var(--site-spring-bounce); }
+.is-stage .gu-head__dim { transition: color .8s var(--site-spring-head); }
+.is-stage .gu-head:hover .gu-head__dim { transition: color .27s ease; }
+.gu-head__time { font-variant-numeric: tabular-nums; }
+
+/* ---------- Menu: boxes 8px around the text (height 38, radius 8) sit side by side ---------- */
+.gu-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  height: 60px;
+  align-items: center;
+  padding: 0 8px;
+  font-size: 14px;
+  line-height: 22.4px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.gu-nav a { padding: 8px; border-radius: 8px; color: var(--site-dim); }
+/* On hover the text darkens immediately (no curve) and a pale background appears — white background 3%, stage 10% */
+.gu-nav a:hover { color: var(--site-ink); background: color-mix(in srgb, var(--site-ink) 3%, transparent); }
+.is-stage .gu-nav a:hover { background: color-mix(in srgb, var(--site-ink) 10%, transparent); }
+.gu-nav a[aria-current="page"] { color: var(--site-ink); }
+.gu-nav a:focus-visible, .gu-menu-btn:focus-visible { outline: 2px solid var(--kf-accent); outline-offset: 2px; }
+
+.gu-menu-btn, .gu-menu { display: none; }
+
+/* ---------- Contact ---------- */
+.gu-contact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 349px;
+  padding: 115px var(--site-pad) 0;
+  border-top: 1px solid var(--site-line);
+  font-size: 32px;
+  line-height: 38.4px;
+  letter-spacing: -0.02em;
+}
+.gu-contact__dim { color: color-mix(in oklab, var(--site-ink) 30%, transparent); }
+.is-stage .gu-contact__dim { color: var(--site-ink); }
+.gu-contact__links { display: flex; flex-direction: column; align-items: flex-start; font-weight: 700; }
+/* Original: on hover it grows to 1.02x and darkens, and a link that was left recedes to .6 (is-left set by shared.js) — spring 650ms */
+.gu-contact a { display: inline-block; transform-origin: 0 50%; }
+.gu-contact a.is-left { opacity: .6; }
+.gu-contact a { transition: opacity .65s var(--site-spring), scale .65s var(--site-spring), color .4s var(--site-spring-card); }
+.gu-contact a:hover { opacity: 1; scale: 1.02; color: color-mix(in srgb, var(--site-ink) 30%, transparent); }
+.is-stage .gu-contact a:hover { color: color-mix(in srgb, var(--site-ink) 20%, transparent); }
+
+/* ---------- Next band — faint ‹Next —› + bold next page name over a black-and-white photo ---------- */
+/* A link inside the box (--next-box) rests centered at 1.02x, larger than the box, and on hover instantly becomes the box size while fading to .6 with a spring.
+   On the first page the box (720) is cut at the document end (651) (--next-clip) */
+.gu-next-box {
+  position: relative;
+  height: var(--next-clip, var(--next-box, 551px));
+  overflow: clip;
+  background: var(--kf-contrast-bg);
+}
+.gu-next {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  width: 102%;
+  height: calc(var(--next-box, 551px) * 1.02);
+  overflow: hidden;
+  background: var(--kf-contrast-bg);
+  color: var(--kf-contrast-ink);
+  transition: opacity .65s var(--site-spring);
+}
+.gu-next:hover { width: 100%; height: var(--next-box, 551px); opacity: .6; }
+.gu-next__photo { position: absolute; inset: 0; height: 100%; border: 0; filter: grayscale(1);
+  --wf-fill: color-mix(in oklab, var(--kf-contrast-ink) 48%, var(--kf-contrast-bg));
+  --wf-line: color-mix(in oklab, var(--kf-contrast-ink) 60%, var(--kf-contrast-bg));
+  --wf-fill-ink: color-mix(in oklab, var(--kf-contrast-ink) 90%, var(--kf-contrast-bg)); }
+.gu-next__photo::after { left: auto; top: auto; right: 24px; bottom: 24px; translate: none; }
+.gu-next__title {
+  position: absolute;
+  left: 24px;
+  top: 37px;
+  margin: 0;
+  font: var(--kf-weight-display) 64px/68px var(--kf-font-display);
+  letter-spacing: -0.04em;
+}
+.gu-next__title span { font-weight: 400; color: color-mix(in oklab, var(--kf-contrast-ink) 20%, transparent); }
+.is-stage .gu-next__title span { color: color-mix(in srgb, var(--kf-contrast-bg) 89%, var(--kf-contrast-ink)); }
+
+@media (max-width: 809px) {
+  .gu-head { grid-template-columns: 1fr; align-content: start; row-gap: 20px; height: 194px; font-size: 20px; line-height: 26px; }
+  .gu-head > p:first-child > span:first-child { font-size: 16px; line-height: 22.4px; }
+  .gu-head__desc { font-size: 16px; line-height: 22.4px; }
+  .gu-nav { display: none; }
+  .gu-contact { grid-template-columns: 1fr; align-content: start; row-gap: 36px; height: 373px; padding-top: 63px; font-size: 24px; line-height: 28.8px; }
+  .gu-contact__links { line-height: 39px; }
+  .gu-next-box { --next-box: 471px; }
+  .gu-next__title { left: 24px; font-size: 40px; line-height: 48px; }
+
+  .gu-menu-btn {
+    display: grid;
+    place-items: center;
+    position: fixed;
+    left: 50%;
+    bottom: 16px;
+    z-index: 41;
+    width: 56px;
+    height: 56px;
+    margin-left: -28px;
+    border: 0;
+    border-radius: 32px;
+    background: var(--kf-raised);
+    color: var(--kf-ink);
+    cursor: pointer;
+    transition: background-color .3s var(--site-tween);
+  }
+  .is-menu .gu-menu-btn { background: var(--kf-bg); }
+  .gu-menu-btn svg { width: 18px; height: 18px; fill: currentColor; }
+  /* Full-screen black curtain — five big bold center links and a gray social row, the button remains as a white circle on the curtain */
+  .gu-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--kf-contrast-bg);
+    color: var(--kf-contrast-ink);
+    font: var(--kf-weight-display) 48px/64px var(--kf-font-display);
+    letter-spacing: -0.04em;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .3s var(--site-tween), visibility 0s .3s;
+  }
+  .gu-menu__social { display: flex; gap: 16px; margin-top: 40px; font: 400 20px/26px var(--kf-font-sans); letter-spacing: -0.02em; }
+  .gu-menu__social a { color: color-mix(in oklab, var(--kf-contrast-ink) 45%, var(--kf-contrast-bg)); }
+  .is-menu .gu-menu { opacity: 1; visibility: visible; transition-delay: 0s; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gu-nav a, .gu-menu, .gu-contact a, .gu-head__dim, .gu-next { transition: none; }
+}
+
+/* The email on the stage fades the instant the pointer enters (original 0ms) — social links keep the 400ms curve */
+.is-stage .gu-contact__dim:hover { transition: opacity .65s var(--site-spring), scale .65s var(--site-spring), color 0s; }

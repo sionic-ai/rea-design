@@ -1,0 +1,97 @@
+/* Shared by both pages — fixed header (logo, period), the MENU circle at bottom right, the trip list drawer that opens from the right (dimmed backdrop), 
+   Circle arrow (fills black on hover and the arrow changes), line illustration color. All hovers of the original STUDIO are .3s cubic-bezier(.4,.4,0,1) */
+:root {
+  --site-pink: oklch(from var(--kf-accent) calc(l + 0.252) calc(c * 0.117) calc(h + 128.8));
+  --site-green: oklch(from var(--kf-accent) calc(l + 0.303) calc(c * 0.196) calc(h - 115.3));
+  --site-beige: oklch(from var(--kf-accent) calc(l + 0.314) calc(c * 0.090) calc(h - 171.1));
+  --site-ice: oklch(from var(--kf-accent) calc(l + 0.333) calc(c * 0.092) calc(h - 23.0));
+  --site-cream: oklch(from var(--kf-accent) calc(l + 0.336) calc(c * 0.206) calc(h - 150.0));
+  --site-shade: color-mix(in srgb, var(--kf-ink) 40%, transparent);
+  --site-ease: cubic-bezier(0.4, 0.4, 0, 1);
+}
+/* So the reveal part doesn’t flash — fully visible on first paint, then hidden — shared.js releases it after the part has taken hold of opacity */
+html:not(.ts-ready) [data-fx~="fade-up"] { visibility: hidden; }
+body { background: var(--kf-bg); color: var(--kf-ink); font: var(--kf-weight-body) 16px/1.8 var(--kf-font-sans); }
+img, svg { max-width: none; }
+.wf-img { display: block; height: 100%; border: 0; }
+a { transition: all 0.3s var(--site-ease); }
+.pc-none { display: none !important; }
+@media (max-width: 767px) { .sp-none { display: none !important; } .pc-none { display: revert !important; } }
+
+/* ---------- Fixed Header ---------- */
+.ts-head { position: fixed; inset: 0 0 auto; z-index: 40; display: flex; justify-content: space-between; align-items: flex-start; height: 103px; padding: 28px 40px 0; pointer-events: none; }
+.ts-head > * { pointer-events: auto; }
+.ts-logo { display: block; color: var(--kf-ink); line-height: 1; }
+.ts-logo b { display: block; font: 900 40px/1 var(--kf-font-sans); letter-spacing: 0.02em; }
+.ts-logo b small { font-size: 24px; font-weight: 700; margin: 0 0.05em; }
+.ts-logo span { display: block; margin-top: 10px; font: 700 16px/1 var(--kf-font-sans); letter-spacing: 0.06em; }
+.ts-term { display: flex; align-items: baseline; gap: 4px; font: 500 22px/1 var(--kf-font-display); letter-spacing: 0.06em; color: var(--kf-ink); }
+.ts-term b { font-size: 40px; font-weight: 500; letter-spacing: 0; }
+.ts-term i { position: relative; display: inline-block; width: 34px; height: 9px; margin: 0 6px; background: linear-gradient(var(--kf-ink), var(--kf-ink)) left bottom / 100% 1.5px no-repeat; }
+.ts-term i::after { content: ""; position: absolute; right: 0; bottom: 0; width: 12px; height: 1.5px; background: var(--kf-ink); transform-origin: right center; transform: rotate(35deg); }
+
+/* ---------- MENU circle (bottom right) — turns black on hover ---------- */
+.ts-menu-btn { position: fixed; right: 20px; bottom: 20px; z-index: 60; display: grid; place-items: center; align-content: center; gap: 8px; width: 80px; height: 80px; padding: 0; border: 0; border-radius: 50%; background: var(--kf-accent); color: var(--kf-on-accent); font: 600 12px/1 var(--kf-font-display); letter-spacing: 0.02em; cursor: pointer; transition: all 0.3s var(--site-ease); }
+.ts-menu-btn:hover { background: var(--kf-contrast-bg); }
+.ts-menu-btn i { display: block; width: 40px; height: 12px; border-block: 1.5px solid currentColor; transition: all 0.3s var(--site-ease); }
+.ts-menu-btn:hover i { height: 16px; }
+/* When the drawer opens the back plate covers the button and the hover is released — the original (dialog) returns to blue after 100ms, and so the open state stays the same however late browsers release the hover, it is fixed */
+.ts-menu-btn[aria-expanded="true"], .ts-menu-btn[aria-expanded="true"]:hover { background: var(--kf-accent); }
+.ts-menu-btn[aria-expanded="true"] i, .ts-menu-btn[aria-expanded="true"]:hover i { height: 12px; }
+
+/* ---------- Trip list drawer — the back panel darkens and a white panel on the right slides in (.3s) ---------- */
+.ts-drawer { position: fixed; inset: 0; z-index: 80; pointer-events: none; }
+.ts-drawer.is-open { pointer-events: auto; }
+.ts-drawer__shade { position: absolute; inset: 0; background: var(--site-shade); opacity: 0; transition: opacity 0.4s var(--site-ease); }
+.ts-drawer.is-open .ts-drawer__shade { opacity: 1; }
+.ts-drawer__panel { position: absolute; top: 0; right: 0; bottom: 0; width: min(480px, 100%); padding: 28px 40px 40px; overflow: auto; background: var(--kf-surface); opacity: 0; transform: translateX(100px); transition: opacity 0.4s var(--site-ease), transform 0.4s var(--site-ease); }
+.ts-drawer.is-open .ts-drawer__panel { opacity: 1; transform: none; }
+/* Text lines inside the panel appear staggered by 30.5ms each (the original 24 lines across 367ms) */
+.ts-drawer [data-i] { opacity: 0; transition: opacity 0.4s var(--site-ease); }
+.ts-drawer.is-open [data-i] { opacity: 1; transition-delay: calc(var(--i) * 30.5ms); }
+.ts-drawer__ttl { margin: 40px 0 16px; font: 800 24px/1 var(--kf-font-display); }
+.ts-drawer__ttl small { margin-left: 6px; font: 700 11px/1 var(--kf-font-sans); }
+.ts-drawer__list li { border-bottom: 1px solid var(--kf-raised); }
+.ts-drawer__list a { display: flex; align-items: center; gap: 12px; padding: 10px 0; color: var(--kf-ink); font: 700 14px/1.4 var(--kf-font-sans); }
+.ts-drawer__list a small { font: 600 11px/1 var(--kf-font-display); }
+.ts-drawer__list a .ts-mini { margin-left: auto; }
+.ts-drawer__list a:hover { opacity: 0.6; }
+.ts-drawer__about { display: block; margin-top: 40px; color: var(--kf-ink); }
+.ts-drawer__about b { display: block; font: 800 24px/1 var(--kf-font-display); }
+.ts-drawer__about span { font: 700 13px/2 var(--kf-font-sans); }
+.ts-drawer__close { position: absolute; right: 20px; bottom: 20px; width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--kf-dim); color: var(--kf-surface); font: 400 22px/1 var(--kf-font-display); cursor: pointer; }
+.ts-mini { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--kf-ink); }
+.ts-mini svg { width: 14px; height: 14px; fill: var(--kf-surface); }
+
+/* ---------- Circle arrow — on hover it fills with black, the arrow slides out to the right and a new arrow comes in ---------- */
+.ts-circle { position: relative; display: block; width: 200px; height: 200px; overflow: hidden; border: 2px solid var(--kf-ink); border-radius: 50%; color: var(--kf-ink); transition: all 0.3s var(--site-ease); }
+.ts-circle svg { position: absolute; top: calc(50% - 32px); left: calc(50% - 32px); width: 64px; height: 64px; fill: currentColor; transition: all 0.3s var(--site-ease); }
+.ts-circle svg + svg { fill: var(--kf-contrast-ink); opacity: 0; translate: -20px 0; }
+.ts-hover:hover .ts-circle, .ts-circle:hover { background: var(--kf-contrast-bg); }
+.ts-hover:hover .ts-circle svg + svg, .ts-circle:hover svg + svg { opacity: 1; translate: 0 0; }
+
+/* ---------- Small tour circle (↗) — hovering the panel fills it with the accent color ---------- */
+.ts-banner__go { display: grid; place-items: center; width: 40px; height: 40px; border: 1.5px solid var(--kf-accent); border-radius: 50%; color: var(--kf-accent); transition: all 0.3s var(--site-ease); }
+.ts-banner__go svg { width: 16px; height: 16px; fill: currentColor; }
+
+/* ---------- Line illustration ---------- */
+.ts-line { fill: none; stroke: var(--kf-ink); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ts-fill-ink { fill: var(--kf-ink); }
+.ts-fill-wh { fill: var(--kf-surface); }
+.ts-fill-hair { fill: color-mix(in oklab, var(--site-beige) 40%, var(--kf-dim)); }
+.ts-fill-pack { fill: var(--kf-accent); }
+.ts-fill-shirt { fill: var(--kf-raised); }
+
+@media (max-width: 767px) {
+  .ts-head { height: 70px; padding: 16px 20px 0; }
+  .ts-logo b { font-size: 26px; } .ts-logo b small { font-size: 16px; }
+  .ts-logo span { margin-top: 6px; font-size: 11px; }
+  .ts-term { display: none; }
+  .ts-menu-btn { right: 16px; bottom: 16px; width: 64px; height: 64px; gap: 6px; font-size: 10px; }
+  .ts-menu-btn i { width: 30px; }
+  .ts-circle { width: 120px; height: 120px; }
+  .ts-circle svg { top: calc(50% - 22px); left: calc(50% - 22px); width: 44px; height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  a, .ts-menu-btn, .ts-circle, .ts-circle svg, .ts-drawer__panel, .ts-drawer__shade { transition: none !important; }
+}

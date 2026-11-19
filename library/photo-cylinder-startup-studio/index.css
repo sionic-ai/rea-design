@@ -1,0 +1,181 @@
+/* Home: inside a 240svh-high stage (100svh stuck to the screen) a cylinder of photo tiles rotates, and on scroll the tiles scatter outward and
+   The center intro, ”Book a call”, and a cylindrical strip of case logos are revealed. Below that, a two-column staggered work list → hanging photo cloth → footer */
+.bk-hero { position: relative; height: 240svh; }
+.bk-stage { position: sticky; top: 0; height: 100svh; overflow: hidden; }
+/* The tile cylinder is a part (photo-cylinder-world) — here only photo-slot labels and the skin of the cutout tiles */
+/* Make the photo slot as dark as a mass of photos (light top → deep bottom) — the original wall is dense with photos, so a lone gray box looks sparse and the cursor response is harder to see */
+.bk-stage .fx-pcw-tile {
+  --tile-a: var(--site-photo);
+  --tile-b: color-mix(in oklab, var(--kf-ink) 7%, var(--site-photo));
+  border-radius: var(--bk-r-img);
+  background: linear-gradient(160deg, var(--tile-a), var(--tile-b));
+  box-shadow: 0 0 0 1px var(--site-hair);
+  /* Moving 100-odd tiles in 3D every frame, so each cell is drawn separately and not repainted — heavy painting makes frames uneven */
+  will-change: transform, opacity;
+  contain: layout paint;
+}
+/* Photo labels on wall tiles live only in data-label — drawing text in 3D on 100-odd tiles makes the frame rate uneven */
+.bk-stage .fx-pcw-tile > .wf-img::after { display: none; }
+.bk-stage .fx-pcw-tile:nth-child(3n) { --tile-a: color-mix(in oklab, var(--kf-accent) 6%, var(--site-photo)); }
+.bk-stage .fx-pcw-tile > .wf-img { border: 0; background-color: transparent; }
+.bk-stage .fx-pcw-tile.is-cut { background: none; box-shadow: none; border-radius: 0; }
+.bk-cut-fill { fill: var(--kf-accent); }
+.bk-cut-soft { fill: color-mix(in oklab, var(--kf-accent) 35%, var(--kf-bg)); }
+.bk-cut-eye { fill: var(--kf-bg); }
+
+.bk-center {
+  position: absolute;
+  top: calc(50% - 90px);
+  left: 50%;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: min(360px, 100% - 48px);
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+}
+.bk-mark { width: 50px; height: 50px; }
+.bk-mark__bg { fill: var(--kf-raised); }
+.bk-mark__ln { fill: none; stroke: var(--kf-ink); stroke-width: 1.4; stroke-linejoin: round; }
+.bk-lead { margin: 0; font-size: var(--bk-fs-m); line-height: var(--bk-lh-m); font-weight: 400; }
+.bk-now { color: var(--site-muted); }
+.bk-book {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 168px;
+  height: 56px;
+  border-radius: var(--kf-radius-pill);
+  background: var(--kf-contrast-bg);
+  color: var(--kf-contrast-ink);
+  opacity: 0;
+  transition: background-color 0.15s ease-out, scale 0.15s ease-out;
+}
+.bk-book:hover { background: color-mix(in oklab, var(--kf-contrast-bg), var(--kf-contrast-ink) 11%); text-decoration-color: currentColor; }
+.bk-book:active { scale: 0.97; }
+.bk-book:focus-visible, .bk-case:focus-visible, .bk-wk:focus-visible { outline: 2px solid var(--kf-ink); outline-offset: 3px; }
+
+/* Case logo strip: cells attached to the inner face of a 1600px radius cylinder flow at 45px per second (.1x on hover) */
+.bk-cases { position: absolute; left: 0; right: 0; bottom: 24px; z-index: 6; height: 122px; perspective: 1100px; perspective-origin: 50%; cursor: grab; touch-action: pan-y; opacity: 0; }
+.bk-case {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 219px;
+  height: 122px;
+  border-radius: var(--kf-radius-sm);
+  background: color-mix(in oklab, var(--kf-surface), var(--kf-bg) 30%);
+  color: var(--site-muted);
+  will-change: transform;
+  -webkit-user-drag: none;
+  transition: background-color 0.15s ease-out;
+}
+.bk-logo { font-size: 20px; line-height: 24px; font-weight: 600; letter-spacing: -0.02em; pointer-events: none; transition: color 0.2s ease-out; }
+.bk-dot { position: absolute; top: 8px; right: 12px; display: flex; align-items: center; gap: 6px; height: 18px; }
+.bk-dot::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: color-mix(in oklab, var(--kf-ink) 25%, transparent); transition: background-color 0.2s ease-out; }
+.bk-dtx { color: var(--site-muted); font-size: var(--bk-fs-s); line-height: var(--bk-lh-s); opacity: 0; transform: translate(4px); transition: opacity 0.2s ease-out, transform 0.2s ease-out; }
+.bk-fnd { position: absolute; left: 12px; right: 12px; bottom: 8px; overflow: hidden; color: var(--site-muted); font-size: var(--bk-fs-s); line-height: var(--bk-lh-s); white-space: nowrap; text-overflow: ellipsis; transition: color 0.15s ease-out; }
+a.bk-case:hover .bk-dot::after { background: var(--kf-ink); }
+a.bk-case:hover .bk-dtx, a.bk-case:focus-visible .bk-dtx { opacity: 1; transform: none; }
+a.bk-case:hover .bk-fnd, a.bk-case:focus-visible .bk-fnd { color: var(--kf-ink); }
+
+.bk-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  z-index: 6;
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: var(--kf-radius-pill);
+  background: var(--kf-bg);
+  color: var(--site-muted);
+  box-shadow: 0 0 0 1px var(--site-hair);
+  font-size: var(--bk-fs-s);
+  line-height: var(--bk-lh-s);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%);
+  transition: opacity 0.3s ease-out;
+}
+.bk-hint .is-coarse { display: none; }
+@media (pointer: coarse) { .bk-hint .is-fine { display: none; } .bk-hint .is-coarse { display: inline; } }
+
+.bk-pause {
+  position: fixed;
+  left: 24px;
+  bottom: 158px;
+  z-index: 41;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--kf-radius-md);
+  background: var(--kf-raised);
+  color: var(--kf-ink);
+  font: inherit;
+  font-size: var(--bk-fs-s);
+  line-height: var(--bk-lh-s);
+  cursor: pointer;
+  /* The original’s transition list overrides the earlier background and size transitions, so on hover or press the background and size change instantly */
+  transition: opacity 0.3s var(--site-ease), visibility 0s;
+}
+.bk-pause svg { fill: currentColor; }
+.bk-pause:hover { background: var(--site-pill-hover); }
+.bk-pause:active { scale: 0.96; }
+.bk-pause .bk-ic { display: inline-flex; }
+.bk-pause .is-play, .bk-pause[data-paused="1"] .is-pause { display: none; }
+.bk-pause[data-paused="1"] .is-play { display: inline-flex; }
+.bk-pause.gone { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.2s ease-in, visibility 0s 0.2s; }
+
+/* ── Work list: two staggered columns, hovering a photo scales it 1.03 over .5s */
+.bk-work { position: relative; display: flex; align-items: flex-start; gap: 6px; margin-top: 12svh; padding: 0 6px 160px; }
+.bk-col2 { display: flex; flex: 1 1 0; flex-direction: column; gap: 20px; min-width: 0; }
+.bk-wk { display: flex; flex-direction: column; gap: 8px; color: var(--kf-ink); transition: opacity 0.25s ease-out; }
+.bk-wimg { display: block; width: 100%; overflow: hidden; border-radius: var(--kf-radius-sm); background: var(--site-photo); }
+.bk-wzoom { display: block; width: 100%; height: 100%; transition: transform 0.5s var(--site-ease); }
+.bk-wk:hover .bk-wzoom { transform: scale(1.03); }
+.bk-wmeta { display: flex; flex-direction: column; gap: 2px; }
+.bk-wtop { display: flex; justify-content: space-between; gap: 12px; }
+.bk-wn, .bk-wi, .bk-wyc { font-size: var(--bk-fs-s); line-height: var(--bk-lh-s); }
+.bk-wi, .bk-wyc { color: var(--site-muted); }
+.bk-wyc { white-space: nowrap; }
+.bk-csq { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; margin: 0; padding: 32px; border-radius: var(--kf-radius-sm); background: var(--site-photo); text-align: center; transition: opacity 0.25s ease-out; }
+.bk-csq blockquote { max-width: 420px; margin: 0; }
+.bk-csq figcaption { display: flex; align-items: center; gap: 8px; color: var(--site-muted); font-size: var(--bk-fs-s); line-height: var(--bk-lh-s); }
+.bk-avatar { width: 32px; height: 32px; border-radius: 50%; border: 0; }
+.bk-avatar::after { display: none; }
+
+/* ── Hanging photos */
+.bk-fl { padding: 48px var(--bk-pad) 64px; }
+.bk-fl-h { margin: 0 0 24px; color: var(--site-muted); font-size: var(--bk-fs-m); line-height: var(--bk-lh-m); font-weight: 400; }
+.bk-fl-a { display: block; color: var(--kf-ink); border-radius: var(--bk-r-img); }
+.bk-fl-pic { display: block; aspect-ratio: 3 / 4; border: 0; border-radius: var(--bk-r-img); }
+.bk-fl-n { display: block; margin-top: 8px; font-size: var(--bk-fs-s); line-height: var(--bk-lh-s); }
+
+@media (width <= 760px) {
+  .bk-center { top: calc(50% - 110px); gap: 24px; }
+  .bk-book { height: 52px; padding: 0 32px; }
+  .bk-cases { height: 96px; bottom: 16px; }
+  .bk-case { width: 150px; height: 96px; }
+  .bk-work { flex-direction: column; gap: 20px; padding: 0 16px 16px; }
+  .bk-col2 { width: 100%; }
+  .bk-pause { left: 16px; bottom: 124px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bk-wzoom, .bk-case, .bk-fnd, .bk-dtx { transition: none; }
+  .bk-pause { display: none; }
+}

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>depth-tilt-photo — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); margin: 0; }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; padding: 32px 20px; }
+  .stage { aspect-ratio: 4 / 3; border-radius: var(--kf-radius-md); background: var(--kf-surface); border: 1px solid var(--kf-line); overflow: hidden; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>depth-tilt-photo</b> — Move the mouse from one edge of the screen to the other. Rest the cursor on the panel and the light turns on.</p>
+<section class="demo">
+  <div class="stage" data-fx="depth-tilt-photo"><canvas data-fx-part="image" data-art="bottle" width="512" height="512"></canvas></div>
+  <div class="stage" data-fx="depth-tilt-photo" data-fx-depth-tilt-photo="intensity: .12; intensity-v: .016; ease: .025; disp: .165; breath: .75"><canvas data-fx-part="image" data-art="head" width="512" height="512"></canvas></div>
+  <div class="stage" data-fx="depth-tilt-photo" data-fx-depth-tilt-photo="light: off; breath: 0"><canvas data-fx-part="image" data-art="box" width="512" height="512"></canvas></div>
+  <div class="stage" data-fx="depth-tilt-photo" data-fx-depth-tilt-photo="intensity: .12; intensity-v: .016; ease: .025; disp: .165; breath: .75; light: off; lit: on">
+    <canvas data-fx-part="image" data-art="head" width="512" height="512"></canvas>
+    <canvas data-fx-part="lens" data-art="lens" width="512" height="512"></canvas>
+    <canvas data-fx-part="reflection" data-reflection width="256" height="144"></canvas>
+  </div>
+</section>
+<script>
+// Cutout slot drawn in skin colors instead of a photo — the depth map is made from the part’s alpha
+const kf = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function art(c) {
+  const x = c.getContext("2d"), w = c.width, h = c.height, kind = c.dataset.art;
+  const g = x.createLinearGradient(0, 0, w, h);
+  g.addColorStop(0, kf("--kf-accent")); g.addColorStop(1, kf("--kf-ink"));
+  x.fillStyle = g;
+  x.beginPath();
+  if (kind === "lens") { x.fillStyle = kf("--kf-ink"); x.roundRect(w * 0.32, h * 0.3, w * 0.36, h * 0.08, h * 0.04); x.fill(); return; }
+  if (kind === "bottle") x.roundRect(w * 0.36, h * 0.12, w * 0.28, h * 0.78, 40);
+  else if (kind === "head") { x.ellipse(w / 2, h * 0.38, w * 0.2, h * 0.26, 0, 0, 7); x.moveTo(w * 0.12, h); x.quadraticCurveTo(w / 2, h * 0.5, w * 0.88, h); }
+  else x.rect(w * 0.26, h * 0.16, w * 0.48, h * 0.7);
+  x.fill();
+}
+document.querySelectorAll("canvas[data-art]").forEach(art);
+// Video slot reflected in the lens — keeps redrawing the board the horizontal strips flow across (the part rereads it every frame)
+(() => {
+  const c = document.querySelector("[data-reflection]"), x = c.getContext("2d");
+  const loop = (t) => {
+    x.fillStyle = kf("--kf-surface"); x.fillRect(0, 0, c.width, c.height);
+    x.fillStyle = kf("--kf-accent");
+    for (let i = 0; i < 6; i++) x.fillRect(((t * 0.05 + i * 50) % (c.width + 40)) - 40, 0, 18, c.height);
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+})();
+// Late arrivals and removals — add one after 1s, remove one after 2.5s
+(() => {
+  const grid = document.querySelector(".demo");
+  setTimeout(() => {
+    const d = document.createElement("div");
+    d.className = "stage"; d.dataset.fx = "depth-tilt-photo"; d.dataset.demo = "late";
+    const c = document.createElement("canvas"); c.width = c.height = 512; c.dataset.fxPart = "image"; c.dataset.art = "bottle"; art(c);
+    d.append(c); grid.append(d);
+  }, 1000);
+  setTimeout(() => grid.querySelector('[data-art="box"]')?.parentElement.remove(), 2500);
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="three-global.js"></script>
+<script src="../../_vendor/three@0.174.0/build/three.cjs"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+/* Home page — opening curtain, poster wall (shrinking large photo), intro video panel, overlapping rounded panels (facilities · pricing · news), closing video. Measurements are the original rem as they are */
+:root {
+  --site-black: oklch(from var(--kf-bg) calc(l * 0.2) c h);
+  --site-poster-border: 1.6rem solid var(--site-black);
+  --site-pale-line: color-mix(in oklab, var(--kf-contrast-ink) 10%, transparent);
+  /* Window shaped like a convex TV screen — facility photo border */
+  --site-frame: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 387 484'%3E%3Cpath d='M10 34Q12 18 28 16Q120 1 193.5 1Q267 1 359 16Q375 18 377 34Q386 140 386 242Q386 344 377 450Q375 466 359 468Q267 483 193.5 483Q120 483 28 468Q12 466 10 450Q1 344 1 242Q1 140 10 34Z'/%3E%3C/svg%3E"); /* Not skin: mask shape */
+  /* Wavy blurred bottom edge — when the initial curtain lifts from bottom to top */
+  --site-wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600' preserveAspectRatio='none'%3E%3Cfilter id='b' filterUnits='userSpaceOnUse' x='-200' y='-200' width='1000' height='1000'%3E%3CfeGaussianBlur stdDeviation='14'/%3E%3C/filter%3E%3Cpath filter='url(%23b)' d='M-100 -100H700V476C640 488 600 452 548 446C490 440 452 478 396 470C340 462 318 430 262 436C206 442 170 486 114 480C70 476 30 452 -100 470Z'/%3E%3C/svg%3E"); /* Not skin: mask alpha */
+}
+.jt-defs { position: absolute; width: 0; height: 0; }
+
+/* ───────── First Act ───────── */
+.jt-op { --clip: 0; --mask: 0; --gray: 0; --load-fade: 0; --enter-fade: 0; --video-in: 0; position: fixed; z-index: 10002; inset: 0; width: 100vw; height: 100dvh; overflow: clip; pointer-events: none; }
+.jt-op[hidden] { display: none; }
+.jt-op__title { position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: center; height: 100%; background: rgb(from var(--kf-bg) r g b / calc(1 - var(--load-fade))); text-align: center; opacity: calc(1 - var(--enter-fade)); pointer-events: none; }
+.jt-op__h { font-family: var(--kf-font-display); font-weight: 700; font-size: 10rem; }
+.jt-op__sub { font-weight: 700; font-size: 2rem; letter-spacing: 1.6rem; }
+.jt-op__pct { margin-top: 2.4rem; font-size: 1.3rem; }
+.jt-op__enter { position: absolute; z-index: 1; inset: 0; display: flex; align-items: center; justify-content: center; padding-top: 8rem; background: var(--kf-bg); opacity: calc(1 - var(--enter-fade)); pointer-events: none; }
+.jt-op__photo { position: absolute !important; z-index: -1; inset: 0; width: 100%; height: 100%; opacity: 0.48; scale: calc(1 + (1 - var(--load-fade)) * 0.1 + var(--enter-fade) * 0.1); }
+.jt-op__btn { pointer-events: auto; }
+.jt-op__video { position: absolute; z-index: 0; inset: 0; background: var(--site-black); mask-image: var(--site-wave); mask-repeat: no-repeat; mask-size: 100% 150%; mask-position: center calc(var(--mask) * 400%); pointer-events: none; }
+.jt-op__clip { position: absolute; inset: 0; overflow: hidden; clip-path: url(#jt-tv-open); }
+.jt-op__video video { position: absolute; inset: 0; filter: grayscale(calc((1 - var(--gray)) * 100%)); opacity: var(--video-in); }
+.jt-op__bloom { position: absolute; z-index: -1; inset: 0; filter: blur(8rem); opacity: 0.5; }
+.jt-op__bloom video { clip-path: url(#jt-tv-open); }
+@media (max-width: 960px) { .jt-op__bloom { display: none; } }
+@media (max-width: 560px) { .jt-op__h { font-size: 6.4rem; } .jt-op__sub { font-size: 1.4rem; letter-spacing: 1.2rem; } }
+
+/* ───────── First section · poster wall ───────── */
+.jt-main { position: relative; }
+/* The original draws the body only after the number reaches 100 — before that there is no body under the curtain */
+.jt-home:not(.is-loaded) .jt-main { visibility: hidden; }
+.jt-first { position: sticky; top: 0; height: 300svh; pointer-events: none; }
+.jt-first__view { --f: 0; position: sticky; top: 0; height: 100svh; padding-top: 12rem; text-align: center; }
+.jt-first__h { font-family: var(--kf-font-display); font-weight: 700; font-size: 12rem; transform-origin: bottom; scale: calc(1 - var(--f) * 0.3); }
+.jt-first__sub { font-weight: 700; font-size: 2rem; letter-spacing: calc(1.6rem - var(--f) * 0.6rem); }
+.jt-first__title { visibility: hidden; }
+.jt-first__title.is-on { visibility: visible; }
+.jt-posters { --gap: 2.4rem; --colw: 34rem; --ratio: 0.7; --frame: 0; --px: 0; --py: 0; --shade: 0.32;
+  --half-h: (100% - var(--colw) / var(--ratio)) * 0.5 * var(--frame);
+  --half-w: (100% - var(--colw)) * 0.5 * var(--frame);
+  --tv: var(--frame) * 10rem;
+  --main-inset: calc(var(--half-h) + var(--tv)) calc(var(--half-w)) calc(var(--half-h) - var(--tv)) calc(var(--half-w));
+  position: absolute; z-index: -1; inset: 0; width: 100%; height: 100%; overflow: hidden; }
+.jt-posters__main { position: absolute; inset: 0; width: 100%; height: 100%; clip-path: inset(var(--main-inset)); pointer-events: auto; }
+.jt-posters__img { position: absolute !important; inset: 0; width: 100%; height: 100%; }
+.jt-posters__border { position: absolute; inset: var(--main-inset); border: var(--site-poster-border); }
+.jt-posters__bg { position: absolute; z-index: -1; inset: 0; display: flex; align-items: center; justify-content: center; gap: var(--gap); width: 100%; height: 100%; overflow: hidden; }
+.jt-posters__col { display: flex; flex-shrink: 0; flex-direction: column; gap: var(--gap); width: var(--colw); transition: translate 0.5s var(--site-ease); }
+.jt-posters__col:nth-child(2n) { translate: 0 calc(var(--tv) * -1); }
+.jt-posters__col:nth-child(odd) { translate: 0 calc(var(--tv)); }
+.jt-posters__poster { position: relative; display: block; aspect-ratio: var(--ratio); width: 100%; overflow: hidden; padding: 0; border: var(--site-poster-border); background: none; cursor: pointer; pointer-events: auto; }
+.jt-posters__thumb { position: absolute !important; inset: 0; height: 100%; transition: scale 0.5s var(--site-ease); }
+@media (hover: hover) { .jt-posters__poster:hover .jt-posters__thumb { scale: 1.1; } }
+.jt-posters__hole { display: block; aspect-ratio: var(--ratio); width: 100%; }
+.jt-posters__vignette { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; background-image: radial-gradient(farthest-corner at calc(50% + var(--px) * 40rem) calc(50% + var(--py) * 40rem), rgb(from var(--site-drawer) r g b / var(--shade)) 0, var(--site-drawer) 100%); }
+@media (max-width: 960px) {
+  .jt-first { height: 200svh; }
+  .jt-first__h { font-size: 10rem; }
+  .jt-posters { --site-poster-border: 0.8rem solid var(--site-black); --gap: 1.6rem; --colw: 24rem; }
+  .jt-posters__col:nth-child(2n) { translate: 0 calc(var(--tv)); }
+  .jt-posters__col:nth-child(odd) { translate: 0 calc(var(--tv) * -1); }
+  .jt-posters__col:nth-child(n + 4) { display: none; }
+  .jt-posters__vignette { background: rgb(from var(--site-drawer) r g b / var(--shade)); }
+}
+@media (max-width: 560px) {
+  .jt-first__h { font-size: 6.4rem; scale: calc(1 - var(--f) * 0.2); }
+  .jt-first__sub { font-size: 1.4rem; letter-spacing: calc(1.2rem - var(--f) * 0.6rem); }
+}
+
+/* ───────── Second section · intro video panel ───────── */
+.jt-second { position: sticky; top: 0; }
+.jt-second__head { position: relative; display: flex; align-items: center; justify-content: center; height: 64svh; overflow: hidden; translate: 0 var(--site-radius); border-radius: var(--site-radius) var(--site-radius) 0 0; background: var(--kf-bg); font-family: var(--kf-font-display); font-weight: 700; font-size: 5.6rem; line-height: 1.3; text-align: center; }
+.jt-second__mask { position: absolute; z-index: 1; inset: 0; width: 100%; height: 100%; background: var(--site-black); opacity: 0; }
+.jt-second__box { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100svh; overflow: hidden; border-radius: var(--site-radius) var(--site-radius) 0 0; font-weight: 700; text-align: center; }
+.jt-second__bg { position: absolute; z-index: -2; inset: 0; width: 100%; height: 100%; overflow: hidden; }
+.jt-second__veil { position: absolute; z-index: -1; inset: 0; background: var(--site-veil); }
+.jt-second__content { margin-top: 5.6rem; }
+.jt-second__title { font-size: 3.2rem; line-height: 1.6; }
+.jt-second__desc { width: min(100%, 80rem); margin: 2.4rem auto 0; font-size: 1.6rem; line-height: 1.7; }
+.jt-second__play { display: flex; justify-content: center; margin-top: 12rem; pointer-events: auto; }
+@media (max-width: 960px) { .jt-second__head { height: 48svh; font-size: 3rem; } }
+@media (max-width: 560px) { .jt-second__content { margin-top: 3.2rem; } .jt-second__title { font-size: 2rem; } .jt-second__desc { font-size: 1.4rem; } }
+
+/* ───────── Overlapping rounded panel rising up ───────── */
+.jt-overlap { position: relative; margin-bottom: calc(var(--site-radius) * -1); translate: 0 calc(var(--site-radius) * -1); }
+.jt-overlap--base { margin-bottom: 0; translate: none; }
+.jt-overlap__shade { position: absolute; bottom: 0; width: 100%; height: 100%; background: var(--site-black); opacity: 0; pointer-events: none; }
+
+/* Facilities */
+.jt-func { padding: 12rem 0 4rem; border-radius: var(--site-radius) var(--site-radius) 0 0; }
+.jt-func__h { font-weight: 700; font-size: 10rem; text-align: center; }
+.jt-func__desc { font-weight: 700; font-size: 1.5rem; line-height: 1.8; text-align: center; }
+.jt-func__list { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4rem; margin-top: 4.8rem; font-size: 1.6rem; }
+.jt-func__btn { display: block; width: 100%; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; }
+.jt-func__frame { position: relative; display: block; aspect-ratio: 387 / 484; width: 100%; overflow: hidden; mask-image: var(--site-frame); mask-position: center; mask-repeat: no-repeat; mask-size: 100%; }
+.jt-func__thumb { position: absolute; inset: 0; overflow: hidden; transition: scale 0.5s var(--site-ease); }
+.jt-func__thumb > .wf-img { position: absolute; inset: 0; width: 100%; height: 100%; scale: 1.16; }
+.jt-func__plus { --size: 5.6rem; position: absolute; inset: auto 0 2.4rem; width: var(--size); height: var(--size); margin: auto; transition: scale 0.5s var(--site-ease); }
+.jt-func__plus circle { fill: var(--kf-bg); }
+.jt-func__plus path { fill: var(--kf-ink-soft); }
+.jt-func__title { display: block; margin-top: 3.2rem; font-weight: 700; font-size: 2.4rem; text-align: center; }
+@media (hover: hover) { .jt-func__btn:hover .jt-func__thumb { scale: 1.1; } .jt-func__btn:hover .jt-func__plus { scale: 0.9; } }
+.jt-loop { padding: 16rem 0; }
+.jt-loop__clip { overflow: hidden; width: 100%; }
+.jt-loop__row { display: flex; white-space: nowrap; }
+.jt-loop__row p { margin: 0 0.1em; font-weight: 700; font-size: 10rem; }
+.jt-feats { display: flex; flex-direction: column; gap: 8rem; width: min(100% - 3.2rem, 132rem); margin: 0 auto; }
+.jt-feat { position: sticky; top: 4rem; height: calc(100svh - 4rem); overflow: hidden; border-radius: var(--site-radius); }
+.jt-feat__img { position: absolute; inset: 0; overflow: hidden; }
+.jt-feat__img > .wf-img { position: absolute; inset: 0; width: 100%; height: 100%; scale: 1.16; }
+.jt-feat__box { position: absolute; display: flex; flex-direction: column; justify-content: space-between; width: 100%; height: 100%; padding: 8rem 4rem; }
+.jt-feat__time { font-weight: 400; font-size: 5.6rem; }
+.jt-feat__view { display: flex; flex-direction: column; justify-content: space-between; width: min(100%, 46rem); padding: 4rem; border-radius: var(--kf-radius-md); background: var(--site-veil); }
+.jt-feat__title { font-size: 2.4rem; line-height: 1.6; }
+.jt-feat__desc { margin-top: 2.4rem; font-size: 1.5rem; line-height: 1.7; }
+@media (max-width: 960px) {
+  .jt-func__h { font-size: 8rem; }
+  .jt-func__list { grid-template-columns: 1fr; padding: 0 8rem; gap: 8rem; }
+  .jt-feat__box { padding: 8rem 1.6rem; }
+  .jt-feat__view { height: auto; padding: 4rem 1.6rem; }
+}
+@media (max-width: 560px) {
+  .jt-func { padding: 10.4rem 0 4rem; }
+  .jt-func__h { font-size: 4rem; }
+  .jt-func__desc { margin-top: 1.6rem; font-size: 1.4rem; }
+  .jt-func__list { padding: 0 4rem; gap: 3.2rem; }
+  .jt-func__title { margin-top: 1.6rem; font-size: 1.8rem; }
+  .jt-func__plus { --size: 4rem; }
+  .jt-loop { padding: 12rem 0; }
+  .jt-loop__row p { font-size: 4.8rem; }
+  .jt-feat__box { padding: 4rem 1.6rem 1.6rem; }
+  .jt-feat__time { font-size: 4rem; text-align: center; }
+  .jt-feat__title { font-size: 1.8rem; }
+  .jt-feat__desc { font-size: 1.4rem; }
+}
+
+/* Facility panel (dialog) — the photo background settles from 1.2 to 1x and cards rise from 3.2rem below at .08s intervals */
+.jt-modal { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: transparent; color: var(--kf-contrast-ink); }
+.jt-modal::backdrop { background: transparent; }
+.jt-modal__wrap { position: relative; z-index: 1; width: 100%; height: 100dvh; }
+.jt-modal__bg { position: fixed !important; z-index: -1; inset: 0; width: 100% !important; height: 100% !important; pointer-events: none; }
+.jt-modal__scroll { position: relative; z-index: 1; width: 100%; height: 100%; padding: 16rem 0; overflow-y: auto; overscroll-behavior: contain; cursor: pointer; }
+.jt-modal__cards { display: flex; flex-direction: column; gap: 16rem; pointer-events: none; }
+.jt-mcard { display: flex; align-items: center; gap: 4.8rem; width: min(100%, 64rem); padding: 2.4rem; border-radius: 1.2rem; background: var(--kf-ink-soft); cursor: auto; pointer-events: auto; }
+.jt-mcard__thumb { position: relative; flex-shrink: 0; aspect-ratio: 1; width: 20rem !important; overflow: hidden; border-radius: 1.2rem; }
+.jt-mcard__title { font-size: 2rem; line-height: 1.3; }
+.jt-mcard__text { margin-top: 1.6rem; font-size: 1.4rem; line-height: 1.6; }
+@media (max-width: 960px) { .jt-modal__scroll { padding: 56vh 0 12rem; } .jt-modal__cards { gap: 8rem; } }
+@media (max-width: 560px) { .jt-modal__cards { gap: 2.4rem; } .jt-mcard { padding: 2.4rem 1.6rem; gap: 1.6rem; } .jt-mcard__thumb { width: 10.4rem !important; } .jt-mcard__title { font-size: 1.6rem; } .jt-mcard__text { margin-top: 0.8rem; font-size: 1.3rem; } }
+
+/* Pricing — light panel */
+.jt-plan { padding: 10.4rem 0 12rem; border-radius: var(--site-radius) var(--site-radius) 0 0; background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); }
+.jt-plan__head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2.4rem; }
+.jt-plan__h { font-weight: 700; font-size: 10rem; }
+.jt-plan__ask { margin-bottom: 1.4ch; font-weight: 700; font-size: 2.8rem; }
+.jt-plan__block { display: flex; flex-direction: column; gap: 6.4rem; padding: 4.8rem; border-top: 4px solid var(--kf-contrast-ink); }
+.jt-plan__bh { padding-bottom: 2.4rem; border-bottom: 2px solid var(--site-pale-line); font-weight: 700; font-size: 2.8rem; }
+.jt-plan__text { margin-top: 2.4rem; font-size: 1.6rem; line-height: 1.8; }
+.jt-plan__block > .jt-plan__text:first-child { margin-top: 0; }
+.jt-plan__text strong { font-weight: 700; font-size: 1.2em; }
+.jt-plan__text a { position: relative; display: inline; overflow: hidden; font-weight: 700; }
+.jt-plan__text a::after { --pd: 0.1ex; content: ""; position: absolute; left: 0; bottom: 0; width: 100%; height: var(--pd); border-radius: var(--pd); background: currentColor; transform-origin: left center; scale: 1 1; transition: scale 0.5s var(--site-ease); }
+.jt-plan__cta { display: flex; align-items: center; justify-content: space-between; height: 16rem; margin-top: 5.6rem; padding: 0 4.8rem; border-radius: var(--kf-radius-md); background: var(--kf-contrast-ink); color: var(--kf-ink); font-weight: 700; font-size: 2.8rem; transition: scale 0.5s var(--site-ease); }
+.jt-plan__arrows { display: flex; align-items: center; gap: 1.2rem; }
+@media (hover: hover) { .jt-plan__text a:hover::after { transform-origin: right center; scale: 0 1; } .jt-plan__cta:hover { scale: 1.008; } }
+@media (max-width: 960px) { .jt-plan__h { font-size: 8rem; } .jt-plan__ask { margin-bottom: 1.1ch; } .jt-plan__block { padding: 4.8rem 0; } }
+@media (max-width: 560px) {
+  .jt-plan { padding: 10.4rem 0 8rem; }
+  .jt-plan__h { font-size: 4rem; }
+  .jt-plan__ask { margin-bottom: 0.7ch; font-size: 2rem; }
+  .jt-plan__block { padding: 4rem 0; gap: 4rem; }
+  .jt-plan__bh { padding-bottom: 1.6rem; font-size: 2rem; }
+  .jt-plan__text { margin-top: 1.6rem; font-size: 1.4rem; }
+  .jt-plan__cta { height: 10.4rem; margin-top: 3.2rem; padding: 0 2.4rem; font-size: 2rem; }
+}
+
+/* News */
+.jt-journal { padding: 10.4rem 0; border-radius: var(--site-radius); background: var(--kf-bg); }
+.jt-journal__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2.4rem; }
+.jt-journal__h { font-weight: 700; font-size: 10rem; }
+.jt-journal__list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4rem; }
+.jt-journal__more { display: inline-block; font-weight: 700; font-size: 2rem; }
+.jt-journal__sm { display: none; }
+.jt-jcard { display: block; }
+.jt-jcard__thumb { position: relative; aspect-ratio: 387 / 290; overflow: hidden; border-radius: 1rem; }
+.jt-jcard__pa { position: absolute; inset: 0; overflow: hidden; }
+.jt-jcard__move { position: absolute; inset: 0; width: 100%; height: 100%; scale: 1.16; }
+.jt-jcard__img { position: absolute !important; inset: 0; width: 100%; height: 100%; transition: scale 0.5s var(--site-ease); }
+.jt-jcard__cat { position: absolute; z-index: 1; bottom: 1.6rem; left: 1.6rem; display: inline-block; padding: 0.6rem 1.6rem; border-radius: var(--kf-radius-pill); background: var(--kf-raised); color: var(--kf-ink); font-family: var(--kf-font-display); font-weight: 700; font-size: 1.4rem; }
+.jt-jcard__title { margin-top: 1.6rem; font-weight: 700; font-size: 1.8rem; line-height: 1.6; }
+@media (hover: hover) { .jt-jcard:hover .jt-jcard__img { scale: 1.1; } }
+@media (max-width: 960px) {
+  .jt-journal__h { font-size: 8rem; text-align: center; }
+  .jt-journal__head { display: block; margin-bottom: 4rem; }
+  .jt-journal__list { grid-template-columns: 1fr; padding: 0 4rem; }
+  .jt-journal__lg { display: none; }
+  .jt-journal__sm { display: flex; justify-content: center; margin-top: 4.8rem; }
+}
+@media (max-width: 560px) { .jt-journal__h { font-size: 4rem; } .jt-journal__list { padding: 0; } .jt-jcard__title { font-size: 1.6rem; } }
+
+/* Closing */
+.jt-closing { height: 300svh; overflow-x: clip; pointer-events: none; }
+.jt-closing__bg { position: sticky; top: 0; width: 100%; height: 100svh; margin: auto; background: var(--site-black); pointer-events: none; }
+.jt-closing__clip { position: absolute; inset: 0; overflow: hidden; clip-path: url(#jt-tv-close); }
+.jt-closing__title { position: absolute; z-index: 2; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: auto; text-align: center; }
+.jt-closing__h { font-family: var(--kf-font-display); font-weight: 700; font-size: 7.2rem; }
+.jt-closing__sub { margin-top: 0.8rem; font-weight: 700; font-size: 1.6rem; letter-spacing: 0.7rem; }
+.jt-closing__cta { --size: 31.8rem; position: absolute; z-index: 2; inset: auto 0 -2.4rem; width: var(--size); height: var(--size); margin: auto; mix-blend-mode: color-dodge; opacity: 0; pointer-events: none; }
+.jt-closing__btn { position: absolute; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; border-radius: 50%; background: var(--kf-ink); cursor: pointer; pointer-events: auto; }
+.jt-closing__btn p { color: var(--kf-bg); font-weight: 700; font-size: 3rem; pointer-events: none; }
+.jt-closing__dim { position: absolute; z-index: 1; inset: 0; background: radial-gradient(circle, rgb(from var(--site-black) r g b / 0.4) 0%, var(--site-black) 100%); opacity: 0; }
+.jt-closing__video { position: absolute; inset: 0; }
+.jt-closing__bloom { position: absolute; z-index: -1; inset: 0; filter: blur(8rem); opacity: 0.5; }
+.jt-closing__bloom video { clip-path: url(#jt-tv-close); }
+@media (max-width: 960px) { .jt-closing__bloom { display: none; } }
+@media (max-width: 560px) {
+  .jt-closing__h { font-size: 4rem; }
+  .jt-closing__sub { font-size: 1.3rem; line-height: 1.3; letter-spacing: 0.1em; }
+  .jt-closing__cta { --size: 22rem; inset: auto 0 -1.6rem; }
+  .jt-closing__btn p { padding-bottom: 4rem; font-size: 2.4rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jt-op { display: none; }
+  .jt-first__title { visibility: visible; }
+  .jt-closing__cta { opacity: 1; }
+}

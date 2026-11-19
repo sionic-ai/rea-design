@@ -1,0 +1,313 @@
+/* Colors not in the original are derived from the skin — the five stops of the wave gradient mix between background ↔ accent ↔ ink */
+:root {
+  --site-mist: color-mix(in srgb, var(--kf-raised) 70%, var(--kf-bg));
+  --site-foam: color-mix(in srgb, var(--kf-accent-soft) 60%, var(--kf-raised));
+  --site-sea: color-mix(in srgb, var(--kf-accent) 70%, var(--kf-ink));
+  --site-deep: color-mix(in srgb, var(--kf-ink) 92%, var(--kf-accent));
+  --site-shade: color-mix(in srgb, var(--kf-ink) 40%, transparent);
+  --site-photo: color-mix(in srgb, var(--kf-accent) 30%, var(--kf-bg));
+  /* Relative colors (oklch from …) mix in oklab during transitions, so the text color curve inherited by the button ::before differs from the original (#000, sRGB) — use a system color that mixes in sRGB */
+  --site-black: CanvasText;
+  --site-coral: oklch(from var(--kf-accent) calc(l * 0.95) calc(c * 1.5) calc(h + 175));
+  --ar-ease: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --ar-expo: cubic-bezier(0.19, 1, 0.22, 1);
+  --ar-snap: cubic-bezier(1, 0, 0, 1);
+}
+
+html { scroll-behavior: auto; }
+body { margin: 0; background: var(--kf-bg); color: var(--kf-ink); font-family: var(--kf-font-sans); font-weight: 400; overflow-x: clip; }
+html.has-scroll-smooth { overflow: hidden; }
+html.has-scroll-smooth body { overflow: hidden; }
+html.has-scroll-smooth [data-scroll-container] { min-height: 100vh; }
+.ar-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+.ar-stop-mist { stop-color: var(--site-mist); }
+.ar-stop-foam { stop-color: var(--site-foam); }
+.ar-stop-sea { stop-color: var(--site-sea); }
+.ar-stop-deep { stop-color: var(--site-deep); }
+.ar-ring-text { fill: var(--kf-ink); font: 500 15px/1 var(--kf-font-display); letter-spacing: 0.05em; }
+.ar-container { width: min(1140px, calc(100% - 30px)); margin: 0 auto; }
+
+.ar-photo.wf-img { border: 0; background-color: var(--site-photo); }
+.ar-photo.wf-img::after { white-space: normal; max-width: 80%; text-align: center; line-height: 1.5; }
+.ar-photo--cover { position: absolute; inset: 0; height: 100%; }
+
+/* ── Header row: logo top left (200px panel) + text menu top right + hamburger at the far right ── */
+.ar-header { position: fixed; top: 0; left: 0; z-index: 1000; width: 200px; }
+.ar-header__in { display: flex; align-items: center; height: 80px; padding-left: 40px; }
+.ar-logo { display: inline-flex; align-items: center; gap: 8px; padding: 15px 0; color: var(--kf-ink); }
+.ar-logo svg { width: 26px; height: 26px; }
+.ar-logo__word { display: grid; font: 400 22px/1 var(--kf-font-display); letter-spacing: 0.12em; }
+.ar-logo__word small { font: 400 7px/1.4 var(--kf-font-display); letter-spacing: 0.15em; text-align: center; }
+.ar-gnav { position: absolute; top: 0; right: 0; z-index: 10; padding: 32px 100px 32px 0; }
+.ar-main { overflow-x: clip; }
+.ar-gnav ul { display: flex; margin: 0; padding: 0; list-style: none; }
+.ar-gnav a { display: block; padding: 0 1.5rem; color: var(--kf-on-accent); font: 400 15px/1.2 var(--kf-font-sans); letter-spacing: 1px; white-space: nowrap; transition: color 0.4s var(--ar-ease); }
+.ar-gnav a:hover { color: var(--kf-ink); }
+.ar-gnav--lower a { color: var(--kf-ink); }
+.ar-gnav--lower a:hover { color: var(--kf-accent); }
+
+.ar-burger {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 10001;
+  width: 100px;
+  height: 80px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--kf-on-accent);
+  mix-blend-mode: difference;
+  cursor: pointer;
+}
+.ar-burger__bar { position: absolute; top: 50%; left: 50%; width: 40px; margin-left: -20px; }
+.ar-burger__bar::before, .ar-burger__bar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+  transition: transform 0.4s var(--ar-snap), width 0.4s var(--ar-snap);
+}
+.ar-burger__bar::before { width: 40px; transform: translateY(-3px); }
+.ar-burger__bar::after { width: 20px; transform: translateY(3px); }
+.ar-burger__str { position: absolute; bottom: calc(50% - 23px); left: 50%; translate: -50% 0; font: 400 11px/1 var(--kf-font-display); letter-spacing: 0.1em; text-transform: uppercase; }
+.ar-burger[aria-expanded="true"] .ar-burger__bar::before { width: 40px; transform: translateY(-2px) rotate(15deg); }
+.ar-burger[aria-expanded="true"] .ar-burger__bar::after { width: 40px; transform: translateY(-2px) rotate(-15deg); }
+
+/* ── Menu drawer: a circle twice the screen size rises from below and expands into a rectangle (.4s linear), and the text turns on in 1.4s ── */
+.ar-drawer { position: fixed; inset: 0; z-index: 10000; display: none; overflow: hidden; }
+.ar-drawer.is-open, .ar-drawer.is-closing { display: block; }
+.ar-drawer__bg { position: fixed; top: 0; left: 50%; width: 200vw; aspect-ratio: 1; border-radius: 100%; background: var(--kf-bg); translate: -50% 0; }
+.ar-drawer.is-open .ar-drawer__bg { animation: ar-drawer-in 0.4s linear forwards; }
+.ar-drawer.is-closing .ar-drawer__bg { animation: ar-drawer-out 1.4s var(--ar-expo) forwards; }
+@keyframes ar-drawer-in {
+  0% { top: 100%; border-radius: 100%; background-color: var(--kf-surface); }
+  50% { top: 50%; border-radius: 80%; }
+  100% { top: 0; border-radius: 0; background-color: var(--kf-bg); }
+}
+@keyframes ar-drawer-out { 0% { top: 0; border-radius: 0; } 100% { top: 0; transform: translateY(-110%); border-radius: 100%; } }
+.ar-drawer__box { position: relative; z-index: 4; display: grid; align-items: center; height: 100%; overflow-y: auto; }
+.ar-drawer.is-open .ar-drawer__box { animation: ar-fade-in 1.4s var(--ar-expo); }
+.ar-drawer.is-closing .ar-drawer__box { animation: ar-fade-out 0.6s var(--ar-expo) forwards; }
+@keyframes ar-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ar-fade-out { from { opacity: 1; } to { opacity: 0; } }
+.ar-drawer__nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 30px; width: min(880px, calc(100% - 40px)); margin: 60px auto; }
+.ar-drawer__nav ul { margin: 0; padding: 0; list-style: none; }
+.ar-drawer__nav li { margin-bottom: 2.2rem; }
+.ar-drawer__nav a { display: flex; flex-direction: column; color: var(--kf-ink); font: 400 20px/1.3 var(--kf-font-sans); letter-spacing: 0.05em; transition: color 0.2s var(--ar-ease); }
+.ar-drawer__nav a:hover { color: var(--kf-accent); }
+.ar-drawer__nav a small { color: var(--kf-accent); font: 300 14px/1.3 var(--kf-font-display); text-transform: uppercase; }
+.ar-drawer__nav .ar-drawer__child { margin: 2rem 0 2.5rem; }
+.ar-drawer__nav .ar-drawer__child li { margin-bottom: 1.5rem; }
+.ar-drawer__nav .ar-drawer__child a { position: relative; padding-left: 40px; font-size: 18px; }
+.ar-drawer__nav .ar-drawer__child a::before { content: ""; position: absolute; top: 50%; left: 0; width: 20px; height: 1px; background: var(--kf-accent); }
+
+/* Drawer bottom art — sea mass · car · fish · turtle slide in from the bottom left when it opens (shared.js) */
+.ar-drawer__illust { position: fixed; bottom: 0; left: 50%; z-index: 3; width: 99vw; opacity: 0; transform: translate(-50%, 0); pointer-events: none; }
+.ar-drawer__illust svg { width: 100%; height: auto; }
+.ar-di, .ar-di-fish, .ar-di-turtle { transform-box: fill-box; }
+
+/* ── Bottom-right booking button: navy circle + a rotating RESERVE text ring around it ── */
+.ar-floating { position: fixed; right: 30px; bottom: 30px; z-index: 1009; display: grid; place-items: center; width: 160px; height: 160px; color: var(--kf-ink); }
+.ar-floating svg[data-fx-part="ring"] { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ar-floating__circle { position: relative; display: grid; place-items: center; align-content: center; width: 113px; height: 113px; border-radius: 50%; background: var(--kf-ink); color: var(--kf-on-accent); text-align: center; }
+.ar-floating__circle svg { width: 30px; height: 30px; }
+.ar-floating__str { margin-top: 5px; font: 400 12px/1.3 var(--kf-font-sans); }
+
+/* ── Button: bordered pill, on hover a big circle fills from below turning it square and the arrow rotates 90° ── */
+.ar-btn {
+  --btn-color: var(--kf-ink);
+  --btn-hover-color: var(--kf-on-accent);
+  --btn-hover-bg: var(--kf-ink);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 200px;
+  padding: 15px 30px;
+  overflow: hidden;
+  border: 1px solid var(--btn-color);
+  border-radius: 19px;
+  color: var(--btn-color);
+}
+.ar-btn::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  z-index: 1;
+  width: 300%;
+  aspect-ratio: 1;
+  border-radius: 100%;
+  background: var(--btn-hover-bg);
+  transform: translateX(-50%) translateY(100%);
+  transition: all 0.4s var(--ar-snap);
+}
+.ar-btn:hover::before { bottom: 100%; border-radius: 0; }
+.ar-btn__str { position: relative; z-index: 2; color: var(--btn-color); margin-right: 1rem; font: 400 13px/30px var(--kf-font-display); letter-spacing: 0.03em; text-transform: uppercase; transition: color 0.4s var(--ar-snap); }
+.ar-btn__arrow { position: relative; z-index: 2; display: grid; }
+.ar-btn__arrow svg { width: 15px; height: 15px; fill: var(--btn-color); transition: transform 0.4s var(--ar-expo), fill 0.4s var(--ar-expo); }
+.ar-btn:hover .ar-btn__str { color: var(--btn-hover-color); }
+.ar-btn:hover .ar-btn__arrow svg { fill: var(--btn-hover-color); transform: rotate(90deg); }
+/* Original framework a:hover{color:#000} — The link text color turns black right away (the button ::before border color follows in .4s) */
+.ar-logo:hover, .ar-hero__news:hover, .ar-btn:hover, .ar-floating:hover { color: var(--site-black); }
+.ar-btn--inverse { --btn-color: var(--kf-on-accent); --btn-hover-color: var(--kf-ink); --btn-hover-bg: var(--kf-on-accent); }
+
+/* ── Section title: one small gray line + very thin teal uppercase ── */
+.ar-title { margin: 0; }
+.ar-title__ja { display: block; color: var(--kf-dim); font: 400 14px/1.2 var(--kf-font-sans); }
+.ar-title__en { display: block; color: var(--kf-accent); font: 300 80px/1.1 var(--kf-font-display); letter-spacing: 0.2em; text-transform: uppercase; }
+.ar-title--inverse .ar-title__ja, .ar-title--inverse .ar-title__en { color: var(--kf-on-accent); }
+.ar-subtitle__en { display: block; color: var(--kf-accent); font: 300 37px/1.1 var(--kf-font-display); letter-spacing: 0.2em; text-transform: uppercase; }
+
+/* ── When on screen, rise from 20px below in .8s (original data-scroll-trigger=js-scroll-to-top) — values are set through the fade-up part options ── */
+
+/* ── Subpage header: diagonal gradient wave line + three fish + big thin title ── */
+.ar-lower { position: relative; padding: 80px 0 0; overflow: hidden; }
+.ar-lower__wave { position: absolute; z-index: 0; top: 20%; left: -15vw; width: 130vw; height: 80px; padding: 130px 0 50px; transform: translateY(100%) rotate(-15deg); box-sizing: content-box; }
+.ar-lower__wave svg { position: absolute; top: 130px; left: 0; width: 6000px; height: 70px; }
+.ar-lower__fishes { position: absolute; top: 42%; right: 20%; width: 229px; height: 120px; pointer-events: none; color: var(--kf-accent); }
+.ar-crumb { position: relative; z-index: 2; margin: 0 0 40px; padding: 190px 0 0; display: flex; gap: 8px; color: var(--kf-accent); font: 400 11px/1 var(--kf-font-display); text-transform: lowercase; }
+.ar-crumb li { list-style: none; }
+.ar-crumb li + li::before { content: "/"; margin-right: 8px; color: var(--kf-dim); }
+.ar-lower .ar-title { position: relative; z-index: 2; }
+.ar-lower .ar-container { width: auto; margin: 0 45px; }
+.ar-lower .ar-title__en { padding: 0 0 120px; }
+
+/* ── Transition mask: blocks clicks during the transition (original #js-loading__mask) ── */
+.ar-loading { position: fixed; inset: 0; z-index: 20000; pointer-events: none; }
+.ar-loading__mask { position: absolute; inset: 0; display: none; pointer-events: auto; }
+/* First-open cover (original .js-loading__first white panel) — covers the screen, then lifts upward in 1s expo.inOut (shared.js) */
+.ar-loading__first { position: absolute; inset: 0; background: var(--kf-surface); }
+[data-fx-hold] { opacity: 0; }
+
+@media (max-width: 991px) {
+  .ar-header { width: 100%; }
+  .ar-header__in { height: 60px; padding: 0 20px; background: var(--kf-surface); }
+  .ar-gnav { display: none; }
+  .ar-burger { width: 80px; height: 60px; }
+  .ar-burger__bar { width: 30px; margin: -8px 0 0 -15px; }
+  .ar-burger__bar::before { width: 30px; }
+  .ar-burger__bar::after { width: 15px; }
+  .ar-burger[aria-expanded="true"] .ar-burger__bar::before, .ar-burger[aria-expanded="true"] .ar-burger__bar::after { width: 30px; }
+  .ar-burger__str { bottom: calc(50% - 12px); font-size: 10px; letter-spacing: 0.03em; }
+  .ar-drawer__nav { grid-template-columns: 1fr 1fr; }
+  .ar-drawer__nav li { margin-bottom: 20px; }
+  .ar-title__en { font-size: 50px; }
+}
+@media (max-width: 767px) {
+  .ar-header__in { height: 55px; padding: 0 15px; }
+  .ar-burger { width: 65px; height: 55px; }
+  .ar-floating { right: 15px; bottom: 15px; width: 120px; height: 120px; }
+  .ar-floating__circle { width: 80px; height: 80px; }
+  .ar-floating__circle svg { display: none; }
+  .ar-drawer__bg { width: 200vh; }
+  .ar-drawer__nav { grid-template-columns: 1fr; }
+  .ar-lower__wave { padding-top: 80px; }
+  .ar-lower__wave svg { top: 80px; }
+}
+
+/* ── Illustration fill (fish, coral, sea blobs and wave surfaces on all pages) ── */
+.ar-paper-shadow { flood-color: var(--site-shade); flood-opacity: 0.6; }
+.ar-sea-1 { fill: color-mix(in srgb, var(--kf-accent) 80%, var(--kf-surface)); }
+.ar-sea-2 { fill: var(--kf-accent); }
+.ar-sea-3 { fill: color-mix(in srgb, var(--kf-accent) 55%, var(--kf-ink)); }
+.ar-ink { color: var(--kf-ink); fill: var(--kf-ink); }
+.ar-red { color: var(--site-coral); fill: var(--site-coral); }
+.ar-teal-dark { color: var(--site-sea); }
+.ar-fill-teal { fill: var(--kf-accent); }
+.ar-fill-sea { fill: var(--site-sea); }
+.ar-fill-deep { fill: var(--site-deep); }
+.ar-lineup__subja { display: block; margin: 0 0 5px; color: var(--kf-accent); font: 600 16px/1.2 var(--kf-font-sans); letter-spacing: 0.05em; }
+
+/* ── Footer ── */
+.ar-foot { position: relative; overflow: hidden; color: var(--kf-contrast-ink); }
+.ar-foot__waves { position: relative; height: 80px; }
+.ar-foot__wave { position: absolute; left: 0; right: 0; bottom: 0; height: 80px; }
+.ar-foot__wave svg { width: 6000px; height: 80px; }
+.ar-foot__wave--line { bottom: 10px; height: 70px; color: var(--kf-on-accent); }
+.ar-foot__sea { position: relative; padding: 120px 60px 60px; background: radial-gradient(120% 80% at 30% 20%, var(--site-deep), var(--kf-contrast-bg) 70%); }
+.ar-foot__contact { display: grid; grid-template-columns: 580px 1fr; padding: 0 100px 100px; border-bottom: 1px solid var(--kf-contrast-ink); }
+.ar-foot__ja { margin: 0; font: 600 14px/1.2 var(--kf-font-sans); }
+.ar-foot__en { margin: 0 0 15px; font: 300 59px/1.2 var(--kf-font-display); letter-spacing: 0.15em; text-transform: uppercase; }
+.ar-foot__hours { margin: 0; font: 400 14px/25.2px var(--kf-font-sans); letter-spacing: 0.07em; }
+.ar-foot__hours div { display: flex; margin-bottom: 0.3rem; }
+.ar-foot__hours dt { flex: 0 0 100px; font-weight: 600; }
+.ar-foot__hours dd { margin: 0; letter-spacing: 0.15em; }
+.ar-mail { display: flex; align-items: center; gap: 30px; width: 400px; margin-bottom: 1rem; color: var(--kf-contrast-ink); }
+.ar-mail__str { font: 400 16px/1.8 var(--kf-font-sans); }
+.ar-mail__line { position: relative; width: 100px; height: 1px; background: var(--kf-contrast-ink); }
+.ar-mail__line { background: none; }
+.ar-mail__line::before, .ar-mail__line::after { content: ""; position: absolute; inset: 0; transition: transform 0.3s var(--ar-expo); }
+.ar-mail__line::before { background: var(--kf-bg); transform: scaleX(0); transform-origin: left center; transition-timing-function: var(--ar-snap); }
+.ar-mail__line::after { background: var(--kf-contrast-ink); transform-origin: right center; transition-delay: 0.3s; }
+.ar-mail:hover .ar-mail__line::before { transform: scaleX(1); transition-delay: 0.15s; }
+.ar-mail:hover .ar-mail__line::after { transform: scaleX(0); transition-delay: 0s; }
+.ar-mail__circle { position: relative; display: grid; place-items: center; width: 67px; height: 67px; border: 1px solid var(--kf-contrast-ink); border-radius: 50%; }
+.ar-mail__circle::before { content: ""; position: absolute; inset: -1px; border-radius: 50%; background: var(--kf-contrast-ink); transform: scale(0.4); opacity: 0; transition: transform 0.3s var(--ar-expo), opacity 0.3s var(--ar-expo); }
+.ar-mail:hover .ar-mail__circle::before { transform: scale(1); opacity: 1; }
+.ar-mail__circle svg { position: relative; z-index: 1; width: 20px; height: 14px; fill: var(--kf-raised); transition: fill 0.3s var(--ar-expo); }
+.ar-mail:hover .ar-mail__circle svg { fill: var(--kf-contrast-bg); }
+.ar-foot__telhead { margin: 0 0 6px; font: 400 16px/1.2 var(--kf-font-sans); }
+.ar-foot__tel { margin: 0; font: 400 20px/36px var(--kf-font-display); letter-spacing: 0.1em; }
+.ar-foot__info { display: grid; grid-template-columns: 433px 1fr; padding: 120px 30px 140px; }
+.ar-logo--light { color: var(--kf-contrast-ink); }
+.ar-logo--light svg { width: 40px; height: 40px; }
+.ar-logo--light .ar-logo__word { font-size: 34px; }
+.ar-logo--light .ar-logo__word small { font-size: 9px; }
+.ar-foot__brand p { margin: 24px 0 0; font: 400 14px/25px var(--kf-font-sans); letter-spacing: 0.05em; }
+.ar-foot__nav { display: grid; grid-template-columns: repeat(3, 289px); }
+.ar-foot__nav ul { margin: 0; padding: 0; list-style: none; }
+.ar-foot__nav li { margin-bottom: 23px; }
+.ar-foot__nav a { display: flex; flex-direction: column; color: var(--kf-contrast-ink); font: 400 16px/20.8px var(--kf-font-sans); letter-spacing: 0.05em; transition: color 0.2s var(--ar-ease); }
+.ar-foot__nav a:hover { color: var(--kf-accent); }
+.ar-foot__nav small { color: var(--kf-accent); font: 300 14px/20.8px var(--kf-font-display); text-transform: uppercase; }
+.ar-foot__child a { position: relative; padding-left: 40px; font-size: 15px; }
+.ar-foot__child a::before { content: ""; position: absolute; left: 0; top: 50%; width: 20px; height: 1px; background: var(--kf-accent); }
+.ar-foot__coral { position: absolute; left: 290px; bottom: 0; width: 60px; height: 90px; }
+.ar-foot__fishes { position: absolute; left: 1000px; bottom: 60px; width: 60px; height: 40px; color: var(--kf-accent); }
+.ar-foot__copy { margin: 0; text-align: center; font: 400 10.5px/20px var(--kf-font-display); letter-spacing: 0.1em; }
+
+@media (max-width: 1199px) {
+  .ar-foot__contact { grid-template-columns: 1fr; padding: 0 40px 80px; gap: 40px; }
+  .ar-foot__info { grid-template-columns: 1fr; gap: 50px; }
+  .ar-foot__nav { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 767px) {
+  .ar-foot__sea { padding: 80px 20px 40px; }
+  .ar-foot__contact { padding: 0 0 60px; }
+  .ar-foot__en { font-size: 34px; }
+  .ar-mail { width: 100%; gap: 16px; }
+  .ar-mail__line { flex: 1; }
+  .ar-foot__info { padding: 60px 0 120px; }
+  .ar-foot__nav { display: none; }
+  .ar-foot__coral { left: 20px; }
+  .ar-foot__fishes { left: auto; right: 40px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ar-drawer__bg, .ar-drawer__box { animation-duration: 0s !important; }
+  .ar-btn::before, .ar-btn__str, .ar-btn__arrow svg, .ar-burger__bar::before, .ar-burger__bar::after { transition: none; }
+}
+
+/* Once past the line 20% from the screen bottom, rise from 20px below over .8s — original [data-scroll-trigger=Gives the values of js-scroll-to-top] to studio-appear(look: up).
+   The car photo drops in from the upper right (20%, −20%) in 1s expo.out (source js-scroll-car) */
+[data-fx~="studio-appear"][data-fx-studio-appear*="look: up"] { --fx-y: 20px; --fx-dur: 0.8s; --fx-ease: var(--ar-ease); }
+[data-fx~="studio-appear"][data-fx-studio-appear*="look: shift"] { --fx-x: 20%; --fx-y: -20%; --fx-dur: 1s; --fx-ease: var(--ar-expo); }
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.ar-foot__wave--line svg { width: 6000px; height: 70px; }
+@media (prefers-reduced-motion: reduce) {
+  .ar-mail__line::before, .ar-mail__line::after, .ar-mail__circle::before, .ar-mail__circle svg { transition: none; }
+}
+@media (max-width: 767px) {
+  .ar-crumb { padding-top: 110px; }
+  .ar-lower .ar-container { margin: 0 20px; }
+}
+
+/* If the Korean web font (Noto Sans KR) swaps in late, the hero changes once more. Once the font is ready (at most 1.5s) the background shows along with it all at once (shared.js) */
+html.ar-fonts, html.ar-fonts body { background: none; }
+html.ar-fonts body { visibility: hidden; }

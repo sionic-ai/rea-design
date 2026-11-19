@@ -1,0 +1,55 @@
+{
+  "kind": "Hand",
+  "trigger": [
+    "load",
+    "hover",
+    "click",
+    "drag",
+    "cursor"
+  ],
+  "fits": [
+    "Section",
+    "Page",
+    "Photo"
+  ],
+  "what": "Stands up a 3D picture book on a table with WebGL — in 4s the half-open book flips its pages shut in a riffle (slow .7) while the camera approaches from z 10 → 0 over 5.5s and the book turns .38rad and settles at a tilt over 6s (power1.inOut, three lights switch on from 0 over 4s). Hovering over the cover lifts it π/32 (.75s power4.out) and from 2s later it bobs every 4s. Pressing opens the cover as the camera moves to face-on (3s power3.inOut), the book settles in place with back.out(1.4) over 3.1s, and from 3.15s it opens the first page over 4s. Dragging turns it over its spine with inertia, one screen width at a time = Pinned to a single section, arrows and ←→ move one page per 1.5s power3.inOut. The page-art layers are pushed toward the mouse or page-turn angle at a different scale per layer, and when hovering the preview row below the book, the cell grows, the label turns in from −1rad, and three rough masks flicker alternately at .12, .28 and .45s. Turning the last page covers it with the back cover, the book steps aside to the left, and [data-fx-part=end] slides in from the right by 40px",
+  "ease": "power1.inOut (settle down) · slow(0.7,0.7,false) (cover) · power3.inOut (camera · transition) · back.out(1.4) (in place) · power4.out (cover lift) · back.out (preview entrance)",
+  "duration": {
+    "Settling down": 6,
+    "Covering": 4,
+    "Camera zooms in": 5.5,
+    "Enter": 7.15,
+    "One Page Turn": 1.5,
+    "Cover Lifts": 0.75,
+    "Preview": 0.3
+  },
+  "needs": [
+    "gsap",
+    "Draggable",
+    "InertiaPlugin",
+    "EasePack",
+    "three"
+  ],
+  "options": {
+    "delay": "Delay added from load until the drop begins (seconds), default .75 — actual start is .4 + delay",
+    "flip": "Duration (seconds) for advancing one slide by arrow or keyboard, default 1.5 — 0 means instant",
+    "menu": "Preview row below the book, default on — 0 turns it off",
+    "[data-fx-part=spread]": "A single two-page spread image (hidden, becomes pages in order) — the first img/canvas inside is the background (7:4 landscape), the rest are layers: data-rect=\"x y w h\"(Relative to the unfolded image, 0~1, y from the top) · data-depth=\"x y\"(push scale, defaults to .5 .5 · 2 1 · 1 1 … in order) · data-text (text layer, does not get pushed). Without a layer, a data-label placeholder. data-title is the preview name tag",
+    "[data-fx-part=cover]·[data-fx-part=back]": "(optional) Front and back cover — an img or canvas inside (vertical 7:8) or a data-label placeholder, data-title",
+    "[data-fx-part=enter]": "(optional) Enter button that appears 1s after the book settles — hover lifts the cover. Pressing anywhere on the panel also enters",
+    "[data-fx-part=prev]·[data-fx-part=next]": "(Optional) Prev/next buttons — appear 1s after opening, and fade to .2 on the first and last sections",
+    "[data-fx-part=end]": "(optional) Last section panel: the first child and the li inside slide in from 40px to the right at .075s intervals (tied to the page turn so they rewind)",
+    "[data-fx-part=caption]": "(optional) Phone (600 or below) caption — one per section, visible only while that section is open. The wrapping parent appears 1s after opening",
+    "[data-fx-part=loading]": "(optional) Loading text — clears in .5s once the book stands",
+    "Event": "fx:book-flip-gl { state: ready (all images loaded) · landing (touched down) · enter (starting to enter) · entered (unfolded) · page, index (current section 0~N+1) }",
+    "--fx-book-px": "Open book width (px) that the part writes on the element — for lining up arrows and caption beside the book"
+  },
+  "use": "<main data-fx=\"book-flip-gl\" style=\"height:100vh\"><figure data-fx-part=\"cover\" data-label=\"Cover\"></figure><figure data-fx-part=\"spread\" data-title=\"First page\"><canvas width=\"1050\" height=\"600\"></canvas><canvas data-rect=\"0 .6 1 .4\" data-depth=\"0.5 0.5\"></canvas></figure>… <button data-fx-part=\"enter\">Open Book</button><button data-fx-part=\"prev\"></button><button data-fx-part=\"next\"></button></main> — three loads ../pillar-gallery-gl/three-global.js before library/_vendor/three@0.174.0/build/three.cjs, and gsap’s Draggable·InertiaPlugin·EasePack are loaded first",
+  "note": "Dragging is the job of this part, so a horizontal drag on the panel turns the book page — vertical pushing is not blocked (allowNativeTouchScrolling). The original uses the old light units of three r122, so intensities were carried over × π (spot decay 0), and the floor is set to metal 1 → .7 when the skin base is dark, and .15 → .1 when light (bright metal renders black without light). The original model and the paper grain maps (normal · roughness) are not used — we rebuilt them with our own panels and surfaces. The page bulge is a single morph of about 1mm",
+  "from": [
+    {
+      "slug": "draggable-3d-picture-book",
+      "where": "index.html Hero book — original MaskRevealView·Menu·MeshStandardMaterialParallax (three r122, fov 36, camera z 2.54, book y −2.88 rot .38, flipTimeline progress .45 → 0 slow(.7,.7), enter timeline 7.15s, Draggable type left + inertia)"
+    }
+  ]
+}

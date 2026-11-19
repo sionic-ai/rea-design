@@ -1,0 +1,405 @@
+/* Shared by all pages: round white header line (translucent on scroll) · menu panel, button whose text rolls up to swap, floating panel bundle at bottom right 
+   (cookie, product offer, lifetime pass), news pill, ink-colored footer (big wordmark, clock), cursor pixel tail, first-visit loader */
+
+:root {
+  --site-green: oklch(from var(--kf-accent) calc(l * 1.096) calc(c * 1.489) calc(h + 167.2));
+  --site-blue: oklch(from var(--kf-accent) calc(l * 0.808) calc(c * 1.556) calc(h - 78.9));
+  --site-red: oklch(from var(--kf-accent) calc(l * 0.867) calc(c * 1.641) calc(h + 48.5));
+  --site-paper: var(--kf-surface);
+  --site-grey: color-mix(in oklab, var(--kf-raised) 70%, var(--kf-dim));
+  --site-trail: color-mix(in oklab, var(--kf-raised) 55%, var(--kf-dim));
+  --site-frost: color-mix(in oklab, var(--kf-dim) 20%, transparent);
+  --site-nav-light: oklch(from var(--kf-contrast-ink) 1 0 h);
+  --site-rule: color-mix(in oklab, var(--kf-ink) 12%, transparent);
+  --site-rule-dark: color-mix(in oklab, var(--kf-contrast-ink) 20%, transparent);
+  --jit: cubic-bezier(0.5, 0, 0, 1);
+  --pad: 12px;
+}
+
+/* Like the original, the scrollbar gutter is always left empty — even on screens with the scrollbar hidden, the right 15px is an empty gutter so the panel width is 1425, and a cursor over that gutter touches no card */
+html { font-size: 62.5%; overflow-x: hidden; scrollbar-gutter: stable; }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-stopped { overflow: clip; }
+body { background: var(--kf-bg); color: var(--kf-ink); font: var(--kf-weight-body) 1.9rem/1.25 var(--kf-font-sans); letter-spacing: -0.01em; }
+.hidden { display: none !important; }
+.wf-img { --wf-fill: var(--kf-raised); --wf-line: var(--kf-line); --wf-fill-ink: var(--kf-dim); border: 0; }
+
+/* Text-rolling-up swap bundle — original text-reveal: 1s cubic-bezier(.5,0,0,1) */
+.vs-roll { position: relative; display: block; overflow: hidden; line-height: 1.2em; }
+/* On entry the text takes 1s and the copy .44s, starting .2s late. Once fully rolled (is-revealed), releasing the hover returns it immediately — original text-reveal */
+.vs-roll__t { display: block; transition: transform 1s var(--jit); }
+.vs-roll__c { display: block; position: absolute; inset: 0; transform: translateY(110%); transition: transform 0.44s var(--jit); }
+.vs-roll.is-revealed .vs-roll__t, .vs-roll.is-revealed .vs-roll__c { transition: none !important; }
+a:hover > .vs-roll .vs-roll__t, button:hover > .vs-roll .vs-roll__t, .vs-cta:hover .vs-roll__t, .vs-rollhost:hover .vs-roll__t { transform: translateY(-110%); }
+a:hover > .vs-roll .vs-roll__c, button:hover > .vs-roll .vs-roll__c, .vs-cta:hover .vs-roll__c, .vs-rollhost:hover .vs-roll__c { transform: translateY(0); transition: transform 0.44s var(--jit) 0.2s; }
+
+/* Dark button — text cell + line + back arrow */
+.vs-cta { display: inline-flex; align-items: center; justify-content: space-between; width: fit-content; border-radius: 1.2rem; background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); font-size: 13px; line-height: 1; white-space: nowrap; }
+.vs-cta--light { background: color-mix(in oklab, var(--kf-surface) 20%, transparent); backdrop-filter: blur(80px); }
+.vs-cta--line { background: transparent; color: var(--kf-ink); box-shadow: inset 0 0 0 1px currentColor; }
+.vs-cta__text { padding: 1.6rem; }
+.vs-cta__right { align-self: stretch; display: flex; align-items: center; }
+.vs-cta__line { align-self: stretch; width: 1px; margin-left: 3rem; background: currentColor; opacity: 0.2; }
+.vs-cta__icon { width: 1.3rem; height: 1.3rem; margin: 1.6rem; flex-shrink: 0; }
+
+/* ── Headline ── */
+.vs-nav { position: fixed; top: 12px; left: 12px; right: 12px; z-index: 100; font: 500 max(12px, 0.9028vw)/1 var(--kf-font-sans); }
+.vs-nav__bar { position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 5.1rem; padding: 0 1.1rem; border-radius: var(--kf-radius-md); background: var(--kf-surface); transition: background-color 0.3s ease, backdrop-filter 0.3s ease; }
+.vs-nav.is-scrolled .vs-nav__bar { background: transparent; }
+/* Blur band behind the header — over the top 120px of the screen, six blur layers (1.6 · 6.1 · 12.6 · 20.7 · 30 · 40.5px) are stacked so they are progressively masked toward the bottom (phone has four: 6.3 · 24.2 · 50.4 · 82.7px). 
+   After scrolling down (is-scrolled) it turns on in .3s after a .15s delay, and turns off at once in .3s when scrolling back up */
+.vs-nav__bar { z-index: 1; }
+.vs-nav__blur { position: fixed; top: 0; left: 0; right: 0; z-index: 0; height: 120px; overflow: hidden; pointer-events: none; }
+.vs-nav__blur::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, transparent 0%, color-mix(in oklab, var(--kf-raised) 1%, transparent) 12.5%); opacity: 0; transition: opacity 0.3s ease 0s; }
+.vs-nav__blur > span { --blur: 0px; position: absolute; top: 0; left: 0; right: 0; height: calc(100% + 60px); backdrop-filter: blur(var(--blur)); transition: backdrop-filter 0.3s ease 0s; }
+.vs-nav__blur > span:nth-child(1) { --to: 1.5625px; mask-image: linear-gradient(to top, transparent 33.333%, black 41.667%, black 100%); }
+.vs-nav__blur > span:nth-child(2) { --to: 6.0515px; mask-image: linear-gradient(to top, transparent 33.333%, black 50%, black 100%); }
+.vs-nav__blur > span:nth-child(3) { --to: 12.5973px; mask-image: linear-gradient(to top, transparent 41.667%, black 58.333%, black 100%); }
+.vs-nav__blur > span:nth-child(4) { --to: 20.6699px; mask-image: linear-gradient(to top, transparent 50%, black 66.667%, black 100%); }
+.vs-nav__blur > span:nth-child(5) { --to: 30.0146px; mask-image: linear-gradient(to top, transparent 58.333%, black 75%, black 100%); }
+.vs-nav__blur > span:nth-child(6) { --to: 40.4745px; mask-image: linear-gradient(to top, transparent 66.667%, black 83.333%, black 100%); }
+.vs-nav.is-scrolled .vs-nav__blur > span { --blur: var(--to); transition-delay: 0.15s; }
+.vs-nav.is-scrolled .vs-nav__blur::before { opacity: 1; transition-delay: 0.15s; }
+@media (max-width: 767px) {
+  .vs-nav__blur::before { background: linear-gradient(to top, transparent 0%, color-mix(in oklab, var(--kf-raised) 1%, transparent) 25%); }
+  .vs-nav__blur > span:nth-child(n+5) { display: none; }
+  .vs-nav__blur > span:nth-child(1) { --to: 6.25px; mask-image: linear-gradient(to top, transparent 33.333%, black 50%, black 100%); }
+  .vs-nav__blur > span:nth-child(2) { --to: 24.2061px; mask-image: linear-gradient(to top, transparent 33.333%, black 66.667%, black 100%); }
+  .vs-nav__blur > span:nth-child(3) { --to: 50.3891px; mask-image: linear-gradient(to top, transparent 50%, black 83.333%, black 100%); }
+  .vs-nav__blur > span:nth-child(4) { --to: 82.6797px; mask-image: linear-gradient(to top, transparent 66.667%, black 100%, black 100%); }
+}
+.vs-nav__left, .vs-nav__right { display: flex; align-items: center; gap: 0.8rem; }
+.vs-nav__right { justify-content: flex-end; }
+.vs-nav__group { display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem; border-radius: 0.8rem; transition: background-color 0.3s ease, backdrop-filter 0.3s ease; }
+.vs-nav.is-scrolled .vs-nav__group { background: var(--site-frost); backdrop-filter: blur(16px); }
+/* Header bar lowered over a dark section — text turns white in .2s ease, frosted panel brightens in .3s, logo mark flips */
+.vs-nav__logo { transition: color 0.2s ease; }
+/* All assets collapses from max width 12rem → 0 (.2s ease) when the menu opens — it starts shrinking once below the actual width, so it begins later than the button widening */
+.vs-nav__link { max-width: 12rem; overflow: hidden; white-space: nowrap; transition: color 0.2s ease, max-width 0.2s ease, margin 0.2s ease; }
+.vs-nav.is-open .vs-nav__link { max-width: 0; margin-inline: 0; }
+.vs-logo-mark { transition: filter 0.2s; }
+.vs-nav.theme-light.is-scrolled { color: var(--site-nav-light); }
+.vs-nav.theme-light.is-scrolled .vs-nav__group { background: color-mix(in oklab, var(--site-nav-light) 20%, transparent); }
+.vs-nav.theme-light.is-scrolled .vs-logo-mark { color: var(--kf-ink); filter: invert(1); }
+/* Menu button — black plate scales 1.05 (.4s accelerating curve), text rolls over and the ＋ spins 180°. When open the ＋ sits at 45° and the text reads Close */
+.vs-menu-btn { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 2.8rem; padding: 0.8rem 0.6rem; border: 1px solid transparent; border-radius: 0.6rem; background: none; color: var(--kf-contrast-ink); cursor: pointer; font: inherit; white-space: nowrap; }
+.vs-menu-btn::before { content: ""; position: absolute; inset: 0; z-index: 0; border-radius: inherit; background: var(--kf-contrast-bg); transition: transform 0.4s cubic-bezier(1, 0, 1, 1); }
+.vs-menu-btn > * { position: relative; z-index: 1; }
+.vs-menu-btn__label { position: relative; display: block; overflow: hidden; }
+.vs-menu-btn__menu { display: block; }
+.vs-menu-btn__close { position: absolute; top: 0; left: 0; display: block; transform: translateY(100%); }
+.vs-menu-btn__label::after { content: "Menu"; position: absolute; top: 0; left: 0; transform: translateY(100%); }
+.vs-menu-btn__icon { display: flex; align-items: center; gap: 1.5px; opacity: 0.85; }
+.vs-menu-btn__icon svg { width: 0.8em; height: 0.8em; overflow: visible; }
+.vs-menu-btn__plus { stroke: currentColor; stroke-width: 1.4; transform-box: fill-box; transform-origin: center; transition: transform 0.4s var(--jit); }
+@media (hover: hover) and (pointer: fine) {
+  .vs-menu-btn:hover::before { transform: scale(1.05); }
+  .vs-menu-btn:hover .vs-menu-btn__menu { transform: translateY(-100%); transition: transform 1s var(--jit); }
+  .vs-menu-btn:hover .vs-menu-btn__label::after { transform: translateY(0); transition: transform 0.44s var(--jit) 0.2s; }
+  .vs-menu-btn:hover .vs-menu-btn__plus { transform: rotate(180deg); transition: transform 0.4s cubic-bezier(1, 0, 1, 1); }
+  .vs-nav.is-open .vs-menu-btn:hover .vs-menu-btn__menu { transition: none; }
+  .vs-nav.is-open .vs-menu-btn:hover .vs-menu-btn__label::after { transform: translateY(100%); transition: none; }
+}
+/* When the menu opens, ＋ rotates 45° in .4s (.5,0,0,1) even while hovered — the original rule beats the hover rotation (180°). It does not rotate on phones (below 767) (original record) */
+@media (min-width: 768px) { .vs-nav.is-open .vs-menu-btn .vs-menu-btn__plus { transform: rotate(45deg); transition: transform 0.4s var(--jit); } }
+.vs-nav__link { display: flex; align-items: center; height: 2.9rem; margin-inline: 1rem; border-radius: var(--kf-radius-sm); }
+.vs-nav__logo { display: flex; align-items: center; gap: 0.2em; font-size: 2.6rem; letter-spacing: -0.03em; }
+.vs-logo-mark { width: 1.35em; height: 0.8em; }
+.vs-nav__logo sup { font-size: 0.45em; align-self: flex-start; margin-top: -0.2em; }
+/* Account button — a 1px-border panel scales 1.05x (.4s accelerating curve), the text rolls to change */
+.vs-account { position: relative; display: flex; align-items: center; padding: 0.6rem 0.8rem; border: 0; border-radius: 0.6rem; background: none; color: inherit; font: inherit; cursor: pointer; transition: color 0.2s ease; }
+.vs-account::before { content: ""; position: absolute; inset: 0; border: 1px solid currentColor; border-radius: inherit; transition: transform 0.4s cubic-bezier(1, 0, 1, 1), border-color 0.2s ease; }
+@media (hover: hover) and (pointer: fine) { .vs-account:hover::before { transform: scale(1.05); } }
+.vs-cart { display: grid; place-items: center; min-width: 2.8rem; height: 2.8rem; padding: 0 0.4rem; border: 1px solid currentColor; border-radius: 99.9rem; background: none; color: inherit; font: inherit; cursor: pointer; transition: color 0.2s ease, border-color 0.2s ease; }
+/* Cart drawer — scrim .3s power2.out, panel from off the right edge .68s (.5,0,0,1). Closing is 1.5x faster */
+.vs-cart-drawer { position: fixed; inset: 0; z-index: 200; visibility: hidden; }
+.vs-cart-drawer__overlay { position: absolute; inset: 0; opacity: 0; }
+.vs-cart-drawer__panel { position: absolute; top: 0; right: 0; display: flex; width: 590px; max-width: 100%; height: 100%; flex-direction: column; gap: 2.4rem; padding: 16px; overflow-y: auto; background: var(--kf-surface); }
+.vs-cart-drawer__top { display: flex; justify-content: space-between; align-items: center; font-size: 2.4rem; }
+/* Drawer close — a black pill like the menu button, on interaction the panel scales 1.05 and the × turns 45° → 225° (.4s accelerating curve) */
+/* The original pill is min 19.2rem and header-line text, so the moment the cursor is reached (hover start) when the drawer slides in is determined by this width */
+.vs-cart-drawer__close { align-self: auto; min-width: 19.2rem; font: 500 max(12px, 0.9028vw)/1 var(--kf-font-sans); }
+.vs-cross { stroke: currentColor; stroke-width: 1.4; transform-box: fill-box; transform-origin: center; transform: rotate(45deg); }
+@media (hover: hover) and (pointer: fine) { .vs-cart-drawer__close:hover .vs-cross { transform: rotate(225deg); transition: transform 0.4s cubic-bezier(1, 0, 1, 1); } }
+/* Shared backdrop — behind drawers and the login window. When on, it stands in 33ms, the canvas sizes itself to a 10px cell grid, then cells fill in at random */
+.vs-backdrop { position: fixed; inset: 0; z-index: 190; display: none; overflow: hidden; pointer-events: none; opacity: 0; }
+.vs-backdrop.is-visible { display: block; pointer-events: auto; }
+.vs-backdrop canvas { position: absolute; image-rendering: pixelated; }
+/* Window (login · download · news) — turns on all at once with is-open (no transition), and only the inner panel rises from 10dvh below in .5s expo. 68rem frosted panel (blur 180px), corner 2.4rem.
+   Over a dark section (theme-light), the panel becomes pale frost with white text */
+.vs-modal { --modal-bg: color-mix(in oklab, var(--site-nav-light) 70%, transparent); --modal-color: var(--kf-ink); --modal-muted: var(--kf-dim); --modal-surface: var(--kf-surface); --modal-border: var(--kf-line); --modal-close: var(--kf-dim);
+  position: fixed; inset: 0; z-index: 210; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; }
+.vs-modal.is-open { opacity: 1; visibility: visible; }
+.vs-modal.theme-light { --modal-bg: color-mix(in oklab, var(--site-nav-light) 20%, transparent); --modal-color: var(--site-nav-light); --modal-muted: var(--kf-line); --modal-surface: color-mix(in oklab, var(--site-nav-light) 8%, transparent); --modal-border: color-mix(in oklab, var(--site-nav-light) 16%, transparent); --modal-close: color-mix(in oklab, var(--kf-dim) 60%, var(--kf-raised)); }
+.vs-modal__backdrop { position: absolute; inset: 0; background: color-mix(in oklab, var(--kf-contrast-bg) 25%, transparent); }
+.vs-modal__backdrop--none { background: none; }
+.vs-modal__inner { position: relative; z-index: 1; width: 68rem; max-width: 80%; max-height: calc(100dvh - 8rem); margin: auto; overflow-y: auto; padding: 6rem 8rem; border-radius: 2.4rem; background: var(--modal-bg); color: var(--modal-color); text-align: center; backdrop-filter: blur(180px); transform: translateY(10dvh); transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1), background 0.3s ease, color 0.3s ease; }
+.vs-modal.is-open > .vs-modal__inner { transform: translateY(0); }
+.vs-modal__close { position: absolute; top: 1.7rem; right: 1.7rem; border: 0; background: none; color: var(--modal-close); cursor: pointer; }
+.vs-modal__x { display: block; width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+.vs-modal__close-label { display: none; }
+.vs-modal__title { margin-bottom: 0.6rem; font-size: 2.7778vw; line-height: 1.1; letter-spacing: -1px; color: var(--modal-color); }
+.vs-modal__sub { margin-bottom: 6rem; font-size: 1.3194vw; line-height: 1; letter-spacing: -0.02em; }
+.vs-modal__form { text-align: left; }
+.vs-field { position: relative; margin-bottom: 0.8rem; }
+.vs-field input { width: 100%; height: 6rem; padding: 3rem 1.6rem 1rem; border: 1px solid var(--kf-line); border-radius: 1.2rem; background: var(--kf-surface); color: var(--kf-ink); font: inherit; font-size: 1.1111vw; line-height: 1.2; outline: none; transition: border-color 0.2s; }
+.vs-field label { position: absolute; top: 3rem; left: 1.7rem; color: var(--kf-dim); font-size: 1.1111vw; line-height: 1.1; pointer-events: none; transform: translateY(-50%); transform-origin: 0 0; transition: transform 0.18s ease, color 0.18s ease; }
+.vs-field input:focus + label, .vs-field input:not(:placeholder-shown) + label { transform: translateY(-1.7rem) scale(0.75); }
+.vs-field__submit { position: absolute; top: 0.8rem; right: 0.8rem; bottom: 0.8rem; display: flex; }
+.vs-modal__submit { margin-top: 2.2rem; }
+.vs-modal__submit .vs-cta { width: 100%; }
+.vs-auth__view { display: none; }
+.vs-auth__view.is-active { display: block; }
+.vs-auth__links { display: flex; align-items: center; justify-content: space-between; margin-top: 2rem; font-size: 0.9722vw; line-height: 1; color: var(--modal-color); }
+.vs-auth__links button { padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+.vs-auth__switch { text-decoration: underline; }
+.vs-auth__social { display: flex; gap: 0.8rem; margin-top: 5.4rem; }
+.vs-auth__social-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 1.2rem; height: 6.5rem; border-radius: 1.6rem; background: color-mix(in oklab, var(--site-nav-light) 35%, transparent); color: var(--kf-ink); font-size: 0.9722vw; line-height: 1; transition: background 0.3s; }
+@media (hover: hover) { .vs-auth__social-btn:hover { background: color-mix(in oklab, var(--site-nav-light) 60%, transparent); } }
+.vs-auth__social-ic { width: 24px; height: 24px; border-radius: 50%; background: currentColor; opacity: 0.25; }
+.vs-consent { display: flex; align-items: flex-start; gap: 1rem; margin-top: 30px; color: var(--modal-color); font-size: 1.1111vw; line-height: 1; text-align: left; cursor: pointer; }
+.vs-consent input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.vs-consent__ui { display: flex; flex-shrink: 0; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem; border: 1px solid var(--modal-border); border-radius: 0.267rem; transition: border-color 0.2s ease; }
+.vs-consent__ui::after { content: ""; width: 0.8rem; height: 0.8rem; border-radius: 0.133rem; background: var(--modal-color); opacity: 0; transition: opacity 0.15s ease; }
+.vs-consent input:checked + .vs-consent__ui::after { opacity: 1; }
+.vs-consent a { text-decoration: underline; }
+/* Download window — key · domain rows. A deleted row collapses in .3s (fades in .2s), add inserts only one input row at a time */
+.vs-dl__sub { display: inline-flex; align-items: center; gap: 0.8rem; }
+.vs-dl__dot { width: 0.8rem; height: 0.8rem; border-radius: 50%; background: var(--site-green); }
+.vs-dl__list { display: flex; flex-direction: column; gap: 0.8rem; margin: 0; padding: 0; list-style: none; text-align: left; }
+.vs-dl__row { display: flex; align-items: center; justify-content: space-between; gap: 1.6rem; max-height: 12rem; overflow: hidden; padding: 2rem 2.4rem 2rem 1.6rem; border: 1px solid var(--modal-border); border-radius: 1.2rem; background: var(--modal-surface); transition: opacity 0.2s, max-height 0.3s, margin 0.3s, padding 0.3s, background 0.3s ease, border-color 0.3s ease; }
+.vs-dl__row--input, .vs-dl__row--add { padding: 0; }
+.vs-dl__row--add { justify-content: center; }
+.vs-dl__row.is-removing { max-height: 0; margin: 0; padding-block: 0; border-width: 0; opacity: 0; }
+.vs-dl__domain, .vs-dl__key, .vs-dl__input, .vs-dl__generate, .vs-dl__add { font-size: 1.1111vw; line-height: 1.1; color: var(--modal-color); }
+.vs-dl__key { display: inline-flex; align-items: center; gap: 1.2rem; }
+.vs-dl__key-text { letter-spacing: 0.02em; }
+.vs-dl__icon-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0; border: 0; background: none; color: var(--modal-color); cursor: pointer; transition: color 0.2s, opacity 0.2s; }
+.vs-dl__icon-btn:hover { opacity: 0.7; }
+.vs-dl__icon-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+.vs-dl__icon-btn.is-copied, .vs-dl__copy { color: var(--modal-muted); }
+.vs-dl__icon-btn--remove { margin-left: 1.2rem; }
+.vs-dl__input { flex: 1; padding: 2rem 2.4rem 2rem 1.6rem; border: 0; background: transparent; font-family: inherit; outline: none; }
+.vs-dl__input::placeholder { color: var(--modal-muted); }
+.vs-dl__generate { padding: 1.8rem 2.4rem; border: 0; background: none; font-family: inherit; text-decoration: underline; cursor: pointer; }
+.vs-dl__add { display: flex; align-items: center; justify-content: center; width: 100%; padding: 2rem; border: 0; background: none; font-family: inherit; cursor: pointer; }
+.vs-dl__add.is-disabled { color: var(--modal-muted); cursor: not-allowed; pointer-events: none; }
+.vs-cart-drawer__downloads { align-self: flex-start; }
+button.vs-cta { border: 0; font-family: inherit; cursor: pointer; }
+/* News window — email input and 212px button side by side in one cell (stacked below 1023), the label hides once the input is filled. Wordmark below 11.6rem */
+@media (min-width: 1024px) {
+  .vs-field--row { display: flex; align-items: center; padding: 1.2rem; border-radius: 1.2rem; background: var(--modal-surface); }
+  .vs-field--row input { flex: 1; height: auto; padding: 0 0 0 3rem; border: 0; background: none; }
+  .vs-field--row label, .vs-field--row input:focus + label { top: 50%; left: 4.2rem; font-size: 1.0417vw; letter-spacing: 0.08em; transform: translateY(-50%); }
+  .vs-field--row input:not(:placeholder-shown) + label { display: none; }
+  .vs-field--row .vs-field__submit { position: static; }
+}
+@media (min-width: 1440px) { .vs-field--row label, .vs-field--row input:focus + label { font-size: 15px; } }
+.vs-field--row .vs-cta { width: 212px; }
+@media (max-width: 1023px) { .vs-field--row .vs-field__submit { position: static; margin-top: 0.8rem; } .vs-field--row .vs-cta { width: 100%; } }
+.vs-news-modal__logo { margin-top: 11.6rem; font-size: 2rem; letter-spacing: -0.03em; }
+@media (min-width: 1440px) {
+  .vs-modal__title { font-size: 40px; }
+  .vs-modal__sub { font-size: 19px; }
+  .vs-field input, .vs-field label, .vs-consent, .vs-dl__domain, .vs-dl__key, .vs-dl__input, .vs-dl__generate, .vs-dl__add { font-size: 16px; }
+  .vs-auth__links, .vs-auth__social-btn { font-size: 14px; }
+  .vs-news__t { font-size: 19px; }
+}
+@media (max-width: 1023px) {
+  .vs-modal__inner { padding: 5rem 1.2rem; }
+  .vs-modal__x { display: none; }
+  .vs-modal__close-label { display: flex; align-items: center; justify-content: center; padding: 0.6rem; border-radius: 0.6rem; background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); font-size: 0.9028vw; line-height: 1; }
+}
+@media (max-width: 767px) {
+  .vs-modal__inner { max-width: calc(100% - 2.4rem); }
+  .vs-auth__social-btn { flex-direction: column; gap: 0.6rem; height: auto; padding: 1.2rem; text-align: center; }
+}
+.vs-cart-drawer__empty { margin-top: auto; font-size: 1.5rem; color: var(--kf-dim); }
+.vs-menu { position: absolute; top: calc(100% + 6px); left: 0; width: 34rem; padding: 0.6rem; border-radius: var(--kf-radius-md); background: var(--kf-surface); visibility: hidden; opacity: 0; transform: translateY(-8px); }
+.vs-menu__item { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.2rem; border-radius: var(--kf-radius-sm); font-size: 1.6rem; transition: background-color 0.2s, opacity 0.2s; }
+.vs-menu__items.is-item-focused .vs-menu__item:not(:hover) { opacity: 0.4; }
+.vs-menu__item .vs-roll { flex: 1; }
+.vs-menu__item small { color: var(--kf-dim); font-size: 1.2rem; }
+
+/* ── Bottom-right panel group ── */
+.vs-stack { position: fixed; right: 12px; bottom: 12px; z-index: 90; display: flex; width: 44.4rem; flex-direction: column; gap: 12px; pointer-events: none; }
+.vs-stack > * { pointer-events: auto; }
+.vs-cookie { display: flex; flex-direction: column; padding: 2rem 2.1rem 2.5rem; border-radius: var(--kf-radius-md); background: var(--kf-accent); color: var(--kf-on-accent); transform: translateX(calc(100% + 12px)); }
+.vs-cookie__title { display: flex; align-items: center; justify-content: center; gap: 1rem; font-size: 5rem; letter-spacing: -0.03em; line-height: 1; }
+.vs-cookie__tag { display: inline-block; padding: 0.1em 0.25em 0.15em; border-radius: var(--kf-radius-sm); background: var(--kf-contrast-bg); color: var(--kf-accent); rotate: -4deg; }
+.vs-cookie__btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-top: 2.2rem; }
+.vs-cookie__btns .vs-cta { width: 100%; justify-content: space-between; }
+.vs-cookie__btns .vs-cta__text { min-width: 0; }
+.vs-cookie__note { margin-top: 1.6rem; font-size: 1.1rem; text-align: center; opacity: 0.8; }
+.vs-cookie__note u { text-underline-offset: 2px; }
+.vs-veil { position: fixed; inset: 0; z-index: 3000; width: 100vw; height: 100vh; pointer-events: none; visibility: hidden; image-rendering: pixelated; }
+.vs-push.is-out { position: absolute; right: 12px; bottom: 12px; z-index: 5; width: 44.4rem; }
+.vs-push { position: relative; display: flex; gap: 2rem; padding: 0.6rem; border-radius: var(--kf-radius-md); background: var(--kf-surface); }
+.vs-push__img { width: 10.8rem; aspect-ratio: 1; border-radius: var(--kf-radius-sm); flex: none; }
+.vs-push__body { display: flex; flex-direction: column; justify-content: center; gap: 1.6rem; }
+.vs-push__name { font-size: 1.8rem; }
+.vs-push__price { font-size: 1.5rem; color: var(--kf-ink-soft); }
+.vs-tag { display: inline-flex; align-items: center; padding: 0.35em 0.5em; border-radius: 4px; background: var(--site-blue); color: var(--kf-ink); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.01em; }
+.vs-tag--green { background: var(--site-green); }
+.vs-tag--pink { background: var(--kf-accent); }
+.vs-tag--line { background: transparent; box-shadow: inset 0 0 0 1px currentColor; }
+.vs-push .vs-tag { position: absolute; top: 1.2rem; right: 1.2rem; font-size: 1.4rem; }
+.vs-life { position: relative; padding: 0.6rem 0.6rem 1.2rem; border-radius: var(--kf-radius-md); background: color-mix(in oklab, var(--kf-raised) 80%, transparent); backdrop-filter: blur(20px); }
+.vs-life__top { display: flex; gap: 2rem; align-items: center; }
+.vs-life__media { width: 10.8rem; aspect-ratio: 1; border-radius: var(--kf-radius-sm); flex: none; }
+.vs-life__k { font-size: 1.4rem; text-transform: uppercase; }
+.vs-life__t { margin-top: 1.4rem; font-size: 1.8rem; }
+.vs-life__close { position: absolute; top: 1rem; right: 1rem; width: 1.6rem; height: 1.6rem; border: 0; background: none; color: var(--kf-dim); cursor: pointer; }
+.vs-life__bars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-top: 2rem; }
+.vs-life__bar { height: 3.2rem; border-radius: 0.4rem; background: color-mix(in oklab, var(--kf-surface) 40%, transparent); overflow: hidden; }
+.vs-life__fill { display: block; width: 100%; height: 100%; background: var(--site-green); transform-origin: left; transform: scaleX(0); border-radius: inherit; }
+.vs-life__prices { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 0.8rem; font-size: 1.2rem; text-align: right; }
+
+/* News pill — a frosted plate 30px above the bottom of the area it sits in (first page pinned community plate·shop category list·about details), width 80%, max 660px, blur 180px.
+   From the red dot on the left, three ripples spread, offset by a third every 5s, it pauses when off-screen or when a window is open. When a window opens the panel disappears in .2s */
+.vs-news { position: absolute; left: 0; right: 0; bottom: 30px; z-index: 10; display: flex; align-items: center; justify-content: space-between; width: 80%; max-width: 660px; margin-inline: auto; overflow: hidden; padding: 1rem 1rem 1rem 10rem; border: 1px solid; border-image-source: conic-gradient(from 90deg at 0% 0%, color-mix(in oklab, var(--site-nav-light) 29.5%, transparent) -75.96deg, transparent 14.04deg, color-mix(in oklab, var(--site-nav-light) 29.5%, transparent) 104.04deg, transparent 194.04deg, color-mix(in oklab, var(--site-nav-light) 29.5%, transparent) 284.04deg, transparent 374.04deg); border-radius: 1.2rem; background: color-mix(in oklab, var(--site-nav-light) 50%, transparent); color: var(--kf-ink); backdrop-filter: blur(180px); transition: opacity 0.2s ease; }
+.vs-news--dark { background: color-mix(in oklab, var(--site-nav-light) 20%, transparent); color: var(--kf-contrast-ink); }
+.vs-news.is-hidden { opacity: 0; pointer-events: none; }
+.vs-news__icon { position: absolute; top: 50%; left: 0; transform: translateY(-50%); }
+.vs-news__icon svg { display: block; width: 85px; height: 70px; }
+.vs-news__dot { fill: var(--site-red); }
+.vs-ripple { fill: none; stroke: var(--site-red); stroke-width: 1.5; transform-box: fill-box; transform-origin: center; transform: scale(0); animation: vs-ripple 5s ease-out infinite; }
+.vs-ripple--2 { animation-delay: calc(5s / 3); }
+.vs-ripple--3 { animation-delay: calc(5s / 3 * 2); }
+.vs-news.is-offscreen .vs-ripple, .vs-news.is-hidden .vs-ripple { animation-play-state: paused; }
+@keyframes vs-ripple { 0% { transform: scale(0); opacity: 1; } to { transform: scale(1); opacity: 0; } }
+.vs-news__t { font-size: 1.3194vw; line-height: 1; letter-spacing: -0.02em; }
+.vs-news .vs-cta { min-width: 205px; }
+
+/* Icon title — 51px pixel icon + 50px title (3.47vw · 40px below 1152), hidden below width 1023 (the shop header keeps only the title) */
+.vs-icon-title { display: flex; align-items: center; gap: 1.6rem; margin-bottom: 6rem; padding-left: 2.4rem; color: var(--kf-ink); }
+.vs-icon-title__icon { display: block; }
+.vs-icon-title__icon svg, [data-svg] svg { display: block; fill: currentColor; }
+.vs-icon-title__title { font-size: 3.4722vw; font-weight: 500; line-height: 0.9; }
+.vs-text-mask { overflow: hidden; padding-bottom: 0.25em; margin-bottom: -0.25em; }
+@media (min-width: 1440px) { .vs-icon-title__title { font-size: 50px; } }
+@media (max-width: 1152px) { .vs-icon-title__title { font-size: 40px; } }
+@media (max-width: 1023px) { .vs-icon-title { display: none; } }
+/* Icon row — eight 75px pixel icons sit evenly between 1px faint lines above and below (16rem above · 4rem inside), hidden below width 1023 */
+.vs-icons { margin-top: 16rem; padding: 4rem 0; border-block: 1px solid color-mix(in oklab, var(--kf-raised) 20%, transparent); color: var(--kf-raised); }
+.vs-icons__wrap { display: flex; align-items: center; justify-content: space-between; max-width: 115.8rem; margin-inline: auto; }
+@media (min-width: 1024px) and (max-width: 1279px) { .vs-icons__wrap { padding-inline: 2.4rem; } }
+@media (max-width: 1023px) { .vs-icons { display: none; } }
+
+/* Lifetime pass board too: white text and faint bars over dark areas */
+.vs-life.theme-light { color: var(--site-nav-light); }
+.vs-life.theme-light .vs-life__bar { background: color-mix(in oklab, var(--site-nav-light) 20%, transparent); }
+
+/* ── Footer ── */
+.vs-foot { position: relative; background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); padding: 0 0 2.4rem; overflow: hidden; }
+.vs-foot__logo { padding: 2rem 15px; border-top: 1px solid var(--site-rule-dark); border-bottom: 1px solid var(--site-rule-dark); }
+.vs-foot__logo svg { width: 100%; height: auto; display: block; }
+.vs-foot__logo text { fill: currentColor; font-family: var(--kf-font-display); font-weight: 500; }
+.vs-foot__mid { display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; padding: 4rem var(--pad) 0; font-size: 1.2rem; text-transform: uppercase; }
+.vs-foot__mid ul { display: flex; flex-direction: column; gap: 0.6rem; align-items: flex-end; }
+.vs-foot__mid a { transition: opacity 0.2s; }
+.vs-foot__mid a:hover { opacity: 0.6; }
+.vs-clock { width: 26rem; aspect-ratio: 1; }
+.vs-clock .face { fill: var(--kf-ink-soft); stroke: var(--site-rule-dark); }
+.vs-clock .tick { stroke: var(--kf-contrast-ink); stroke-width: 3; }
+.vs-clock .hour-hand, .vs-clock .min-hand { stroke: var(--kf-contrast-ink); stroke-linecap: round; }
+.vs-clock .second-hand { stroke: var(--site-red); }
+.vs-clock text { fill: var(--kf-contrast-ink); font-size: 7px; text-anchor: middle; font-family: var(--kf-font-sans); }
+.vs-foot__base { display: flex; justify-content: space-between; padding: 4rem var(--pad) 0; font-size: 1.1rem; text-transform: uppercase; opacity: 0.7; }
+
+/* Cursor pixel trail — difference blend as in the original, so it shows on any background */
+.vs-trail { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 99999; mix-blend-mode: difference; }
+
+/* First-visit loader — the wordmark letters each bounce, then settle into the header logo spot */
+/* The loader covers from the first paint (like the original) — if seen within a week, the vs-seen set by the head script skips drawing it entirely. The wordmark lights up at 1.25s */
+.vs-loader { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: var(--kf-bg); }
+.vs-seen .vs-loader { display: none; }
+@media (prefers-reduced-motion: reduce) { .vs-loader { display: none; } }
+.vs-loader__logo { width: 88vw; color: var(--kf-ink); visibility: hidden; }
+.vs-loader__logo svg { width: 100%; height: auto; overflow: visible; }
+.vs-loader__logo text { fill: currentColor; font-family: var(--kf-font-display); font-weight: 500; }
+.vs-loader__video { position: absolute; border-radius: var(--kf-radius-sm); overflow: hidden; }
+
+/* Wobbling badge — every 5.5s ease-in-out it tilts side to side briefly twice, at 4~10% · 14~20% (2.4° · −1.9° · 1.5° · −1° / −2.1° · 2.5° · −1.4° · .8°) */
+.is-vibrating { animation: vs-tag-vibrate 5.5s ease-in-out infinite; }
+@keyframes vs-tag-vibrate {
+  0%, 4% { transform: rotate(0); } 5.2% { transform: rotate(2.4deg); } 6.4% { transform: rotate(-1.9deg); } 7.6% { transform: rotate(1.5deg); } 8.8% { transform: rotate(-1deg); }
+  10%, 14% { transform: rotate(0); } 15.2% { transform: rotate(-2.1deg); } 16.4% { transform: rotate(2.5deg); } 17.6% { transform: rotate(-1.4deg); } 18.8% { transform: rotate(0.8deg); }
+  20%, to { transform: rotate(0); }
+}
+@media (prefers-reduced-motion: reduce) { .is-vibrating { animation: none; } }
+
+/* Row mask title · fade-in entrance */
+.vs-mask { display: block; overflow: hidden; padding-bottom: 0.08em; margin-bottom: -0.08em; }
+.vs-mask > span { display: block; }
+
+@media (max-width: 1023px) {
+  .vs-stack { width: calc(100% - 24px); }
+  .vs-push, .vs-life { display: none; }
+  .vs-cookie__title { font-size: 3.6rem; }
+  .vs-news { display: block; width: calc(100% - 2.4rem); padding: 3rem 1rem 1rem; }
+  .vs-news__t { margin: 0 0 3rem 1.6rem; }
+  .vs-news__icon { display: none; }
+  .vs-news .vs-cta { width: 100%; }
+  .vs-cats .vs-news-wrap, .vs-details .vs-news-wrap { display: none; }
+  .vs-nav__link, .vs-account { display: none; }
+  /* Phone·tablet Footer — no top margin, wordmark (8px on each side), 60px below it Contact on the left with a social row 3rem beneath (9px gap), legal link row on the right, clock hidden, 9rem at the bottom. Text is 15px uppercase */
+  .vs-foot { display: grid; grid-template-columns: 1fr auto; padding: 0 0 9rem; font-size: 15px; line-height: 1; }
+  .vs-foot__mid a, .vs-foot__base a { display: block; line-height: 1.2; }
+  .vs-foot__logo { grid-column: 1 / -1; padding: 0 8px; }
+  .vs-foot__mid { display: flex; flex-direction: column; margin-top: 60px; padding: 0 12px; font-size: 15px; }
+  .vs-foot__mid ul { align-items: flex-start; gap: 9px; margin-top: 3rem; }
+  .vs-clock { display: none; }
+  .vs-foot__base { flex-direction: column; gap: 9px; margin-top: 60px; padding: 0 12px; font-size: 15px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vs-roll__t, .vs-roll__c, .vs-cta__icon { transition: none; }
+}
+.vs-cart-drawer__close .vs-menu-btn__label::after { content: "Close"; }
+
+/* Contact window — opened by the footer Contact·#contact links. On desktop (1000 and up) a 50vw frosted window (blur 50px · corner 12px) comes from 85vh below at .8 scale
+   .8s (.645,.045,.355,1) rises while growing, and closes in .5s going down. Header has three traffic-light buttons and a title, To · From · Subject · Message fields, a send button.
+   Below width 999 a green panel covering the whole screen appears over .6s (.215,.61,.355,1). Over a dark section it is pale frost with white text */
+.vs-contact { --contact-bg: color-mix(in oklab, var(--site-nav-light) 70%, transparent); --contact-color: var(--kf-ink); --contact-border: color-mix(in oklab, var(--kf-ink) 10%, transparent); --contact-muted: color-mix(in oklab, var(--kf-ink) 50%, transparent); --contact-head: var(--site-nav-light);
+  position: fixed; top: 50%; left: 50%; z-index: 220; font-size: 0.9722vw; line-height: 1; }
+.vs-contact.theme-light { --contact-bg: color-mix(in oklab, var(--site-nav-light) 10%, transparent); --contact-color: var(--site-nav-light); --contact-border: color-mix(in oklab, var(--site-nav-light) 10%, transparent); --contact-muted: color-mix(in oklab, var(--site-nav-light) 50%, transparent); --contact-head: var(--kf-contrast-bg); }
+.vs-contact__head { position: relative; padding: 0.75rem; border-radius: 12px 12px 0 0; background: var(--contact-head); text-align: center; }
+.vs-contact__controls { position: absolute; top: 0; bottom: 0; left: 12px; display: flex; align-items: center; }
+.vs-contact__dot { position: relative; width: 0.7em; height: 0.7em; margin-right: 0.4em; padding: 0; border: 0; border-radius: 50%; color: var(--kf-ink); font: inherit; cursor: pointer; }
+.vs-contact__dot--close { background: var(--site-red); }
+.vs-contact__dot--min { background: color-mix(in oklab, var(--site-red) 40%, var(--site-green)); }
+.vs-contact__dot--max { background: var(--kf-ink-soft); cursor: default; }
+.vs-contact__dot svg, .vs-contact__dot span { position: absolute; top: 50%; left: 50%; width: 50%; height: 50%; opacity: 0; transform: translate(-50%, -50%); stroke: currentColor; stroke-width: 2; line-height: 1; }
+.vs-contact__head:hover .vs-contact__dot svg { opacity: 0.6; }
+.vs-contact__head:hover .vs-contact__dot span { opacity: 0.8; }
+.vs-contact__fields { padding: 0 1.25rem; }
+.vs-contact__item { padding: 0.75rem 0; border-bottom: 1px solid var(--contact-border); }
+.vs-contact__to { display: inline-flex; align-items: center; gap: 0.4em; padding: 0.2em 0.5em 0.2em 0.2em; border-radius: 99px; background: color-mix(in oklab, var(--kf-raised) 60%, transparent); }
+.vs-contact__fav { width: 1.4em; height: 1.4em; border-radius: 50%; }
+.vs-contact__fav::after { display: none; }
+.vs-contact__inner { display: grid; grid-template-columns: auto 1fr; column-gap: 6px; }
+.vs-contact input, .vs-contact textarea { padding: 0; border: 0; background: transparent; color: var(--contact-color); font: inherit; outline: 0; }
+.vs-contact ::placeholder { color: var(--contact-muted); }
+.vs-contact__message { padding: 0.75rem 1.25rem; }
+.vs-contact__message textarea { width: 100%; height: 22vh; resize: none; }
+.vs-contact__foot { display: flex; justify-content: flex-end; padding: 0 1.25rem 1.25rem; }
+.vs-contact__close { display: none; }
+@media (min-width: 1440px) { .vs-contact { font-size: 14px; } }
+@media (min-width: 1000px) {
+  .vs-contact { width: 50vw; border: 1px solid var(--contact-border); border-radius: 12px; background: var(--contact-bg); color: var(--contact-color); opacity: 0; pointer-events: none; transform: translate3d(0, 85vh, 0) translate3d(-50%, -50%, 0) scale3d(0.8, 0.8, 1); backdrop-filter: blur(50px); }
+  .has-contact-ready .vs-contact { transition: opacity 0.5s cubic-bezier(0.645, 0.045, 0.355, 1), transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1); }
+  .has-contact-open .vs-contact { opacity: 1; pointer-events: auto; transform: translate3d(-50%, -50%, 0) scale3d(1, 1, 1); transition-duration: 0.8s; }
+}
+@media (max-width: 999px) {
+  .vs-contact { top: 0; right: 0; left: 0; width: auto; height: 100dvh; overflow-y: auto; background: var(--site-green); color: var(--kf-ink); font-size: 16px; opacity: 0; pointer-events: none; visibility: hidden; }
+  .has-contact-ready .vs-contact { transition: opacity 0.6s cubic-bezier(0.215, 0.61, 0.355, 1), visibility 0s linear 0.6s; }
+  .has-contact-open .vs-contact { opacity: 1; pointer-events: auto; visibility: visible; transition-delay: 0s; }
+  .vs-contact__head { padding: 120px 0.75rem 60px; background: none; }
+  .vs-contact__title { font-size: 51px; letter-spacing: -0.03em; }
+  .vs-contact__controls { display: none; }
+  .vs-contact__fields { padding: 0 0.75rem; }
+  .vs-contact__item { padding-block: 16px; border-bottom-color: color-mix(in oklab, var(--kf-ink) 15%, transparent); }
+  .vs-contact input, .vs-contact textarea { color: var(--kf-ink); }
+  .vs-contact__close { position: absolute; top: 17px; right: 17px; display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem; border: 0; border-radius: 0.6rem; background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); font: inherit; font-size: 13px; }
+  .vs-contact__close svg { display: none; }
+}

@@ -1,0 +1,38 @@
+{
+  "kind": "Scroll",
+  "trigger": [
+    "scroll-scrub",
+    "cursor"
+  ],
+  "fits": [
+    "Photo",
+    "Card",
+    "Section"
+  ],
+  "what": "A single screen-fixed WebGL2 canvas draws the photo cells instead — when a cell is far from the screen center (landscape reel uses screen width .62, vertical uses height .55 as 1, and everything within .12 is fully developed) it is a two-tone paper/ink 4×4 Bayer dither print (2px cells, color sampled at the cell center), and nearer the center the tonal levels grow from 1 to 7 steps (smoothstep 0~.55), then develop to gray (.35~.8), then back to the original color (.55~1). Inside the magnifier circle that follows the cursor at .22 per frame (over a cell the radius goes from the short side .15 to .12, off a cell it goes to 0 at .18) it develops immediately and gets a 1px ink border. When scrolling stops for 220ms (cells move no more than .3px per frame), all cells develop at .07 per frame (back to .2 when flowing again), and the color under the cursor on a cell is picked and reported via fx:develop-sample",
+  "ease": "smoothstep",
+  "duration": {
+    "Freeze Issue": ".07 per frame",
+    "Magnifier": ".22 per frame"
+  },
+  "needs": [],
+  "options": {
+    "kind": "Placeholder shape (when there is no photo) — photo · ui(screen capture) · phone",
+    "video": "If 1, the placeholder image moves (every .09s), and the inserted <video> Plays only when visible",
+    "page": "If 1, long screen capture — while the cell passes through the screen, the image window slides from top to bottom",
+    "bleed": "If 1, a cell is also developed at a width that covers the screen (25~60%)",
+    "axis": "x · y — if left empty, x when the data-fx-scroller panel overflows horizontally",
+    "[data-fx-part=media] · img · video": "(If present) photo or video to draw — if absent, a placeholder image with a color picked from data-label",
+    "--fx-develop-z": "Canvas stacking order (CSS variable on :root), default 0 — cell background transparent, text and borders above the canvas",
+    "fx:develop-strength": "Event sent to document (detail 0~1) — used to raise the effect strength after the loader ends",
+    "fx:develop-sample": "Event arriving at document (detail hex·el) — eyedropper cursor"
+  },
+  "use": "<figure data-fx=\"print-develop-gl\" data-fx-print-develop-gl=\"kind: ui; video: 1\" data-label=\"…\"><img data-fx-part=\"media\" src=\"…\"></figure>",
+  "note": "The two tones, paper and ink, are --kf-bg · --kf-ink. The original shader was not copied. The same stages (dither → tone → gray → color, magnifier, freeze effect) were written anew. Shaking ancestor (data-fx-part=\"swing\" (an inline transform) is set on it, the rectangle rotates along with that tilt, and the scale is derived from the rectangle’s on-screen size so it keeps following even when the panel wrapping the cell grows. Without WebGL2 it does nothing, so the original photo shows",
+  "from": [
+    {
+      "slug": "pen-tool-horizontal-reel",
+      "where": "index.html .gs-develop (original develop-canvas — bayer4 · uCell max(2, 2·dpr) · levels mix(1,7,ss(0,.55)) · gray ss(.35,.8) · color ss(.55,1) · loupe min(W,H)·.15 · lens lerp .22 · scroll still 220ms .07/.2 · p 1−clamp((|a|−.12)/.88) · W·.62/H·.55)"
+    }
+  ]
+}

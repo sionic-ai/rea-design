@@ -1,0 +1,279 @@
+/* Chrome shared by all pages: header row · buttons · logo · cookie bar · footer · entrance.
+   Chrome height sets the fixed frame height — change the number and the pinned section follows */
+:root {
+  /* Colors the standard --kf-* lack — kept here so they survive swapping the whole theme.css, all built from --kf-* so they change along with the skin, and tuned so the original skin yields the original values */
+  /* Track colors (master · branch · third · fourth · compare B · fifth): only the hue is rotated from the accent color. Lightness scales with the accent so it always contrasts with the skin background, 
+     Saturation is tied to the original value so tracks stay distinct even on faded clothes with an accent color */
+  --site-track-1: oklch(from var(--kf-accent) calc(l * 0.7622) 0.1605 calc(h + 176.69));
+  --site-track-2: oklch(from var(--kf-accent) calc(l * 0.8683) 0.1698 calc(h - 38.8));
+  --site-track-3: oklch(from var(--kf-accent) calc(l * 0.8275) 0.16 calc(h + 46.56));
+  --site-track-4: oklch(from var(--kf-accent) calc(l * 0.7411) 0.1615 calc(h - 93.77));
+  --site-track-5: oklch(from var(--kf-accent) calc(l * 0.7626) 0.1606 calc(h + 121.73));
+  --site-track-b: oklch(from var(--kf-accent) calc(l * 0.7146) 0.1805 calc(h + 167.01));
+  /* Compare B button text — the original is light text on purple. Turns black only on very light skins where the track is bright */
+  --site-on-track-b: oklch(from var(--site-track-b) clamp(0, (0.8 - l) * 1000, 0.9791) 0 0);
+  --site-grid: color-mix(in oklab, var(--kf-bg) 29%, var(--kf-line));
+  --gutter: 16px;
+  --head-h: 48px;
+  --strip-h: 32px;
+  --trans-h: 0px;
+  --map-h: 0px;
+  --cookie-h: 0px;
+  --sticky-top: calc(var(--head-h) + var(--strip-h));
+  --frame-h: calc(100svh - var(--sticky-top) - var(--trans-h));
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Color change on sub-pages and the cookie bar (original Tailwind transition-colors 150ms) */
+  --ease-std: cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (min-width: 992px) {
+  :root { --gutter: 32px; --head-h: 56px; --strip-h: 0px; --trans-h: 64px; --map-h: 52px; }
+}
+/* While the cookie bar is up, the chrome below sits on top of it */
+.has-cookie { --cookie-h: 82px; }
+@media (min-width: 992px) { .has-cookie { --cookie-h: 47px; } }
+
+body {
+  --dim: color-mix(in srgb, var(--kf-ink) 24%, transparent);
+  --grid: var(--site-grid);
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-mono);
+}
+/* Keep Korean placeholders from breaking mid-word */
+h1, h2, h3, p, li, dd { word-break: keep-all; }
+::selection { background: var(--kf-accent); color: var(--kf-on-accent); }
+
+/* The original shrinks every button to .97x while pressed — no transition, so it shrinks the instant you press and snaps back the instant you release */
+button:active { transform: scale(0.97); }
+
+.k, .meta, .num { font-family: var(--kf-font-mono); }
+.ink { color: var(--kf-accent); }
+
+/* ---------- Logo: bold-letter wordmark + accent-color period ---------- */
+.logo {
+  display: inline-flex;
+  align-items: baseline;
+  font: 700 20px/1 var(--kf-font-display);
+  letter-spacing: -0.03em;
+  color: var(--kf-ink);
+  white-space: nowrap;
+}
+.logo .dot, .wordmark .dot { color: var(--kf-accent); }
+.logo.is-accent { color: var(--kf-accent); }
+
+/* ---------- Button: the front panel slides away to reveal the back panel ---------- */
+.btn { display: inline-flex; background: var(--kf-ink); }
+.btn > .wf-btn {
+  min-height: 48px;
+  padding: 0 22px;
+  gap: 10px;
+  border-color: var(--kf-line);
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font: 700 14px/1 var(--kf-font-display);
+  letter-spacing: -0.01em;
+  transition: transform 0.45s var(--ease-out);
+}
+.btn.is-accent > .wf-btn { background: var(--kf-accent); border-color: var(--kf-accent); color: var(--kf-on-accent); }
+.btn.is-line > .wf-btn { border-color: color-mix(in srgb, var(--kf-ink) 55%, transparent); font: 500 11px/1 var(--kf-font-mono); letter-spacing: 0.18em; text-transform: uppercase; }
+.btn.is-sm > .wf-btn { min-height: 32px; padding: 0 12px; font-size: 12px; }
+.btn.is-mono > .wf-btn { font: 500 10px/1 var(--kf-font-mono); letter-spacing: 0.18em; text-transform: uppercase; }
+.btn-arrow { display: inline-block; transition: transform 0.45s var(--ease-out); }
+@media (hover: hover) {
+  .btn:hover > .wf-btn { transform: translate(-4px, -4px); }
+  .btn:hover .btn-arrow { transform: translateY(3px); }
+}
+.btn:active > .wf-btn { transition-duration: 80ms; transform: none; }
+/* The login button on subpages doesn’t step aside: it always wears an accent-color glow (9px), scales 1.04x on hover (.15s), and .98x when pressed */
+.btn.is-glow { background: none; }
+.btn.is-glow > .wf-btn { box-shadow: 0 0 9px color-mix(in oklab, var(--kf-accent) 50%, transparent); transition: transform 0.15s var(--kf-ease-ui); }
+@media (hover: hover) { .btn.is-glow:hover > .wf-btn { transform: scale(1.04); } }
+.btn.is-glow:active > .wf-btn { transform: scale(0.98); }
+/* The back button doesn’t lift — the original has no hover color, so it stays put on hover */
+.btn.is-quiet { background: none; }
+@media (hover: hover) { .btn.is-quiet:hover > .wf-btn { transform: none; } }
+
+/* ---------- Waveform bars: fillBars in shared.js creates data-n <i> Fills in ---------- */
+.bars { display: flex; align-items: center; gap: 3px; height: 100%; }
+.bars > i { flex: 1 1 0; min-width: 2px; height: calc(var(--h, 0.5) * 100%); min-height: 4px; background: currentColor; transform-origin: 50% 50%; }
+.bars.is-caps > i { border-radius: 99px; }
+
+/* ---------- Headline ---------- */
+.top {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 60;
+  height: var(--head-h);
+  padding: 0 var(--gutter);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 1px solid var(--kf-line);
+  background: var(--kf-bg);
+}
+.top > .logo { margin-right: auto; }
+.top.is-sticky > .logo { margin-right: 0; }
+/* Sub-page header bar sticks in the document flow and follows, translucent black showing what is behind */
+.top.is-sticky { position: sticky; height: 57px; background: color-mix(in srgb, var(--kf-bg) 95%, transparent); backdrop-filter: blur(8px); }
+.crumb { flex: 1; visibility: hidden; font: 400 10px/1 var(--kf-font-mono); letter-spacing: 0.18em; text-transform: uppercase; color: var(--kf-dim); }
+.crumb b { font-weight: 400; color: var(--kf-dim); opacity: 0.6; margin-right: 6px; }
+.sys { display: none; align-items: center; gap: 8px; font: 400 10px/1 var(--kf-font-mono); letter-spacing: 0.18em; text-transform: uppercase; color: var(--kf-dim); }
+.sys::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--site-track-3); box-shadow: 0 0 8px var(--site-track-3); }
+.page-nav { display: none; gap: 24px; font: 400 11px/1 var(--kf-font-mono); letter-spacing: 0.22em; text-transform: uppercase; }
+.page-nav a[aria-current="page"] .roll > span:first-child { color: var(--kf-ink); }
+/* The document-page header row is non-rolling text — the original has no hover color, so it stays the same on hover */
+.page-nav.is-plain a { color: var(--kf-ink); }
+.top-back { display: none; }
+@media (min-width: 768px) {
+  .sys, .top-back { display: inline-flex; }
+  .crumb { visibility: visible; }
+}
+@media (min-width: 992px) {
+  .page-nav { display: flex; margin-right: auto; margin-left: 28px; }
+  .top.has-nav > .logo { margin-right: 0; }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  background: var(--kf-accent);
+  color: var(--kf-on-accent);
+  font: 600 11px/1 var(--kf-font-mono);
+  letter-spacing: 0.12em;
+}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid color-mix(in srgb, var(--kf-accent) 60%, transparent);
+  background: var(--kf-surface);
+  font: 400 10px/1 var(--kf-font-mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--kf-accent);
+}
+
+/* Rolling link: the same text stacked in two lines, moves up one step on hover */
+.roll { display: inline-flex; flex-direction: column; height: 1em; line-height: 1; overflow: hidden; vertical-align: middle; }
+.roll > span { display: block; height: 1em; color: var(--kf-dim); transition: transform 0.55s var(--ease-out); }
+.roll > span + span { color: var(--kf-ink); }
+@media (hover: hover) { a:hover > .roll > span { transform: translateY(-100%); } }
+
+/* ---------- Sub-page info band: one line below the header row ---------- */
+.notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 36px;
+  padding: 0 var(--gutter);
+  border-bottom: 1px solid color-mix(in srgb, var(--kf-accent) 14%, transparent);
+  background: color-mix(in srgb, var(--kf-accent) 6%, transparent);
+  font: 400 10px/1.4 var(--kf-font-mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--kf-dim);
+}
+.notice p { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notice p::before { content: "● "; color: var(--kf-accent); }
+.notice a { flex: none; color: var(--kf-accent); }
+
+/* ---------- Cookie bar: rises from below half a beat after entering ---------- */
+.cookie {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 70;
+  display: grid;
+  gap: 8px;
+  padding: 10px var(--gutter);
+  border-top: 1px solid color-mix(in srgb, var(--kf-accent) 55%, transparent);
+  background: color-mix(in srgb, var(--kf-raised) 95%, transparent);
+  backdrop-filter: blur(8px);
+  font: 400 11px/1.35 var(--kf-font-sans);
+  color: color-mix(in srgb, var(--kf-ink) 75%, transparent);
+  transform: translateY(100%);
+  transition: transform 0.45s var(--ease-out);
+}
+.cookie.is-in { transform: translateY(0); }
+.cookie p b { margin-right: 8px; font: 400 9px/1 var(--kf-font-mono); letter-spacing: 0.18em; color: var(--kf-accent); }
+.cookie p b::before { content: "● "; }
+.cookie-link { color: var(--kf-ink); text-decoration: underline; text-decoration-color: var(--kf-line); text-underline-offset: 4px; }
+@media (hover: hover) { .cookie-link:hover { color: var(--kf-accent); } }
+.cookie-btns { display: flex; align-items: center; gap: 6px; }
+.cookie-btns [data-cookie] { flex: 1 1 0; }
+.cookie button {
+  height: 29px;
+  padding: 0 14px;
+  border: 1px solid color-mix(in oklab, var(--kf-ink) 22%, transparent);
+  background: var(--kf-surface);
+  color: var(--kf-ink);
+  font: 400 10px/1 var(--kf-font-mono);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.15s var(--ease-std), border-color 0.15s var(--ease-std), background-color 0.15s var(--ease-std);
+}
+@media (hover: hover) { .cookie button:hover { border-color: var(--kf-accent); color: var(--kf-accent); } }
+/* Close button on the bar reopened from settings — small borderless text, switches straight to the accent color on hover */
+.cookie .cookie-close { height: auto; margin-right: 4px; padding: 0; border: 0; background: none; font-size: 9px; color: color-mix(in oklab, var(--kf-ink) 55%, transparent); transition: none; }
+@media (hover: hover) { .cookie .cookie-close:hover { border: 0; color: var(--kf-accent); } }
+@media (min-width: 992px) {
+  .cookie { grid-template-columns: 1fr auto; align-items: center; padding: 9px 44px 9px 28px; }
+  .cookie-btns [data-cookie] { flex: none; }
+}
+
+/* ---------- Large footer (first page) ---------- */
+.foot {
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: 60px var(--gutter) 60px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 36px 24px;
+  border-top: 1px solid var(--kf-line);
+  font: 400 13px/1.4 var(--kf-font-mono);
+}
+.foot-brand { grid-column: 1 / -1; display: grid; justify-items: start; gap: 10px; color: var(--kf-dim); font-size: 11px; }
+.foot-brand .logo { font-size: 28px; }
+.foot-k { margin-bottom: 18px; font-size: 10px; letter-spacing: 0.16em; color: var(--kf-dim); }
+.foot-col ul { display: grid; gap: 12px; font-size: 11px; }
+.foot-col a { color: var(--kf-dim); }
+.foot-col a, .foot-slim a { text-underline-offset: 4px; }
+@media (hover: hover) { .foot-col a:hover { color: var(--kf-ink); text-decoration: underline; } }
+.foot-legal { grid-column: 1 / -1; font-size: 11px; color: var(--kf-dim); }
+@media (min-width: 992px) {
+  .foot { grid-template-columns: 1.3fr 1fr 1fr 1fr; gap: 36px 8px; }
+  .foot-brand { grid-column: 1; align-content: start; }
+}
+
+/* ---------- Thin footer (subpages) ---------- */
+.foot-slim {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  min-height: 80px;
+  padding: 24px var(--gutter);
+  border-top: 1px solid color-mix(in srgb, var(--kf-line) 80%, transparent);
+  font: 400 10px/1.5 var(--kf-font-mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--kf-dim);
+}
+.foot-slim nav { display: flex; flex-wrap: wrap; gap: 6px 10px; }
+.foot-slim nav span { opacity: 0.5; }
+.foot-slim .ink { color: var(--kf-accent); }
+
+/* ---------- On entry: the title fades in faintly then sharpens, the rest follow one beat later ---------- */
+.is-entering [data-enter] { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn > .wf-btn, .roll > span, .cookie, .cookie button { transition: none; }
+  .is-entering [data-enter] { opacity: 1; }
+}
+.foot-btn { padding: 0; border: 0; background: none; color: var(--kf-dim); font: inherit; letter-spacing: inherit; text-transform: inherit; text-underline-offset: 4px; cursor: pointer; }
+@media (hover: hover) { .foot-btn:hover { color: var(--kf-ink); text-decoration: underline; } }

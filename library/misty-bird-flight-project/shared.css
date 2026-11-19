@@ -1,0 +1,394 @@
+/* Shared by all pages — frame: background fog stage (WebGL), fixed left table of contents, company logo at top right, language indicator, menu button and menu sheet, 
+   Section titles with birds flying past, pill buttons and circle arrows, Contact, About, flowing GET IN TOUCH, Footer.
+   The original uses rem with every length tied to screen width (1rem = 1vw, phone 8.533vw) so it is carried over here with the same rem. */
+
+:root {
+  /* Three fog ball colors — original green · lime · teal, rotated from the accent (they turn along when the skin changes) */
+  --site-ball-green: oklch(from var(--kf-accent) calc(l * 1.1556) calc(c * 1.1233) calc(h + 1.89));
+  --site-ball-lime: oklch(from var(--kf-accent) calc(l * 1.384) calc(c * 1.184) calc(h - 24.9));
+  --site-ball-teal: oklch(from var(--kf-accent) calc(l * 1.2152) calc(c * 0.4614) calc(h + 53.07));
+  /* Menu panel header, one shade darker green */
+  --site-menu-head: oklch(from var(--kf-accent) calc(l * 0.903) calc(c * 0.915) calc(h + 1.72));
+  --site-line-soft: color-mix(in oklab, var(--kf-ink) 30%, transparent);
+  --site-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --site-ease-photo: cubic-bezier(0.43, 0.195, 0.02, 1);
+}
+
+html { font-size: 1vw; }
+@media (min-width: 1920px) { html { font-size: 19.2px; } }
+@media (max-width: 767px) { html { font-size: 8.5333333333vw; } }
+
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  font-size: 0.875rem;
+}
+.ns-pc { display: initial; }
+.ns-sp { display: none; }
+@media (max-width: 767px) {
+  body { font-size: 0.8125rem; }
+  .ns-pc { display: none !important; }
+  .ns-sp { display: initial; }
+}
+
+/* ---------- Background stage: gray fog video slot + colored orbs in four corners + birds flying across. Painted by a shader ---------- */
+.ns-stage { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.ns-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* Color ball and background bird slot — the shader reads this box size·position to place the plate */
+.ns-stage__ball { position: absolute; width: 58.75rem; height: 58.875rem; }
+.ns-stage__ball.-no1 { top: -29.375rem; left: -12.5rem; }
+.ns-stage__ball.-no2 { top: -18.75rem; left: -29.375rem; }
+.ns-stage__ball.-no3 { bottom: -29.375rem; right: -12.5rem; }
+.ns-stage__ball.-no4 { bottom: -18.75rem; right: -29.375rem; }
+.ns-stage__bird { position: absolute; top: 0; left: 0; }
+.ns-stage__bird.-green { width: 8.775rem; height: 10.5375rem; }
+.ns-stage__bird.-light { width: 8.41875rem; height: 12.0375rem; }
+@media (max-width: 767px) {
+  .ns-stage__ball { width: 18.125rem; height: 18.125rem; }
+  .ns-stage__ball.-no1 { top: -1.5625rem; left: -7.1875rem; }
+  .ns-stage__ball.-no2 { top: -7.1875rem; left: -5.625rem; }
+  .ns-stage__ball.-no3 { bottom: -1.5625rem; right: -7.1875rem; }
+  .ns-stage__ball.-no4 { bottom: -7.1875rem; right: -4.6875rem; }
+  .ns-stage__bird.-green { width: 2.0475rem; height: 2.45875rem; }
+  .ns-stage__bird.-light { width: 1.964375rem; height: 2.80875rem; }
+}
+
+.ns-body { position: relative; z-index: 1; }
+.ns-page { opacity: 0; }
+
+/* ---------- Logo slot: an H made of two birds and an English wordmark ---------- */
+.ns-logo { display: flex; align-items: center; gap: 0.5rem; color: var(--kf-ink); }
+.ns-logo__mark { width: 2.6rem; height: 2.2rem; flex: none; }
+.ns-logo__type { display: flex; flex-direction: column; font-family: var(--kf-font-display); line-height: 1; }
+.ns-logo__type b { font-weight: 700; font-size: 1.05rem; letter-spacing: 0.08em; }
+.ns-logo__type small { font-size: 0.32rem; letter-spacing: 0.02em; margin-top: 0.25rem; font-weight: 500; }
+.ns-bird-a { fill: var(--kf-accent); }
+.ns-bird-b { fill: var(--kf-accent-soft); }
+
+/* ---------- Company logo at top right ---------- */
+.ns-header { position: absolute; top: 0; left: 0; width: 100%; z-index: 8; pointer-events: none; }
+.ns-header__inner { display: flex; padding-top: 4.0625rem; padding-right: 5.4375rem; }
+.ns-header__corp { margin-left: auto; width: 6.5rem; height: 2.4375rem; pointer-events: auto; }
+.ns-corp { display: grid; place-items: center; width: 100%; height: 100%; border: 1px dashed currentColor; color: var(--kf-ink); font: 700 0.75rem/1 var(--kf-font-display); letter-spacing: 0.04em; }
+@media (max-width: 767px) {
+  .ns-header__inner { padding-top: 1.4375rem; padding-right: 0.5rem; }
+  .ns-header__corp { width: 2.5rem; height: 0.9375rem; }
+  .ns-corp { font-size: 0.3rem; }
+}
+
+/* ---------- Fixed left contents — appears after the hero, and a dot follows down in front of the current section ---------- */
+.ns-fixnav { position: fixed; top: 0; left: 0; z-index: 5; width: 20.75rem; height: 100vh; opacity: 0; pointer-events: none; }
+.ns-fixnav.is-on { pointer-events: auto; }
+.ns-fixnav__title { padding-top: 3.5625rem; padding-left: 3.3125rem; }
+.ns-fixnav__title a { display: block; width: 13.0625rem; height: 4rem; pointer-events: auto; }
+.ns-fixnav__nav { position: relative; margin-top: 65%; padding-left: 7.1875rem; }
+.ns-fixnav__list { padding-left: 1.8125rem; }
+.ns-fixnav__list li + li { margin-top: 1.5rem; }
+.ns-fixnav__btn {
+  display: block; padding: 0; border: 0; background: none; cursor: pointer; text-align: left; white-space: pre-line; pointer-events: auto;
+  font: 500 max(13px, 0.8125rem)/1 var(--kf-font-display); letter-spacing: 0.03em; color: var(--kf-ink);
+  transition: color 1s var(--site-ease);
+}
+.ns-fixnav__btn:hover { color: var(--kf-accent-soft); }
+.ns-fixnav__dot { position: absolute; top: 0; left: 7.1875rem; display: flex; justify-content: center; width: 0.5625rem; height: 0.8125rem; opacity: 0; }
+.ns-fixnav__dot i { position: relative; top: 0.125rem; width: 0.5625rem; height: 0.5625rem; border-radius: 50%; background: var(--kf-ink); }
+.ns-fixnav__back { display: flex; align-items: center; margin-top: 100%; padding-left: 5.5625rem; font: 500 0.8125rem/1 var(--kf-font-display); letter-spacing: 0.039em; color: var(--kf-ink); transition: color 1s var(--site-ease); }
+.ns-fixnav__back:hover { color: var(--kf-accent-soft); }
+.ns-fixnav__back .ns-fixnav__arrows { position: relative; display: block; overflow: hidden; width: 0.8125rem; height: 0.625rem; margin-right: 1rem; transform: rotate(180deg); }
+.ns-fixnav__arrows svg { width: 100%; height: 100%; fill: var(--kf-ink); }
+@media (max-width: 767px) {
+  .ns-fixnav { width: 100%; height: 3.90625rem; }
+  .ns-fixnav__title { padding: 0.875rem 1.125rem 0.8125rem 0.5rem; }
+  .ns-fixnav__title a { width: 3.96875rem; height: 1.2rem; }
+  .ns-fixnav__nav, .ns-fixnav__back { display: none; }
+  .ns-fixnav .ns-logo__mark { width: 1.2rem; height: 1rem; }
+  .ns-fixnav .ns-logo__type b { font-size: 0.42rem; }
+  .ns-fixnav .ns-logo__type small { display: none; }
+}
+
+/* ---------- Language indicator — bottom left of the hero, a dot before the current language ---------- */
+.ns-lang { position: absolute; left: 0; bottom: 11.25rem; z-index: 20; padding-left: 3.125rem; }
+.ns-lang ul { padding-left: 1.8125rem; }
+.ns-lang li { position: relative; }
+.ns-lang li + li { margin-top: 2.375rem; }
+.ns-lang a { display: block; font: 500 1rem/1 var(--kf-font-display); letter-spacing: 0.03em; color: var(--kf-ink); pointer-events: auto; transition: color 1s var(--site-ease); }
+.ns-lang a:hover { color: var(--kf-accent-soft); }
+.ns-lang li i { position: absolute; top: 0.125rem; left: -1.5rem; width: 0.5625rem; height: 0.5625rem; border-radius: 50%; background: var(--kf-ink); opacity: 0; }
+.ns-lang li.is-current i { opacity: 1; }
+.is-menu-open .ns-lang a { color: var(--kf-on-accent); }
+.is-menu-open .ns-lang li i { background: var(--kf-on-accent); }
+@media (max-width: 767px) {
+  .ns-lang { position: fixed; padding-left: 0.375rem; bottom: 4rem; }
+  .ns-lang ul { padding-left: 0.625rem; }
+  .ns-lang li + li { margin-top: 1.1875rem; }
+  .ns-lang a { font-size: 0.5rem; }
+  .ns-lang li i { width: 0.28125rem; height: 0.28125rem; left: -0.625rem; top: 0.0625rem; }
+}
+
+/* ---------- Menu button (two rows of green circles) ---------- */
+.ns-burger {
+  position: absolute; left: 3.25rem; bottom: 2.8125rem; z-index: 10; width: 5rem; height: 5rem;
+  display: flex; justify-content: center; align-items: center; padding: 0; border: 0; background: none; cursor: pointer;
+}
+.ns-burger__circle { position: absolute; inset: 0; border-radius: 50%; background: var(--kf-accent); transition: all 0.8s var(--site-ease-photo); }
+.ns-burger__icon { position: relative; z-index: 1; width: 1.875rem; height: 6px; }
+.ns-burger__icon i { display: block; width: 100%; height: 1px; background: var(--kf-on-accent); transform-origin: center; transition: all 0.8s var(--site-ease-photo); }
+.ns-burger__icon i + i { margin-top: 5px; }
+.ns-burger:hover .ns-burger__icon i { transform: scaleX(0.8); }
+.ns-burger:hover .ns-burger__circle { transform: scale(0.9); background: var(--kf-accent-soft); }
+.ns-burger.is-open .ns-burger__icon i:first-child { transform: translate3d(0, 2.5px, 0) rotate(45deg); }
+.ns-burger.is-open .ns-burger__icon i:last-child { transform: translate3d(0, -2.5px, 0) rotate(-45deg); }
+@media (max-width: 767px) {
+  .ns-burger { position: fixed; width: 1.875rem; height: 1.875rem; left: 0.5rem; bottom: 0.5rem; }
+  .ns-burger__icon { width: 0.6875rem; height: 10px; }
+  .ns-burger__icon i + i { margin-top: 9px; }
+  .ns-burger.is-open .ns-burger__icon i:first-child { transform: translate3d(0, 4.5px, 0) rotate(45deg); }
+  .ns-burger.is-open .ns-burger__icon i:last-child { transform: translate3d(0, -4.5px, 0) rotate(-45deg); }
+}
+
+/* ---------- Menu panel — big table of contents with a dark green band on the left and white pills sliding in. When opened, the background fog returns to color ---------- */
+.ns-menu { position: fixed; inset: 0; z-index: 9; display: none; opacity: 0; pointer-events: none; }
+.ns-menu.is-open { pointer-events: auto; }
+.ns-menu__inner { position: relative; width: 100%; height: 100%; }
+.ns-menu__bg { position: absolute; inset: 0; border: 0; padding: 0; background: none; cursor: pointer; }
+.ns-menu__head { position: relative; z-index: 2; width: 20.75rem; height: 100%; display: flex; align-items: center; background: var(--site-menu-head); }
+.ns-menu__head .ns-logo { position: absolute; top: 3.5625rem; left: 3.3125rem; color: var(--kf-on-accent); }
+.ns-menu__head .ns-bird-a, .ns-menu__head .ns-bird-b { fill: var(--kf-on-accent); }
+.ns-menu__title { padding-left: 3.6875rem; font: 500 1rem/1 var(--kf-font-display); letter-spacing: 0.015em; color: var(--kf-on-accent); }
+.ns-menu__body { position: absolute; inset: 0; z-index: 1; padding-top: 4.8125rem; padding-left: 24.1875rem; pointer-events: none; }
+.ns-menu.is-open .ns-menu__body a, .ns-menu.is-open .ns-menu__body button { pointer-events: auto; }
+.ns-menu__nav { display: flex; align-items: flex-start; width: 52.625rem; column-gap: 5.625rem; }
+.ns-menu__list { width: 100%; }
+.ns-menu__item {
+  position: relative; display: block; width: 100%; overflow: hidden; padding: 0.6875rem 2rem; border: 0; border-radius: 2.5rem;
+  background: none; text-align: left; white-space: pre-line; cursor: pointer;
+}
+.ns-menu__label { position: relative; z-index: 1; font: 600 2.0625rem/1 var(--kf-font-display); letter-spacing: 0.003em; color: var(--kf-on-accent); transition: color 1s var(--site-ease); }
+.ns-menu__item:hover .ns-menu__label { color: var(--kf-accent-soft); }
+.ns-menu__panel { position: absolute; inset: 0; border-radius: 2.5rem; background: var(--kf-surface); transform: translateX(-100%); pointer-events: none; }
+.ns-menu__arrow { position: absolute; z-index: 1; top: 0; bottom: 0; right: 1.375rem; width: 2.1875rem; height: 1.5625rem; margin: auto 0; opacity: 0; transform: translateX(-100%); }
+.ns-menu__arrow svg { width: 100%; height: 100%; fill: var(--kf-ink); }
+.ns-menu__sub { padding-left: 1.5rem; }
+.ns-menu__sub .ns-menu__item { display: flex; align-items: center; padding: 0.6875rem 2rem; }
+.ns-menu__sub .ns-menu__label { font-size: 0.875rem; white-space: nowrap; }
+.ns-menu__sub .ns-menu__arrow { position: relative; right: auto; width: 0.875rem; height: 0.625rem; margin: 0 1rem 0 0; opacity: 1; transform: none; }
+.ns-menu__sub .ns-menu__arrow svg { fill: var(--kf-on-accent); }
+.ns-menu__corp { position: absolute; top: 4.0625rem; right: 5.5rem; width: 6.5rem; height: 2.4375rem; color: var(--kf-on-accent); }
+.ns-menu__corp .ns-corp { color: var(--kf-on-accent); }
+.ns-menu__sns { position: absolute; right: 5.8125rem; bottom: 5.8125rem; }
+.ns-menu__sns li + li { margin-top: 1.875rem; }
+.ns-menu__sns a { display: flex; align-items: center; justify-content: flex-end; color: var(--kf-on-accent); font: 400 1.125rem/1 var(--kf-font-display); letter-spacing: 0.04em; }
+.ns-menu__sns a span { margin-right: 1rem; }
+.ns-menu__sns a i { width: 3.4375rem; height: 3.4375rem; border-radius: 50%; border: 1px solid currentColor; transition: all 0.8s var(--site-ease-photo); }
+.ns-menu__sns a:hover i { transform: scale(0.8); }
+@media (max-width: 767px) {
+  .ns-menu { width: 100vw; overflow: hidden; }
+  .ns-menu__inner { overflow-y: scroll; background: color-mix(in oklab, var(--kf-accent) 50%, transparent); }
+  .ns-menu__bg { display: none; }
+  .ns-menu__head { width: 100%; height: 2.96875rem; padding: 0.875rem 1.125rem 0.8125rem 0.5rem; }
+  .ns-menu__head .ns-logo { position: static; }
+  .ns-menu__head .ns-logo__mark { width: 1.2rem; height: 1rem; }
+  .ns-menu__head .ns-logo__type b { font-size: 0.42rem; }
+  .ns-menu__head .ns-logo__type small { display: none; }
+  .ns-menu__title { margin-left: auto; padding-left: 0; font-size: 0.5rem; }
+  .ns-menu__body { position: relative; padding: 1.40625rem 0 4.28125rem; min-height: calc(100vh - 2.96875rem); }
+  .ns-menu__body::after { content: ""; position: absolute; left: 0; bottom: 2.8125rem; width: 100%; height: 1px; background: var(--site-line-soft); }
+  .ns-menu__nav { position: relative; width: 100%; padding: 0 0.5rem; column-gap: 1rem; }
+  .ns-menu__nav::before { content: ""; position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: var(--site-menu-head); }
+  .ns-menu__list { flex-basis: calc(50% - 0.5rem); max-width: calc(50% - 0.5rem); }
+  .ns-menu__list > li + li { margin-top: 0.4375rem; }
+  .ns-menu__item { display: flex; align-items: center; padding: 0.0625rem 0.5rem 0.09375rem; border-radius: 1.25rem; }
+  .ns-menu__label { font-size: 0.6875rem; order: 2; }
+  .ns-menu__panel { display: none; }
+  .ns-menu__arrow { position: relative; inset: auto; width: 0.71875rem; height: 0.71875rem; margin: 0 0.25rem 0 0; opacity: 1; transform: none; }
+  .ns-menu__arrow svg { fill: var(--kf-on-accent); }
+  .ns-menu__sub { padding-left: 0.25rem; }
+  .ns-menu__sub .ns-menu__item { padding: 0.3125rem 0.5rem; }
+  .ns-menu__sub .ns-menu__label { font-size: 0.34375rem; }
+  .ns-menu__sub .ns-menu__arrow { width: 0.25rem; height: 0.1875rem; margin-right: 0.25rem; }
+  .ns-menu__corp { top: auto; bottom: 0.90625rem; right: 0.5625rem; width: 2.5rem; height: 0.9375rem; }
+  .ns-menu__corp .ns-corp { font-size: 0.3rem; }
+  .ns-menu__sns { position: static; display: flex; justify-content: space-between; width: 10.25rem; margin: 1.9375rem auto 0; }
+  .ns-menu__sns li + li { margin-top: 0; }
+  .ns-menu__sns a { flex-direction: column-reverse; font-size: 0.40625rem; }
+  .ns-menu__sns a span { margin: 0.25rem 0 0; }
+  .ns-menu__sns a i { width: 1.40625rem; height: 1.40625rem; }
+}
+
+/* ---------- Section frame — leave the left contents width empty, then a 69.8rem column ---------- */
+.ns-sec__in { box-sizing: content-box; width: 69.8125rem; margin-inline: auto; padding-left: 20.9375rem; }
+.ns-sec__body { padding-left: 6.3125rem; }
+@media (max-width: 767px) {
+  .ns-sec__in { width: 9.46875rem; padding-left: 0; }
+  .ns-sec__body { padding-left: 0; }
+}
+
+/* ---------- Section title — English letters land along an arc, and a bird passes along the curve, drawing and erasing a wing-trail line ---------- */
+.ns-title { position: relative; margin: 0; }
+.ns-title__label {
+  display: flex; flex-wrap: wrap; font: 700 5rem/1 var(--kf-font-display); letter-spacing: -0.027em; color: var(--kf-ink);
+}
+.ns-title__word { display: inline-flex; }
+.ns-title__ch { display: inline-block; }
+.ns-title__sp { display: inline-block; width: 0.25em; }
+.ns-title__bird {
+  position: absolute; bottom: 2.5rem; left: -10.625rem; width: 13.1875rem; height: 16.625rem; display: none; opacity: 0; pointer-events: none;
+  offset-path: path("M819.5,0.5C616.5,231.5,269,278,0.5,151");
+}
+.ns-title__bird svg { width: 100%; height: 100%; }
+.ns-title__lines { position: absolute; bottom: -2.5rem; left: 0; width: 51.125rem; height: 13.75rem; pointer-events: none; }
+.ns-title__line { position: absolute; inset: 0; }
+.ns-title__line svg { width: 100%; height: 100%; overflow: visible; }
+.ns-title__line path { fill: none; stroke: var(--kf-ink); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.ns-title__line.-reverse { opacity: 0; }
+.ns-title.-under .ns-title__bird { bottom: -1.875rem; }
+.ns-title.-under .ns-title__lines { bottom: -8.125rem; }
+@media (max-width: 767px) {
+  .ns-title { left: -0.625rem; width: calc(100% + 1.25rem); }
+  .ns-title__label { font-size: 1.25rem; letter-spacing: 0.0279em; }
+  .ns-title__bird { width: 3.296875rem; height: 4.15625rem; bottom: 2.5rem; left: -2.65625rem; }
+  .ns-title__lines { width: 12.78125rem; height: 3.4375rem; bottom: -0.625rem; }
+  .ns-title.-under .ns-title__bird { bottom: -1.25rem; }
+  .ns-title.-under .ns-title__lines { bottom: -2.5rem; }
+}
+
+/* ---------- Subpage header title and body box — 5.8rem, larger than the first page’s section titles, 11rem top and bottom ---------- */
+.ns-subhead { box-sizing: content-box; width: 69.8125rem; margin-inline: auto; padding: 11rem 0 11rem 20.9375rem; }
+.ns-title.-sub .ns-title__label { font-size: 5.8125rem; }
+.ns-subsec { box-sizing: content-box; width: 69.8125rem; margin-inline: auto; padding-left: 20.9375rem; }
+@media (max-width: 767px) {
+  .ns-subhead { width: calc(100% - 1rem); padding: 4.59375rem 0 0; }
+  .ns-title.-sub .ns-title__label { font-size: 1.25rem; }
+  .ns-subsec { width: calc(100% - 1rem); padding: 0 0.625rem; box-sizing: border-box; }
+}
+
+/* ---------- Text ---------- */
+.ns-lead { font-weight: 300; font-size: max(14px, 1.25rem); line-height: 2; letter-spacing: 0.1em; color: var(--kf-ink); }
+.ns-note { font-weight: 300; font-size: 0.875rem; line-height: 1.67; letter-spacing: 0.05em; color: var(--kf-dim); }
+.ns-h3 { font-weight: 300; font-size: 3rem; line-height: 1.08; letter-spacing: 0.024em; color: var(--kf-ink); border-top: 1px solid var(--kf-line); padding-top: 7.5rem; margin-top: 6.5625rem; margin-bottom: 7.1875rem; }
+.ns-h3.-small { font-size: 1.5rem; padding-top: 5rem; margin-top: 10rem; margin-bottom: 5rem; }
+@media (max-width: 767px) {
+  .ns-lead { font-size: 0.5rem; letter-spacing: 0.08em; }
+  .ns-note { font-size: 0.4375rem; line-height: 2; letter-spacing: 0.07em; }
+  .ns-h3 { font-size: 0.75rem; line-height: 1; letter-spacing: 0.012em; padding-top: 1.875rem; margin-top: 1.875rem; margin-bottom: 1.875rem; }
+  .ns-h3.-small { font-size: 0.625rem; margin-top: 3.75rem; margin-bottom: 1.875rem; }
+}
+
+/* ---------- Pill button — on hover a mint plate slides in from the left and the arrow follows in ---------- */
+.ns-pill {
+  position: relative; display: flex; align-items: center; overflow: hidden;
+  padding: 1.25rem 3.5rem 1.25rem 1.625rem; border-radius: 3.125rem; background: var(--kf-accent); color: var(--kf-on-accent);
+}
+.ns-pill__label { position: relative; z-index: 1; white-space: nowrap; font: 400 max(12px, 0.8125rem)/1 var(--kf-font-display); letter-spacing: 0.065em; }
+.ns-pill__arrow { position: absolute; z-index: 1; top: 0; bottom: 0; right: 1.625rem; width: 0.8125rem; height: 0.8125rem; margin: auto 0; opacity: 0; transform: translateX(-100%); }
+.ns-pill__arrow svg { width: 100%; height: 100%; fill: var(--kf-on-accent); }
+.ns-pill__panel { position: absolute; inset: 0; border-radius: 3.125rem; background: var(--kf-accent-soft); transform: translateX(-100%); }
+@media (max-width: 767px) {
+  .ns-pill { min-height: 0; padding: 0.625rem 0.8125rem; border-radius: 1.5625rem; }
+  .ns-pill__label { font-size: 0.40625rem; }
+  .ns-pill__arrow { width: 0.40625rem; height: 0.40625rem; right: 0.8125rem; }
+  .ns-pill__panel { display: none; }
+}
+
+/* ---------- Circle arrow — the arrow slides out to the right and a new arrow enters from the left ---------- */
+.ns-circle {
+  display: inline-flex; justify-content: center; align-items: center; flex: none; width: 3rem; height: 3rem; padding: 0; border: 0;
+  border-radius: 50%; background: var(--kf-accent); cursor: pointer; transition: all 1s var(--site-ease);
+}
+.ns-circle:hover, .ns-circle.is-hover { background: var(--kf-accent-soft); }
+.ns-circle.-border { background: transparent; border: 1px solid var(--kf-line); }
+.ns-circle.-border:hover { background: var(--kf-surface); border-color: var(--kf-surface); }
+.ns-circle__arrows { position: relative; display: block; overflow: hidden; width: 1.375rem; height: 1rem; }
+.ns-circle__arrow { position: absolute; inset: 0; display: block; }
+.ns-circle__arrow + .ns-circle__arrow { transform: translateX(-100%); }
+.ns-circle__arrow svg { width: 100%; height: 100%; fill: var(--kf-on-accent); }
+.ns-circle.-border svg { fill: var(--kf-ink); }
+.ns-circle.-s { width: 2.5rem; height: 2.5rem; }
+.ns-circle.-s .ns-circle__arrows { width: 0.8125rem; height: 0.625rem; }
+.ns-circle.-ss { width: 1.4375rem; height: 1.4375rem; }
+.ns-circle.-ss .ns-circle__arrows { width: 0.5rem; height: 0.375rem; }
+.ns-link { display: inline-flex; align-items: center; }
+.ns-link .ns-circle { margin-right: 0.75rem; }
+.ns-link__label { font: 400 max(14px, 1rem)/1 var(--kf-font-display); color: var(--kf-ink); }
+@media (max-width: 767px) {
+  .ns-circle { width: 1.25rem; height: 1.25rem; }
+  .ns-circle__arrows { width: 0.40625rem; height: 0.3125rem; }
+  .ns-circle.-s { width: 1rem; height: 1rem; }
+  .ns-circle.-s .ns-circle__arrows { width: 0.40625rem; height: 0.28125rem; }
+  .ns-circle.-ss { width: 0.71875rem; height: 0.71875rem; }
+  .ns-circle.-ss .ns-circle__arrows { width: 0.25rem; height: 0.1875rem; }
+  .ns-link .ns-circle { margin-right: 0.375rem; }
+  .ns-link__label { font-size: 0.5rem; }
+}
+
+/* Hover where the text underline grows from the left (news titles · company names) */
+.ns-uline { background: linear-gradient(transparent 95%, var(--kf-ink) 0) no-repeat left bottom; background-size: 0 100%; transition: background-size 1s var(--site-ease); }
+a:hover .ns-uline, .ns-uline:hover { background-size: 100% 100%; }
+
+/* ---------- Photo Slot ---------- */
+.ns-photo { position: relative; overflow: hidden; }
+.ns-photo > .wf-img { width: 100%; height: 100%; border: 0; transition: all 0.8s var(--site-ease-photo); }
+
+/* ---------- Contact · company About · flowing GET IN TOUCH ---------- */
+.ns-contact { padding-top: 13.75rem; padding-bottom: 1.5625rem; }
+.ns-contact__body { margin-top: 3.4375rem; padding-left: 6.3125rem; }
+.ns-contact__copy { font-weight: 300; font-size: max(14px, 1rem); line-height: 1.67; letter-spacing: 0.05em; margin-bottom: 0.9375rem; color: var(--kf-ink); }
+.ns-contact__btn { max-width: fit-content; min-width: 20.125rem; margin-top: 5.9375rem; margin-left: 8.125rem; }
+.ns-contact__ticker { padding-top: 7.1875rem; }
+.ns-contact__copies { position: relative; top: 5.5rem; width: 100%; height: 11rem; overflow: hidden; }
+.ns-contact__word { position: absolute; top: 0; left: 0; width: 234.375rem; height: 11rem; padding-left: 5.5rem; overflow: hidden; }
+.ns-contact__word svg { width: 100%; height: 100%; display: block; }
+.ns-contact__word text { fill: none; stroke: var(--kf-accent-soft); stroke-width: 1.2; font: 700 176px/1 var(--kf-font-display); letter-spacing: 0.04em; }
+@media (max-width: 767px) {
+  .ns-contact { padding-top: 6.71875rem; padding-bottom: 0.625rem; }
+  .ns-contact__body { margin-top: 2.34375rem; padding-left: 0; }
+  .ns-contact__copy { font-size: 0.5rem; line-height: 2; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+  .ns-contact__btn { min-width: 9.46875rem; margin: 1.71875rem 0 0; }
+  .ns-contact__ticker { padding-top: 2.03125rem; }
+  .ns-contact__copies { height: 1.625rem; top: 0.8125rem; }
+  .ns-contact__word { width: 34.75rem; height: 1.625rem; padding-left: 0.8125rem; }
+}
+
+/* ---------- Footer — gray panel with rounded top corners. The Hero table of contents is pushed up along with it as this panel rises ---------- */
+.ns-footer { position: relative; z-index: 1; background: var(--kf-bg); border-top-left-radius: 1.875rem; border-top-right-radius: 1.875rem; }
+.ns-footer__body { padding-top: 5.625rem; }
+.ns-footer__corp { width: 10.3125rem; height: 3.9rem; margin-inline: auto; }
+.ns-footer__bottom { margin-top: 3.125rem; padding: 1.25rem 1.875rem; border-top: 1px solid var(--kf-raised); }
+.ns-footer__copy { display: block; width: fit-content; margin-left: auto; font: 400 0.875rem/1 var(--kf-font-display); letter-spacing: 0.04em; color: var(--kf-accent); }
+@media (max-width: 767px) {
+  .ns-footer { border-top-left-radius: 0.9375rem; border-top-right-radius: 0.9375rem; }
+  .ns-footer__body { padding-top: 2.5rem; padding-bottom: 1.5625rem; }
+  .ns-footer__corp { width: 3.15625rem; height: 1.2rem; }
+  .ns-footer__corp .ns-corp { font-size: 0.3rem; }
+  .ns-footer__bottom { margin-top: 0; padding: 0.625rem 0.9375rem; }
+  .ns-footer__copy { font-size: 0.4375rem; }
+}
+
+/* ---------- Overlay window (members · video) background ---------- */
+.ns-modal { position: fixed; inset: 0; z-index: 10; display: none; opacity: 0; }
+.ns-modal__inner { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+.ns-modal__bg { position: absolute; inset: 0; border: 0; padding: 0; background: none; cursor: pointer; }
+.ns-modal__title { position: absolute; z-index: 1; top: 3.5625rem; left: 3.3125rem; width: 13.0625rem; }
+.ns-modal__close { position: absolute; z-index: 1; bottom: 4.5625rem; right: 4.0625rem; }
+.ns-x { position: relative; display: flex; justify-content: center; align-items: center; width: 2.75rem; height: 2.75rem; padding: 0; border: 0; background: none; cursor: pointer; }
+.ns-x__circle { position: absolute; inset: 0; border-radius: 50%; background: var(--kf-surface); transition: all 0.8s var(--site-ease-photo); }
+.ns-x__icon { position: relative; z-index: 1; width: 0.75rem; height: 0.75rem; }
+.ns-x__icon i { position: absolute; inset: 0; margin: auto; width: 100%; height: 1px; background: var(--kf-ink); transition: all 0.8s var(--site-ease-photo); }
+.ns-x__icon i:first-child { transform: rotate(45deg); }
+.ns-x__icon i:last-child { transform: rotate(-45deg); }
+.ns-x:hover .ns-x__icon i { background: var(--kf-on-accent); }
+.ns-x:hover .ns-x__circle { transform: scale(0.9); background: var(--kf-accent); }
+@media (max-width: 767px) {
+  .ns-modal__title { width: 3.96875rem; top: 1.875rem; left: 0.5rem; }
+  .ns-modal__close { bottom: 0.75rem; right: 0.5rem; }
+  .ns-x { width: 1.375rem; height: 1.375rem; }
+  .ns-x__icon { width: 0.375rem; height: 0.375rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ns-page { opacity: 1; }
+  .ns-fixnav { opacity: 1; }
+  .ns-burger__circle, .ns-burger__icon i, .ns-circle, .ns-uline, .ns-photo > .wf-img, .ns-x__circle, .ns-x__icon i { transition: none; }
+}

@@ -1,0 +1,95 @@
+/* Board position is in px relative to the central 768×512 box (phone 288×228), as in the original — WebGL and DOM see the same spot */
+:root { --yn-w: 768px; --yn-h: 512px; --yn-logo: 32px; }
+@media (max-width: 767px) { :root { --yn-w: 288px; --yn-h: 228px; --yn-logo: 12px; } }
+
+.yn-view { position: fixed; top: 0; left: 0; z-index: 2; pointer-events: none; }
+.yn-stage { position: fixed; inset: 0; z-index: 3; overflow: hidden; perspective: 200px; perspective-origin: 50% 50%; pointer-events: none; }
+.yn-box { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-origin: 0 0; transform-style: preserve-3d; }
+.yn-spacer { height: 100vh; }
+
+/* Hero */
+.yn-top { position: absolute; left: 0; top: 0; width: var(--yn-w); height: var(--yn-h); }
+.yn-logo-still { display: none; width: var(--yn-w); fill: var(--kf-line); }
+.yn-name { position: absolute; left: -4px; top: calc(var(--yn-logo) * 13); font: 600 32px/36px var(--kf-font-display); letter-spacing: -0.01em; }
+.yn-since { position: absolute; left: 252px; top: calc(var(--yn-h) - 12px); font: 500 11px/1 var(--kf-font-sans); letter-spacing: 0.08em; color: var(--kf-dim); }
+.yn-enter {
+  position: absolute; right: 0; top: calc(var(--yn-h) - 96px);
+  display: flex; align-items: center; justify-content: space-between;
+  width: 268px; height: 64px; padding: 0 24px; border: 0;
+  background: var(--kf-line); color: var(--kf-ink); font: 600 16px/1 var(--kf-font-sans); letter-spacing: 0.04em;
+  pointer-events: auto; cursor: pointer;
+}
+.yn-enter svg { width: 22px; fill: currentColor; }
+.yn-enter.is-hover, .yn-enter:hover { background: var(--site-hover); }
+.yn-enter:focus-visible { outline: 2px solid var(--kf-accent); outline-offset: 3px; }
+.yn-remarks { position: absolute; right: -10px; top: calc(var(--yn-h) - 8px); width: 288px; font: 400 10px/1 var(--kf-font-sans); color: var(--kf-dim); white-space: nowrap; }
+.yn-cover { position: absolute; left: 0; top: 0; width: var(--yn-w); height: calc(var(--yn-logo) * 11); pointer-events: auto; cursor: pointer; }
+/* On press the cover comes off immediately, and Enter turns into a pixel ring (waiting indicator) in a 96px cell at the panel’s bottom right — original .button.clicked */
+html.yn-going .yn-cover, html.yn-going .yn-remarks { display: none; }
+html.yn-going .yn-enter { top: calc(var(--yn-h) - 96px); width: 96px; height: 96px; padding: 0; background: transparent; pointer-events: none; }
+html.yn-going .yn-enter > * { display: none; }
+html.yn-going .yn-enter::before { content: ""; width: 16px; height: 16px; margin: auto; background: var(--kf-line); box-shadow: 16px 0 0 var(--kf-accent), 16px 16px 0 var(--kf-danger), 0 16px 0 var(--kf-success); animation: yn-wait 0.8s steps(4) infinite; }
+html.yn-entered .yn-enter { display: none; }
+@keyframes yn-wait { to { transform: rotate(360deg); } }
+
+/* Section: DOM lying on the floor — the pixel text is drawn by a WebGL quad and the DOM only holds the place */
+.yn-sec { position: absolute; left: 0; top: var(--yn-top, 0); width: var(--yn-w); transform-style: preserve-3d; }
+html:not(.yn-entered) .yn-sec { visibility: hidden; }
+[data-pixel] { margin: 0; color: transparent; font: 700 13px/1.25 var(--kf-font-sans); overflow: hidden; }
+.yn-board { position: relative; height: 32px; margin: 0; transform-style: preserve-3d; }
+.yn-board span { position: absolute; left: 12px; top: 9px; font: 600 12px/14px var(--kf-font-sans); letter-spacing: 0.12em; color: var(--kf-ink); transform: translateZ(33px); }
+.yn-flag { float: right; width: 0; height: 0; }
+.yn-lead { margin-top: 96px; width: 100%; }
+.yn-lead--small { width: 60%; }
+.yn-ja { margin-top: 128px; width: 100%; }
+.yn-en { position: relative; margin-top: 512px; }
+.yn-dots { display: block; width: 12px; height: 4px; background: var(--kf-line); }
+.yn-ehead { margin: 24px 0 0; text-align: right; font: 600 14px/16px var(--kf-font-sans); letter-spacing: 0.06em; text-transform: uppercase; }
+.yn-ehead span { display: inline-block; }
+.yn-entext { width: 640px; margin: 64px 0 0 128px; font: 400 12px/2 var(--kf-font-sans); color: var(--kf-ink-soft); }
+.yn-entext p + p { margin-top: 2em; }
+.yn-en--left .yn-ehead { text-align: left; }
+.yn-en--left .yn-entext { margin-left: 0; }
+
+.yn-list { margin-top: 96px; }
+.yn-list .yn-item, .yn-acts .yn-item { position: relative; padding-bottom: 256px; }
+.yn-mark { display: block; width: 72px; height: 64px; margin-left: auto; font: 600 20px/64px var(--kf-font-sans); text-align: center; }
+.yn-item-ja { width: 640px; margin-top: 32px; }
+.yn-item-en, .yn-act-ja, .yn-act-en { width: 640px; margin-top: 48px; font: 400 12px/2 var(--kf-font-sans); color: var(--kf-ink-soft); }
+.yn-subhead { height: 16px; width: 320px; margin: 96px 0 0; font: 600 11px/16px var(--kf-font-sans); letter-spacing: 0.14em; color: transparent; }
+.yn-acts { margin-top: 96px; }
+.yn-act-label { margin: 0; font: 600 12px/16px var(--kf-font-sans); letter-spacing: 0.08em; }
+.yn-act-title { margin-top: 32px; width: 640px; }
+
+@media (max-width: 767px) {
+  .yn-name { font-size: 20px; line-height: 23px; left: 0; top: calc(var(--yn-logo) * 13); }
+  .yn-since { left: 210px; top: 216px; }
+  .yn-enter { display: none; }
+  .yn-remarks { right: auto; left: 0; top: calc(var(--yn-h) + 48px); width: var(--yn-w); white-space: normal; line-height: 1.6; }
+  .yn-cover { width: var(--yn-w); height: var(--yn-h); }
+  .yn-lead { margin-top: 48px; }
+  .yn-ja { margin-top: 64px; }
+  .yn-en { margin-top: 256px; }
+  .yn-entext, .yn-item-ja, .yn-item-en, .yn-act-ja, .yn-act-en, .yn-act-title { width: 100%; margin-left: 0; }
+  .yn-list .yn-item, .yn-acts .yn-item { padding-bottom: 128px; }
+}
+
+/* Lite view (original lite view): turns off WebGL and stacks the same section flat — this version is also used under reduced motion */
+html.lite .yn-view { display: none; }
+html.lite .yn-stage { position: static; overflow: visible; perspective: none; pointer-events: auto; }
+html.lite .yn-box { position: relative; left: auto; top: auto; width: var(--yn-w); height: auto; margin: 0 auto; padding: 120px 0 512px; transform: none !important; }
+html.lite .yn-top { position: relative; height: auto; }
+html.lite .yn-logo-still { display: block; }
+html.lite .yn-name { position: relative; left: 0; top: 0; margin-top: 64px; }
+html.lite .yn-since { position: relative; left: 0; top: 0; display: block; margin-top: 12px; }
+html.lite .yn-enter, html.lite .yn-cover, html.lite .yn-remarks { display: none; }
+html.lite .yn-sec { position: relative; top: auto; margin-top: var(--yn-h); visibility: visible; }
+html.lite [data-pixel] { height: auto !important; color: var(--site-pixel); }
+html.lite .yn-lead { font-size: 40px; line-height: 1.3; }
+html.lite .yn-lead--small, html.lite .yn-act-title { font-size: 24px; }
+html.lite .yn-ja { font-size: 20px; line-height: 1.7; }
+html.lite .yn-item-ja { font-size: 16px; line-height: 1.7; }
+html.lite .yn-board { background: var(--kf-line); }
+html.lite .yn-board span { transform: none; }
+html.lite .yn-mark, html.lite .yn-subhead { background: var(--kf-line); color: var(--kf-ink); padding-left: 8px; }
+html.lite .yn-spacer { display: none; }

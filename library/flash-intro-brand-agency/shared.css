@@ -1,0 +1,155 @@
+/* Shared by the whole site — the original sets every size in vw (1vw at 1440=14.4px). Header line, buttons, poster text panel, footer, transition curtain */
+:root {
+  --site-fade: color-mix(in oklab, var(--kf-ink) 35%, var(--kf-bg));
+  /* Original header buttons are pure black and pure white — push only lightness to the extremes from the skin ink and paper colors */
+  --site-pure-ink: oklch(from var(--kf-ink) 0 0 h);
+  --site-pure-paper: oklch(from var(--kf-bg) 1 0 h);
+  --site-ink-10: color-mix(in oklab, var(--kf-ink) 10%, transparent);
+  --site-paper-50: color-mix(in oklab, var(--kf-bg) 50%, transparent);
+  --site-paper-80: color-mix(in oklab, var(--kf-bg) 80%, transparent);
+  --site-shade: color-mix(in oklab, var(--kf-contrast-bg) 85%, transparent);
+  --ease-main: cubic-bezier(0.44, 0.01, 0, 1);
+  --ease-reveal: cubic-bezier(0.53, 0.02, 0, 0.99);
+  --ease-slow: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-io: cubic-bezier(0.84, 0, 0.16, 1);
+}
+body { background: var(--kf-bg); color: var(--kf-ink); font-family: var(--kf-font-sans); overscroll-behavior-y: none; }
+.bp-app { overflow-x: clip; }
+.bp-main { position: relative; overflow: clip; }
+.bp-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ── Type (original vw kept as is) ── */
+.bp-h1 { font-family: var(--kf-font-display); font-weight: 500; font-size: 7.6vw; line-height: 0.8; letter-spacing: -0.09em; text-transform: uppercase; padding: 1vw 0.5vw 0.2vw 0; }
+.bp-h2 { font-family: var(--kf-font-display); font-weight: 400; font-size: 6vw; line-height: 0.85; letter-spacing: -0.08em; text-transform: uppercase; }
+.bp-h3 { font-family: var(--kf-font-display); font-weight: 400; font-size: 3.5vw; line-height: 0.95; letter-spacing: -0.07em; text-transform: uppercase; }
+.bp-h4 { font-family: var(--kf-font-display); font-weight: 400; font-size: 4.3vw; line-height: 4.3vw; letter-spacing: -0.08em; text-transform: uppercase; }
+.bp-serif { font-family: var(--kf-font-serif); font-weight: 300; font-style: italic; letter-spacing: -0.04em; }
+.bp-lead { font-family: var(--kf-font-serif); font-weight: 300; font-size: 1.6vw; line-height: 1.25; letter-spacing: -0.03em; }
+.bp-body { font-size: max(13px, 1vw); line-height: 1.35; letter-spacing: -0.01em; }
+.bp-eyebrow { font-family: var(--kf-font-sans); font-weight: 500; font-size: max(10px, 0.8vw); line-height: 1vw; letter-spacing: -0.02em; text-transform: uppercase; }
+.bp-pink { color: var(--kf-accent); }
+.bp-fade { color: var(--kf-dim); }
+
+/* ── Button: outlined text cell + attached arrow cell. On hover the text cell fills with ink and the arrow slides out to the right and back in ── */
+.bp-btn { display: inline-flex; position: relative; color: var(--kf-ink); }
+.bp-btn__text, .bp-btn__arrow {
+  display: flex; align-items: center; height: 2vw; min-height: 24px; border: 1px solid currentColor; border-radius: var(--kf-radius-sm);
+  transition: background-color 0.4s var(--ease-io), color 0.4s var(--ease-io);
+}
+.bp-btn__text { padding: 0 0.5vw; font-weight: 500; font-size: max(12px, 1.2vw); letter-spacing: -0.07em; text-transform: uppercase; line-height: 1; }
+.bp-btn__arrow { margin-left: -1px; width: 2vw; min-width: 24px; justify-content: center; overflow: hidden; }
+.bp-btn__arrow i { display: block; width: 1.2vw; min-width: 14px; height: 1px; background: currentColor; position: relative; transition: transform 0.5s var(--ease-io); }
+.bp-btn__arrow i::after { content: ""; position: absolute; right: 0; top: -0.3vw; width: 0.6vw; height: 0.6vw; border-top: 1px solid currentColor; border-right: 1px solid currentColor; transform: rotate(45deg); transform-origin: 100% 0; }
+.bp-btn.--filled .bp-btn__text, .bp-btn.--filled .bp-btn__arrow { background: var(--kf-ink); border-color: var(--kf-ink); }
+.bp-btn.--light { color: var(--kf-contrast-ink); }
+/* Original btn hover: the panel (--btn-fill) fills from the bottom of the cell in .75s and the text color flips in .3s — the background color doesn’t change */
+.bp-btn { --btn-fill: var(--kf-ink); --btn-on: var(--kf-bg); transition: color 0.3s ease-in-out; }
+.bp-btn.--filled { --btn-fill: var(--kf-bg); --btn-on: var(--kf-ink); color: var(--kf-bg); }
+.bp-btn.--light { --btn-fill: var(--kf-contrast-ink); --btn-on: var(--kf-contrast-bg); }
+.bp-btn__text, .bp-btn__arrow { position: relative; isolation: isolate; overflow: hidden; transition: none; }
+.bp-btn__text::after, .bp-btn__arrow::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--btn-fill); transform: translateY(100%); transition: transform 0.75s var(--ease-slow); }
+@media (hover: hover) {
+  .bp-btn:hover { color: var(--btn-on); }
+  .bp-btn:hover .bp-btn__text::after, .bp-btn:hover .bp-btn__arrow::after { transform: none; }
+  .bp-btn:hover .bp-btn__arrow i { animation: bp-arrow-loop 0.6s var(--ease-io); }
+}
+@keyframes bp-arrow-loop { 0% { transform: translateX(0); } 45% { transform: translateX(160%); } 46% { transform: translateX(-160%); } 100% { transform: translateX(0); } }
+
+/* ── Header line: left wordmark (visible on any background via difference blending) · three white pill buttons on the right ──
+   The header bar panel is static so it creates no stacking context — if placed inside a fixed panel, the wordmark’s difference blend would not mix with the page */
+.bp-nav { position: static; }
+.bp-logo { position: fixed; z-index: 900; top: 2vw; left: 2vw; width: 11vw; height: 2vw; display: flex; align-items: center; color: var(--site-pure-paper); mix-blend-mode: difference; }
+.bp-logo span { font-weight: 500; font-size: 1.62vw; letter-spacing: -0.06em; text-transform: uppercase; line-height: 1; white-space: nowrap; }
+.bp-nav__list { position: fixed; z-index: 900; top: 2vw; right: 2vw; display: flex; gap: 0.75vw; }
+/* Original nav button: black text on a white pill, on hover an ink plate fills up from below the text slot and the text turns white */
+.bp-nav__list .bp-btn { --btn-fill: var(--site-pure-ink); --btn-on: var(--site-pure-paper); color: var(--site-pure-ink); }
+.bp-nav__list .bp-btn__text { font-size: max(11px, 0.9vw); height: 2vw; min-height: 24px; background: var(--site-pure-paper); border-color: var(--site-pure-ink); }
+.bp-nav__list .is-current { color: var(--site-pure-paper); }
+.bp-nav__list .is-current .bp-btn__text::after { transform: none; }
+
+/* ── Poster letter plate: the customer name’s letters scattered cell by cell over a photo (original letter-wrap) ── */
+.bp-letters { position: absolute; inset: auto auto 0 0; z-index: 2; padding: 0 1vw 1vw; color: var(--kf-contrast-ink); text-transform: uppercase; letter-spacing: -0.05em; font-weight: 500; line-height: 0.8; white-space: nowrap; pointer-events: none; }
+.bp-letters__row { display: flex; gap: max(0.5em, 4vw); }
+.bp-letters__row.--offset { padding-left: max(0.35em, 4vw); }
+.bp-letters__row > span { display: inline-block; min-width: 1ch; transform: translateX(var(--x, 0)); transition: transform 0.8s var(--ease-slow); }
+.bp-stamp { position: absolute; top: 1.2vw; right: 1.2vw; z-index: 2; color: var(--kf-contrast-ink); text-align: left; font-family: var(--kf-font-serif); font-style: italic; font-weight: 300; font-size: 1.5vw; line-height: 1; letter-spacing: -0.04em; }
+.bp-stamp em { display: block; padding-left: 1.2vw; }
+
+/* ── Photo Slot ── */
+.bp-img { position: absolute; inset: 0; width: 100%; height: 100%; --wf-fill: var(--kf-raised); --wf-line: var(--site-ink-10); --wf-fill-ink: var(--kf-ink-soft); border: 0; }
+.bp-img.--dark { --wf-fill: color-mix(in oklab, var(--kf-contrast-bg) 88%, var(--kf-bg)); --wf-line: var(--site-paper-50); --wf-fill-ink: var(--kf-dim); }
+.bp-img.wf-img::after { white-space: normal; max-width: 80%; text-align: center; line-height: 1.4; }
+
+/* News drag slider (smooothy): three-word big title over an ink stage + cards you drag to advance */
+.bp-news { position: relative; background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); padding: 3vw 0 6vw; overflow: hidden; }
+.bp-news__head { display: flex; justify-content: space-between; padding: 0 2vw 3vw; }
+.bp-news__slider { display: flex; cursor: grab; user-select: none; }
+.bp-news__slide { flex: 0 0 22vw; padding-left: 2vw; }
+.bp-ncard { display: block; }
+.bp-ncard__img { position: relative; aspect-ratio: 3 / 4; overflow: hidden; }
+.bp-ncard__cat { display: block; margin-top: 1vw; color: var(--site-paper-50); }
+.bp-ncard__title { margin-top: 0.4vw; font-size: 1.3vw; line-height: 1.15; }
+.bp-news__cta { display: flex; justify-content: center; margin-top: 3vw; }
+
+
+@media (max-width: 767px) {
+  .bp-news__slide { flex-basis: 70vw; padding-left: 4vw; }
+  .bp-ncard__title { font-size: 4.4vw; }
+}
+
+/* Poster card (work list, end of detail): scattered client names over a photo, one italic line, a number, and an arrow */
+.bp-poster { position: relative; display: block; overflow: hidden; aspect-ratio: 4 / 5; color: var(--kf-contrast-ink); }
+.bp-poster__img { position: absolute; inset: 0; overflow: hidden; }
+/* Original cover-trigger hover: photo scales 1.05x, arrow plate comes up from 84px (5.83vw) below in .4s */
+.bp-poster__img .bp-img { transition: scale 0.6s var(--ease-slow); }
+.bp-poster__go { transform: translateY(5.83vw); transition: transform 0.6s var(--ease-slow); }
+.bp-poster__no { position: absolute; left: 1vw; top: 1.2vw; z-index: 2; }
+.bp-poster__go { position: absolute; right: 1vw; bottom: 1vw; z-index: 2; }
+@media (hover: hover) { .bp-poster:hover .bp-poster__img .bp-img { scale: 1.05; } .bp-poster:hover .bp-poster__go { transform: none; } }
+
+/* ── Footer: ink stage, big menu in the center, contact · newsletter on either side, city row, big wordmark splitting at the very bottom ── */
+.bp-footer { position: relative; z-index: 2; background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); height: 100vh; min-height: 52vw; overflow: hidden; }
+.bp-footer__shape { position: absolute; left: 50%; top: 4vw; width: 72vw; translate: -50% 0; opacity: 0.08; pointer-events: none; }
+.bp-footer__shape path { fill: var(--kf-contrast-ink); }
+.bp-footer__grid { position: absolute; inset: 0 2vw auto; top: 20vw; display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; }
+.bp-footer__side { display: flex; flex-direction: column; gap: 0.4vw; }
+.bp-footer__side.--right { align-items: flex-end; text-align: right; }
+.bp-footer__side a, .bp-footer__side span { font-weight: 500; font-size: max(11px, 0.9vw); letter-spacing: -0.03em; text-transform: uppercase; }
+.bp-footer__side .bp-eyebrow { color: var(--site-paper-50); }
+.bp-footer__menu { display: flex; flex-direction: column; align-items: center; }
+.bp-footer__menu a { display: flex; align-items: center; gap: 0.5vw; font-size: 3.5vw; line-height: 3.5vw; letter-spacing: -0.1em; text-transform: uppercase; color: var(--site-paper-50); transition: color 0.4s var(--ease-io); }
+.bp-footer__menu a.is-current { color: var(--kf-contrast-ink); }
+.bp-footer__menu a.is-current::after { content: "→"; display: grid; place-items: center; width: 2vw; height: 2vw; font-size: 1.2vw; letter-spacing: 0; background: var(--kf-contrast-ink); color: var(--kf-contrast-bg); border-radius: var(--kf-radius-sm); }
+@media (hover: hover) { .bp-footer__menu a:hover { color: var(--kf-contrast-ink); } }
+.bp-footer__cities { position: absolute; left: 0; right: 0; bottom: 18vw; display: flex; justify-content: center; flex-wrap: wrap; gap: 0 1.2vw; padding: 0 20vw; text-transform: uppercase; font-size: max(11px, 0.9vw); letter-spacing: -0.03em; }
+.bp-footer__cities span { opacity: 0.8; cursor: pointer; }
+.bp-footer__cities span::before { content: "."; opacity: 0.6; }
+.bp-footer__legal { position: absolute; left: 2vw; right: 2vw; bottom: 16vw; display: flex; justify-content: space-between; font-size: max(10px, 0.7vw); text-transform: uppercase; color: var(--site-paper-50); }
+.bp-footer__mark { position: absolute; left: 0; right: 0; bottom: 0; height: 21vw; display: flex; justify-content: center; gap: 2vw; align-items: flex-end; white-space: nowrap; }
+.bp-footer__half { font-weight: 500; font-size: 19vw; line-height: 0.74; letter-spacing: -0.08em; text-transform: uppercase; will-change: transform; }
+
+/* ── Transition curtain: an ink-black panel covers from below and then lifts away (the original DefaultLeave/Enter is not in the archived copy, so values were matched to the transition timing) ── */
+.bp-curtain { position: fixed; inset: 0; z-index: 950; background: var(--kf-contrast-bg); transform: translateY(100%); pointer-events: none; }
+
+@media (max-width: 767px) {
+  .bp-h1 { font-size: 12vw; }
+  .bp-logo { top: 4vw; left: 4vw; width: 30vw; height: 6vw; }
+  .bp-logo span { font-size: 4.4vw; }
+  .bp-nav__list { top: 4vw; right: 4vw; gap: 1.5vw; }
+  .bp-nav__list .bp-btn__text { height: 6vw; font-size: 3vw; }
+  .bp-btn__text, .bp-btn__arrow { height: 7vw; }
+  .bp-footer { height: auto; min-height: 0; padding: 30vw 4vw 40vw; }
+  .bp-footer__grid { position: static; grid-template-columns: 1fr; gap: 8vw; }
+  .bp-footer__side.--right { align-items: flex-start; text-align: left; }
+  .bp-footer__menu { align-items: flex-start; }
+  .bp-footer__menu a { font-size: 12vw; line-height: 11vw; }
+  .bp-footer__cities { position: static; padding: 8vw 0 0; justify-content: flex-start; }
+  .bp-footer__legal { position: static; padding-top: 6vw; flex-direction: column; gap: 2vw; }
+  .bp-footer__mark { height: 30vw; }
+  .bp-footer__half { font-size: 30vw; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bp-btn__text, .bp-btn__arrow, .bp-letters__row > span, .bp-footer__menu a { transition: none; }
+}
+.bp-poster .bp-letters__row { gap: 1.2vw; }
+.bp-poster .bp-letters__row.--offset { padding-left: 1.2vw; }

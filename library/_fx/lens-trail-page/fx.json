@@ -1,0 +1,58 @@
+{
+  "kind": "Hand",
+  "trigger": [
+    "cursor",
+    "load",
+    "click",
+    "hover"
+  ],
+  "fits": [
+    "Page",
+    "Menu",
+    "Text",
+    "Title"
+  ],
+  "what": "The text and SVG inside the panel are redrawn onto a canvas and floated as a single WebGL sheet, leaving the cursor’s path as lens trails — a brush of 48px radius stamps tail→head segments with a Gaussian, trails cool at e^−1.64 per second, and inside a trail things are pulled .3 toward the focus at the segment center and swell about 1.4×. Sweeping fast enlarges the brush up to 2.5× (speed px/ms × .5, decaying at e^−4 per second), and holding for 280ms turns it into a 6.4× magnifier. The cursor position follows at e^−9 per second and the brush size at e^−6. On open, the whole sheet scatters into 32px cells (±6 horizontally · ±4 vertically) and settles into place with a cubic ease over .7s, each cell delayed by 0~.58, and the body appears from progress .15. Sending fx:leave scatters and fades the body cells in .35s (fixed cells jitter only 15%) and returns fx:left — the next page opened with enter: swap gathers in .35s. Menu text (wipe): on hover a text-color band wipes in from the left in .4s (1−(1−t)⁴), punching the text out with the background color, and the current page (aria-current=page) is a bumpy band drawn with a marker, pressed button (aria-pressed=true) is a full-width strip. Dot letters are punched out inside a slightly offset circle (letter cell .8 × .85~1.15) and scale 1.55× in .22s on hover",
+  "ease": "1 - (1 - t)^4 (band·dot) · per cell 1 - (1 - k)^3 (cell hop) · exponential follow (cursor e^−9t, brush e^−6t, mark e^−1.64t)",
+  "duration": {
+    "Open": 0.7,
+    "Flip exit": 0.35,
+    "Advance in": 0.35,
+    "Menu Band": 0.4,
+    "Dot": 0.22,
+    "Mark Half-Fade": 0.42
+  },
+  "needs": [],
+  "options": {
+    "radius": "Lens brush radius (px), default 48",
+    "strength": "Share pulled toward focus, default .3 (0 turns lens off)",
+    "fade": "Speed at which the mark fades (exponent per second), default 1.640625",
+    "hold": "Hold time before it turns into a big magnifier (ms), default 280",
+    "cell": "Cell hop: cell size (px), default 32",
+    "stagger": "Share each cell starts late (progress ratio), default .58",
+    "intro": "Time in seconds for cells to gather on first open, default .7 — at 0 it happens immediately",
+    "swap": "Slide exit/enter length each (seconds), default .35 — 0 is instant",
+    "enter": "If swap, opens with a hand-over entrance instead of the first-open (when arriving from the previous page via fx:leave)",
+    "twitch": "Share of fixed cells that stir when flipping, default .15",
+    "wipe": "Length of the menu band wipe-in (sec), default .4",
+    "dot": "Dot diameter = Letter cell long side × this value, default .8",
+    "grow": "Share the dot grows on hover, default .55",
+    "dot-time": "Dot growth duration (s), default .22",
+    "grid": "Background dot grid, columns and rows count (e.g. 40 24) — 2px dots across 5%~95% of the panel, only at 769px and up. Color is --fx-grid-dot (--kf-surface if absent)",
+    "crumbs": "Seconds for one side of the breadcrumb cells to scatter and gather, default .3 — starts once the entrance is 80% done",
+    "--fx-stretch": "CSS variable (inherited) — stretches that letter vertically only by this factor around its center axis (how the original MSDF looks stretched to fit the line box). Default 1",
+    "[data-fx-part=crumbs]": "Page name row — near the end of the page-turn entry, cells jump only within that band",
+    "[data-fx-part=chrome]": "Fixed slots that don’t scatter cell by cell when flipping (menu panel·logo·outer links) — up to six",
+    "[data-fx-part=wipe]": "Menu text where a band wipes in on hover (the nearest a·button takes the hover)",
+    "[data-fx-part=dot]": "Text punched out inside the circle — it sits on the top layer, so it shows first even when the body text is hidden",
+    "[data-fx-part=skip]": "Area where nothing is drawn on the canvas"
+  },
+  "use": "<div data-fx=\"lens-trail-page\" data-fx-lens-trail-page=\"grid: 40 24\">\n  <nav data-fx-part=\"chrome\"><a href=\"/a\"><span data-fx-part=\"wipe\">Section</span></a></nav>\n  <main><a href=\"/k\"><span data-fx-part=\"dot\">K</span></a></main>\n</div>\n<script>// Transition: pressing a link puts fx:leave on the panel → moves on fx:left, next page is data-fx-lens-trail-page=\"enter: swap\"</script>",
+  "note": "What gets drawn is only text (color, weight, letter spacing, case) and SVG (currentColor follows the text color) — photos and background-color boxes are not on the canvas and stay as plain DOM. The original shader is not ported, it was rewritten with the same values (brush 48px · strength .3 · decay 1.640625 · cell 32px · ±6/±4 · .58/.42 · cubed). On transitions the original blends the outgoing image cell by cell, but since pages here are static and open fresh, out and in run one after the other. On touch, dragging also leaves a trail, but the press magnifier is mouse only",
+  "from": [
+    {
+      "slug": "blue-index-notebook-text",
+      "where": "shared.js whole panel (left table of contents · logo · outer links are chrome, TOC text is wipe, first-page link text is dot) — original MouseDistortion (lens-trail, gridHop mosaic, chromeTwitch) with NavHit (band 400ms quartOut) · GlDot (220ms ×1.55)"
+    }
+  ]
+}

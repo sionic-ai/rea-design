@@ -1,0 +1,313 @@
+/* Spanning multiple pages: top-center pill nav · phone menu · loader · cursor dot · contact card of the last room (footer spot) · transition curtain between rooms */
+
+/* Site-specific colors made from the skin — on the original skin the original values from the comment come out as they are */
+:root {
+  /* 3D room base color — world.js reads it to paint materials, and prop colors are made by shifting brightness, depth and hue from this base */
+  --site-plaster-warm: oklch(from var(--kf-accent) calc(l * 0.737) calc(c * 0.752) calc(h - 11.866)); /* #9c7853 */
+  --site-plaster-cool: oklch(from var(--kf-accent) calc(l * 0.82) calc(c * 0.488) calc(h - 13.96)); /* #a88f78 */
+  --site-wood: oklch(from var(--kf-accent) calc(l * 0.794) calc(c * 1.261) calc(h - 21.846)); /* #c27a42 */
+  --site-wood-dark: oklch(from var(--kf-accent) calc(l * 0.513) calc(c * 0.864) calc(h - 25.027)); /* #6d3f1f */
+  --site-bronze: oklch(from var(--kf-accent) calc(l * 0.42) calc(c * 0.593) calc(h - 19.575)); /* #4d311a */
+  --site-terracotta: oklch(from var(--kf-accent) calc(l * 0.724) calc(c * 1.646) calc(h - 38.445)); /* #c4572e */
+  --site-dusk-top: oklch(from var(--kf-accent) calc(l * 0.741) calc(c * 0.816) calc(h - 168.921)); /* #6f7fae */
+  --site-dusk-mid: oklch(from var(--kf-accent) calc(l * 0.961) calc(c * 0.928) calc(h - 52.095)); /* #e9a39b */
+  --site-dusk-low: oklch(from var(--kf-accent) calc(l * 1.038) calc(c * 0.977) calc(h - 14.048)); /* #f5c08e */
+  --site-sky-top: oklch(from var(--kf-accent) calc(l * 0.602) calc(c * 1.555) calc(h + 177.095)); /* #1d5fae */
+  --site-sky-low: oklch(from var(--kf-accent) calc(l * 0.809) calc(c * 1.095) calc(h + 170.618)); /* #5f96cc */
+  --site-water: oklch(from var(--kf-accent) calc(l * 0.695) calc(c * 0.913) calc(h + 115.465)); /* #2a8584 */
+  --site-leaf: oklch(from var(--kf-accent) calc(l * 0.807) calc(c * 1.314) calc(h + 38.436)); /* #8c9a3c */
+  --site-autumn: oklch(from var(--kf-accent) calc(l * 0.846) calc(c * 1.416) calc(h - 15.452)); /* #d2873a */
+
+  /* White grain and dark glass of the glass pill */
+  --site-white: oklch(from var(--kf-ink) calc(l * 1.0561) calc(c * 0) h); /* #fff */
+  --site-glass: oklch(from var(--kf-bg) calc(l * 0.8106) calc(c * 0.329) calc(h + 5.0502)); /* #12100e */
+  --site-scrim: oklch(from var(--kf-bg) calc(l * 0.8566) calc(c * 1.0361) calc(h - 0.2981)); /* #18110b */
+  --site-select: oklch(from var(--kf-accent) calc(l * 0.789) calc(c * 2.1097) calc(h - 36.2461)); /* #e75800 */
+
+  /* Transition curtains between rooms — living room → exhibition room (arch of a cream-colored wall), exhibition room → water garden, water garden → study */
+  --site-cut-portal: oklch(from var(--kf-accent) calc(l * 1.0918) calc(c * 0.8124) calc(h + 4.2089)); /* #f2d6a2 */
+  --site-cut-rim: oklch(from var(--kf-accent) calc(l * 0.9109) calc(c * 1.3558) calc(h - 1.1291)); /* #d6a046 */
+  --site-cut-glow: oklch(from var(--kf-accent) calc(l * 0.9935) calc(c * 1.4754) calc(h - 1.1019)); /* #f0b450 */
+  --site-cut-2a: oklch(from var(--kf-accent) calc(l * 1.1162) calc(c * 0.5005) calc(h - 7.0421)); /* #f4dcc0 */
+  --site-cut-2b: oklch(from var(--kf-accent) calc(l * 1.0169) calc(c * 0.676) calc(h - 11.7281)); /* #e2bf9c */
+  --site-cut-3a: oklch(from var(--kf-accent) calc(l * 1.0991) calc(c * 0.5047) calc(h - 33.1589)); /* #f7d3c3 */
+  --site-cut-3b: oklch(from var(--kf-accent) calc(l * 0.99) calc(c * 0.9173) calc(h - 35.4706)); /* #eeae94 */
+  --site-bar-a: oklch(from var(--kf-ink) calc(l * 0.9763) calc(c * 1.4034) calc(h - 0.0612)); /* #f2e4cf */
+  --site-bar-b: oklch(from var(--kf-accent) calc(l * 1.0233) calc(c * 0.6055) calc(h - 0.6578)); /* #dcc4a0 */
+}
+
+html { background: var(--kf-bg); }
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+}
+::selection { color: var(--site-white); background: var(--site-select); }
+
+/* ── Pill Nav ── */
+.pk-header { opacity: 0; }
+.is-loaded .pk-header { opacity: 1; }
+.pk-bar {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  z-index: 12;
+  transform: translate(-50%);
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 calc(24px - 0.32em) 0 24px;
+  isolation: isolate;
+  border-radius: var(--kf-radius-pill);
+  background: oklch(from var(--site-glass) l c h / 0.4);
+  -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(0.88);
+  backdrop-filter: blur(20px) saturate(180%) brightness(0.88);
+  box-shadow: inset 0 1px oklch(from var(--site-white) l c h / 0.22), inset 0 -1px oklch(from var(--site-white) l c h / 0.05), 0 10px 30px rgba(0, 0, 0, 0.22), 0 1px 3px rgba(0, 0, 0, 0.12);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
+  font: 500 12px/1 var(--kf-font-sans);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--site-white);
+  transition: transform 0.45s var(--kf-ease-out), opacity 0.3s ease;
+}
+/* Glass border: a bright 1px line on the top-left and bottom-right only */
+.pk-bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, oklch(from var(--site-white) l c h / 0.42), oklch(from var(--site-white) l c h / 0.08) 38%, oklch(from var(--site-white) l c h / 0.03) 62%, oklch(from var(--site-white) l c h / 0.24));
+  -webkit-mask: linear-gradient(var(--kf-ink) 0 0) content-box, linear-gradient(var(--kf-ink) 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.pk-bar::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(180deg, oklch(from var(--site-white) l c h / 0.1), oklch(from var(--site-white) l c h / 0) 55%);
+  pointer-events: none;
+}
+.pk-bar__name { margin-right: -0.32em; transition: opacity 0.3s ease; }
+.pk-bar__name:hover { opacity: 0.7; }
+.pk-bar__divider { width: 1px; height: 16px; margin: 0 24px; background: currentColor; opacity: 0.3; }
+.pk-bar__nav { display: flex; gap: 26px; }
+.pk-bar__link { transition: opacity 0.3s ease; }
+.pk-bar__nav:hover .pk-bar__link { opacity: 0.45; }
+.pk-bar__nav .pk-bar__link:hover { opacity: 1; }
+.pk-bar a:focus-visible, .pk-bar button:focus-visible { outline: 1px solid currentColor; outline-offset: 6px; border-radius: 4px; }
+.pk-bar__menu {
+  display: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.menu-open .pk-bar { opacity: 0; pointer-events: none; }
+
+@media (max-width: 960px) {
+  .pk-bar { top: 14px; height: 40px; padding: 0 calc(18px - 0.32em) 0 18px; font-size: 11px; }
+  .pk-bar__divider { height: 14px; margin: 0 16px; }
+  .pk-bar__nav { display: none; }
+  .pk-bar__menu { display: block; }
+}
+
+/* ── Phone menu: whole screen covered with frosted glass, four large words rise in with a .07s delay per line ── */
+.pk-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 28px calc(28px + env(safe-area-inset-bottom));
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  background: radial-gradient(120% 60% at 50% 0%, oklch(from var(--kf-accent) l c h / 0.12), transparent 60%), oklch(from var(--kf-bg) calc(l * 0.8043) calc(c * 0.7312) calc(h - 1.8423) / 0.62);
+  -webkit-backdrop-filter: blur(26px) saturate(150%) brightness(0.8);
+  backdrop-filter: blur(26px) saturate(150%) brightness(0.8);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.45s ease, visibility 0s linear 0.45s;
+}
+.pk-menu.is-open { opacity: 1; visibility: visible; transition: opacity 0.45s ease; }
+.pk-menu__bar {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 calc(18px - 0.32em) 0 18px;
+  border-radius: var(--kf-radius-pill);
+  background: oklch(from var(--site-white) l c h / 0.06);
+  box-shadow: inset 0 1px oklch(from var(--site-white) l c h / 0.18), inset 0 0 0 1px oklch(from var(--site-white) l c h / 0.08);
+  font: 500 11px/1 var(--kf-font-sans);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.pk-menu__bar .pk-bar__divider { height: 14px; margin: 0 16px; }
+.pk-menu__name { margin-right: -0.32em; }
+.pk-menu__close { padding: 0; border: 0; background: none; font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; cursor: pointer; }
+.pk-menu__links { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: clamp(18px, 4.2vh, 34px); }
+.pk-menu__link {
+  position: relative;
+  font-size: clamp(30px, 9vw, 40px);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-right: -0.14em;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.pk-menu.is-open .pk-menu__link {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.6s ease calc(0.12s + var(--i) * 0.07s), transform 0.7s var(--kf-ease-out) calc(0.12s + var(--i) * 0.07s);
+}
+.pk-menu__link:active { opacity: 0.6; }
+.pk-menu__foot { display: flex; flex-direction: column; align-items: center; gap: 18px; opacity: 0; transition: opacity 0.3s ease; }
+.pk-menu.is-open .pk-menu__foot { opacity: 1; transition: opacity 0.6s ease 0.45s; }
+
+/* ── Round icon links (shared by contact card · phone menu) ── */
+.pk-socials { display: flex; gap: 10px; }
+.pk-socials a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid oklch(from var(--kf-ink) l c h / 0.35);
+  color: oklch(from var(--kf-ink) l c h / 0.85);
+  transition: color 0.3s, border-color 0.3s, background 0.3s;
+}
+.pk-socials a:hover { color: var(--kf-bg); border-color: var(--kf-ink); background: var(--kf-ink); }
+.pk-socials svg { width: 16px; height: 16px; }
+.pk-copy { font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; color: oklch(from var(--kf-ink) l c h / 0.55); }
+
+/* ── Loader: one line in the center of a dark screen, letters light up one by one ── */
+.pk-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  transition: opacity 0.9s ease 0.3s, visibility 0s linear 1.2s;
+}
+.is-loaded .pk-loader { opacity: 0; visibility: hidden; pointer-events: none; }
+.pk-loader__text {
+  position: relative;
+  font: 400 11px/1 var(--kf-font-display);
+  letter-spacing: 0.4em;
+  margin-right: -0.4em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: opacity 0.4s ease;
+}
+.pk-loader__base { opacity: 0.22; }
+.pk-loader__fill { position: absolute; inset: 0; opacity: 0.85; }
+.pk-loader__fill span { opacity: 0; transition: opacity 0.3s ease; }
+.pk-loader__fill span.is-lit { opacity: 1; }
+.is-loaded .pk-loader__text { opacity: 0; }
+
+/* ── Name-press curtain: a white panel rises from below over 2.5s to cover, holds, then exits upward (original menu-transition) ── */
+.pk-wipe { position: fixed; inset: 0; z-index: 1000; background: var(--site-white); transform: translateY(100%); pointer-events: none; }
+.pk-wipe.is-on { animation: pk-wipe 2.5s ease-in-out; pointer-events: all; }
+@keyframes pk-wipe { 0% { transform: translateY(100%); } 33% { transform: translateY(0); } 66% { transform: translateY(0); } 100% { transform: translateY(-100%); } }
+
+/* ── Cursor dot: a faint light dot trails behind the mouse ── */
+.pk-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(90deg, var(--site-bar-a), var(--site-bar-b));
+  mix-blend-mode: screen;
+  filter: blur(4px);
+  transition: 0.2s;
+  will-change: transform;
+}
+@media (max-width: 960px) { .pk-cursor { display: none; } }
+
+/* ── Contact card: on arriving at the last room, a sheet of translucent brown glass floats up 18px ── */
+.pk-contact {
+  position: fixed;
+  z-index: 20;
+  right: clamp(20px, 4.5vw, 72px);
+  top: 50%;
+  width: min(380px, 34vw);
+  padding: 36px 34px 28px;
+  border-radius: var(--kf-radius-lg);
+  isolation: isolate;
+  color: var(--kf-ink);
+  background: oklch(from var(--site-glass) l c h / 0.42);
+  -webkit-backdrop-filter: blur(20px) saturate(170%) brightness(0.9);
+  backdrop-filter: blur(20px) saturate(170%) brightness(0.9);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.22), inset 0 0 0 1px oklch(from var(--site-white) l c h / 0.14), inset 0 1px oklch(from var(--site-white) l c h / 0.22);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(calc(-50% + 18px));
+  transition: opacity 0.8s ease, transform 0.9s var(--kf-ease-out), visibility 0s linear 0.9s;
+}
+.tour-end .pk-contact {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(-50%);
+  transition: opacity 0.8s ease 0.15s, transform 0.9s var(--kf-ease-out) 0.15s, visibility 0s;
+}
+.pk-contact__label { margin: 0 0 18px; font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase; color: oklch(from var(--kf-ink) l c h / 0.78); }
+.pk-contact__title { margin: 0; font-size: clamp(24px, 2.3vw, 32px); font-weight: 200; line-height: 1.18; letter-spacing: 0.01em; word-break: keep-all; }
+.pk-contact .pk-socials { margin-top: 28px; }
+.pk-contact .pk-copy { margin: 26px 0 0; padding-top: 16px; border-top: 1px solid oklch(from var(--kf-ink) l c h / 0.14); }
+@media (max-width: 767px) {
+  .pk-contact { left: 16px; right: 16px; top: auto; bottom: 16px; width: auto; padding: 26px 24px 20px; border-radius: var(--kf-radius-md); transform: translateY(18px); }
+  .tour-end .pk-contact { transform: none; }
+}
+
+/* ── Between rooms: a curtain entering bright walls and fog. Opacity is set by index.js on scroll ── */
+.pk-fade {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0;
+  background: var(--fade-bg, var(--site-cut-portal));
+}
+/* First room → second room: an arched hole with a gold rim opens in a cream wall, the next room shows through, and the hole grows past the screen edge */
+.pk-fade.is-portal { background: none; }
+.pk-fade__arch {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  width: min(36vw, 46vh);
+  height: min(64vw, 72vh);
+  margin: calc(min(64vw, 72vh) / -2) 0 0 calc(min(36vw, 46vh) / -2);
+  border-radius: 999px 999px 0 0;
+  transform: scale(var(--fade-hole, 0));
+  transform-origin: 50% 60%;
+  box-shadow: 0 0 0 300vmax var(--site-cut-portal), inset 0 0 0 2px oklch(from var(--site-cut-rim) l c h / 0.6), inset 0 0 40px oklch(from var(--site-cut-glow) l c h / 0.45);
+  display: none;
+}
+.pk-fade.is-portal .pk-fade__arch { display: block; }

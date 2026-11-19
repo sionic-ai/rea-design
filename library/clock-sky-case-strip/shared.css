@@ -1,0 +1,219 @@
+/* Shared by all pages: a sky that changes with the time of day (background, text, photo cover), paper texture, header row (two-line name · cycling awards line · signature · menu/contact · local time · clock dial),
+   Text roller link, menu (page preview panel), contact panel. Original is 1rem = 10px, above 1438px the text scales up in vw. */
+:root {
+  /* Sky — sky-time-dial uses --fx-night (0 day ~ 1 night). Night background and night text are in the skin’s contrast stage */
+  --site-bg: color-mix(in srgb, var(--kf-contrast-bg) calc(var(--fx-night, 0) * 100%), var(--kf-bg));
+  --site-ink: var(--kf-ink);
+  --site-ink-60: color-mix(in srgb, var(--site-ink) 60%, transparent);
+  --site-ink-30: color-mix(in srgb, var(--site-ink) 30%, transparent);
+  --site-ph: color-mix(in oklab, var(--site-ink) 14%, var(--site-bg));
+  --site-ph-line: color-mix(in oklab, var(--site-ink) 26%, var(--site-bg));
+  --site-over: var(--kf-ink);
+  --site-sel: color-mix(in srgb, var(--kf-accent) 20%, transparent);
+  --ease-reveal: cubic-bezier(0.46, 0, 0.09, 1);
+  --ease-slow: cubic-bezier(0.9, 0, 0.58, 1);
+  --ease-ui: cubic-bezier(0.87, 0, 0.13, 1);
+}
+[data-sky="night"] { --site-ink: var(--kf-contrast-ink); }
+[data-sky="yellow"] { --site-ink: var(--kf-accent); }
+
+html { font-size: 10px; background: var(--site-bg); transition: background-color 0.65s ease-out 0.1s; }
+body {
+  position: relative;
+  min-height: 100vh;
+  background: var(--site-bg);
+  color: var(--site-ink);
+  font: 400 1.6rem/1 var(--kf-font-display);
+  word-break: keep-all;
+  transition: color 0.6s ease-in-out 0.2s, background-color 0.65s ease-out 0.1s;
+}
+::selection { background: var(--site-sel); color: var(--site-ink); }
+.by-sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Paper texture — the original repeating paper image (286px) done with a noise filter, brightness lowered at night */
+.by-paper {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  filter: brightness(var(--fx-bright, 1));
+  /* 286px noise tile — a pattern that uses only alpha with no color, so independent of skin */
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='286' height='286'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -.9 .62'/%3E%3C/filter%3E%3Crect width='286' height='286' filter='url(%23n)'/%3E%3C/svg%3E") 0 0 / 286px repeat;
+}
+.by-main { position: relative; z-index: 1; }
+
+/* Letterform */
+.by-12 { font: 400 1.2rem/1 var(--kf-font-sans); letter-spacing: 0; text-transform: uppercase; }
+.by-h1 { font-family: var(--kf-font-display); font-weight: 400; font-size: 5.4rem; line-height: 1.24; letter-spacing: -0.04em; text-transform: lowercase; }
+@media (min-width: 768px) { .by-h1 { font-size: 4.8rem; } }
+@media (min-width: 1025px) { .by-h1 { font-size: 9rem; } }
+@media (min-width: 1438px) { .by-h1 { font-size: 6.26vw; } }
+.by-h1 > div + div { margin-top: -1.6rem; }
+@media (min-width: 1025px) { .by-h1 > div + div { margin-top: -3.2rem; } }
+@media (min-width: 1438px) { .by-h1 > div + div { margin-top: -2.23vw; } }
+.by-40 { font-family: var(--kf-font-display); font-weight: 400; font-size: 2.6rem; line-height: 1.22; letter-spacing: -0.04em; }
+@media (min-width: 1025px) { .by-40 { font-size: 4rem; } }
+@media (min-width: 1438px) { .by-40 { font-size: 2.78vw; } }
+
+/* Photo Slot */
+.by-ph {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background:
+    linear-gradient(to top right, transparent calc(50% - 0.5px), var(--site-ph-line) 50%, transparent calc(50% + 0.5px)),
+    linear-gradient(to bottom right, transparent calc(50% - 0.5px), var(--site-ph-line) 50%, transparent calc(50% + 0.5px)),
+    var(--site-ph);
+}
+.by-ph::before { content: ""; position: absolute; inset: 0; z-index: 1; background: var(--site-over); opacity: var(--fx-img-over, 0); pointer-events: none; }
+.by-ph::after {
+  content: attr(data-label);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  z-index: 2;
+  max-width: calc(100% - 1.6rem);
+  padding: 0.3rem 0.6rem;
+  background: var(--site-bg);
+  color: var(--site-ink-60);
+  font: 500 1rem/1.3 var(--kf-font-mono);
+  text-align: center;
+  text-transform: none;
+}
+
+/* Two-set letter roll (name·menu·contact) — the second set sits attached at 100% below */
+.by-roll { position: relative; display: inline-flex; flex-direction: column; overflow: hidden; vertical-align: top; }
+.by-roll__in { position: relative; display: inline-block; }
+.by-roll__in > span { display: block; white-space: nowrap; }
+.by-roll__in > span + span { position: absolute; top: 100%; left: 0; }
+
+/* ───────── Header bar ───────── */
+.by-head {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.8rem;
+  align-items: start;
+  height: 4rem;
+  padding: 0.8rem 0.8rem 0;
+  pointer-events: none;
+}
+.by-head > * { pointer-events: auto; }
+@media (min-width: 1025px) {
+  .by-head { grid-template-columns: repeat(14, 1fr); height: 8.4rem; padding: 1.7rem 1.6rem 0; }
+}
+.by-logo-wrap { grid-column: span 2; position: relative; }
+@media (min-width: 1025px) { .by-logo-wrap { grid-column: span 3; } }
+.by-logo { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 0.2rem; position: relative; }
+.by-award { position: absolute; top: 0; left: 0; display: flex; flex-direction: column; gap: 0.2rem; white-space: nowrap; pointer-events: none; }
+.by-award__line { display: grid; overflow: hidden; }
+.by-award__line > span { grid-area: 1 / 1; }
+.by-sign { grid-column: 5 / span 2; justify-self: start; margin-top: -0.6rem; }
+.by-sign svg { width: 4.6rem; height: 3rem; fill: none; stroke: var(--site-ink); stroke-width: 1.2; stroke-linecap: round; }
+@media (max-width: 1024px) { .by-sign { display: none; } }
+.by-nav { grid-column: 3 / span 2; display: flex; flex-direction: column; align-items: flex-start; gap: 0.2rem; }
+@media (min-width: 768px) { .by-nav { grid-column: 4 / span 1; } }
+@media (min-width: 1025px) { .by-nav { grid-column: 9 / span 2; margin: -1rem 0 0 -1rem; } .by-nav .by-link { padding: 0.5rem 1rem; } }
+.by-link { background: none; border: 0; padding: 0; cursor: pointer; color: inherit; }
+.by-link:focus-visible { outline: none; background: var(--site-ink); color: var(--site-bg); }
+.by-time { grid-column: 5 / span 1; display: flex; flex-direction: column; gap: 0.2rem; }
+@media (min-width: 1025px) { .by-time { grid-column: 13 / span 1; } }
+.by-time__label { position: relative; display: block; overflow: hidden; width: 10rem; }
+.by-time__label > span { display: block; }
+.by-time__label > span + span { position: absolute; top: 100%; left: 0; white-space: nowrap; cursor: pointer; }
+html[data-time-travel] .by-time__label > span { transform: translateY(-100%); }
+.by-time__label > span { transition: transform 0.5s ease-in-out; }
+.by-dot { animation: by-tick 1s step-end infinite; }
+@keyframes by-tick { 50% { opacity: 0; } }
+.by-egg {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+  width: 5.8rem;
+  height: 5.8rem;
+  border-radius: 50%;
+  cursor: pointer;
+}
+@media (min-width: 1025px) { .by-egg { top: 1.7rem; right: 1.6rem; width: 5.2rem; height: 5.2rem; } }
+/* On hover only the circle (the fitting spot) grows to 6.3rem, while the panel and needle stay at 5.2rem attached to the top right */
+.by-egg > svg, .by-egg [data-fx-part="hand"], .by-egg [data-fx-part="follower"] { position: absolute; inset: 0 0 auto auto; width: 5.8rem; height: 5.8rem; }
+@media (min-width: 1025px) { .by-egg > svg, .by-egg [data-fx-part="hand"], .by-egg [data-fx-part="follower"] { width: 5.2rem; height: 5.2rem; } }
+.by-egg > svg { overflow: visible; fill: none; stroke: currentColor; }
+.by-egg i::before {
+  content: "";
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  translate: -50% -50%;
+}
+.by-egg [data-fx-part="hand"]::before { background: currentColor; }
+
+/* Before the first appearance — gallery and header-row items are hidden from the first picture (original .gallery--intro·.header--intro) */
+html.by-intro .by-gallery, html.by-intro .by-logo, html.by-intro .by-sign, html.by-intro .by-nav, html.by-intro .by-time, html.by-intro .by-egg { visibility: hidden; }
+
+/* ───────── Menu — the current page shrinks into the first panel slot, and other pages’ panels slide in from the right and line up (each panel is a preview of that page rebuilt at panel size) ───────── */
+.by-shell { position: relative; z-index: 1; background: var(--site-bg); }
+.by-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: color-mix(in srgb, var(--site-bg) 72%, var(--kf-ink));
+  overflow: hidden;
+  visibility: hidden;
+}
+.by-menu__row { position: absolute; left: 12.15vw; top: 12.5vh; display: flex; gap: 4.3vw; height: 75vh; }
+.by-tile {
+  position: relative;
+  flex: none;
+  width: 27.9vw;
+  height: 100%;
+  overflow: hidden;
+  background: var(--site-bg);
+  color: inherit;
+}
+.by-tile__head { position: absolute; left: 1rem; right: 1rem; top: 1rem; display: flex; justify-content: space-between; font: 400 0.8rem/1.1 var(--kf-font-sans); text-transform: uppercase; }
+.by-tile__head svg { width: 3rem; height: 2rem; fill: none; stroke: var(--site-ink); stroke-width: 1.2; }
+.by-tile__title { position: absolute; left: 1rem; top: 4.4rem; font: 400 5.4rem/1 var(--kf-font-display); letter-spacing: -0.04em; text-transform: lowercase; }
+@media (min-width: 1025px) { .by-tile__title { font-size: 6rem; } }
+.by-tile__body { position: absolute; left: 0; right: 0; bottom: 0; display: flex; gap: 0.4rem; align-items: flex-end; padding: 0 0 0 0; }
+.by-tile__body .by-ph { flex: none; height: auto; }
+.by-tile[data-kind="cases"] .by-ph { width: 82%; aspect-ratio: 396 / 496; }
+.by-tile[data-kind="cases"] .by-tile__body { padding-left: 1rem; }
+.by-tile[data-kind="archive"] .by-tile__body { padding: 0 1rem 1rem; }
+.by-tile[data-kind="archive"] .by-ph { width: 31%; aspect-ratio: 3 / 4; }
+.by-tile[data-kind="about"] .by-tile__body { padding: 0 1rem 1rem; }
+.by-tile[data-kind="about"] .by-ph { width: 66%; aspect-ratio: 4 / 5; }
+.by-tile.is-slot { visibility: hidden; }
+
+/* ───────── Contact panel ───────── */
+.by-contact {
+  position: fixed;
+  z-index: 95;
+  right: 0.8rem;
+  top: 8rem;
+  width: min(36rem, calc(100vw - 1.6rem));
+  padding: 1.6rem;
+  background: var(--site-bg);
+  border: 1px solid var(--site-ink-30);
+  display: grid;
+  gap: 1.2rem;
+  visibility: hidden;
+}
+@media (min-width: 1025px) { .by-contact { right: 1.6rem; top: 8.4rem; } }
+.by-contact a { text-decoration: underline; text-underline-offset: 0.3rem; }
+.by-contact .by-40 { text-transform: lowercase; }
+
+@media (prefers-reduced-motion: reduce) {
+  body, .by-time__label > span { transition: none; }
+  .by-dot { animation: none; }
+}

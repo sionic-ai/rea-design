@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>char-reel-swap — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo { padding: 64px 20px; display: grid; justify-items: center; gap: 10px; text-align: center; }
+  .demo-eyebrow { font: 500 12px/1.4 var(--kf-font-mono); color: var(--kf-dim); }
+  .demo-title { font: 500 38px/1.1 var(--kf-font-display); }
+  .demo-btn { height: 40px; padding: 0 16px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-sm); background: var(--kf-surface); color: var(--kf-ink); cursor: pointer; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>char-reel-swap</b> — Press ”Next” and the two lines of text roll like slot machines, each settling on the new copy. The bottom line rolls once by itself every 6s.</p>
+<section class="demo">
+  <p class="demo-eyebrow" data-fx="char-reel-swap">N°01 / 09</p>
+  <p class="demo-title" data-fx="char-reel-swap" data-fx-char-reel-swap="line: 1; idle: 6">Project Name</p>
+  <button class="demo-btn" type="button">Next</button>
+</section>
+<script>
+(() => {
+  const names = ["Project Name", "Second Work", "Third Title", "Name Four"];
+  let i = 0;
+  document.querySelector(".demo-btn").addEventListener("click", () => {
+    i = (i + 1) % names.length;
+    document.querySelectorAll(".demo-eyebrow").forEach((el) => el.dispatchEvent(new CustomEvent("fx:text", { detail: `N°0${i + 1} / 09` })));
+    document.querySelectorAll(".demo-title").forEach((el) => el.dispatchEvent(new CustomEvent("fx:text", { detail: names[i] })));
+  });
+  const src = document.querySelector(".demo-title");
+  const html = src.outerHTML;
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = html; const el = t.content.firstElementChild; el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => document.querySelector(".demo").append(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1s another identical row comes in (the late arrival), and after 2.5s one drops out (the detach).");
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

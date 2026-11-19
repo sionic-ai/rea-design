@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>luma-threshold-video — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo { display: grid; gap: 40px; padding: 40px 20px; max-width: 1000px; margin: 0 auto; }
+  .stage { height: 420px; }
+  .demo button { justify-self: start; padding: 8px 14px; border: 1px solid var(--kf-line); background: var(--kf-surface); cursor: pointer; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>luma-threshold-video</b> — When the panel enters the screen, a black-and-white image rises out of the darkness starting from the bright areas. Sink it and raise it again with the button. The material can be video, photo or canvas (here a moving canvas). <span style="color:var(--kf-dim)">(After 1s one more panel comes in, and one leaves 2.5s later)</span></p>
+<section class="demo">
+  <div class="stage" id="a" data-fx="luma-threshold-video"><canvas data-fx-part="media" width="800" height="450" data-demo-blobs></canvas></div>
+  <button type="button" onclick="a.dispatchEvent(new Event(a.dataset.out ? 'fx:play' : 'fx:out')); a.dataset.out = a.dataset.out ? '' : '1'">Sink / Float again</button>
+  <div class="stage" data-fx="luma-threshold-video" data-fx-luma-threshold-video="to: .35; dur: 3; grain: 0" data-demo-remove><canvas data-fx-part="media" width="800" height="450" data-demo-blobs></canvas></div>
+  <template data-demo-late><div class="stage" data-fx="luma-threshold-video"></div></template>
+</section>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+// Demo material — canvas with five blobs of light drifting on a dark background (video placeholder)
+document.querySelectorAll("[data-demo-blobs]").forEach((c, k) => {
+  const g = c.getContext("2d"), ink = getComputedStyle(document.documentElement).getPropertyValue("--kf-ink");
+  const loop = (t) => {
+    g.clearRect(0, 0, 800, 450);
+    for (let i = 0; i < 5; i++) {
+      const x = 400 + Math.sin(t / 1300 + i * 1.7 + k) * 260, y = 225 + Math.cos(t / 1700 + i * 2.3) * 140, r = 60 + i * 18;
+      const grd = g.createRadialGradient(x, y, 0, x, y, r);
+      grd.addColorStop(0, ink); grd.addColorStop(1, "transparent");
+      g.globalAlpha = 0.25 + i * 0.15; g.fillStyle = grd; g.fillRect(x - r, y - r, r * 2, r * 2);
+    }
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+});
+setTimeout(() => document.querySelectorAll("template[data-demo-late]").forEach((t) => t.replaceWith(t.content.cloneNode(true))), 1000);
+setTimeout(() => document.querySelectorAll("[data-demo-remove]").forEach((n) => n.remove()), 2500);
+</script>
+</body>
+</html>

@@ -1,0 +1,292 @@
+/* Shared by the whole site — heading, menu drawer, person over button, TOP, footer, history scroll, picture-fragment texture. 
+   The original scales rem with screen width (1440 base, 390 base on phone) — so values were converted to rem. */
+
+/* The original color steps are made from skin variables — they follow when the skin changes. Original values are in the comments */
+:root {
+  --site-accent-deep: oklch(from var(--kf-accent) calc(l - .0959) calc(c * .801) calc(h + 1.62));   /* #056952 */
+  --site-mint: oklch(from var(--kf-accent) calc(l + .2665) calc(c * .727) calc(h + 8.9));           /* #8ad8c6 */
+  --site-logo: oklch(from var(--kf-accent) calc(l + .1721) calc(c * 1.353) calc(h - 53.49));        /* #a5b32d Logo lime green */
+  --site-sky: oklch(from var(--kf-accent) calc(l + .3387) calc(c * .424) calc(h + 62.59));          /* #bfe4f8 Illustration sky */
+  --site-sky-deep: oklch(from var(--kf-accent) calc(l + .2936) calc(c * .546) calc(h + 66.74));     /* #a9d6f2 */
+  --site-sky-hist: oklch(from var(--kf-accent) calc(l + .3467) calc(c * .402) calc(h + 64.78));     /* #c4e6fa history scroll sky */
+  --site-grass: oklch(from var(--kf-accent) calc(l + .1907) calc(c * 1.244) calc(h - 27.53));       /* #79c46f */
+  --site-footer: oklch(from var(--kf-accent) calc(l + .0279) calc(c * 1.029) calc(h - 1.26));       /* #13926f Footer panel */
+  --site-footer-ink: oklch(from var(--kf-bg) calc(l - .0137) calc(c * 1.331) calc(h + 3.21));       /* #f4fbf6 footer large text */
+  --site-dither: oklch(from var(--kf-bg) calc(l - .0352) calc(c * 2.003) calc(h + 6.35));           /* #eaf5ee shop area background */
+  --site-floor: oklch(from var(--kf-accent) calc(l + .3519) calc(c * .278) calc(h - .7));           /* #cfe9de floor map cell */
+  --site-map: oklch(from var(--kf-bg) calc(l - .0521) calc(c * 1.258) calc(h + 90.95));             /* #e7edf2 neighborhood map background */
+  --site-title: color-mix(in srgb, var(--kf-ink) 96.4%, var(--kf-bg));                               /* #262626 Hero handwritten title */
+  --site-overlay: color-mix(in srgb, var(--kf-ink) 30%, transparent);                                /* rgba(30,32,31,.3) */
+}
+
+html { font-size: 62.5%; }
+@media (min-width: 768px) { html { font-size: calc(100vw / 144); } }
+@media (max-width: 767px) { html { font-size: calc(100vw / 39); } }
+
+body {
+  background-color: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: 400;
+  font-size: 1.4rem;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  opacity: 0;
+}
+/* Original turns the body on immediately without a transition once setup is done (body.is-setuped) */
+body.is-ready { opacity: 1; }
+body.is-lock { overflow: hidden; }
+
+/* The original lays a 1024px dither pattern at 15% — we rebuild the same grain with a noise filter */
+.nw-grain { position: relative; }
+.nw-grain::after, body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+  opacity: 0.16;
+  z-index: 2;
+}
+body::before { position: fixed; z-index: 0; opacity: 0.08; }
+
+.nw-wrap { position: relative; z-index: 1; }
+
+/* ── Heading ───────────────────────────── */
+.hd { position: fixed; left: 0; top: 0; width: 100%; height: 8rem; z-index: 8500; pointer-events: none; }
+.hd > * { pointer-events: auto; }
+.hd__logo { position: absolute; left: 5.6rem; top: 2.4rem; display: flex; align-items: center; gap: 3.2rem; }
+.hd__mark { width: 12rem; height: 5.6rem; display: block; }
+.hd__tag { font-weight: 600; font-size: 1.6rem; line-height: 1.2; letter-spacing: 0.01em; }
+.hd__nav {
+  position: absolute; right: 10.4rem; top: 2.4rem;
+  height: 4.4rem; display: flex; align-items: center; gap: 2.3rem;
+  padding: 0.7rem 6.4rem 0.7rem 3.2rem; margin-right: -4rem;
+  background: var(--kf-surface); border-radius: 3rem;
+}
+/* In the original it tints only on the way in over .3s and snaps back on release (transition is only on the :hover side) */
+.hd__nav a { font-weight: 600; font-size: 1.5rem; line-height: 3rem; display: block; }
+.hd__nav a:hover { transition: color 0.3s var(--kf-ease-out); }
+.hd__nav a:hover, .hd__nav a[aria-current] { color: var(--kf-accent); }
+
+.nav-btn {
+  position: fixed; top: 2.4rem; right: 4rem; z-index: 9100;
+  width: 7.2rem; height: 4.4rem; border: 0; border-radius: 3rem; cursor: pointer;
+  background: var(--kf-accent); color: var(--kf-on-accent);
+  transition: background-color var(--kf-dur-fast) var(--kf-ease-out);
+}
+.nav-btn__svg { position: relative; top: -0.2rem; left: -0.2rem; display: block; width: 7.2rem; height: 4.4rem; overflow: visible; pointer-events: none; }
+.nav-btn__svg path { fill: none; stroke: currentColor; stroke-width: 2; }
+/* Original p-nav__peopleMask: a 30×60 mask above (−32px) and behind (z −1) the button — the person hides 45px below, then rises and stands on the button */
+.nav-btn__mask { position: absolute; top: -32px; left: calc(50% - 15px); z-index: -1; display: block; width: 30px; height: 60px; overflow: hidden; pointer-events: none; }
+.nav-btn__people { display: block; width: 30px; height: 45px; margin-top: 15px; transform-origin: 50% 100%; }
+.nav-btn__people svg { display: block; width: 30px; height: 45px; overflow: visible; }
+
+
+/* ── Menu drawer ───────────────────────────── */
+.drawer-ov {
+  position: fixed; inset: 0; z-index: 9000; background: var(--site-overlay);
+  opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.75s ease-out, visibility 0.75s;
+}
+.drawer {
+  position: fixed; top: 0; right: 0; z-index: 9010; width: 69.7rem; height: 100%; overflow-y: auto;
+  background: var(--kf-accent); color: var(--kf-on-accent); border-radius: 1.6rem 0 0 1.6rem;
+  visibility: hidden; pointer-events: none; transform: translateX(100%);
+  transition: transform 0.55s var(--kf-ease-out-expo), visibility 0.55s;
+}
+.is-nav-open .drawer-ov { opacity: 1; visibility: visible; pointer-events: auto; }
+.is-nav-open .drawer { visibility: visible; pointer-events: auto; transform: translateX(0); }
+.drawer__in { position: relative; min-height: 100%; padding: 3.2rem 6.4rem 4rem; display: flex; flex-direction: column; }
+.drawer__logo .hd__mark { width: 10rem; height: 4.6rem; }
+.drawer__cols { display: grid; grid-template-columns: 18rem 1fr; gap: 0 4rem; margin-top: 9.6rem; }
+.drawer__cols a { display: inline-block; font-weight: 600; font-size: 1.4rem; line-height: 3.2rem; }
+.drawer__cols a:hover { text-decoration: underline; text-underline-offset: 0.4rem; }
+.drawer__sns { margin-top: 4rem; width: 2.4rem; height: 2.4rem; }
+.drawer__foot { margin-top: 4rem; display: flex; gap: 2.4rem; font-size: 1.1rem; font-weight: 600; }
+.drawer__scene { margin-top: auto; height: 12rem; }
+.drawer__scene svg { width: 100%; height: 100%; display: block; overflow: visible; }
+
+/* ── Button (original c-button) — on interaction the dot bounces twice over the letters to the end, and a person stands on the third letter (shared.js pillHover) ── */
+.btn {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 0;
+  min-width: 15.6rem; padding: 0 2.4rem; border: 2px solid var(--kf-accent); border-radius: 3.1rem;
+  background: var(--kf-accent); color: var(--kf-on-accent);
+  font-family: var(--kf-font-display); font-weight: 700; font-size: 1.4rem; line-height: 3.6rem; letter-spacing: 0.04em;
+  cursor: pointer; transition: background-color 0.3s var(--kf-ease-out), color 0.3s var(--kf-ease-out), border-color 0.3s var(--kf-ease-out), opacity 0.3s var(--kf-ease-out);
+}
+.btn-l { line-height: 4.4rem; min-width: 18.8rem; }
+.btn__label { position: relative; display: inline-block; padding-left: 1.7rem; }
+.btn__ball { position: absolute; left: 0; top: 0; bottom: 0; margin: auto 0; display: block; width: 0.8rem; height: 0.8rem; border-radius: 50%; background: var(--kf-on-accent); transform-origin: 50% 50%; transition: background-color 0.3s var(--kf-ease-out); }
+.btn__text { display: inline-block; }
+.btn__char { display: inline-block; transform-origin: center 60%; }
+.btn__mask { position: absolute; display: block; width: 30px; height: 50px; margin: -38px 0 0 -9px; overflow: hidden; pointer-events: none; transform-origin: center bottom; transform: scale(0.85); }
+.btn-l .btn__mask { margin-top: -34px; }
+.btn__people { display: block; width: 30px; height: 45px; margin-top: 4.5px; transform-origin: 50% 100%; }
+.btn__people svg { display: block; width: 30px; height: 45px; overflow: visible; }
+.btn-inverse { background: var(--kf-surface); border-color: var(--kf-surface); color: var(--kf-accent); }
+.btn-inverse .btn__ball { background: var(--kf-accent); }
+.btn-inverse:hover { background: var(--kf-accent); border-color: var(--kf-accent); color: var(--kf-on-accent); }
+.btn-inverse:hover .btn__ball { background: var(--kf-on-accent); }
+
+/* Original c-arrowButton — the green circle (::after) bounces 1.12 → .94 → 1 over .8s on hover, and the arrow is pushed 4px at the 20% mark then returns. At the end, circle · arrow .3 */
+.arrow { width: 4.4rem; height: 4.4rem; border: 0; padding: 0; cursor: pointer; background: none; position: relative; display: block; }
+.arrow::after { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: 50%; background: var(--kf-accent); }
+.arrow__icon { position: absolute; inset: 0; z-index: 10; margin: auto; width: 1.3rem; height: 1.2rem; display: block; overflow: visible; }
+.arrow__icon path { fill: none; stroke: var(--kf-accent-soft); stroke-width: 2; stroke-linecap: round; transition: stroke 0.3s cubic-bezier(.215, .61, .355, 1); }
+.arrow.is-prev { transform: rotate(180deg); }
+.arrow:hover:not([disabled]) .arrow__icon { animation: fx-arrow-bump 0.8s cubic-bezier(.19, 1, .22, 1) forwards; }
+.arrow:hover:not([disabled])::after { animation: fx-arrow-bounce 0.8s cubic-bezier(.19, 1, .22, 1) forwards; }
+.arrow[disabled] { cursor: default; }
+.arrow[disabled]::after { opacity: 0.3; }
+.arrow[disabled] .arrow__icon path { opacity: 0.3; stroke: var(--kf-on-accent); }
+.arrow.swiper-button-lock { opacity: 0; visibility: hidden; }
+@keyframes fx-arrow-bump { 0%, 10% { transform: translate(0); } 20% { transform: translate(4px); } 35%, 100% { transform: translate(0); } }
+@keyframes fx-arrow-bounce { 0% { transform: scale(1); } 20% { transform: scale(1.12); } 40% { transform: scale(.94); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .arrow:hover .arrow__icon, .arrow:hover::after { animation: none; }
+}
+
+/* ── Section Title ── */
+.sec-title { font-family: var(--kf-font-display); font-weight: 700; font-size: 4rem; line-height: 1; letter-spacing: -0.04em; margin-left: -0.5rem; text-transform: uppercase; }
+
+/* ── TOP button ── */
+.top-btn {
+  position: relative; display: block; width: 7rem; height: 9rem; padding-top: 4rem; border-radius: 3.5rem;
+  background: var(--kf-accent); color: var(--kf-on-accent); text-align: center;
+  font-family: var(--kf-font-display); font-weight: 700; font-size: 1.2rem; line-height: 1;
+}
+.top-btn::before { content: ""; display: block; width: 0.8rem; height: 0.8rem; margin: 0 auto 0.8rem; border-left: 2px solid currentColor; border-top: 2px solid currentColor; transform: rotate(45deg); transition: transform 0.3s cubic-bezier(.215, .61, .355, 1); }
+.top-btn__illust { position: absolute; left: 0; right: 0; top: -4.4rem; margin: 0 auto; display: block; width: 3rem; height: 4.5rem; pointer-events: none; transition: transform 0.3s cubic-bezier(.215, .61, .355, 1); }
+.top-btn__illust svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.top-btn:hover .top-btn__illust { transform: translate3d(0, -4px, 0); }
+.top-btn:hover::before { transform: translate3d(0, -4px, 0) rotate(45deg); }
+.top-btn.is-white { background: var(--kf-surface); color: var(--kf-accent); }
+
+/* ── Footer ── */
+.ft { position: relative; z-index: 3; padding: 0 4rem; }
+.ft__panel { position: relative; height: 47.1rem; border-radius: 4rem 4rem 0 0; background: var(--site-footer); color: var(--kf-on-accent); }
+.ft__panel::after { border-radius: inherit; }
+.ft__scene { position: absolute; left: 0; top: -9rem; width: 74rem; height: 56rem; z-index: 3; }
+.ft__scene svg { width: 100%; height: 100%; overflow: visible; display: block; }
+.ft__letters { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.ft__letters span { position: absolute; font-family: var(--kf-font-display); font-weight: 700; line-height: 1; color: var(--site-footer-ink); }
+.ft__letters span.is-lime { color: var(--site-logo); }
+.ft__nav { position: absolute; left: 93.8rem; top: 5.6rem; z-index: 4; display: grid; grid-template-columns: 17.5rem auto; font-weight: 600; font-size: 1.2rem; line-height: 2.8rem; }
+.ft__nav a:hover { text-decoration: underline; text-underline-offset: 0.3rem; }
+.ft__sns { position: absolute; left: 93.8rem; top: 30.4rem; z-index: 4; width: 2rem; height: 2rem; }
+.ft__aside { position: absolute; left: 93.8rem; bottom: 4.4rem; z-index: 4; font-size: 1.1rem; font-weight: 600; }
+.ft__aside-row { display: flex; gap: 6rem; align-items: center; }
+.ft__aside a:hover { text-decoration: underline; text-underline-offset: 0.3rem; }
+.ft__lang { display: flex; gap: 1.2rem; }
+.ft__lang span { opacity: 0.45; }
+.ft__lang b { font-weight: 600; display: inline-flex; align-items: center; gap: 0.6rem; }
+.ft__lang b::before { content: ""; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: currentColor; }
+.ft__copy { margin-top: 2.4rem; font-size: 1rem; opacity: 0.8; }
+.ft .top-btn { position: absolute; right: 4rem; bottom: 3.2rem; z-index: 5; }
+
+/* ── Image pieces ── */
+.scene { position: absolute; inset: 0; overflow: hidden; }
+.scene svg { display: block; width: 100%; height: 100%; }
+.scene .scene__px { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* ── History scroll (end of the home page, shared with the history page) ── */
+.hist { position: relative; z-index: 1; }
+.hist__visual { position: sticky; top: 0; height: 100vh; margin-bottom: -100vh; overflow: hidden; background: var(--site-sky-hist); z-index: 0; }
+.hist__visual .scene { inset: 0; }
+.hist__top { position: relative; height: 99rem; z-index: 2; }
+.hist__copy { position: absolute; left: 0; right: 0; top: 7rem; text-align: center; font-size: 1.3rem; line-height: 1.7; }
+.hist__vtitle { position: absolute; left: 89.6rem; top: 6.8rem; writing-mode: vertical-rl; font-weight: 700; font-size: 3.6rem; line-height: 1; letter-spacing: 0.01em; white-space: nowrap; }
+.hist__vtitle em { font-style: normal; display: block; }
+.hist__ar {
+  position: fixed; right: 4rem; bottom: 4rem; z-index: 50; width: 30rem; display: flex; align-items: center; gap: 1.2rem;
+  padding: 1.2rem 2rem; border-radius: 3.2rem; background: var(--kf-surface); font-size: 1.2rem; font-weight: 600; line-height: 1.3;
+  transition: opacity 0.4s, visibility 0.4s;
+}
+.hist__ar b { color: var(--kf-accent); display: block; }
+.hist__ar small { color: var(--kf-accent); text-decoration: underline; font-size: 1rem; }
+.hist__ar svg { width: 4rem; height: 4rem; flex: none; }
+.hist__fixed { position: fixed; right: 4rem; bottom: 4rem; z-index: 50; display: flex; flex-direction: column; align-items: center; gap: 1.6rem; }
+/* Original p-history__lang — pressing the button flips the arrow immediately (scaleY −1) and the language list above turns on with no transition */
+.hist__lang { position: relative; }
+.hist__langbtn { display: flex; align-items: center; gap: 0.6rem; border: 0; padding: 0; background: none; cursor: pointer; color: inherit; font-family: var(--kf-font-display); font-weight: 700; font-size: 1.1rem; }
+.hist__langbtn::before { content: ""; width: 1.2rem; height: 1.2rem; border-radius: 50%; border: 1.5px solid currentColor; }
+.hist__langbtn i { width: 0.9rem; height: 0.5rem; background: currentColor; clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.hist__langbtn.is-open i { transform: scaleY(-1); }
+.hist__langlist { position: absolute; right: 0; bottom: 3.2rem; width: 15rem; padding: 3.2rem 1rem 3.2rem 3.2rem; border-radius: 0.8rem 0.8rem 0 0; background: color-mix(in srgb, var(--kf-bg) 80%, transparent); font-size: 1.3rem; line-height: 1; display: none; opacity: 0; }
+.hist__langlist li + li { margin-top: 1.6rem; }
+.hist__langlist b { color: var(--kf-accent); }
+/* In the original only TOP (p-history__action) turns on once it enters the scroll area, and the language button is always visible on the history side */
+.hist-off .hist__ar, .hist-off .hist__fixed .top-btn, .hist__ar.is-hidden { opacity: 0; visibility: hidden; }
+.hist__list { position: relative; z-index: 2; padding-top: 60rem; }
+.hist__item { position: relative; width: 46.9rem; margin-left: 22.8rem; }
+.hist__item:nth-child(2n) { margin-left: 74.3rem; }
+.hist__item + .hist__item { margin-top: 49.2rem; }
+.hist__head { position: absolute; left: -1.6rem; bottom: 100%; margin-bottom: -2.4rem; z-index: 2; }
+.hist__head h3 { font-weight: 700; font-size: 2.4rem; line-height: 1.25; }
+.hist__head h3 span, .hist__head p span { background: var(--kf-surface); box-decoration-break: clone; -webkit-box-decoration-break: clone; padding: 0 0.4rem; }
+.hist__head p { font-size: 1.2rem; font-weight: 600; line-height: 1.4; margin-top: 0.2rem; }
+.hist__card { background: var(--kf-surface); padding: 4.8rem 2.4rem 3.2rem; }
+.hist__card .wf-img { margin-bottom: 0.8rem; }
+.hist__cap { font-size: 1rem; color: var(--kf-dim); line-height: 1.5; margin-bottom: 2.4rem; }
+.hist__card p.t { font-size: 1.3rem; line-height: 2; text-align: justify; margin-bottom: 2.4rem; }
+.hist__card h4 { font-weight: 700; font-size: 1.5rem; margin: 3.2rem 0 1.2rem; }
+.hist__space { height: 90rem; }
+.hist__bottom { position: relative; z-index: 2; height: 100vh; }
+.hist__bottom h2 { position: absolute; left: 0; right: 0; top: 6.4rem; text-align: center; font-weight: 700; font-size: 3rem; line-height: 1.3; }
+
+@media (max-width: 767px) {
+  .hd { height: 5.8rem; }
+  .hd__logo { left: 1.2rem; top: 1rem; gap: 1.2rem; }
+  .hd__mark { width: 6.4rem; height: 3rem; }
+  .hd__tag { font-size: 1rem; }
+  .hd__nav { display: none; }
+  .nav-btn { top: 1rem; right: 1.2rem; width: 5.6rem; height: 3.4rem; }
+  .nav-btn__svg { width: 5.6rem; height: 3.4rem; top: -0.3rem; }
+  .nav-btn__mask { top: -34px; transform: scale(.85); transform-origin: center bottom; }
+  .drawer { width: 100%; border-radius: 0; }
+  .drawer__in { padding: 5.6rem 3rem 3rem; }
+  .drawer__logo .hd__mark { width: 15.6rem; height: 7.2rem; }
+  .drawer__cols { grid-template-columns: 1fr; gap: 0; margin-top: 3.2rem; }
+  .drawer__cols a { font-size: 1.1rem; line-height: 2.56rem; }
+  .drawer__cols br { display: none; }
+  .drawer__cols a { display: block; }
+  .drawer__sns { margin-top: 2rem; }
+  .sec-title { font-size: 2.8rem; }
+  .btn { min-width: 12rem; font-size: 1.2rem; line-height: 3.2rem; }
+  .btn-l { line-height: 3.8rem; min-width: 15.6rem; }
+  .top-btn { width: 5rem; height: 6.5rem; padding-top: 2.6rem; border-radius: 2.5rem; font-size: 1rem; }
+  .top-btn::before { width: 0.6rem; height: 0.6rem; margin-bottom: 0.6rem; }
+  .ft { padding: 0; }
+  .ft__panel { height: auto; min-height: 60rem; border-radius: 2.4rem 2.4rem 0 0; padding: 30rem 2rem 3rem; }
+  .ft__scene { left: 0; top: -8rem; width: 100%; height: 34rem; }
+  .ft__letters { bottom: auto; height: 30rem; }
+  .ft__letters span { transform: scale(0.5); transform-origin: 0 0; }
+  .ft__nav { position: relative; left: auto; top: auto; grid-template-columns: 1fr 1fr; font-size: 1.1rem; line-height: 2.6rem; }
+  .ft__sns { position: relative; left: auto; top: auto; margin-top: 2rem; }
+  .ft__aside { position: relative; left: auto; bottom: auto; margin-top: 2.4rem; }
+  .ft__aside-row { gap: 3.2rem; }
+  .ft .top-btn { right: 1.6rem; bottom: 2.4rem; }
+  .hist__copy { top: 13rem; font-size: 1.2rem; padding: 0 2rem; }
+  .hist__vtitle { left: auto; right: 4.4rem; top: 7.6rem; font-size: 2.8rem; }
+  .hist__ar { right: auto; left: 50%; transform: translateX(-50%); bottom: 3.2rem; width: 32rem; }
+  .hist__fixed { right: 1.6rem; bottom: 2rem; }
+  .hist__list { padding-top: 40rem; }
+  .hist__item, .hist__item:nth-child(2n) { width: auto; margin-left: 2rem; margin-right: 2rem; }
+  .hist__item + .hist__item { margin-top: 36rem; }
+  .hist__head h3 { font-size: 2rem; }
+  .hist__card { padding: 4.4rem 2rem 2.4rem; }
+  .hist__bottom h2 { font-size: 2.4rem; top: 9rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer, .drawer-ov { transition: none; }
+}
+
+/* ── Subpage header (News, Store, single News post) ── */
+.sub { position: relative; z-index: 1; padding: 21.6rem 0 16rem; }
+.sub__title { text-align: center; margin: 0; }
+.sub__title.is-left { text-align: left; }
+@media (max-width: 767px) {
+  .sub { padding: 12rem 0 10rem; }
+}

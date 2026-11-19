@@ -1,0 +1,188 @@
+/* Shared by the whole site — following green dot cursor, name at top right, orange buttons (triangle top left · circle bottom right, on press an orange panel slides out from that side in 1s),
+   First-page loader, section color change (blue-gray, olive), three-city time footer. Text size is rem proportional to screen width (390px 20.5px → 1920px 32px). */
+:root {
+  --site-blue: oklch(from var(--kf-accent) 0.773 0.021 calc(h + 179.8));
+  --site-green: oklch(from var(--kf-accent) 0.514 0.064 calc(h + 98.6));
+  --site-green-50: color-mix(in srgb, var(--site-green) 50%, transparent);
+  --site-green-80: color-mix(in srgb, var(--site-green) 80%, transparent);
+  --site-loader-shade: color-mix(in srgb, var(--kf-contrast-bg) 80%, transparent);
+  --site-loader-mark: color-mix(in srgb, var(--kf-bg) 80%, transparent);
+  --site-ph: color-mix(in oklab, var(--kf-ink) 12%, var(--kf-bg));
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --pad: 1.5625rem;
+  --h1: calc(36px + 64 * (100vw - 390px) / 1530);
+  --h3: calc(36px + 32 * (100vw - 390px) / 1530);
+  --h5: calc(16px + 4 * (100vw - 390px) / 1530);
+  --p: calc(20.5px + 11.5 * (100vw - 390px) / 1530);
+}
+html { font-size: calc(20.5px + 11.5 * (100vw - 390px) / 1530); overscroll-behavior: none; }
+@media (min-width: 1920px) { html { font-size: 32px; } :root { --h1: 100px; --h3: 68px; --h5: 20px; --p: 32px; } }
+@media (max-width: 767px) { html { font-size: 5.2564vw; } :root { --h1: 1.756rem; --h3: 1.756rem; --h5: 0.7805rem; --p: 1rem; } }
+body {
+  background: var(--kf-bg); color: var(--kf-ink);
+  font-family: var(--kf-font-sans); font-weight: var(--kf-weight-body);
+  transition: background-color 400ms var(--ease), color 400ms var(--ease);
+}
+body.is-blue { background: var(--site-blue); }
+body.is-green { background: var(--site-green); }
+@media (hover: hover) and (pointer: fine) and (min-width: 768px) { html, html * { cursor: none !important; } }
+
+.th-h1 { font-size: var(--h1); line-height: 1.14; font-weight: var(--kf-weight-display); margin: 0; }
+.th-h3 { font-size: var(--h3); line-height: 1.1176; font-weight: var(--kf-weight-display); margin: 0 0 0.8em; }
+.th-h5 { font-size: var(--h5); line-height: 1.2; margin: 0 0 1.1em; }
+.th-p { font-size: var(--p); line-height: 1.1875; margin: 0 0 1em; }
+.th-up { text-transform: uppercase; }
+.th-it { font-style: italic; }
+/* Original global body a:after — a thin underline under every link (even cover links over photos) turns on in .25s on hover */
+a { position: relative; }
+a::after { content: ""; position: absolute; left: 0; bottom: 0.1em; width: 100%; height: 0.04em; background: currentColor; opacity: 0; pointer-events: none; transition: opacity 250ms var(--ease); }
+a:hover::after { opacity: 1; }
+/* Name and photo cover links draw no underline (original a.no-line:after display none) — only the state changes, nothing is visible */
+.th-title a::after, .th-cat__tile::after, a.th-caption::after { display: none; }
+.th-link--on::after { opacity: 1; }
+.th-link--on:hover::after { opacity: 0; }
+
+/* ── Photo slot */
+.th-media { position: relative; width: 100%; overflow: hidden; background: var(--site-ph); }
+.th-media .wf-img { position: absolute; inset: 0; height: 100%; border: 0; }
+.th-r11 { aspect-ratio: 1; } .th-r54 { aspect-ratio: 5 / 4; } .th-r21 { aspect-ratio: 1440 / 760; } .th-r32 { aspect-ratio: 3 / 2; } .th-r23 { aspect-ratio: 2 / 3; } .th-r169 { aspect-ratio: 16 / 9; }
+.th-multiply .wf-img { filter: grayscale(1); }
+.th-multiply::after { content: ""; position: absolute; inset: 0; background: var(--site-green-80); mix-blend-mode: multiply; pointer-events: none; }
+
+/* ── Header: name at top right + two corner buttons */
+.th-title { position: fixed; top: 1rem; right: var(--pad); z-index: 500; margin: 0; font-size: var(--p); line-height: 1.1875; }
+.th-nav-btn {
+  position: fixed; z-index: 900; padding: 0; border: 0; background: none; cursor: pointer;
+  transition: transform 250ms var(--ease); will-change: transform;
+}
+.th-nav-btn svg { display: block; width: 100%; height: 100%; }
+.th-nav-btn svg * { fill: var(--kf-accent); }
+.th-nav-btn--tl { top: 0; left: 0; width: 2.65625rem; height: 2.65625rem; transform-origin: top left; }
+.th-nav-btn--br { bottom: 0; right: 0; width: 2.5rem; height: 2.5rem; transform-origin: bottom right; }
+@media (min-width: 767px) { .th-nav-btn:hover { transform: scale(1.25); } }
+.th-nav-btn:focus-visible { outline: 2px solid var(--kf-ink); outline-offset: 4px; }
+
+/* ── Orange menu panels: pushed out from left and right over 1s cubic-bezier(.23,1,.32,1), content turns on over .75s after .6s ── */
+.th-panel {
+  display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; row-gap: var(--pad);
+  padding: var(--pad);
+}
+.th-panel--left { padding-top: 3.125rem; }
+.th-panel--right { padding-bottom: 3.125rem; }
+.th-menu { list-style: none; margin: 0; padding: 0; }
+.th-menu a { position: relative; display: inline-block; }
+.th-menu a::after { height: 0.1em; }
+.th-menu .th-h3 { margin: 0; text-transform: uppercase; }
+.th-hover-imgs { position: relative; width: 100%; aspect-ratio: 540 / 360; flex-shrink: 0; overflow: hidden; }
+.th-hover-img { position: absolute; inset: 0; background: var(--kf-accent); }
+.th-hover-img .wf-img { position: absolute; inset: 0; height: 100%; border: 0; mix-blend-mode: multiply; }
+.th-close { position: absolute; width: 3.0625rem; height: 3.0625rem; padding: 0; border: 0; background: none; cursor: pointer; z-index: 100; }
+.th-close::before, .th-close::after { content: ""; position: absolute; top: 50%; left: 50%; width: 137%; height: 0.04em; background: var(--kf-ink); }
+.th-close::before { transform: translate(-50%, -50%) rotate(45deg); }
+.th-close::after { transform: translate(-50%, -50%) rotate(-45deg); }
+.th-panel--left .th-close { top: 0.15625rem; left: 0.15625rem; }
+.th-panel--right .th-close { bottom: 0.15625rem; right: 0.15625rem; }
+.th-veil { position: fixed; inset: 0; z-index: 940; display: none; }
+.th-veil.is-on { display: block; }
+@media (max-width: 767px) {
+  .th-title { top: 0.5854rem; right: 0.7317rem; z-index: 951; }
+  .th-nav-btn { width: 3.4146rem; height: 3.4146rem; }
+  .th-nav-btn--tl { top: 0.7317rem; left: 0.7317rem; width: 3.4146rem; height: 3.4146rem; }
+  .th-nav-btn--br { bottom: 0.7317rem; right: 0.7317rem; width: 3.4146rem; height: 3.4146rem; }
+  .th-panel { padding: 2.1951rem 0.7317rem; padding-top: 33svh; row-gap: 0; }
+  .th-panel .th-h3 { font-size: 2.5366rem; line-height: 1.15; }
+  .th-hover-imgs, .th-panel__dummy { display: none; }
+  .th-panel--left .th-close { top: 0.7317rem; left: 0.7317rem; }
+  .th-panel--right .th-close { bottom: 0.7317rem; right: 0.7317rem; }
+}
+
+/* ── Cursor dot (wide screens only): 15px green dot follows in .15s and grows to 30px (.6s) over links */
+.th-dot {
+  position: fixed; top: 0; left: 0; z-index: 9999; width: 15px; height: 15px; border-radius: 50%;
+  background: var(--site-green); pointer-events: none;
+  transition: background-color 150ms var(--ease) 100ms;
+}
+body.is-green .th-dot { background: var(--site-blue); }
+.th-dot__text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); white-space: nowrap; margin: 0; font-size: var(--h5); text-transform: uppercase; opacity: 0; transition: opacity 150ms var(--ease); }
+.th-dot.is-prompt { background-color: transparent; }
+.th-dot.is-prompt .th-dot__text { opacity: 1; transition-delay: 100ms; }
+@media (max-width: 767px), (hover: none) { .th-dot { display: none !important; } }
+
+/* ── Loader (first page): logo-spread-loader part — original frame 25rem × 10.8125rem, corner piece 2.65625rem */
+.th-loader { --fx-frame-w: 25rem; --fx-frame-h: 10.8125rem; --fx-corner: 2.65625rem; }
+.th-loader [data-fx-part="shade"] video, .th-loader [data-fx-part="shade"] .wf-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border: 0; opacity: 0.55; }
+.th-loader [data-fx-part="piece"][data-key="br"] { width: 2.5rem; height: 2.5rem; }
+@media (max-width: 767px) {
+  .th-loader { --fx-frame-w: 89.74vw; --fx-frame-h: 38.97vw; --fx-corner: 9.49vw; }
+  .th-loader [data-fx-part="piece"][data-key="br"] { width: 8.97vw; height: 8.97vw; }
+  .th-loader.is-spread [data-fx-part="frame"] { width: calc(100% - 1.4634rem); height: calc(100% - 1.4634rem); }
+  .th-loader.is-spread [data-fx-part="piece"][data-key] { width: 3.4146rem; height: 3.4146rem; }
+}
+
+/* ── Section line grid: 1/3 · 2/3 columns */
+.th-section { position: relative; width: 100%; }
+.th-row { display: flex; align-items: flex-start; justify-content: flex-start; width: 100%; row-gap: 1.125rem; }
+.th-row--right { justify-content: flex-end; }
+.th-row--centre { justify-content: center; }
+.th-row--spaced { justify-content: space-between; }
+.th-col { position: relative; }
+.th-col--s { width: 33.3333%; }
+.th-col--m { width: 66.6667%; }
+.th-col--l { width: 75%; }
+.th-col--full { width: 100%; }
+.th-pad-t { padding-top: var(--pad); } .th-pad-b { padding-bottom: var(--pad); } .th-pad-l { padding-left: var(--pad); } .th-pad-r { padding-right: var(--pad); }
+.th-caption { position: absolute; top: 100%; left: 0; z-index: -1; padding: 0.625rem 0.75rem; transform: translateY(-100%); opacity: 0; transition: opacity 250ms var(--ease), transform 250ms var(--ease); }
+.th-caption .th-h5 { margin: 0; }
+@media (min-width: 767px) { .th-col:hover > .th-caption { transform: translateY(0); opacity: 1; } }
+@media (max-width: 767px) {
+  .th-row { flex-direction: column; }
+  .th-col--s, .th-col--m, .th-col--l { width: 100%; }
+  .th-pad-l { padding-left: 0.7317rem; } .th-pad-r { padding-right: 0.7317rem; }
+  .th-caption { position: relative; opacity: 1; transform: none; padding: 0.6341rem 0.7317rem 0; z-index: 1; }
+}
+
+/* ── Big text line (final section): when it reaches screen center it rises from 5em below in .8s */
+.th-big { padding: 2.8125rem 0; }
+.th-big:first-child { padding-top: 7.5rem; }
+.th-big__text { opacity: 0; transform: translateY(5em); }
+.th-big .th-h3 { margin: 0 0 0.5em; }
+
+/* ── Footer: three cities — on hover the time turns off (.1s) and the address turns on (.3s · .05s later) */
+.th-foot { position: relative; z-index: 2; width: 100%; padding: 3.75rem 0; background: var(--kf-bg); }
+.th-foot__grid { display: grid; grid-template-columns: repeat(3, 1fr); }
+.th-loc { position: relative; text-align: center; cursor: default; }
+.th-loc__info { transition: opacity 300ms var(--ease) 50ms; }
+.th-loc__code { margin: 0 0 0.3125rem; }
+.th-loc__time { margin: 0; }
+.th-loc__addr { position: absolute; top: 50%; left: 50%; width: 100%; transform: translate(-50%, -50%); opacity: 0; transition: opacity 100ms var(--ease); }
+.th-loc__addr .th-p { margin: 0 auto; }
+@media (min-width: 767px) {
+  .th-loc:hover .th-loc__info { opacity: 0; transition: opacity 100ms var(--ease); }
+  .th-loc:hover .th-loc__addr { opacity: 1; transition: opacity 300ms var(--ease) 50ms; }
+}
+.th-foot__mob { display: none; text-align: center; padding-top: 12.5svh; }
+@media (max-width: 767px) {
+  .th-foot__mob { display: block; }
+  .th-foot__mob .th-p { margin: 0 auto 1.4rem; font-size: var(--h5); }
+  .th-loc__addr { display: none; }
+}
+
+/* ── Transition (barba): the page goes transparent, and the swapped page turns on .4s after .8s. It shows as is if the script is off */
+html.is-js [data-barba="container"] { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  body, .th-nav-btn { transition: none !important; }
+  .th-big__text { opacity: 1; transform: none; }
+}
+/* The close button, like the panel content, turns on at .75s after a .6s delay and turns off at .2s */
+.th-panel .th-close { opacity: 0; pointer-events: none; transition: opacity 200ms var(--ease); }
+.th-panel.is-open .th-close { opacity: 1; pointer-events: auto; transition: opacity 750ms var(--ease) 600ms; }
+/* Phone: stacked in one line, photos inset .73rem on both sides, 1/3-column photos at 2/3 width on the right */
+@media (max-width: 767px) {
+  .th-row { padding-inline: 0.7317rem; }
+  .th-row .th-col--s:has(> .th-media) { width: 66.7%; margin-left: auto; }
+  .th-row .th-col.th-pad-l, .th-row .th-col.th-pad-r { padding-inline: 0; }
+  .th-foot__grid .th-loc:nth-child(2) { margin-top: 3rem; }
+  .th-foot__grid .th-loc:nth-child(3) { margin-top: 6rem; }
+}
+.th-r167 { aspect-ratio: 16 / 7; }

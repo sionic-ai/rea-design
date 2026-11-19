@@ -1,0 +1,296 @@
+/* Page background · checkout band · cart band · waitlist window — things that span the whole shop */
+html { font-size: 62.5%; }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: clip; }
+
+:root {
+  /* Base tones of the three material cylinders — light metal, accent metal, dark metal */
+  --site-metal-1: color-mix(in oklab, var(--kf-ink) 22%, var(--kf-bg));
+  --site-metal-2: var(--kf-accent);
+  --site-metal-3: color-mix(in oklab, var(--kf-ink) 46%, var(--kf-bg));
+  /* Very faint divider inside the waitlist window (original #DDE1E0) */
+  --site-hairline: color-mix(in oklab, var(--kf-ink) 12%, var(--kf-bg));
+  --site-veil: color-mix(in srgb, var(--kf-contrast-bg) 55%, transparent);
+}
+
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  font-size: 1.6rem;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---- Payment strip: on PC it sits in the flow below the shop (the shop panel is shorter than the screen by the strip height), on phones it is pinned below the window ---- */
+.s-bar {
+  position: relative;
+  z-index: 20;
+  border-top: 0.5px solid var(--kf-line);
+  background: var(--kf-bg);
+}
+.s-strip {
+  height: 0;
+  overflow: hidden;
+  border-top: 0.5px solid var(--kf-line);
+  background: var(--kf-bg);
+  transition: height 0.28s ease;
+}
+/* Only two heights — the strip height sets the shop board size, so if it grew with every add the shop would sway under the user’s hand */
+.s-strip.is-filled { height: 7.2rem; }
+.s-strip__items {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.6rem;
+  height: 7.2rem;
+  padding: 0.8rem 2rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+.s-strip__items::-webkit-scrollbar { height: 0; display: none; }
+.s-strip__item {
+  position: relative;
+  flex: 0 0 auto;
+  width: 5rem;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9px;
+}
+.s-strip__item .s-cyl-pic { transition: opacity 0.18s ease; }
+.s-strip__item:hover .s-cyl-pic,
+.s-strip__item:focus-visible .s-cyl-pic { opacity: 0.2; }
+.s-strip__item::after {
+  content: "\2212";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4rem;
+  line-height: 1;
+  color: var(--kf-ink-soft);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+.s-strip__item:hover::after,
+.s-strip__item:focus-visible::after { opacity: 1; }
+.s-strip__n {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 1.7rem;
+  padding: 0 0.4rem;
+  border-radius: 1rem;
+  background: var(--kf-ink-soft);
+  color: var(--kf-bg);
+  font-size: 1rem;
+  line-height: 1.7rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.s-checkout {
+  position: relative;
+  display: block;
+  width: 100%;
+  background: var(--kf-contrast-bg);
+  color: var(--kf-contrast-ink);
+}
+.s-checkout__wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3.2rem 4.8rem;
+}
+.s-checkout__total {
+  font-size: 5.6rem;
+  font-weight: 400;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.s-checkout__go {
+  font-size: 4rem;
+  font-weight: 400;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+/* A line that explains how to add items just once — it disappears once the first item is added. Floated in the center so the band height does not change */
+.s-hint {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--kf-contrast-ink);
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.s-bar:has(.s-strip.is-filled) .s-hint { opacity: 0; }
+
+@media (max-width: 991px) {
+  html, body { overflow-x: clip; touch-action: pan-y; overscroll-behavior-x: none; }
+  .s-bar { position: fixed; left: 0; right: 0; bottom: 0; }
+  .s-page { padding-bottom: var(--bar-h, 13rem); }
+  .s-checkout__wrap { padding: 2.4rem 2.4rem; }
+  .s-checkout__total { font-size: 4rem; }
+  .s-checkout__go { font-size: 2.4rem; }
+}
+@media (max-width: 479px) {
+  .s-checkout__wrap { padding: 2.4rem 2rem; }
+  .s-checkout__total { font-size: 3.2rem; }
+  .s-checkout__go { font-size: 2rem; }
+  .s-hint {
+    font-size: 1rem;
+    letter-spacing: 0.06em;
+    white-space: normal;
+    max-width: 12rem;
+    line-height: 1.35;
+    text-align: center;
+  }
+}
+
+/* ---- Cylinder graphic: body · rounded bottom end · top rim (lid is a solid disc, can has a visible opening) ----
+   One font size (em) sets the size. Color comes from the cell’s --site-metal */
+.s-cyl-pic {
+  --rx: 4.7em;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--cut-top, 0%);
+  bottom: var(--cut-bot, 0%);
+  --m: var(--site-metal, var(--site-metal-1));
+  --m-dark: color-mix(in oklab, var(--m) 62%, var(--kf-ink));
+  --m-light: color-mix(in oklab, var(--m) 45%, var(--kf-bg));
+  --m-body: linear-gradient(90deg, var(--m-dark) 0%, var(--m) 14%, var(--m-light) 38%, var(--m) 62%, var(--m-dark) 100%);
+}
+.s-cyl-pic__body {
+  position: absolute;
+  left: 1.5%;
+  right: 1.5%;
+  top: var(--rx);
+  bottom: var(--rx);
+  background: var(--m-body);
+}
+.s-cyl-pic__body::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(-1 * var(--rx));
+  height: calc(2 * var(--rx));
+  border-radius: 50%;
+  background: var(--m-body);
+  /* Seam at the bottom edge of a piece — in the stacked pile the piece boundary shows as a thin band */
+  box-shadow: inset 0 -0.45em 0 var(--m-dark), inset 0 -0.9em 0 var(--m-light);
+}
+.s-cyl-pic__rim {
+  position: absolute;
+  left: 1.5%;
+  right: 1.5%;
+  top: 0;
+  height: calc(2 * var(--rx));
+  border-radius: 50%;
+  background: var(--m-light);
+  box-shadow: inset 0 0 0 0.35em var(--m);
+}
+/* Bucket opening — dark interior you can see into */
+.s-cyl-pic.is-cup .s-cyl-pic__rim {
+  background: radial-gradient(ellipse at 50% 70%, var(--m-dark) 0%, var(--m) 70%);
+  box-shadow: inset 0 0 0 0.45em var(--m-light);
+}
+.s-cyl-pic.is-lid { --rx: 5.4em; }
+.s-cyl-pic.is-lid .s-cyl-pic__body { bottom: calc(100% - 8em); }
+.s-cyl-pic.is-lid .s-cyl-pic__rim { box-shadow: inset 0 0 0 0.6em var(--m), inset 0 0 0 0.9em var(--m-light); }
+
+@keyframes s-tap { 50% { scale: 0.96; } }
+.is-tapped { animation: s-tap 0.22s ease; }
+
+/* ---- Waitlist window — opened by the price button of a material not yet on sale ---- */
+.s-wl {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 2.4rem;
+  background: var(--site-veil);
+}
+.s-wl.is-open { display: flex; }
+.s-wl__band {
+  position: relative;
+  width: 100%;
+  max-width: 42rem;
+  background: var(--kf-bg);
+  color: var(--kf-contrast-bg);
+}
+.s-wl__head { padding: 2.8rem 5.6rem 2.4rem 2.8rem; }
+.s-wl__title { font-size: 1.8rem; font-weight: 400; letter-spacing: -0.01em; text-transform: uppercase; }
+.s-wl__copy { margin-top: 0.6rem; font-size: 1.3rem; line-height: 1.4; letter-spacing: -0.005em; }
+.s-wl__close {
+  position: absolute;
+  top: 1.6rem;
+  right: 1.6rem;
+  padding: 0.8rem;
+  border: 0;
+  background: none;
+  font-size: 1.8rem;
+  line-height: 1;
+  color: var(--kf-contrast-bg);
+  cursor: pointer;
+}
+.s-wl__input {
+  display: block;
+  width: 100%;
+  padding: 0 2.8rem 1.6rem;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  font: inherit;
+  font-size: 1.7rem;
+  letter-spacing: -0.01em;
+  color: var(--kf-contrast-bg);
+  caret-color: var(--kf-contrast-bg);
+}
+.s-wl__input:focus { outline: none; }
+.s-wl__input:focus-visible { box-shadow: inset 0 -2px 0 var(--kf-accent); }
+.s-wl__input::placeholder { color: var(--kf-contrast-bg); opacity: 0.2; }
+.s-wl__hairline { height: 1px; background: var(--site-hairline); }
+.s-wl__strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.6rem;
+  min-height: 4.8rem;
+  padding: 0.8rem 2.8rem;
+  background: var(--kf-contrast-bg);
+  color: var(--kf-contrast-ink);
+}
+.s-wl__msg { font-size: 1.2rem; line-height: 1.4; }
+.s-wl__submit {
+  padding: 0.8rem 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 1.3rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--kf-contrast-ink);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .s-strip, .s-hint, .s-strip__item::after, .s-strip__item .s-cyl-pic { transition: none; }
+  .is-tapped { animation: none; }
+}

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>match-ring-grid — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: fixed; top: 0; left: 0; right: 0; z-index: 5; padding: 12px 24px; font: 500 13px/1.4 var(--kf-font-mono); background: color-mix(in oklab, var(--kf-bg) 85%, transparent); }
+  .board { position: fixed; inset: 0; height: 100vh; }
+  .board [data-fx-part="wrap"] { position: relative; display: grid; grid-template-columns: repeat(8, 1fr); grid-auto-rows: 25vh; align-items: center; padding: 60px 3vw 0; }
+  .cell { height: 12vw; max-height: 22vh; }
+  .chair { width: 100%; height: 100%; border-radius: 22% 22% 10% 10%; background: color-mix(in oklab, var(--kf-ink) 16%, var(--kf-bg)); }
+  .cell:nth-child(5n+2) .chair { background: color-mix(in oklab, var(--kf-accent) 45%, var(--kf-bg)); }
+  .cell:nth-child(7n+3) .chair { background: color-mix(in oklab, var(--kf-ink) 40%, var(--kf-bg)); }
+  .demo-btn { position: fixed; bottom: 24px; left: 50%; z-index: 5; transform: translateX(-50%); background: var(--kf-bg); }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>match-ring-grid</b> — Press ”Shuffle scores” and the grid flies to the middle three, inner circle and outer circle and settles. Then drag the board (inertia) or move the mouse (parallax).</p>
+<main class="board" data-fx="match-ring-grid"><div data-fx-part="wrap"></div></main>
+<button class="wf-btn demo-btn" type="button">Score Shuffle</button>
+<div data-fx="match-ring-grid" data-demo-remove></div>
+<template data-demo-late><div data-fx="match-ring-grid" style="height: 0"><div data-fx-part="wrap"><div data-fx-part="item"></div></div></div></template>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../../../_shared/vendor/gsap/CustomEase.min.js"></script>
+<script src="../../_vendor/motion@11.18.2/motion.js"></script>
+<script>
+  const wrap = document.querySelector(".board [data-fx-part=wrap]");
+  for (let i = 0; i < 43; i++) wrap.insertAdjacentHTML("beforeend", '<div class="cell" data-fx-part="item"><a href="#"><div class="chair"></div></a></div>');
+</script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+  const board = document.querySelector(".board");
+  document.querySelector(".demo-btn").addEventListener("click", () => {
+    board.querySelectorAll("[data-fx-part=item]").forEach((it) => { it.dataset.score = (Math.random() * 100).toFixed(1); });
+    board.dispatchEvent(new CustomEvent("fx:sort"));
+  });
+  board.addEventListener("click", (e) => { if (e.target.closest("a")) e.preventDefault(); });
+  setTimeout(() => document.querySelectorAll("template[data-demo-late]").forEach((t) => t.replaceWith(t.content.cloneNode(true))), 1000);
+  setTimeout(() => document.querySelectorAll("[data-demo-remove]").forEach((n) => n.remove()), 2500);
+</script>
+</body>
+</html>

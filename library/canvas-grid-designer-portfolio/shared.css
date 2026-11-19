@@ -1,0 +1,161 @@
+/* Shared by all pages: 6-column vertical grid lines (design-tool columns), shuffle header row, city clock, work cell, select frame, buttons, face panel, footer.
+   Original values: outer 20px · gap between cells 10px · 6 columns (phone 2 columns · 12px), body text 13px/1.3, intro serif 22px/1.12 */
+:root {
+  --gf-margin: 20px;
+  --gf-gap: 10px;
+  --gf-cols: 6;
+}
+
+html { background: var(--kf-contrast-bg); scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+#work { scroll-margin-top: 110px; }
+body {
+  position: relative;
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font: var(--kf-weight-body) 13px/1.3 var(--kf-font-sans);
+}
+.wf-img { border: 0; background-color: var(--kf-surface); background-image: none; }
+
+/* ── Vertical Grid Lines ── */
+.gf-lines {
+  position: fixed;
+  inset: 0 var(--gf-margin);
+  z-index: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--gf-cols), 1fr);
+  column-gap: var(--gf-gap);
+  pointer-events: none;
+}
+.gf-lines span { margin-left: -5px; border-left: 1px solid var(--kf-line); }
+.gf-lines span:last-child { margin-right: -5px; border-right: 1px solid var(--kf-line); }
+
+.gf-row {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(var(--gf-cols), 1fr);
+  column-gap: var(--gf-gap);
+  padding: 0 var(--gf-margin);
+}
+
+/* ── Header line: difference blend with no panel — ink on white, inverts over photos ── */
+.gf-head {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 20;
+  align-items: start;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  color: var(--kf-bg);
+  mix-blend-mode: difference;
+  pointer-events: none;
+}
+.gf-head a { display: inline-block; justify-self: start; padding-bottom: 4px; pointer-events: auto; transition: opacity 0.2s; }
+.gf-head .gf-brand { grid-column: 1; }
+.gf-head .gf-nav-projects { grid-column: 3; }
+.gf-head .gf-nav-about { grid-column: 4; }
+.gf-head .gf-nav-contact { grid-column: 5; }
+.gf-head a[aria-current="page"] { border-bottom: 1px solid currentColor; }
+.gf-head a:hover { opacity: 0.55; }
+
+.gf-clock {
+  position: fixed;
+  top: 20px;
+  right: var(--gf-margin);
+  z-index: 21;
+  padding: 4px 10px;
+  background: var(--kf-contrast-bg);
+  color: var(--kf-contrast-ink);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+main { padding-top: 60px; }
+
+/* ── Work Cell ── */
+.gf-tile { position: relative; display: block; cursor: none; }
+.gf-label {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  padding-bottom: 8px;
+  color: var(--kf-dim);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.gf-media { position: relative; overflow: hidden; background: var(--kf-surface); }
+.gf-media > .wf-img, .gf-media > .gf-vid { position: absolute; inset: 0; height: 100%; }
+.gf-vid video { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* Name tag moves in from −6px in .3s when the cell opens — the delay comes from the cell’s fx:in */
+@media (prefers-reduced-motion: no-preference) {
+  .gf-works .gf-label { opacity: 0; transform: translateY(-6px); transition: opacity 0.3s var(--gf-delay, 0s), transform 0.3s var(--gf-delay, 0s), color 0.2s; }
+  .gf-works .gf-tile.is-in .gf-label { opacity: 1; transform: none; }
+}
+/* ‹See project› tag — original 12px · 7px 13px, centered on the cursor, turns on in .15s. The tag is attached to body and can’t inherit the panel’s variables, so they are set here */
+.fx-cursor-tag { --fx-fade: 0.15s; --fx-fade-ease: ease; }
+.fx-cursor-tag > span { height: auto; padding: 7px 13px; border-radius: 0; font: var(--kf-weight-body) 12px/1.3 var(--kf-font-sans); }
+
+/* ── Buttons ── */
+.gf-btn {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 7px 13px;
+  border: 1px solid color-mix(in srgb, var(--kf-line) 78%, var(--kf-dim));
+  background: transparent;
+  font-size: 12px;
+  color: var(--kf-ink);
+}
+.gf-btn:hover { border-color: var(--kf-accent); color: var(--kf-accent); }
+.gf-btn.is-off, .gf-btn.is-off:hover { border-color: color-mix(in srgb, var(--kf-line) 78%, var(--kf-dim)); color: var(--kf-dim); opacity: 0.7; cursor: default; }
+
+/* ── Face panel (About·Contact) — face, leader lines and annotations placed by % on a 1440×900 panel ── */
+.gf-stage {
+  --sw: min(100%, 1440px, calc((100svh - 80px) * 2));
+  position: relative;
+  z-index: 1;
+  width: var(--sw);
+  aspect-ratio: 1440 / 900;
+  margin: calc(var(--sw) * -0.07) auto 0;
+}
+.gf-stage > * { position: absolute; }
+.gf-stage .gf-face { left: 33.9%; top: 16.1%; width: 31.1%; height: auto; color: var(--kf-ink); }
+.gf-stage svg.gf-leaders { inset: 0; width: 100%; height: 100%; }
+.gf-stage svg.gf-leaders line { stroke: var(--kf-ink); stroke-width: 1; }
+.gf-note { margin: 0; }
+.gf-note dt { margin-bottom: 4px; color: var(--kf-dim); font: var(--kf-weight-body) 11px/1.3 var(--kf-font-sans); }
+.gf-note dd { margin: 0; font: var(--kf-weight-display) 18px/1.05 var(--kf-font-display); }
+.gf-stage .gf-btn { font-size: 14px; }
+.gf-mobile-only { display: none !important; }
+
+/* ── Footer ── */
+.gf-foot { padding-bottom: 20px; color: var(--kf-dim); font-size: 11px; }
+.gf-foot p { grid-column: 1 / span 3; margin: 0; }
+
+@media (max-width: 900px) {
+  :root { --gf-cols: 2; --gf-margin: 12px; }
+  .gf-head { grid-template-columns: repeat(4, auto); justify-content: space-between; }
+  .gf-head .gf-brand, .gf-head .gf-nav-projects, .gf-head .gf-nav-about, .gf-head .gf-nav-contact { grid-column: auto; }
+  .gf-clock { display: none; }
+  .gf-tile { cursor: pointer; }
+  .fx-cursor-tag { display: none; }
+  .gf-stage {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 16px;
+    aspect-ratio: auto;
+    padding: 20px var(--gf-margin) 80px;
+  }
+  .gf-stage > * { position: static !important; }
+  .gf-stage .gf-face { flex-basis: 100%; width: 70% !important; max-width: 320px; margin: 0 auto 20px; }
+  .gf-stage .gf-note { flex-basis: 100%; }
+  .gf-stage svg.gf-leaders { display: none; }
+  .gf-stage .gf-btn { padding: 5px 9px; font-size: 12px; }
+  .gf-note dd { font-weight: 350; }
+  .gf-mobile-only { display: inline-block !important; }
+  .gf-desktop-only { display: none !important; }
+}

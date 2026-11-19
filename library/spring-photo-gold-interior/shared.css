@@ -1,0 +1,283 @@
+/* Shared by all pages: header bar (centered link underline·hides on scroll down)·menu drawer (phone)·first-visit loader·transition veil·underline links·eyebrow labels·
+   Newsletter · work branch panel · cream footer. The original sizes nearly everything in vw so it scales with screen width — kept as vw */
+:root {
+  --site-line-gold: color-mix(in oklab, var(--kf-accent) 20%, transparent);
+  --site-line-dark: color-mix(in oklab, var(--kf-ink) 30%, transparent);
+  --site-clay: oklch(from var(--kf-accent) calc(l * 0.9368) calc(c * 1.468) calc(h - 46.4));
+  --site-moss: oklch(from var(--kf-accent) calc(l * 0.8899) calc(c * 0.6283) calc(h + 49.3));
+  --site-sky: oklch(from var(--kf-accent) calc(l * 1.3349) calc(c * 0.3849) calc(h + 115.4));
+  --site-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+  --site-in-out-expo: cubic-bezier(0.87, 0, 0.13, 1);
+  --site-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+html { background: var(--kf-bg); }
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  font-size: 0.9vw;
+  line-height: 1.4vw;
+  letter-spacing: -0.02em;
+  -webkit-font-smoothing: antialiased;
+  word-break: keep-all;
+}
+::selection { background: color-mix(in oklab, var(--kf-accent-soft) 70%, var(--kf-bg)); color: var(--kf-ink); }
+
+/* Type — original vw sizes kept as is */
+h5, h6 { margin: 0; }
+.av-h1, .av-h2, .av-h3, .av-h4, .av-h5 { font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); }
+.av-h1 { font-size: 4.17vw; line-height: 4.2vw; }
+.av-h2 { font-size: 3.25vw; line-height: 4vw; }
+.av-h3 { font-size: 2.6vw; line-height: 2.85vw; }
+.av-h4 { font-size: 5.9vw; line-height: 6vw; }
+.av-h5 { font-size: 1.5vw; line-height: 2vw; letter-spacing: 0.01em; }
+.av-big { font-size: 1.25vw; line-height: 1.8vw; font-weight: 300; }
+.av-over {
+  display: inline-block;
+  font-family: var(--kf-font-label);
+  font-stretch: 125%;
+  font-size: 0.73vw;
+  line-height: 1.1vw;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--kf-ink);
+}
+.av-gold { color: var(--kf-accent-soft); }
+.av-dot { display: inline-block; width: 5px; height: 5px; margin: 0 0.7vw; border-radius: 50%; background: var(--kf-accent); vertical-align: middle; }
+.av-meta { display: flex; align-items: center; }
+/* Line mask — where text lines rise up from 100% below */
+.av-mask { display: block; overflow: hidden; }
+.av-mask > * { display: block; }
+
+/* Underline link — on hover a background-colored layer sweeps across the underline from left to right in 1.4s inOutExpo, and reverses on release (gap-pass-underline) */
+.av-link { position: relative; display: inline-block; overflow: hidden; cursor: pointer; }
+.av-link .av-big { display: block; }
+
+/* Headline */
+.av-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  padding: 2vw 4vw;
+  background: var(--kf-bg);
+  transition: top 0.4s var(--site-in-out);
+}
+.av-nav.is-closed { top: -6vw; }
+/* As in the original, the menu drawer sits inside the right column — the columns are z 1 each, so the later right column (drawer z 2) covers even the logo and only the button (z 3) stays on top */
+.av-nav__side { position: relative; z-index: 1; flex: 1; }
+.av-nav__side--r { display: flex; justify-content: flex-end; }
+.av-brand { display: inline-flex; width: 6vw; align-items: center; gap: 0.35vw; font-family: var(--kf-font-label); font-stretch: 125%; font-weight: 500; font-size: 0.85vw; letter-spacing: 0.35em; white-space: nowrap; }
+.av-brand i { width: 1px; height: 1.1vw; background: currentColor; }
+.av-nav__links { flex: 0 auto; text-align: center; }
+.av-nlink { position: relative; display: inline-block; margin: 0 1.1vw; font-size: 1vw; line-height: 1.3vw; text-align: center; }
+.av-nlink::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 100%;
+  height: 1px;
+  background: var(--kf-ink);
+  transform: scaleX(0);
+  transform-origin: bottom right;
+  transition: transform 0.35s ease-out;
+}
+.av-nlink:hover::after { transform: scaleX(1); transform-origin: bottom left; }
+.av-nlink[aria-current="page"]::after { background: var(--kf-accent); transform: scaleX(1); transform-origin: bottom left; }
+.av-trigger {
+  position: relative;
+  z-index: 3;
+  display: none;
+  width: 13vw;
+  height: 13vw;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--kf-accent);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.av-trigger__in { display: flex; flex-direction: column; align-items: flex-end; }
+.av-trigger__line { display: block; width: 5vw; height: 1px; background: var(--kf-ink); transition: transform 0.5s ease-in-out, width 0.5s ease-in-out; }
+.av-trigger__line + .av-trigger__line { width: 3.5vw; margin-top: 0.8vw; }
+.av-trigger[aria-expanded="true"] .av-trigger__line:first-child { transform: rotate(45deg); }
+.av-trigger[aria-expanded="true"] .av-trigger__line + .av-trigger__line { width: 5vw; transform: translateY(-1vw) rotate(-45deg); }
+
+/* Menu drawer (phone) — comes down from .74 scale · top −100%, and the big links · socials follow in turn from 110% · 100% below */
+.av-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: none;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  padding: 32vw 4vw 0;
+  background: var(--kf-surface);
+  transform-origin: 50% 0;
+}
+.av-menu.is-shown { display: flex; }
+.av-menu__links { display: flex; flex-direction: column; align-items: flex-start; }
+.av-menu__link { margin-bottom: 5vw; overflow: hidden; }
+.av-menu__link .av-h1 { font-size: 5.5vh; line-height: 5vh; }
+.av-menu__social { display: flex; flex-direction: column; margin-top: 10vw; }
+.av-menu__social a { margin-bottom: 4vw; overflow: hidden; }
+.av-menu__social a > span { display: block; font-size: 4vw; line-height: 5.5vw; }
+
+/* As in the original script, when Locomotive is on the panel is pinned to the screen — the document stays at screen height and only the panel moves with transform */
+.has-scroll-smooth .av-app { position: fixed; top: 0; left: 0; width: 100%; }
+
+/* Locomotive scrollbar — above everything like the original (over the header row), thumb pale and thin */
+.c-scrollbar { z-index: 999999; }
+.c-scrollbar_thumb { opacity: 0.2; width: 5px; margin: 4px; border-radius: 30px; }
+
+/* First-visit loader — once a day (original cookie seenAnimation). A short script in the head adds html.av-loading to cover the page from the first paint */
+.av-wait { position: fixed; inset: 0; z-index: 99; display: none; overflow: hidden; cursor: progress; }
+.av-loading .av-wait { display: block; }
+.av-loading .av-page { visibility: hidden; }
+.av-wait__content { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--kf-accent-soft); transform-origin: 50% 0; }
+.av-wait__wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.av-wait__img { position: relative; display: flex; width: 16vw; height: 22vw; align-items: center; justify-content: center; overflow: hidden; }
+.av-wait__img .wf-img { width: 100%; height: 100%; transform-origin: 50% 100%; }
+.av-wait__overs { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.av-wait__over { position: absolute; z-index: 2; width: 103%; height: 103%; background: var(--kf-accent-soft); transform-origin: 50% 0; }
+.av-wait__text { margin-top: 1.5vw; text-align: center; }
+.av-wait__count { position: absolute; right: 4vw; bottom: 3vw; display: flex; overflow: hidden; font-family: var(--kf-font-display); font-size: 5.17vw; line-height: 5.5vw; }
+
+/* Transition curtain — pressing an underlined link or footer link raises a pale gold curtain from below, growing from .65 scale, while the page moves up 5% */
+.av-exit { position: fixed; inset: 0; z-index: 98; display: none; width: 100%; height: 100vh; background: var(--kf-accent-soft); transform-origin: 50% 100%; }
+
+/* Newsletter */
+.av-news { display: flex; flex-direction: column; align-items: center; padding: 8.5vw 4vw 4.8vw; }
+.av-news__label { width: 60%; margin-bottom: 2vw; text-align: center; }
+.av-news__head { text-align: center; }
+.av-news__form { position: relative; width: 45%; margin-top: 4vw; }
+.av-news__field {
+  width: 100%;
+  height: 7vw;
+  border: 0;
+  border-bottom: 1px solid color-mix(in oklab, var(--kf-ink) 20%, transparent);
+  background: transparent;
+  color: var(--kf-ink);
+  font-family: var(--kf-font-display);
+  font-size: 2vw;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  transition: border-color 0.3s ease;
+}
+.av-news__field::placeholder { color: color-mix(in oklab, var(--kf-ink) 35%, transparent); }
+.av-news__field:focus { outline: 0; border-bottom-color: var(--kf-accent); }
+.av-news__submit { position: absolute; inset: 0 0 0 auto; border: 0; background: transparent; color: var(--kf-ink); font: inherit; font-size: 1.1vw; text-decoration: underline; cursor: pointer; }
+
+/* Work category panel (home page · newsletter page) — four big rows on a pale gold panel, the hovered row shifts 2vw and the photo on the right switches to that category */
+.av-work { position: relative; width: 100%; height: 53vw; padding: 6vw 4vw; background: var(--kf-accent-soft); }
+.av-work__head { display: flex; width: 46.7vw; align-items: center; justify-content: space-between; margin-bottom: 3vw; }
+.av-work__list { width: 46vw; margin-top: 8vw; }
+.av-wrow { display: flex; width: 100%; align-items: center; justify-content: space-between; padding: 2vw 0; border-top: 1px solid var(--site-line-dark); }
+/* Only the newsletter page version shifts the line of text (original ix2 ”Work Tab Menu” — not applied on the first page version) */
+.av-work--shift .av-wrow .av-h3 { transform: translateX(0); transition: transform 1s var(--site-out-expo); }
+.av-work--shift .av-wrow:hover .av-h3 { transform: translateX(2vw); }
+.av-wrow svg { width: 2vw; height: 2vw; }
+.av-wside { position: absolute; top: 6vw; right: 4vw; opacity: 0; pointer-events: none; }
+.av-wside.is-on { opacity: 1; pointer-events: auto; }
+.av-wside__img { width: 26vw; height: 32vw; margin-bottom: 1.5vw; overflow: hidden; }
+.av-wside__img .wf-img { height: 100%; }
+.av-wside .av-meta { margin-bottom: 1vw; }
+
+/* Footer */
+.av-foot { width: 100%; padding: 8vw 4vw 2.5vw; background: var(--kf-surface); }
+.av-foot__row { display: flex; width: 100%; }
+.av-foot__cities .av-mask { margin-bottom: 1vw; padding-bottom: 0.15vw; }
+.av-foot__cities .av-h3 { transform: translateY(100%); transition: transform 1s var(--site-out-expo); }
+.av-foot.is-in .av-foot__cities .av-h3 { transform: none; }
+.av-foot.is-in .av-foot__cities .av-mask:nth-child(2) .av-h3 { transition-delay: 0.1s; }
+.av-foot.is-in .av-foot__cities .av-mask:nth-child(3) .av-h3 { transition-delay: 0.2s; }
+.av-foot.is-in .av-foot__cities .av-mask:nth-child(4) .av-h3 { transition-delay: 0.3s; }
+.av-foot__cols { display: flex; flex: 1; justify-content: flex-end; padding-right: 5vw; }
+.av-fitem { width: 9vw; margin-left: 7.4vw; }
+.av-fitem ul { margin-top: 2vw; }
+/* Underline sits on the row (li) wrapping the link like the original — hover lands on the link but the line is drawn by the parent */
+.av-flink { position: relative; display: table; margin-bottom: 1vw; }
+.av-flink::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 1.3vw;
+  width: 100%;
+  height: 1.1px;
+  background: var(--kf-ink);
+  transform: scaleX(0);
+  transform-origin: bottom right;
+  transition: transform 0.35s ease-out;
+}
+.av-flink:hover::after { transform: scaleX(1); transform-origin: bottom left; }
+.av-foot__base { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 11vw; }
+.av-foot__base .av-brand { width: 7vw; }
+.av-totop { border: 0; background: transparent; color: var(--kf-dim); font: inherit; cursor: pointer; }
+
+/* Circle-border arrow button — on hover the ring peels back by 40 (.7s) and vanishes after .9s, and on press the ring unwinds in 1s */
+.av-ring { position: relative; display: flex; width: 3vw; height: 3vw; margin-right: 1vw; align-items: center; justify-content: center; border: 0; padding: 0; background: transparent; color: var(--kf-ink); cursor: pointer; }
+.av-ring__arrow { width: 15px; transition: opacity 0.1s linear; }
+.av-ring:hover .av-ring__arrow { opacity: 0.7; }
+.av-ring__circle { position: absolute; inset: 0; transform: rotate(-90deg); }
+.av-ring__circle svg { width: 100%; height: 100%; overflow: visible; opacity: 1; transition: opacity 0.1s linear 0s; }
+.av-ring__circle circle { fill: none; stroke: var(--kf-accent); stroke-width: 2px; stroke-dasharray: 300; stroke-dashoffset: 0; stroke-linecap: round; transition: stroke-dashoffset 0.7s ease-in-out; }
+.av-ring:hover .av-ring__circle svg { opacity: 0; transition: opacity 0.1s linear 0.9s; }
+.av-ring--prev:hover circle { stroke-dashoffset: 40; }
+.av-ring--next:hover circle { stroke-dashoffset: -40; }
+.av-ring--prev.is-active circle { stroke-dashoffset: 600; transition: stroke-dashoffset 1s ease-in-out; }
+.av-ring--next.is-active circle { stroke-dashoffset: -600; transition: stroke-dashoffset 1s ease-in-out; }
+.av-ring.is-back circle { stroke-dashoffset: 0; transition: none; }
+
+/* Full-bleed band photo, photo cells */
+.av-full { width: 100%; overflow: hidden; }
+.av-full .wf-img { aspect-ratio: 16 / 9; }
+
+@media (max-width: 479px) {
+  body { font-size: 3.9vw; line-height: 5.6vw; }
+  .av-h1 { font-size: 11.5vw; line-height: 11.5vw; }
+  .av-h2 { font-size: 9.2vw; line-height: 10vw; }
+  .av-h3 { font-size: 7vw; line-height: 8vw; }
+  .av-h5 { font-size: 5.4vw; line-height: 6.9vw; }
+  .av-big { font-size: 4.4vw; line-height: 6.5vw; }
+  .av-over { font-size: 2.3vw; line-height: 3vw; }
+  .av-nav { padding: 4vw; }
+  .av-nav.is-closed { top: -21vw; }
+  .av-brand { width: 24vw; font-size: 3vw; gap: 1.2vw; }
+  .av-brand i { height: 4vw; }
+  .av-nav__links { display: none; }
+  .av-trigger { display: flex; }
+  .av-news { padding: 13vw 4vw; }
+  .av-news__label { width: 100%; margin-bottom: 7vw; }
+  .av-news__form { width: 100%; margin-top: 8vw; }
+  .av-news__field { height: 19vw; font-size: 4.5vw; letter-spacing: 0.03em; }
+  .av-news__submit { font-size: 3.5vw; }
+  .av-work { height: 197vw; padding-top: 11vw; }
+  .av-work__head, .av-work__list { width: 100%; }
+  .av-wrow { padding: 6.9vw 0; }
+  .av-wrow svg { width: 4vw; height: 4vw; }
+  .av-wside { top: 110.3vw; left: 4vw; right: auto; }
+  .av-wside__img { width: 44vw; height: 57vw; margin-bottom: 3vw; }
+  .av-foot { padding: 12vw 4vw 7vw; }
+  .av-foot__row { flex-direction: column; }
+  .av-foot__cols { flex-direction: column; justify-content: flex-start; padding-right: 0; }
+  .av-fitem { width: auto; margin: 10vw 16vw 0 0; }
+  .av-flink { margin-bottom: 4vw; }
+  .av-wait__img { width: 43vw; height: 60vw; }
+  .av-wait__text { margin-top: 5vw; }
+  .av-wait__count { bottom: 8vw; font-size: 13vw; line-height: 10vw; }
+  .av-ring { width: 12vw; height: 12vw; margin: 0 0 0 3vw; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .av-nav, .av-nlink::after, .av-flink::after, .av-wrow .av-h3, .av-foot__cities .av-h3, .av-ring__circle circle, .av-ring__circle svg { transition: none; }
+  .av-foot__cities .av-h3 { transform: none; }
+}

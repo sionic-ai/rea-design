@@ -1,0 +1,151 @@
+/* Common to all pages: header (logo · four-line about · three-orange-dot button with expanding menu), orange curtain page transition,
+   Cursor circle (follows the mouse), large flowing sentence + one prop in the center (the list page and the end-of-article ‹Next Work› share it). */
+
+:root {
+  /* Yellow of the hand greeting · sticker star — shifts only brightness and hue from the accent (#ffc94a in the original skin) */
+  --site-hand: oklch(from var(--kf-accent) calc(l + 0.064) calc(c - 0.008) calc(h + 15.7));
+}
+
+html { overflow-x: clip; }
+body {
+  min-height: 100%;
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font: var(--kf-weight-body) 14px/1.5 var(--kf-font-sans);
+  font-feature-settings: "palt";
+  line-break: strict;
+}
+::selection { color: var(--kf-bg); background: var(--kf-accent); }
+.u-en { font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); }
+.u-sr {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; white-space: nowrap; clip-path: inset(50%); border: 0;
+}
+.is-scroll-locked { position: fixed; width: 100%; height: 100%; overflow: hidden; }
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+
+/* ── Header ── */
+.ms-head { position: fixed; top: 24px; left: 0; width: 100%; z-index: 100; pointer-events: none; }
+.ms-head__inner { display: flex; justify-content: space-between; padding-inline: 40px; }
+.ms-head__texts { display: flex; flex-direction: column; gap: 16px; pointer-events: auto; color: var(--kf-ink); }
+.ms-wrap:has([data-barba-namespace="home"]) .ms-head__texts { color: var(--kf-bg); }
+.ms-head__logo { font-size: 24px; line-height: 1; transition: opacity 0.4s ease; }
+.ms-head__text { font-size: 12px; line-height: 1.2; }
+@media (hover: hover) { .ms-head__logo:hover { opacity: 0.5; } }
+
+.ms-menu-btn {
+  --dot-size: 6px; --dot-offset: 10px; --dot-cross-width: 24px; --dot-cross-height: 3px;
+  position: relative; z-index: 1; width: 56px; height: 56px; border-radius: 100vmax;
+  background: var(--kf-accent); pointer-events: auto;
+}
+.ms-menu-btn .dot {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: var(--dot-size); height: var(--dot-size); background: var(--kf-on-accent); border-radius: 100vmax;
+}
+.ms-menu-btn .dot:nth-child(1) { margin-top: calc(var(--dot-offset) * -1); }
+.ms-menu-btn .dot:nth-child(3) { margin-top: var(--dot-offset); }
+
+/* Closed size 56 → open 212×398. JS reads this variable and stretches the size with elastic */
+.ms-menu {
+  --menu-width: 212px; --menu-height: 398px; --menu-closed-size: 56px;
+  position: absolute; top: 0; right: 40px; width: var(--menu-closed-size); height: var(--menu-closed-size);
+  overflow: hidden; background: var(--kf-accent); border-radius: 28px; pointer-events: none;
+}
+.ms-menu__nav { position: absolute; top: 40px; left: 40px; white-space: nowrap; display: flex; flex-direction: column; gap: 24px; }
+.ms-menu__ul { display: flex; flex-direction: column; gap: 16px; }
+.ms-menu__ul.is-case .ms-menu__li { padding-left: 10px; }
+.ms-menu__li { font-size: 16px; line-height: 1.2; color: var(--kf-on-accent); opacity: 0; visibility: hidden; }
+.ms-menu__li a { display: inline-block; transition: opacity 0.4s ease; }
+@media (hover: hover) { .ms-menu__li a:hover { opacity: 0.5; } }
+.ms-menu__li a[aria-current="page"] { opacity: 0.5; pointer-events: none; }
+.ms-menu__title { font-size: 12px; color: color-mix(in srgb, var(--kf-on-accent) 50%, transparent); opacity: 0; visibility: hidden; }
+
+@media (max-width: 767px) {
+  .ms-head { top: 14px; }
+  .ms-head__inner { padding-inline: 16px; }
+  .ms-menu { right: 16px; }
+}
+
+/* ── Page transition: orange curtain that fills from below and lifts away upward ── */
+.ms-curtain {
+  position: fixed; inset: 0; z-index: 200; background: var(--kf-accent);
+  transform: scaleY(0); transform-origin: bottom; will-change: transform; pointer-events: none;
+}
+
+/* ── Cursor circle: 240 circle · shadow · starts at .6 scale ── */
+/* In the original the circle’s center sits 180px right of and 20px below the cursor — the circle doesn’t cover the image, it follows alongside */
+.ms-stalker {
+  position: fixed; top: 20px; left: 180px; z-index: 3; pointer-events: none;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 240px; height: 240px; border-radius: 100vmax;
+  background: var(--kf-accent); box-shadow: var(--kf-shadow-soft); color: var(--kf-bg);
+  font-size: 24px; font-weight: 700; line-height: 1; white-space: nowrap;
+  will-change: transform; opacity: 0; visibility: hidden;
+}
+.ms-stalker.is-big { font-size: 56px; }
+.ms-stalker svg { width: 16px; height: auto; }
+@media (max-width: 767px) { .ms-stalker { display: none; } }
+
+/* ── Link whose letters roll up into the same letters (.3s) ── */
+.ms-roll { position: relative; display: block; overflow: clip; }
+.ms-roll__t { display: block; width: fit-content; white-space: nowrap; transition: transform 0.3s var(--kf-ease-out); will-change: transform; }
+.ms-roll__t.is-clone { position: absolute; inset: 0; transform: translateY(100%); }
+@media (hover: hover) {
+  a:hover > .ms-roll .ms-roll__t,
+  a:hover > span > .ms-roll .ms-roll__t { transform: translateY(-100%); }
+  a:hover > .ms-roll .ms-roll__t.is-clone,
+  a:hover > span > .ms-roll .ms-roll__t.is-clone { transform: translateY(0); }
+}
+.ms-arrow { width: 40px; height: auto; flex-shrink: 0; color: var(--kf-accent); }
+
+/* ── One-section stage: a big sentence flows behind, with title · props · text · tag at the center ── */
+.ms-stage__bg {
+  position: absolute; top: 0; left: 0; z-index: 0; width: 100%; height: 100svh;
+  display: flex; align-items: center; justify-content: flex-start;
+}
+.ms-stage__track { display: flex; gap: 20px; will-change: transform; }
+.ms-stage__track p {
+  font-family: var(--kf-font-display); font-size: 120px; line-height: 1.2;
+  color: var(--kf-accent); white-space: nowrap; overflow: clip;
+}
+.ms-stage__track p span { display: block; will-change: transform; }
+
+.ms-stage__main {
+  position: absolute; top: 0; left: 0; z-index: 1; width: 100%; height: 100svh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.ms-stage__item { position: relative; top: 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ms-stage__title { font-family: var(--kf-font-display); font-size: 64px; line-height: 1; margin-bottom: 6px; overflow: clip; }
+.ms-stage__title > span { display: block; will-change: transform; }
+.ms-stage__image { width: 280px; height: 280px; margin-bottom: 20px; }
+.ms-stage__image img, .ms-stage__image video { width: 100%; height: 100%; object-fit: contain; }
+.ms-stage__text { width: 400px; font-size: 16px; font-weight: 700; line-height: 1.5; }
+.ms-stage__tags { width: 400px; display: flex; gap: 8px; margin-top: 16px; }
+.ms-tag {
+  width: fit-content; padding: 10px 16px; border-radius: 100vmax;
+  background: var(--kf-accent); color: var(--kf-on-accent); font-size: 12px; line-height: 1;
+}
+@media (max-width: 767px) {
+  .ms-stage__image { width: 270px; height: 270px; }
+  .ms-stage__text, .ms-stage__tags { width: 342px; max-width: 100%; }
+}
+@media (max-width: 767px) and (max-height: 680px) {
+  .ms-stage__title { font-size: 52px; }
+  .ms-stage__image { width: 200px; height: 200px; }
+  .ms-stage__text { max-width: 290px; font-size: 14px; }
+  .ms-stage__tags { max-width: 290px; }
+  .ms-tag { font-size: 10px; }
+}
+@media (max-width: 430px) {
+  .ms-stage__title { font-size: 50px; }
+  .ms-stage__text { width: 280px; font-size: 13px; }
+  .ms-stage__tags { width: 280px; }
+  .ms-tag { font-size: 10px; }
+}
+
+.ms-copy { font-size: 12px; color: var(--kf-ink); opacity: 0.5; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ms-roll__t { transition: none; }
+}
+.is-entering .ms-curtain { transform: scaleY(1); transform-origin: top; }

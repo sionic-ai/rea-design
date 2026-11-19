@@ -1,0 +1,67 @@
+/* Underline (::after, or [data-fx-part =line]) is wiped away to the right on hover (40%), stays empty briefly (until 60%), then is drawn again from the left — original yfc @keyframes textHover .6s.
+   The underline is always drawn in the always type, and in the default type it stays hidden, draws from the left on hover and retracts to the right on leave (.5s ease-out) */
+[data-fx~="line-redraw-hover"] { position: relative; }
+[data-fx~="line-redraw-hover"]:not(:has([data-fx-part="line"]))::after,
+[data-fx~="line-redraw-hover"] [data-fx-part="line"] {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: var(--fx-weight, 1px);
+  content: "";
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--fx-dur, 0.5s) var(--fx-ease, ease-out);
+}
+[data-fx-line-redraw-hover*="look: always"]:not(:has([data-fx-part="line"]))::after,
+[data-fx-line-redraw-hover*="look: always"] [data-fx-part="line"] { transform: scaleX(1); transition: none; }
+@media (hover: hover) and (pointer: fine) {
+  [data-fx~="line-redraw-hover"]:not([data-fx-line-redraw-hover*="look: always"]):hover:not(:has([data-fx-part="line"]))::after,
+  [data-fx~="line-redraw-hover"]:not([data-fx-line-redraw-hover*="look: always"]):hover [data-fx-part="line"] { transform: scaleX(1); transform-origin: left; }
+  [data-fx-line-redraw-hover*="look: always"]:hover:not(:has([data-fx-part="line"]))::after,
+  [data-fx-line-redraw-hover*="look: always"]:hover [data-fx-part="line"] { animation: fx-line-redraw var(--fx-redraw, 0.6s); }
+  [data-fx-line-redraw-hover*="look: always-gap"]:hover:not(:has([data-fx-part="line"]))::after,
+  [data-fx-line-redraw-hover*="look: always-gap"]:hover [data-fx-part="line"] { animation: fx-line-redraw-gap var(--fx-redraw, 0.5s); }
+  [data-fx-line-redraw-hover*="look: always-half"]:hover:not(:has([data-fx-part="line"]))::after,
+  [data-fx-line-redraw-hover*="look: always-half"]:hover [data-fx-part="line"] { animation: fx-line-redraw-half var(--fx-redraw, 0.7s) forwards; }
+}
+/* look: clip-half — the always-drawn line is clipped away to the right with clip-path (50%) and then reopened from the left (source Reservation 1.3s cubic-bezier(.65,0,.35,1)) */
+[data-fx-line-redraw-hover*="look: clip-half"]:not(:has([data-fx-part="line"]))::after,
+[data-fx-line-redraw-hover*="look: clip-half"] [data-fx-part="line"] { transform: none; transition: none; clip-path: inset(0% 0% 0% 0%); }
+@media (hover: hover) and (pointer: fine) {
+  [data-fx-line-redraw-hover*="look: clip-half"]:hover:not(:has([data-fx-part="line"]))::after,
+  [data-fx-line-redraw-hover*="look: clip-half"]:hover [data-fx-part="line"],
+  :hover > [data-fx-line-redraw-hover*="look: clip-half"]:not(:has([data-fx-part="line"]))::after { animation: fx-line-redraw-clip var(--fx-redraw, 1.3s) var(--fx-redraw-ease, ease) forwards; }
+}
+/* look: back — the line is tied to the left, so on release it shrinks back the way it came (left) (Place .5s cubic-bezier(0,0,.56,.99)) */
+[data-fx-line-redraw-hover*="look: back"]:not(:has([data-fx-part="line"]))::after,
+[data-fx-line-redraw-hover*="look: back"] [data-fx-part="line"] { transform-origin: left; }
+[data-fx~="line-redraw-hover"]:focus-visible { outline: 2px solid var(--kf-accent); outline-offset: 2px; }
+@keyframes fx-line-redraw {
+  0% { transform: scaleX(1); transform-origin: right; }
+  40% { transform: scaleX(0); transform-origin: right; }
+  60% { transform: scaleX(0); transform-origin: left; }
+  100% { transform: scaleX(1); transform-origin: left; }
+}
+@keyframes fx-line-redraw-gap {
+  0% { transform: scaleX(1); transform-origin: right; }
+  30% { transform: scaleX(0); transform-origin: right; }
+  65% { transform: scaleX(0); transform-origin: left; }
+  100% { transform: scaleX(1); transform-origin: left; }
+}
+@keyframes fx-line-redraw-half {
+  0% { transform: scaleX(1); transform-origin: right; }
+  50% { transform: scaleX(0); transform-origin: right; }
+  51% { transform: scaleX(0); transform-origin: left; }
+  100% { transform: scaleX(1); transform-origin: left; }
+}
+@keyframes fx-line-redraw-clip {
+  0% { clip-path: inset(0% 0% 0% 0%); }
+  50% { clip-path: inset(0% 0% 0% 100%); }
+  51% { clip-path: inset(0% 100% 0% 0%); }
+  100% { clip-path: inset(0% 0% 0% 0%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="line-redraw-hover"]::after, [data-fx~="line-redraw-hover"] [data-fx-part="line"] { transition: none; animation: none !important; }
+}

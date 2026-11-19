@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home · endless draggable photo card grid and shutter</title>
+<link rel="stylesheet" href="../../_shared/wire.css">
+<link rel="stylesheet" href="../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="../_fx/iris-shutter/fx.css">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body data-page="home">
+
+<!-- Shutter — the six blades are drawn by shared.js -->
+<div class="pi-shutter" data-fx="iris-shutter" data-slot="shutter" aria-hidden="true">
+  <svg class="pi-shutter__svg" viewBox="0 0 400 400">
+    <defs>
+      <clipPath id="pi-lens"><circle cx="200" cy="200" r="200"></circle></clipPath>
+      <filter id="pi-grain" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" seed="5" result="noise"></feTurbulence>
+        <feComponentTransfer in="noise" result="soft"><feFuncR type="linear" slope="0.3"></feFuncR><feFuncG type="linear" slope="0.3"></feFuncG><feFuncB type="linear" slope="0.3"></feFuncB></feComponentTransfer>
+        <feComposite in="soft" in2="SourceGraphic" operator="in" result="grain"></feComposite>
+        <feBlend in="SourceGraphic" in2="grain" mode="screen"></feBlend>
+      </filter>
+    </defs>
+    <g class="pi-shutter__blades" data-fx-part="blades" clip-path="url(#pi-lens)" filter="url(#pi-grain)"></g>
+  </svg>
+</div>
+
+<div id="swup" class="pi-main transition-main">
+  <span class="wf-note">Photo diary hero · an endless grid of 25 photo cards laid out with a single shader — drifts right on its own, glides with inertia (.95) when dragged, and the faster it goes the wider the gaps grow and the more it bends like a tunnel. Hovering a card scales it 1.07x, pressing enlarges the card and the shutter closes</span>
+
+  <div class="pi-hint" data-slot="drag-hint" aria-hidden="true">
+    <svg width="600" height="400" viewBox="0 0 600 400">
+      <defs><path id="pi-eight" d="M300 200 C300 112 418 64 418 150 C418 236 300 200 300 200 C300 200 182 164 182 250 C182 336 300 288 300 200 Z"></path></defs>
+      <use href="#pi-eight" class="pi-hint__track"></use>
+      <g class="pi-hint__icon">
+        <animateMotion dur="4s" repeatCount="indefinite" rotate="0" calcMode="spline" keySplines="0.42 0 0.58 1" keyTimes="0;1"><mpath href="#pi-eight"></mpath></animateMotion>
+        <foreignObject width="60" height="94" x="-30" y="-47">
+          <!-- Phone: swiping hand -->
+          <svg class="pi-hint__svg pi-hint__phone" viewBox="0 0 44 72" fill="currentColor"><path d="M17 4.5a3.5 3.5 0 0 1 7 0V22l2.2-.6a3.4 3.4 0 0 1 4 2.3l.2.7 1.4-.4a3.4 3.4 0 0 1 4.1 2.3l.3 1 .8-.2a3.4 3.4 0 0 1 4.2 2.4l1.6 6c1.8 6.8-1.3 13.4-7.8 15.7l-3.3 1.2a12 12 0 0 1-13.4-3.9L4.6 38.6a3.3 3.3 0 0 1 4.6-4.6L17 39.7Zm2 0V44l-11-8a1.3 1.3 0 0 0-1.8 1.8l10.7 13.8a10 10 0 0 0 11.2 3.3l3.3-1.2c5.5-2 8.1-7.5 6.6-13.3l-1.6-6a1.4 1.4 0 0 0-2.7.7l.7 2.6-1.9.5-1.4-5.2a1.4 1.4 0 0 0-2.7.7l1.3 4.8-1.9.5-1.6-6.1a1.4 1.4 0 0 0-2.7.7l1.6 5.8-1.9.5L22 4.5a1.5 1.5 0 0 0-3 0Z"/><path d="M9 64h26v2H9z"/><path d="m9 61 -4 4 4 4z"/><path d="m35 61 4 4-4 4z"/></svg>
+          <!-- Desktop: drag-hand cursor -->
+          <svg class="pi-hint__svg pi-hint__pc" viewBox="0 0 48 57" fill="currentColor"><path d="M19 3a3 3 0 0 1 6 0v17.5l2-.5a3 3 0 0 1 3.6 2.1l.2.8 1.6-.4a3 3 0 0 1 3.6 2.1l.3 1 1-.2a3 3 0 0 1 3.7 2.1l1.3 4.9c1.9 7-1.8 13.7-8.4 16l-3.4 1.2a11 11 0 0 1-12.4-3.6L8.3 33.6a3 3 0 0 1 4.2-4.2l6.5 5.1Z"/></svg>
+        </foreignObject>
+      </g>
+    </svg>
+  </div>
+
+  <div class="pi-intro" data-slot="loader" aria-hidden="true">
+    <span class="wf-note">Intro · eight photo cards stack up tilted every .9s (.6s), scatter in all directions .3s later (.8s power2.in), and while the white curtain lifts .8s after that, the grid’s fisheye relaxes (1s power3.out)</span>
+    <div class="pi-intro__card" style="--ar: 2 / 3"><span class="pi-card__top">Camera name / Lens 00mm f0.0</span><span class="pi-card__photo"><span class="wf-img" data-label="City view outside the window · daytime"></span></span><span class="pi-card__bottom">Photo diary - one shot a day</span></div>
+    <div class="pi-intro__card" style="--ar: 3 / 2"><span class="pi-card__top">Camera name / Lens 00mm f0.0</span><span class="pi-card__photo"><span class="wf-img" data-label="Cafe window cup · morning"></span></span><span class="pi-card__bottom">Photo diary - one shot a day</span></div>
+    <div class="pi-intro__card" style="--ar: 16 / 9"><span class="pi-card__top">Camera name / Lens 00mm f0.0</span><span class="pi-card__photo"><span class="wf-img" data-label="Chair and teddy bear in front of the shop · Day"></span></span><span class="pi-card__bottom">Photo diary - one shot a day</span></div>
+    <div class="pi-intro__card" style="--ar: 3 / 2"><span class="pi-card__top">Camera name / Lens 00mm f0.0</span><span class="pi-card__photo"><span class="wf-img" data-label="Bouquet · Indoors"></span></span><span class="pi-card__bottom">Photo diary - one shot a day</span></div>
+    <div class="pi-intro__card" style="--ar: 3 / 2"><span class="pi-card__top">Camera name / Lens 00mm f0.0</span><span class="pi-card__photo"><span class="wf-img" data-label="Seaside Sunset"></span></span><span class="pi-card__bottom">Photo diary - one shot a day</span></div>
+    <div class="pi-intro__card" style="--ar: 1 / 1"><span class="pi-card__top">Camera name / Lens 00mm f0.0</span><span class="pi-card__photo"><span class="wf-img" data-label="Alley cat"></span></span><span class="pi-card__bottom">Photo diary - one shot a day</span></div>
+    <div class="pi-intro__card" style="--ar: 3 / 2"><span class="pi-card__top">Camera name / Lens 00mm f0.0</span><span class="pi-card__photo"><span class="wf-img" data-label="Riverside Cherry Blossoms"></span></span><span class="pi-card__bottom">Photo diary - one shot a day</span></div>
+    <div class="pi-intro__card" style="--ar: 3 / 2"><span class="pi-card__top">Camera name / Lens 00mm f0.0</span><span class="pi-card__photo"><span class="wf-img" data-label="Film camera on a desk"></span></span><span class="pi-card__bottom">Photo diary - one shot a day</span></div>
+  </div>
+
+  <div class="pi-photo" data-slot="photo-zoom" aria-hidden="true"><img class="pi-photo__img" src="data:," alt=""></div>
+
+  <div class="pi-grid" data-fx="card-tunnel-grid" data-fx-card-tunnel-grid="lens: 1" data-slot="photo-grid">
+    <canvas class="pi-gl" aria-label="Photo card grid — drag to browse, click to open"></canvas>
+    <ul hidden>
+      <li data-fx-part="card" data-shape="3:4" data-label="Stairs and display shelves in the café · warm indoor light" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=01"></li>
+      <li data-fx-part="card" data-shape="1:1" data-label="Neon sign on a wooden wall · Night glow · Front view" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=02"></li>
+      <li data-fx-part="card" data-shape="3:2" data-label="Two small dolls on a table by the window · overcast day" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=03"></li>
+      <li data-fx-part="card" data-shape="3:2" data-label="Snack boxes on a shop shelf · indoor · angled" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=04"></li>
+      <li data-fx-part="card" data-shape="3:2" data-label="Large lettering sculpture on a lawn plaza · clear day" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=05"></li>
+      <li data-fx-part="card" data-shape="3:2" data-label="Pink flower field and distant mountains · afternoon light · low angle" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=06"></li>
+      <li data-fx-part="card" data-shape="1:1" data-label="Seesaw shadow at a playground · strong sunlight · from above" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=07"></li>
+      <li data-fx-part="card" data-shape="1:1" data-label="Character illustration on a white wall · indoors" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=08"></li>
+      <li data-fx-part="card" data-shape="3:2" data-label="Green drink on red cloth · shop lighting" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=09"></li>
+      <li data-fx-part="card" data-shape="3:2" data-label="Pear fruit on a branch · green leaves · close-up" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=10"></li>
+      <li data-fx-part="card" data-shape="3:2" data-label="Blue umbrellas hung in the sky · Among trees" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=11"></li>
+      <li data-fx-part="card" data-shape="1:1" data-label="Single baked treat on paper · window light" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=12"></li>
+      <li data-fx-part="card" data-shape="3:2" data-label="City sunset silhouette · dusk" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=13"></li>
+      <li data-fx-part="card" data-shape="3:2" data-label="Cosmos flowers close-up · soft blur" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=14"></li>
+      <li data-fx-part="card" data-shape="2:3" data-label="Old alley and pagoda · overcast day · vertical" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=15"></li>
+      <li data-fx-part="card" data-shape="3:2" data-label="Large teddy bear on a wooden chair · in front of a shop" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=16"></li>
+      <li data-fx-part="card" data-shape="2:3" data-label="Cup and shadow by window · Morning light · Portrait" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=17"></li>
+      <li data-fx-part="card" data-shape="3:2" data-label="Pinkish interior decor · Backlit" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=18"></li>
+      <li data-fx-part="card" data-shape="3:2" data-label="Bowl of tempura rice · from above" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=19"></li>
+      <li data-fx-part="card" data-shape="1:1" data-label="Street lamp in front of a brick building · evening" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=20"></li>
+      <li data-fx-part="card" data-shape="3:2" data-label="Riverside walk · clear sky" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=21"></li>
+      <li data-fx-part="card" data-shape="2:3" data-label="Poster on gallery wall · portrait" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=22"></li>
+      <li data-fx-part="card" data-shape="3:2" data-label="Fields outside a train window · overcast" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=23"></li>
+      <li data-fx-part="card" data-shape="1:1" data-label="Small ceramic piece in a palm · close-up" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=24"></li>
+      <li data-fx-part="card" data-shape="3:2" data-label="Seaside breakwater · Blue hour" data-top="Camera name / Lens 00mm f0.0" data-bottom="Photo diary - one shot a day" data-href="index.html?photo=25"></li>
+    </ul>
+  </div>
+
+  <footer data-slot="footer"></footer>
+</div>
+
+<script src="../../_shared/vendor/gsap/gsap.min.js"></script>
+<script>window.exports = {};</script>
+<script src="../_vendor/three@0.182.0/build/three.cjs"></script>
+<script>window.THREE = window.exports; delete window.exports;</script>
+<script src="../_vendor/swup@4.8.2/swup.umd.js"></script>
+<script src="../_vendor/swup-js-plugin@3.2.0/swup-js-plugin.umd.js"></script>
+<script src="../_fx/fx-core.js"></script>
+<script src="../_fx/iris-shutter/fx.js"></script>
+<script src="../_fx/card-tunnel-grid/fx.js"></script>
+<script src="shared.js"></script>
+<script src="../../_shared/wire.js"></script>
+</body>
+</html>

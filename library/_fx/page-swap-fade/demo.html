@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>page-swap-fade — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .demo-head { display: flex; gap: 24px; padding: 16px 20px; font: 600 14px var(--kf-font-mono); }
+  .demo-head a { color: var(--kf-accent); }
+  .demo { padding: 48px 20px; }
+  .demo-spacer { height: 90vh; display: grid; place-items: center; color: var(--kf-dim); }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>page-swap-fade</b> — Pressing ‹Next page› drops the header line and body, then only the body swaps back in (barba over http, normal navigation on file://).</p>
+<div data-barba="wrapper" data-fx="page-swap-fade">
+  <nav class="demo-head" data-fx-part="fade"><a href="demo.html">[ First ]</a><a href="demo.html?next">[ Next Page ]</a></nav>
+  <main data-barba="container" data-barba-namespace="demo"><section class="demo"><h1 class="demo-page">Body text</h1></section><div class="demo-spacer">Body slot</div></main>
+</div>
+<script>
+// Late arrivals · removals — checks that fx-core attaches to an element added 1 second later, and detaches from one removed after 2.5 seconds (barba is single, so from the second on it hooks nothing)
+(() => {
+  const src = document.querySelector('[data-fx~="page-swap-fade"]');
+  if (!src) return;
+  const html = src.outerHTML.replace(/\sid="[^"]*"/g, "").replace(/data-barba="(wrapper|container)"/g, "");
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = html; const el = t.content.firstElementChild; el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => src.after(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.addEventListener("fx:page-enter", (e) => (e.detail.container.querySelector(".demo-page").textContent = location.search ? "Next page body" : "Body text"));
+  document.querySelector(".demo-hint").append(" · After 1s another identical one comes in (the late arrival), and after 2.5s one drops out (the detach).");
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../../_vendor/barba-core@2.10.3/barba.umd.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

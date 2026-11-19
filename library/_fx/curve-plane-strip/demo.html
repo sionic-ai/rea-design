@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>curve-plane-strip — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); margin: 0; }
+  .demo-hint { position: sticky; top: 0; z-index: 100; margin: 0; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .stage { height: 70vh; display: flex; align-items: center; }
+  .strip { display: flex; gap: 12px; margin: 0; padding: 0; list-style: none; will-change: transform; }
+  .strip li { flex: none; width: 36vw; aspect-ratio: 16 / 10; }
+  .demo-btn { margin: 16px 20px; height: 40px; padding: 0 16px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-sm); background: var(--kf-surface); color: var(--kf-ink); cursor: pointer; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>curve-plane-strip</b> — The band flows sideways and bends like a curved surface receding at the screen center. Change the curvature with the button.</p>
+<div class="stage" data-fx="curve-plane-strip" data-fx-curve-plane-strip="curve: .3">
+  <ul class="strip">
+    <li data-fx-part="item" data-label="Photo 1 · landscape 16:10"></li><li data-fx-part="item" data-label="Photo 2 · landscape 16:10"></li><li data-fx-part="item" data-label="Photo 3 · landscape 16:10"></li><li data-fx-part="item" data-label="Photo 4 · landscape 16:10"></li><li data-fx-part="item" data-label="Photo 5 · landscape 16:10"></li>
+  </ul>
+</div>
+<button class="demo-btn" type="button" id="flat">Curvature .05 ↔ .3</button>
+<script>
+// Late arrivals and removals — checks that fx-core attaches to an element added after 1s and detaches from an element removed after 2.5s
+(() => {
+  const src = document.querySelector('[data-fx~="curve-plane-strip"]');
+  if (!src) return;
+  const html = src.outerHTML;
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = html; const el = t.content.firstElementChild; el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => src.after(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1s another identical strip comes in (the late arrival), and after 2.5s one drops out (the detach).");
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="three-pre.js"></script>
+<script src="../../_vendor/three@0.180.0/build/three.cjs"></script>
+<script src="three-post.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+  // Slide the strip sideways to check that the board follows the DOM
+  document.querySelectorAll(".strip").forEach((s) => gsap.fromTo(s, { x: "10%" }, { x: "-60%", duration: 8, ease: "none", repeat: -1, yoyo: true }));
+  let flat = false;
+  document.getElementById("flat").addEventListener("click", () => {
+    flat = !flat; const v = { val: flat ? .3 : .05 };
+    gsap.to(v, { val: flat ? .05 : .3, duration: 1, ease: "power3.out", onUpdate: () => document.querySelectorAll('[data-fx~="curve-plane-strip"]').forEach((el) => el.dispatchEvent(new CustomEvent("fx:curve", { detail: v.val }))) });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+/* Pieces spanning several pages — cursor (ring + dot), header (difference blend), recording clock, page transition veil (five vertical strips + name letters + number), drawer Footer attached at the bottom */
+:root {
+  --site-pad: clamp(16px, 4vw, 54px);
+  --site-e: var(--kf-ease-out);
+  --site-swing: var(--kf-ease-in-out);
+  /* difference blending needs pure white for the colors below to invert exactly — only the brightness is raised to 1 from the skin’s ink-black */
+  --site-white: oklch(from var(--kf-ink) 1 0 0);
+  --site-dark: var(--kf-contrast-bg);
+  --site-dark-2: color-mix(in srgb, var(--kf-contrast-bg) 96%, var(--kf-contrast-ink));
+  --site-dark-bar: color-mix(in srgb, var(--kf-contrast-bg) 97%, var(--kf-contrast-ink));
+  --site-on-dark-15: color-mix(in srgb, var(--kf-contrast-ink) 15%, transparent);
+  --site-on-dark-40: color-mix(in srgb, var(--kf-contrast-ink) 40%, transparent);
+  --site-on-dark-55: color-mix(in srgb, var(--kf-contrast-ink) 55%, transparent);
+  --site-on-dark-60: color-mix(in srgb, var(--kf-contrast-ink) 60%, transparent);
+  --site-on-dark-85: color-mix(in srgb, var(--kf-contrast-ink) 85%, transparent);
+  --site-pgt-l: color-mix(in srgb, var(--kf-contrast-ink) 45%, var(--kf-contrast-bg));
+  --site-pgt-num: color-mix(in srgb, var(--kf-contrast-ink) 32%, var(--kf-contrast-bg));
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-display);
+  font-weight: 500;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+  cursor: none;
+}
+a { color: inherit; text-decoration: none; }
+::selection { background: var(--kf-ink); color: var(--kf-bg); }
+.lb { font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--kf-dim); }
+
+/* Cursor — a 44px ring follows at .14, an 8px dot at .35. Over clickable things the ring becomes 96px in .4s */
+.ik-cur {
+  position: fixed; top: 0; left: 0; z-index: 9999;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--kf-ink);
+  pointer-events: none; mix-blend-mode: difference; will-change: transform;
+}
+.ik-cur.is-ring { width: 44px; height: 44px; background: transparent; border: 1px solid var(--kf-ink); transition: width 0.4s var(--site-e), height 0.4s var(--site-e); }
+.ik-cur.is-ring.on { width: 96px; height: 96px; }
+@media (hover: none) {
+  .ik-cur { display: none; }
+  body { cursor: auto; }
+}
+
+/* Header — white text blended with difference, black on light sections and white on dark ones */
+.ik-hd {
+  position: fixed; inset: 0 0 auto; z-index: 60;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 18px var(--site-pad);
+  mix-blend-mode: difference; color: var(--site-white);
+}
+.ik-logo { display: inline-flex; gap: 0.44em; font: 700 22px/26px var(--kf-font-display); letter-spacing: 0.06em; }
+.ik-hd nav { display: flex; gap: 24px; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; }
+.ik-hd nav a { position: relative; }
+.ik-hd nav a::after {
+  content: ""; position: absolute; left: 0; bottom: -4px; width: 100%; height: 1px; background: currentColor;
+  transform: scaleX(0); transform-origin: right; transition: transform 0.45s var(--site-e);
+}
+.ik-hd nav a:hover::after, .ik-hd nav a.is-active::after { transform: scaleX(1); transform-origin: left; }
+
+/* Recording Clock */
+.ik-rec {
+  position: fixed; left: var(--site-pad); bottom: clamp(66px, 8vh, 86px); z-index: 60;
+  display: flex; align-items: center; gap: 7px;
+  font-size: 9.5px; letter-spacing: 0.2em; color: var(--kf-dim); mix-blend-mode: difference;
+}
+.ik-rec i { width: 5px; height: 5px; border-radius: 50%; background: var(--kf-accent); animation: ik-blink 1.4s steps(2) infinite; }
+@keyframes ik-blink { 50% { opacity: 0; } }
+
+/* Page-transition curtain — on leaving, five strips cover from the bottom in turn at .045s (.64s), text, bars and numbers lift, and navigation happens 780ms later.
+   On entry it starts covered, and 60ms later the strips slide off upward one by one in reverse order */
+.ik-pgt { position: fixed; inset: 0; z-index: 9998; pointer-events: none; display: grid; place-items: center; overflow: hidden; }
+.ik-pgt__slats { position: absolute; inset: 0; display: flex; }
+.ik-pgt__slats i { flex: 1; background: var(--site-dark); transform: translateY(101%); will-change: transform; transition: transform 0.64s var(--site-swing); }
+.ik-pgt__slats i:nth-child(even) { background: var(--site-dark-2); }
+.ik-pgt__slats i:nth-child(2) { transition-delay: 0.045s; }
+.ik-pgt__slats i:nth-child(3) { transition-delay: 0.09s; }
+.ik-pgt__slats i:nth-child(4) { transition-delay: 0.135s; }
+.ik-pgt__slats i:nth-child(5) { transition-delay: 0.18s; }
+.ik-pgt__c { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+.ik-pgt__mark { display: flex; overflow: hidden; padding-left: 0.44em; }
+.ik-pgt__mark b { font: 700 15px var(--kf-font-display); letter-spacing: 0.44em; color: var(--kf-contrast-ink); transform: translateY(118%); transition: transform 0.6s var(--site-swing); }
+.ik-pgt__l { min-height: 1em; font: 9.5px var(--kf-font-mono); letter-spacing: 0.32em; text-transform: uppercase; color: var(--site-pgt-l); opacity: 0; transition: opacity 0.4s var(--site-e); }
+.ik-pgt__bar { position: relative; width: 110px; height: 1px; background: var(--site-on-dark-15); overflow: hidden; }
+.ik-pgt__bar em { position: absolute; inset: 0; background: var(--kf-contrast-ink); transform: scaleX(0); transform-origin: left; transition: transform 0.62s var(--site-e); }
+.ik-pgt__num { position: absolute; right: clamp(16px, 4vw, 42px); bottom: clamp(16px, 4vh, 34px); z-index: 2; font: 11px var(--kf-font-mono); letter-spacing: 0.18em; color: var(--site-pgt-num); opacity: 0; transition: opacity 0.4s var(--site-e); }
+.ik-pgt.is-cover { pointer-events: auto; }
+.ik-pgt.is-cover .ik-pgt__slats i { transform: translateY(0); }
+.ik-pgt.is-cover .ik-pgt__mark b { transform: none; transition-delay: 0.28s; }
+.ik-pgt.is-cover .ik-pgt__mark b:nth-child(2) { transition-delay: 0.33s; }
+.ik-pgt.is-cover .ik-pgt__mark b:nth-child(3) { transition-delay: 0.38s; }
+.ik-pgt.is-cover .ik-pgt__mark b:nth-child(4) { transition-delay: 0.43s; }
+.ik-pgt.is-cover .ik-pgt__l { opacity: 1; transition-delay: 0.44s; }
+.ik-pgt.is-cover .ik-pgt__bar em { transform: scaleX(1); transition-delay: 0.36s; }
+.ik-pgt.is-cover .ik-pgt__num { opacity: 1; transition-delay: 0.3s; }
+.ik-pgt.is-shown .ik-pgt__slats i, .ik-pgt.is-shown .ik-pgt__mark b, .ik-pgt.is-shown .ik-pgt__bar em { transform: none; transition: none; }
+.ik-pgt.is-shown .ik-pgt__l, .ik-pgt.is-shown .ik-pgt__num { opacity: 1; transition: none; }
+.ik-pgt.is-reveal .ik-pgt__slats i { transform: translateY(-101%); }
+.ik-pgt.is-reveal .ik-pgt__slats i:nth-child(1) { transition-delay: 0.18s; }
+.ik-pgt.is-reveal .ik-pgt__slats i:nth-child(2) { transition-delay: 0.135s; }
+.ik-pgt.is-reveal .ik-pgt__slats i:nth-child(3) { transition-delay: 0.09s; }
+.ik-pgt.is-reveal .ik-pgt__slats i:nth-child(4) { transition-delay: 0.045s; }
+.ik-pgt.is-reveal .ik-pgt__slats i:nth-child(5) { transition-delay: 0s; }
+.ik-pgt.is-reveal .ik-pgt__c { opacity: 0; transform: translateY(-8px); transition: opacity 0.3s var(--site-e), transform 0.45s var(--site-e); }
+.ik-pgt.is-reveal .ik-pgt__num { opacity: 0; transition: opacity 0.25s; }
+
+/* Bottom drawer footer — pressing the bar at the bottom right (logo + two-line button) or scrolling to the very bottom unfolds the panel from below */
+.ik-dock-spacer { width: 100%; height: 44vh; pointer-events: none; }
+.ik-dock { position: fixed; inset: 0; z-index: 200; pointer-events: none; }
+.ik-dock__bar {
+  pointer-events: auto; position: fixed; right: 0; bottom: 0; z-index: 202;
+  display: flex; align-items: stretch; height: clamp(46px, 5.2vh, 52px);
+  appearance: none; border: 0; cursor: pointer; overflow: hidden;
+  background: var(--site-dark-bar); color: var(--kf-contrast-ink); box-shadow: var(--kf-shadow-lift);
+  transition: transform 0.5s var(--site-e), box-shadow 0.5s var(--site-e), background 0.4s var(--site-e);
+}
+.ik-dock__bar:hover { transform: translateY(-2px); }
+.ik-dock__logo { align-self: center; padding: 0 clamp(14px, 1.5vw, 18px); font: 700 12px/14px var(--kf-font-display); letter-spacing: 0.44em; }
+.ik-dock__tg { position: relative; flex: 0 0 auto; align-self: stretch; width: clamp(44px, 4.4vw, 48px); border-left: 1px solid var(--site-on-dark-15); }
+.ik-dock__tg::before, .ik-dock__tg::after { content: ""; position: absolute; left: 50%; top: 50%; width: 15px; height: 1.5px; background: var(--kf-contrast-ink); transition: transform 0.42s var(--site-e); }
+.ik-dock__tg::before { transform: translate(-50%, -50%) translateY(-3.5px); }
+.ik-dock__tg::after { transform: translate(-50%, -50%) translateY(3.5px); }
+.ik-dock.open .ik-dock__tg::before { transform: translate(-50%, -50%) rotate(45deg); }
+.ik-dock.open .ik-dock__tg::after { transform: translate(-50%, -50%) rotate(-45deg); }
+.ik-dock.open .ik-dock__bar { background: var(--site-dark); }
+.ik-dock__panel {
+  pointer-events: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 201;
+  max-height: 88svh; overflow: hidden auto;
+  background: var(--site-dark); color: var(--kf-contrast-ink); box-shadow: var(--kf-shadow-lift);
+  transform-origin: 100% 100%; transform: translateY(14px) scale(0.965); opacity: 0;
+  transition: transform 0.58s var(--site-e), opacity 0.42s var(--site-e); will-change: transform, opacity;
+}
+.ik-dock.open .ik-dock__panel { pointer-events: auto; transform: none; opacity: 1; }
+.ik-dock__in { max-width: 1340px; margin-inline: auto; padding: clamp(20px, 2.4vw, 30px) var(--site-pad) clamp(44px, 4.4vw, 56px); }
+.ik-flb { font: 10px var(--kf-font-mono); letter-spacing: 0.2em; text-transform: uppercase; color: var(--site-on-dark-40); }
+.ik-ft-cta { padding-bottom: clamp(15px, 1.7vw, 20px); border-bottom: 1px solid var(--site-on-dark-15); }
+.ik-ft-cta a { display: block; margin-top: 14px; }
+.ik-ft-cta .jp { display: block; font: 900 clamp(16px, 1.7vw, 22px)/1.2 var(--kf-font-sans); letter-spacing: -0.02em; }
+.ik-ft-cta .en { display: inline-flex; align-items: center; gap: 14px; margin-top: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--site-on-dark-40); font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--site-on-dark-60); transition: color 0.4s var(--site-e); }
+.ik-ft-cta a:hover .en { color: var(--kf-contrast-ink); }
+.ik-ft-cta .en b, .ik-arrow-go b { transition: transform 0.5s var(--site-e); }
+.ik-ft-cta a:hover .en b { transform: translateX(8px); }
+.ik-ft-main { display: grid; grid-template-columns: 1.5fr 1fr 1.25fr; gap: clamp(24px, 3vw, 54px); padding: clamp(16px, 2vw, 24px) 0; }
+.ik-ft-col { display: flex; flex-direction: column; }
+.ik-ft-col .ik-flb { margin-bottom: 15px; }
+.ik-ft-brand .flogo { font: 700 26px/30px var(--kf-font-display); letter-spacing: 0.44em; }
+.ik-ft-brand p, .ik-ft-info p { margin-top: 13px; max-width: 24em; font: 400 12px/1.9 var(--kf-font-sans); color: var(--site-on-dark-55); }
+.ik-ft-nav { position: relative; width: max-content; height: 1.8em; margin-bottom: 5px; overflow: hidden; font-size: clamp(15px, 1.4vw, 19px); font-weight: 500; }
+.ik-ft-nav span { display: block; transition: transform 0.5s var(--site-e); }
+.ik-ft-nav span + span { position: absolute; top: 0; left: 0; transform: translateY(100%); color: var(--site-on-dark-60); }
+.ik-ft-nav:hover span { transform: translateY(-100%); }
+.ik-ft-info .row2 { display: flex; flex-direction: column; gap: 5px; margin-top: 16px; }
+.ik-ft-info .row2 a { font: 12.5px var(--kf-font-mono); letter-spacing: 0.04em; color: var(--site-on-dark-85); transition: color 0.3s; }
+.ik-ft-info .row2 a:hover { color: var(--kf-contrast-ink); }
+.ik-ft-bar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding-top: clamp(15px, 2vw, 22px); border-top: 1px solid var(--site-on-dark-15); font: 9.5px var(--kf-font-mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--site-on-dark-40); }
+.ik-ft-bar .fl { display: flex; gap: 16px; }
+.ik-ft-bar .fl a.on, .ik-ft-bar .fl a:hover { color: var(--kf-contrast-ink); }
+
+/* Moves up so the annotation button (wire.js) doesn’t cover the drawer bar at the bottom right */
+body:has([data-ik-dock]) .wf-ui { bottom: 70px; }
+
+@media (max-width: 820px) {
+  .ik-ft-main { grid-template-columns: 1fr; gap: clamp(32px, 8vw, 48px); }
+}
+@media (max-width: 560px) {
+  .ik-hd { padding: 15px var(--site-pad); }
+  .ik-logo { gap: 0.2em; font-size: 12px; line-height: 22px; }
+  .ik-hd nav { gap: 10px; font-size: 9px; letter-spacing: 0.08em; }
+  .ik-ft-bar { flex-direction: column; gap: 10px; align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

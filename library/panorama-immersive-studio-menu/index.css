@@ -1,0 +1,122 @@
+/* Home page — one screen. A panorama sphere covers the screen with menu, entrance door and loader overlapping on top */
+html, body { height: 100%; overflow: hidden; }
+.cs-home { position: fixed; inset: 0; }
+.cs-pano { position: absolute; inset: 0; }
+.cs-pano canvas[data-fx-part="map"] { display: none; }
+
+/* Marker on the floor — ring spreads from 6→15 and fades (1.8s) */
+.cs-pin { width: 32px; height: 32px; pointer-events: none; }
+.cs-pin svg, .cs-gate__dot { width: 32px; height: 32px; overflow: visible; }
+.cs-pin__core, .cs-gate__core { fill: color-mix(in oklab, var(--kf-ink) 95%, transparent); }
+.cs-pin__ring, .cs-gate__ring { fill: none; stroke: color-mix(in oklab, var(--kf-ink) 55%, transparent); stroke-width: 1px; transform-origin: 50% 50%; animation: csPulse 1.8s ease-out infinite; }
+@keyframes csPulse { from { r: 6; opacity: .7; } to { r: 15; opacity: 0; } }
+
+/* ── Menu — floats up from 8px below .9s after entry (1.85s delay). On a return visit it takes .6s (.25s delay) ── */
+.cs-menu {
+  position: fixed; top: 50%; left: 50%; z-index: 40;
+  display: flex; flex-direction: column; align-items: center; gap: 5rem;
+  transform: translate(-50%, -50%);
+  pointer-events: none; user-select: none;
+  opacity: 0; visibility: hidden;
+}
+.cs-menu::before { content: ""; position: absolute; inset: -45% -35%; z-index: -1; pointer-events: none; background: radial-gradient(color-mix(in oklab, var(--site-night) 42%, transparent), transparent 72%); }
+body.is-in .cs-menu { visibility: visible; animation: csMenuIn .9s 1.85s both; }
+body.is-quick .cs-menu { animation: csMenuIn .6s .25s both; }
+.cs-menu.is-ready { pointer-events: auto; }
+.cs-menu.is-leaving { opacity: 0 !important; transition: opacity .5s; animation: none; }
+@keyframes csMenuIn { from { opacity: 0; transform: translate(-50%, calc(8px - 50%)); } to { opacity: 1; transform: translate(-50%, -50%); } }
+.cs-menu__list { display: flex; flex-direction: column; align-items: center; }
+.cs-menu__list li { line-height: 1.5; }
+.cs-menu__link {
+  font: var(--kf-weight-display) clamp(2.8rem, 3.35vw, 2.9rem)/1.5 var(--kf-font-display);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--kf-ink) 94%, transparent);
+  text-align: center;
+  transition: color .3s;
+}
+.cs-menu__link:hover { color: var(--kf-ink); }
+.cs-menu__contact { font-size: .78rem; letter-spacing: .04em; color: color-mix(in oklab, var(--kf-ink) 85%, transparent); transition: opacity .25s; }
+.cs-menu__contact:hover { opacity: .7; }
+
+/* ── Entrance doors — in the bottom 14vh: copy, dot, hint and two doors. Copy at .7s, hint at 1.2s (2.6s later) ── */
+.cs-gate {
+  position: fixed; left: 50%; bottom: calc(14vh - 8px); z-index: 30;
+  display: flex; flex-direction: column; align-items: center; gap: 2.35rem;
+  transform: translateX(-50%);
+  text-align: center;
+  animation: csPromptIn .7s both;
+  transition: opacity .35s;
+}
+.cs-gate[hidden] { display: none; }
+@keyframes csPromptIn { from { opacity: 0; transform: translate(-50%, 6px); } to { opacity: 1; transform: translateX(-50%); } }
+.cs-gate__label { font-size: .7rem; letter-spacing: .32em; text-transform: uppercase; padding-left: .32em; color: color-mix(in oklab, var(--kf-ink) 85%, transparent); text-shadow: 0 0 10px rgba(255, 255, 255, .3), 0 0 22px rgba(255, 255, 255, .1); white-space: pre; }
+.cs-gate__dot { opacity: 0; animation: csDotIn .6s 1.6s forwards; }
+.cs-gate__dot .cs-gate__ring { animation-delay: 1.6s; }
+@keyframes csDotIn { to { opacity: 1; } }
+.cs-gate__consent { width: min(32rem, 100vw - 2rem); margin-top: -.6rem; animation: csConsentIn 1.2s 2.6s both; }
+@keyframes csConsentIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.cs-gate__line { max-width: 27rem; margin: 0 auto .75rem; font-size: .73rem; line-height: 1.55; color: color-mix(in oklab, var(--kf-ink) 62%, transparent); text-shadow: 0 1px 2px rgba(0, 0, 0, .9), 0 0 8px rgba(0, 0, 0, .85), 0 0 22px rgba(0, 0, 0, .7); }
+.cs-gate__line a { white-space: nowrap; color: color-mix(in oklab, var(--kf-ink) 88%, transparent); border-bottom: 1px solid var(--site-hair); }
+.cs-gate__line a:hover { color: var(--kf-ink); }
+.cs-gate__rule { display: block; width: 12.5rem; height: 1px; margin: 0 auto .7rem; background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--kf-ink) 20%, transparent), transparent); }
+.cs-gate__doors { display: grid; grid-template-columns: 1fr 1px 1fr; align-items: stretch; width: min(26rem, 100%); margin: 0 auto; }
+.cs-gate__sep { margin: .75rem 0; background: linear-gradient(transparent, color-mix(in oklab, var(--kf-ink) 22%, transparent), transparent); }
+.cs-door-btn { display: flex; flex-direction: column; align-items: center; gap: .5rem; padding: .7rem .5rem; border: 0; background: none; color: color-mix(in oklab, var(--kf-ink) 50%, transparent); transition: color .25s; }
+.cs-door-btn:hover { color: color-mix(in oklab, var(--kf-ink) 90%, transparent); }
+.cs-door-btn:focus-visible { outline: 2px solid color-mix(in oklab, var(--kf-ink) 90%, transparent); outline-offset: 3px; }
+.cs-door-btn svg { width: 34px; height: 46px; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .9)); }
+.cs-door-btn__arch { fill: none; stroke: currentColor; stroke-width: 1.2px; }
+.cs-door-btn__handle { fill: currentColor; }
+.cs-door-btn--quiet { color: color-mix(in oklab, var(--kf-ink) 32%, transparent); }
+.cs-door-btn--quiet .cs-door-btn__arch { stroke-dasharray: 3 3; }
+.cs-door-btn--quiet:hover { color: color-mix(in oklab, var(--kf-ink) 72%, transparent); }
+.cs-door-btn__name { font-size: .78rem; letter-spacing: .2em; text-transform: uppercase; color: color-mix(in oklab, var(--kf-ink) 88%, transparent); text-shadow: 0 1px 2px rgba(0, 0, 0, .9), 0 0 8px rgba(0, 0, 0, .85); transition: color .25s; }
+.cs-door-btn--quiet .cs-door-btn__name { color: color-mix(in oklab, var(--kf-ink) 65%, transparent); }
+.cs-door-btn:hover .cs-door-btn__name { color: var(--kf-ink); }
+.cs-door-btn__hint { font-size: .66rem; letter-spacing: .04em; color: color-mix(in oklab, var(--kf-ink) 40%, transparent); }
+
+/* ── Loader — vignette, grain and corner frame over the background video slot, with a center Part I card ── */
+.cs-pre { background: oklch(from var(--kf-bg) 0 0 h); }
+.cs-pre__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .55; filter: saturate(.7) contrast(1.1) brightness(.8); }
+.cs-pre__vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(transparent 18%, color-mix(in oklab, var(--site-night) 85%, transparent) 88%), linear-gradient(color-mix(in oklab, var(--site-night) 30%, transparent), color-mix(in oklab, var(--site-night) 65%, transparent)); }
+.cs-pre__grain { position: absolute; inset: -10%; opacity: .16; mix-blend-mode: overlay; pointer-events: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"); animation: csGrainShift 1s steps(5) infinite; }
+.cs-pre__frame { position: absolute; inset: 5vmin; pointer-events: none; }
+.cs-pre__frame i { position: absolute; width: 26px; height: 26px; border: 1px solid color-mix(in oklab, var(--kf-ink) 40%, transparent); }
+.cs-pre__frame i:nth-child(1) { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+.cs-pre__frame i:nth-child(2) { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+.cs-pre__frame i:nth-child(3) { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+.cs-pre__frame i:nth-child(4) { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+.cs-pre__content { position: relative; display: flex; flex-direction: column; align-items: center; gap: 1.4rem; width: min(92vw, 1200px); }
+.cs-pre [data-fx-part="caption"] { margin: 0; font-size: .72rem; letter-spacing: .6em; text-transform: uppercase; color: var(--site-faint); }
+.cs-pre [data-fx-part="title"] { margin: 0; font: 300 clamp(1.6rem, 5.2vw, 4.4rem)/1.1 var(--kf-font-sans); letter-spacing: .22em; text-transform: uppercase; text-shadow: 0 0 28px color-mix(in oklab, var(--kf-ink) 22%, transparent), 0 0 60px rgba(0, 0, 0, .6); }
+.cs-pre [data-fx-part="sub"] { margin: 0; font-size: .68rem; letter-spacing: .45em; text-transform: uppercase; color: color-mix(in oklab, var(--kf-ink) 45%, transparent); }
+
+@media (min-width: 901px) and (max-width: 1199px) { .cs-menu { gap: clamp(3.5rem, 8svh, 4.75rem); } .cs-menu__link { font-size: clamp(2.1rem, 5.2vw, 2.75rem); } }
+@media (max-width: 900px) {
+  .cs-menu { gap: clamp(1.75rem, 6svh, 2.75rem); width: calc(100vw - 2rem); max-width: 22rem; }
+  .cs-menu__list { width: 100%; }
+  .cs-menu__list li { line-height: 1.32; }
+  .cs-menu__link { font-size: clamp(1.8rem, 8.5vw, 2.25rem); line-height: 1.15; }
+  .cs-menu__contact { min-height: 44px; display: inline-flex; align-items: center; padding: .55rem .5rem; font-size: .72rem; letter-spacing: .08em; }
+  .cs-gate { width: calc(100vw - 2rem); bottom: max(3.5rem, calc(10svh + env(safe-area-inset-bottom))); gap: 1.6rem; }
+  .cs-gate__label { font-size: .64rem; letter-spacing: .24em; white-space: normal; }
+  .cs-gate__consent { width: calc(100vw - 2rem); }
+  .cs-gate__line { font-size: .68rem; }
+  .cs-gate__rule { width: 9rem; }
+  .cs-gate__doors { width: min(21rem, 100%); }
+  .cs-door-btn { gap: .42rem; padding: .6rem .4rem; }
+  .cs-door-btn svg { width: 30px; height: 40px; }
+  .cs-door-btn__name { font-size: .7rem; letter-spacing: .14em; }
+  .cs-door-btn__hint { font-size: .6rem; }
+  .cs-pre__content { gap: 1.1rem; width: calc(100vw - 2rem); }
+  .cs-pre [data-fx-part="title"] { font-size: clamp(.94rem, 4vw, 1rem); line-height: 1.25; letter-spacing: .1em; white-space: normal; }
+  .cs-pre [data-fx-part="caption"] { letter-spacing: .42em; font-size: .62rem; }
+  .cs-pre [data-fx-part="track"] { width: min(72vw, 280px); }
+  .cs-pre [data-fx-part="sub"] { letter-spacing: .3em; font-size: .62rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs-menu, body.is-in .cs-menu { animation: none; opacity: 1; visibility: visible; }
+  .cs-gate, .cs-gate__dot, .cs-gate__consent { animation: none; opacity: 1; }
+  .cs-pin__ring, .cs-gate__ring { animation: none; }
+}

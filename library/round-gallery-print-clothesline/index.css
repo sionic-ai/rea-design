@@ -1,0 +1,69 @@
+/* Home page — round gallery exhibition hall (three.js). On the outer wall each collection gets one nameplate and five prints, three more hang on the inner wall, and you walk one lap at eye level.
+   On first entry (once per session) it walks from the center out to the outer corridor over 5 seconds, and the headline and text settle at the end. */
+.immersive { position: fixed; inset: 0; z-index: 18; overflow: hidden; touch-action: none; user-select: none; cursor: grab; }
+.immersive.dragging { cursor: grabbing; }
+.immersive-scene { position: absolute; inset: 0; }
+.immersive-scene canvas { display: block; }
+.scene-veiled { opacity: 0; transition: opacity 0.45s ease-out; }
+.scene-shown { opacity: 1; }
+
+.room-kicker { margin: 0; color: var(--kf-dim); font-family: var(--kf-font-mono); font-size: var(--site-chrome); letter-spacing: var(--site-track); text-transform: uppercase; }
+.room-caption {
+  --shade: color-mix(in srgb, var(--kf-surface) 70%, transparent);
+  position: absolute; bottom: 5.5rem; left: 50%; transform: translate(-50%);
+  display: grid; justify-items: center; gap: 0.6rem; max-width: min(30rem, 60vw); text-align: center;
+  transition: color var(--site-d3) var(--site-ease);
+  animation: walk-in var(--site-d3) var(--site-ease);
+}
+.room-caption[data-lit] { --shade: color-mix(in srgb, var(--kf-surface) 70%, transparent); }
+.room-title { margin: 0; font-family: var(--kf-font-display); font-size: clamp(1.5rem, 2.6vw, 2.5rem); font-weight: 400; line-height: 0.95; text-transform: uppercase; }
+.room-title, .room-more { text-shadow: 0 0 6px var(--shade), 0 0 22px var(--shade); }
+.room-more { display: inline-block; font-family: var(--kf-font-mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: underline; text-underline-offset: 0.3em; }
+.room-nav { position: absolute; right: var(--site-edge-wide); bottom: 7.5rem; display: flex; gap: 0.6rem; animation: walk-in var(--site-d3) var(--site-ease); }
+.round { display: grid; place-items: center; flex: none; width: 2.75rem; height: 2.75rem; border: 1px solid var(--site-line-field); border-radius: 50%; background: var(--site-veil); backdrop-filter: blur(8px); color: inherit; }
+.round:hover { background: var(--site-panel); }
+.walk-hint {
+  position: absolute; right: var(--site-edge-wide); bottom: 3.6rem; margin: 0;
+  display: grid; justify-items: end; gap: 0.35rem; max-width: min(18rem, calc(100vw - 2 * var(--site-edge-wide)));
+  color: var(--kf-dim); font-family: var(--kf-font-mono); font-size: var(--site-chrome); letter-spacing: var(--site-track); text-transform: uppercase; text-align: right; line-height: 1.5;
+  pointer-events: none; animation: walk-in var(--site-d3) var(--site-ease);
+}
+.walk-hint > span + span { opacity: 0.75; }
+.walk-hint[data-lit] { color: var(--kf-ink-soft); }
+@keyframes walk-in { 0% { opacity: 0; } }
+.room-caption[hidden], .room-nav[hidden], .walk-hint[hidden] { display: none; }
+
+/* Hovering over a picture shows a black pill label (View closer · Open picture) 1rem beside the cursor, growing in from .9x */
+.cursor-tip { position: absolute; top: 0; left: 0; z-index: 2; pointer-events: none; }
+.cursor-tip-pill {
+  display: block; padding: 0.45rem 0.75rem; border-radius: 999px;
+  background: var(--kf-contrast-bg); color: var(--kf-contrast-ink);
+  font-family: var(--kf-font-mono); font-size: var(--site-chrome); letter-spacing: var(--site-track); text-transform: uppercase; white-space: nowrap;
+  opacity: 0; transform-origin: 0 0; transform: translate(1rem, 1rem) scale(0.9);
+  transition: opacity var(--site-d1) ease, transform var(--site-d2) var(--site-ease);
+}
+.cursor-tip[data-on] .cursor-tip-pill { opacity: 1; transform: translate(1rem, 1rem); }
+@media (hover: none) { .cursor-tip { display: none; } }
+
+/* List view — pressing ‹List› next to the gallery button shows a collection row instead of the scene */
+.list-view { position: relative; z-index: 18; padding: calc(var(--site-bar-h) + 4rem) var(--site-edge-wide) 4rem; min-height: 100dvh; background: var(--kf-bg); overflow-y: auto; }
+.list-view[hidden] { display: none; }
+html[data-view="list"] body { overflow: auto; }
+.list-rows { border-top: 1px solid var(--site-line); }
+.list-rows a { display: grid; grid-template-columns: 3rem minmax(0, 1fr) auto 3.4rem; align-items: center; gap: 1rem; padding: 0.8rem 0; border-bottom: 1px solid var(--site-line); transition: opacity var(--site-d2) var(--site-ease); }
+.list-rows a:hover { opacity: 0.55; }
+.list-n, .list-count { color: var(--kf-dim); font-family: var(--kf-font-mono); font-size: var(--site-chrome); letter-spacing: var(--site-track); }
+.list-title { font-family: var(--kf-font-display); font-size: clamp(1.4rem, 3vw, 2.2rem); line-height: 1; text-transform: uppercase; }
+.list-thumb { width: 3.4rem; aspect-ratio: 5 / 7; }
+.list-thumb::after { display: none; }
+
+@media (max-width: 1300px) {
+  .walk-hint { bottom: 5.4rem; }
+  .room-nav { bottom: 9rem; }
+}
+@media (max-width: 52rem) {
+  .room-caption { bottom: 9.5rem; max-width: calc(100vw - 2 * var(--site-edge-wide)); gap: 0.45rem; }
+  .room-more { white-space: nowrap; }
+  .room-nav { right: auto; left: 50%; bottom: 4.9rem; transform: translate(-50%); }
+  .walk-hint { right: 0; left: 0; bottom: 1.5rem; justify-items: center; text-align: center; max-width: none; }
+}

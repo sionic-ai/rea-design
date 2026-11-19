@@ -1,0 +1,25 @@
+/* The whole plate is a layer fixed over the screen, stacking four: cover, color logo, hole plate, and the frame covering the hole’s edge. The press passes downward */
+[data-fx~="logo-hole-reveal"] { position: fixed; inset: 0; z-index: 900; display: grid; place-items: center; pointer-events: none; }
+[data-fx~="logo-hole-reveal"] > [data-fx-part] { grid-area: 1 / 1; }
+[data-fx~="logo-hole-reveal"].is-done { visibility: hidden; }
+/* Curtain — a progress bar fills (on .is-loaded it folds to the right in .3s), and when sweeping away (.is-sweep) it exits at once */
+[data-fx~="logo-hole-reveal"] [data-fx-part="cover"] { position: fixed; inset: 0; z-index: 3; display: grid; place-items: center; background: var(--kf-contrast-bg); }
+[data-fx~="logo-hole-reveal"].is-sweep [data-fx-part="cover"] { opacity: 0; }
+[data-fx~="logo-hole-reveal"] [data-fx-part="bar"] { position: relative; display: block; width: var(--fx-bar-w, 14.2vw); height: 2px; background: color-mix(in oklab, var(--kf-contrast-ink) 30%, transparent); }
+[data-fx~="logo-hole-reveal"] [data-fx-part="bar"]::after { content: ""; position: absolute; inset: 0; background: var(--kf-contrast-ink); transform: scaleX(0); transform-origin: left; }
+[data-fx~="logo-hole-reveal"].is-loading [data-fx-part="bar"]::after { transform: scaleX(1); transition: transform var(--fx-load, 1s) cubic-bezier(0.47, 0.16, 0.24, 1); }
+[data-fx~="logo-hole-reveal"].is-loaded [data-fx-part="bar"] { transform: scaleX(0); transform-origin: right; transition: transform 0.3s cubic-bezier(0.47, 0.16, 0.24, 1); }
+/* Color logo — waits behind a curtain, and once it lifts a light band sweeps across in 1.2s and switches off when the hole shows through */
+[data-fx~="logo-hole-reveal"] [data-fx-part="logo"] { position: relative; z-index: 2; overflow: hidden; opacity: 0; }
+[data-fx~="logo-hole-reveal"].is-logo [data-fx-part="logo"] { opacity: 1; }
+[data-fx~="logo-hole-reveal"].is-hole [data-fx-part="logo"] { opacity: 0; }
+[data-fx~="logo-hole-reveal"] [data-fx-part="sweep"] { position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, color-mix(in oklab, var(--kf-contrast-ink) 70%, transparent) 50%, transparent 70%); transform: translate3d(-135%, 0, 0); }
+[data-fx~="logo-hole-reveal"].is-sweep [data-fx-part="sweep"] { transform: translate3d(135%, 0, 0); transition: transform 1.2s cubic-bezier(0.76, 0, 0.24, 1); }
+/* Hole plate — a black plate with a logo-shaped hole (--fx-hole, default geometry M) and the rim covering its edge. Both scale up 52x in .8s and vanish at the end */
+[data-fx~="logo-hole-reveal"] [data-fx-part="hole"], [data-fx~="logo-hole-reveal"] [data-fx-part="frame"] { position: relative; z-index: 1; width: var(--fx-size, 90px); aspect-ratio: var(--fx-ratio, 120 / 100); transform-origin: center 43%; }
+[data-fx~="logo-hole-reveal"] [data-fx-part="hole"] { background: var(--kf-contrast-bg); clip-path: var(--fx-hole, polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, 0% 0%, 20% 0%, 50% 42%, 80% 0%, 100% 0%, 100% 100%, 82% 100%, 82% 36%, 50% 75%, 18% 36%, 18% 100%, 0% 100%, 0% 0%)); }
+[data-fx~="logo-hole-reveal"] [data-fx-part="frame"] { outline: 100vmax solid var(--kf-contrast-bg); transform: scale(0.989); }
+[data-fx~="logo-hole-reveal"].is-zoom [data-fx-part="hole"], [data-fx~="logo-hole-reveal"].is-zoom [data-fx-part="frame"] {
+  transform: scale(var(--fx-scale, 52)); opacity: 0; transition: transform var(--fx-zoom, 0.8s) cubic-bezier(0.55, 0.05, 0.22, 0.99), opacity 0s linear var(--fx-zoom, 0.8s);
+}
+@media (prefers-reduced-motion: reduce) { [data-fx~="logo-hole-reveal"] { display: none; } }

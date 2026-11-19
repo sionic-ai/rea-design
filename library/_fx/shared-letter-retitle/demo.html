@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>shared-letter-retitle — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-stage { padding: 80px 40px; display: grid; gap: 32px; justify-items: start; }
+  .demo-stage h2 { font: 500 48px/1.2 var(--kf-font-display); }
+  .demo-stage button { padding: 8px 14px; border: 1px solid var(--kf-line); background: var(--kf-surface); }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>shared-letter-retitle</b> — Press the button. Identical letters slide while the rest flip over.</p>
+<div class="demo-stage">
+  <h2 data-fx="shared-letter-retitle">Client Name 01</h2>
+  <div><button type="button" data-t="Client Name 01">Client Name 01</button> <button type="button" data-t="Company Co., Ltd.">Company Co., Ltd.</button> <button type="button" data-t="Group Inc.">Group Inc.</button></div>
+</div>
+<script>
+(() => {
+  document.querySelectorAll("[data-t]").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll('[data-fx~="shared-letter-retitle"]').forEach((h) => h.dispatchEvent(new CustomEvent("fx:retitle", { detail: { text: b.dataset.t } })));
+  }));
+  const src = document.querySelector('[data-fx~="shared-letter-retitle"]');
+  const make = (tag) => { const h = document.createElement("h2"); h.dataset.fx = "shared-letter-retitle"; h.textContent = "Late Title"; h.dataset.demo = tag; return h; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => src.after(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  const empty = document.createElement("h2");
+  empty.dataset.fx = "shared-letter-retitle";
+  document.body.append(empty);
+  setInterval(() => document.querySelectorAll('[data-fx~="shared-letter-retitle"]').forEach((h, i) => h.dispatchEvent(new CustomEvent("fx:retitle", { detail: { text: ["Client Name 01", "Company Co., Ltd.", "Group Inc."][(Date.now() / 3000 + i | 0) % 3] } }))), 3000);
+  document.querySelector(".demo-hint").append(" · One more comes in after 1s, and one drops out after 2.5s.");
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../../../_shared/vendor/gsap/CustomEase.min.js"></script>
+<script>gsap.registerPlugin(CustomEase);</script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

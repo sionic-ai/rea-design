@@ -1,0 +1,81 @@
+/* News list — single-column list 1080 wide. When the header (title + topic·year buttons) scrolls up and out, the same buttons drop down as a black 80% bar and dock (drop-dock-bar). 
+   Original values: thumbnail 242 × 16:9 · radius 4 · 1px white 15% line between rows · title 18px/1.67 · hover opacity .5 (.2s linear) */
+body { background: var(--kf-surface); }
+
+.nl { position: relative; max-width: 1080px; margin: 0 auto; padding: 96px 0 120px; }
+.nl > .wf-note { top: 20px; left: 0; }
+.nl-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; border-bottom: 2px solid var(--kf-line); }
+.nl-head h1 { font-size: 24px; font-weight: 400; letter-spacing: 0.1em; }
+.nl-filters { display: flex; align-items: center; column-gap: 20px; }
+.nl-topic { display: inline-flex; align-items: center; gap: 12px; padding: 0 6px 0 0; border-radius: 6px; background-color: var(--kf-surface); border: 0; transition: background-color 0.15s; color: var(--kf-ink); font: 700 15px/1 var(--kf-font-sans); cursor: pointer; }
+.nl-topic i { display: grid; place-items: center; width: 38px; height: 32px; border-radius: 6px; background-color: color-mix(in oklab, var(--kf-raised) 92%, var(--kf-ink)); background-image: linear-gradient(to bottom, transparent, color-mix(in oklab, var(--kf-raised) 85%, var(--kf-surface))); }
+/* Original whole button background is the page color (opaque) → +35 lighter, the year pill is black → #333 (.15s) */
+.nl-topic:hover { background-color: rgb(from var(--kf-surface) calc(r + 35) calc(g + 36) calc(b + 39)); }
+.nl-topic svg { width: 18px; height: 18px; fill: var(--kf-raised); stroke: var(--kf-ink); stroke-width: 1.2; }
+.nl-year { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 16px; border: 1px solid color-mix(in oklab, var(--kf-ink) 60%, transparent); border-radius: 999px; outline-offset: -1px; background: var(--site-black); color: var(--kf-ink); font: 700 14px/1 var(--kf-font-sans); cursor: pointer; transition: background-color 0.15s; }
+.nl-year:hover { background: oklch(from var(--kf-raised) calc(l + 0.015) 0 h); }
+.nl-year svg { width: 10px; height: 6px; fill: none; stroke: currentColor; stroke-width: 1.4; }
+
+/* Sticky strip — background and position come from the part, only inner line width and spacing here */
+.nl-dock { --fx-bg: var(--site-bar); --fx-z: 990; }
+.nl-dock__in { max-width: 1080px; margin: 0 auto; padding-block: 10px; display: flex; justify-content: flex-end; }
+
+.nl-list li { border-bottom: 1px solid var(--site-rule); }
+.nl-row { display: grid; grid-template-columns: 242px 1fr; column-gap: 42px; padding: 21px 0 20px; }
+.nl-row:hover { opacity: 1; }
+.nl-row__thumb { display: block; overflow: hidden; border-radius: 5px; background: var(--site-black); transition: opacity 0.2s linear; }
+.nl-row__text { display: block; padding-top: 4px; transition: opacity 0.2s linear; }
+.nl-row:hover .nl-row__thumb, .nl-row:hover .nl-row__text { opacity: 0.5; }
+.nl-row__title { display: block; font-size: 18px; font-weight: 500; line-height: 1.67; letter-spacing: 0.02em; }
+.nl-row__meta { display: flex; align-items: center; margin-top: 16px; color: var(--kf-dim); font-size: 12px; letter-spacing: 0.04em; }
+.nl-row__meta time::before { content: "/"; margin: 0 8px; opacity: 0.6; }
+
+/* ── Topic and year picker panel — bottom scrim black 25% (.15s), the panel starts 7px up and transparent and eases out in .15s. The phone drops from 40px above in .3s, scrim 60% ── */
+.nl-pop { position: fixed; inset: 0; z-index: 1000; }
+.nl-pop[hidden] { display: none; }
+.nl-pop::before { content: ""; position: fixed; inset: 0; background: var(--site-black); opacity: 0; transition: opacity 0.15s; }
+.nl-pop[data-state="open"]::before { opacity: 0.25; }
+.nl-pop__box {
+  position: absolute; min-width: 232px; padding: 6px 0; border-radius: 6px;
+  background: color-mix(in oklab, var(--kf-raised) 80%, var(--kf-surface)); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  opacity: 0.01; transform: translateY(-7px);
+  transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+}
+.nl-pop[data-state="open"] .nl-pop__box { opacity: 1; transform: translateY(0); }
+/* The original hides the pressed button in place and floats an identical button at the same spot above the curtain — so the button isn’t darkened while the panel is open */
+.nl-pop__twin { position: fixed; z-index: 1; margin: 0; pointer-events: none; }
+.nl-pop__box ul { padding: 4px 0; }
+.nl-pop__box ul + ul { border-top: 1px solid var(--site-rule); }
+.nl-pop__box button { position: relative; display: block; width: 100%; padding: 7px 40px 7px 14px; background: none; border: 0; color: var(--kf-ink); font: 700 12px/1.3 var(--kf-font-sans); text-align: left; cursor: pointer; transition: background-color 0.15s; }
+.nl-pop__box button:hover { background: color-mix(in oklab, var(--kf-ink) 8%, transparent); }
+.nl-pop__box .is-small button { padding-block: 5px; font-size: 11px; font-weight: 400; color: var(--kf-ink-soft); }
+.nl-pop__box button.is-on::after { content: ""; position: absolute; right: 14px; top: 50%; width: 14px; height: 14px; margin-top: -7px; border-radius: 50%; background: radial-gradient(circle, var(--kf-ink) 0 2px, transparent 2.5px), var(--site-pill-a); }
+.nl-pop__box.is-years { min-width: 0; padding: 12px; }
+.nl-pop__box.is-years ul { display: grid; grid-template-columns: repeat(4, 56px); gap: 6px; padding: 0; }
+.nl-pop__box.is-years button { padding: 6px 0; border-radius: 4px; text-align: center; font-weight: 700; }
+.nl-pop__box.is-years button.is-on { background: var(--kf-ink); color: var(--kf-contrast-ink); }
+.nl-pop__box.is-years button.is-on::after { display: none; }
+
+@media (max-width: 1140px) { .nl { margin: 0 30px; } }
+@media (max-width: 659px) {
+  .nl { margin: 0; padding: 26px 20px 80px; }
+  .nl > .wf-note { display: none; }
+  .nl-head { display: block; padding-bottom: 12px; border-bottom-width: 1px; }
+  .nl-head h1 { margin-bottom: 14px; font-size: 18px; }
+  .nl-head .nl-filters, .nl-dock__in .nl-filters { justify-content: space-between; width: 100%; }
+  .nl-dock__in { padding: 10px 20px; }
+  .nl-topic { font-size: 14px; }
+  .nl-row { grid-template-columns: 144px 1fr; column-gap: 18px; padding: 18px 0; }
+  .nl-row__text { padding-top: 0; }
+  .nl-row__title { font-size: 14px; line-height: 1.6; }
+  .nl-row__meta { margin-top: 12px; font-size: 11px; }
+  .nl-pop::before { transition-duration: 0.3s; }
+  .nl-pop[data-state="open"]::before { opacity: 0.6; }
+  .nl-pop__box { left: 29px !important; right: 29px; top: 0 !important; margin: 80px 0; opacity: 0.01; transform: translateY(-40px); transition: opacity 0.3s ease-out, transform 0.3s cubic-bezier(0.24, 1, 0.35, 0.98); }
+  .nl-pop[data-state="open"] .nl-pop__box { transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nl-pop::before, .nl-pop__box, .nl-row__thumb, .nl-row__text { transition: none; }
+}
+/* News list (the original is a React app without base.js) — the header My Page and search stay unchanged on hover — measured, no change */
+.gt-head--bar .gt-user__me:hover, .gt-head--bar .gt-user__search:hover { opacity: 1; }

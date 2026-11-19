@@ -1,0 +1,86 @@
+/* Original values (seconds): logo .1 with .2 blink · fill-up from .35 for 1.2 cubic-bezier(.65,0,.35,1) · logo at 1.75 turns off with .15 step-end ·
+   Panel at 1.85 over .6 cubic-bezier(.16,1,.3,1) (a line 1px apart until 35%) · light at 1.85 over .6 (.9 → 0) · glitch at 2 over .42 step-end · ends at 2.5 */
+[data-fx~="crt-split-loader"] {
+  --fx-csl-k: 1;
+  --fx-csl-out: cubic-bezier(0.16, 1, 0.3, 1);
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: block;
+  pointer-events: none;
+}
+[data-fx~="crt-split-loader"]:not(.is-gone) { animation: fx-csl-done 0s linear calc(2.5s * var(--fx-csl-k)) both; }
+[data-fx~="crt-split-loader"].is-gone { display: none; }
+[data-fx~="crt-split-loader"] :is([data-fx-part="top"], [data-fx-part="bottom"]) {
+  position: absolute;
+  inset-inline: 0;
+  block-size: 50%;
+  background: var(--kf-contrast-bg);
+}
+[data-fx~="crt-split-loader"] [data-fx-part="top"] { inset-block-start: 0; }
+[data-fx~="crt-split-loader"] [data-fx-part="bottom"] { inset-block-end: 0; }
+[data-fx~="crt-split-loader"]:not(.is-gone) [data-fx-part="top"] { animation: fx-csl-top calc(0.6s * var(--fx-csl-k)) var(--fx-csl-out) calc(1.85s * var(--fx-csl-k)) both; }
+[data-fx~="crt-split-loader"]:not(.is-gone) [data-fx-part="bottom"] { animation: fx-csl-bottom calc(0.6s * var(--fx-csl-k)) var(--fx-csl-out) calc(1.85s * var(--fx-csl-k)) both; }
+[data-fx~="crt-split-loader"] [data-fx-part="logo"] {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  inline-size: clamp(12rem, 28vw, 22rem);
+  translate: -50% -50%;
+  color: color-mix(in srgb, var(--kf-contrast-ink) 20%, transparent);
+}
+[data-fx~="crt-split-loader"] [data-fx-part="logo"] > :first-child { display: block; inline-size: 100%; block-size: auto; }
+[data-fx~="crt-split-loader"]:not(.is-gone) [data-fx-part="logo"] {
+  animation: fx-csl-flicker calc(0.2s * var(--fx-csl-k)) step-end calc(0.1s * var(--fx-csl-k)) both,
+    fx-csl-hide calc(0.15s * var(--fx-csl-k)) step-end calc(1.75s * var(--fx-csl-k)) both;
+}
+[data-fx~="crt-split-loader"] .fx-csl-fill {
+  position: absolute;
+  inset: 0;
+  color: var(--kf-accent);
+  clip-path: inset(100% 0 0);
+}
+[data-fx~="crt-split-loader"] .fx-csl-fill > * { display: block; inline-size: 100%; block-size: 100%; }
+[data-fx~="crt-split-loader"]:not(.is-gone) .fx-csl-fill { animation: fx-csl-fill calc(1.2s * var(--fx-csl-k)) cubic-bezier(0.65, 0, 0.35, 1) calc(0.35s * var(--fx-csl-k)) both; }
+[data-fx~="crt-split-loader"] [data-fx-part="flash"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: var(--kf-contrast-ink);
+}
+[data-fx~="crt-split-loader"]:not(.is-gone) [data-fx-part="flash"] { animation: fx-csl-flash calc(0.6s * var(--fx-csl-k)) var(--fx-csl-out) calc(1.85s * var(--fx-csl-k)) both; }
+[data-fx~="crt-split-loader"] [data-fx-part="static"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  mix-blend-mode: screen;
+  filter: contrast(3) brightness(1.4);
+  background: var(--fx-grain, none) 0 0 / 8rem;
+}
+[data-fx~="crt-split-loader"]:not(.is-gone) [data-fx-part="static"] { animation: fx-csl-static calc(0.42s * var(--fx-csl-k)) step-end calc(2s * var(--fx-csl-k)) forwards; }
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="crt-split-loader"] { display: none; }
+}
+@keyframes fx-csl-done { to { visibility: hidden; } }
+@keyframes fx-csl-fill { 0% { clip-path: inset(100% 0 0); } to { clip-path: inset(0); } }
+@keyframes fx-csl-hide { to { opacity: 0; } }
+@keyframes fx-csl-top { 0% { translate: 0; } 35% { translate: 0 -1px; } to { translate: 0 -100%; } }
+@keyframes fx-csl-bottom { 0% { translate: 0; } 35% { translate: 0 1px; } to { translate: 0 100%; } }
+@keyframes fx-csl-flash {
+  0% { clip-path: inset(50% 0); opacity: 0.9; }
+  35% { clip-path: inset(calc(50% - 1px) 0); opacity: 0.9; }
+  to { clip-path: inset(0); opacity: 0; }
+}
+@keyframes fx-csl-flicker {
+  0%, 39% { opacity: 1; }
+  20%, 59% { opacity: 0; }
+  60%, to { opacity: 1; }
+}
+@keyframes fx-csl-static {
+  0% { opacity: 1; background-position: 0 0; }
+  20% { opacity: 0.9; background-position: -2.3125rem 1.3125rem; }
+  40% { opacity: 1; background-position: 3.25rem -0.875rem; }
+  60% { opacity: 0.6; background-position: -1.125rem -2.8125rem; }
+  80% { opacity: 0.85; background-position: 2.5625rem 0.5625rem; }
+  to { opacity: 0; background-position: 0 0; }
+}

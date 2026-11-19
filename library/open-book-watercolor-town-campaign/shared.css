@@ -1,0 +1,496 @@
+/* Shopping center common Frame — 72px white fixed header bar (wordmark, language, chat, hamburger), opening hours row, green icon menu that sticks under the header after scrolling past (on phones a bottom bar),
+   Green menu drawer (side-drawer part), back to top (appear-past-scroll part + hooked to the Footer), white Footer and green bottom band */
+:root {
+  /* Divider on green #8dc77f — leaf green shifted toward white */
+  --site-leaf-line: color-mix(in oklab, var(--kf-accent) 70%, var(--kf-on-accent));
+  /* Drawer SNS row #468038 — leaf green, darkened */
+  --site-leaf-deep: oklch(from var(--kf-accent) calc(l - 0.18) c h);
+  /* Phone bottom icon bar #f4faf3 */
+  --site-leaf-mist: color-mix(in oklab, var(--kf-accent) 8%, var(--kf-surface));
+  /* Featured pill button gradient #00a27e → #00829e — two colors turned from leaf green toward teal */
+  --site-teal-1: oklch(from var(--kf-accent) calc(l - 0.09) calc(c * 0.93) calc(h + 30));
+  --site-teal-2: oklch(from var(--kf-accent) calc(l - 0.17) calc(c * 0.72) calc(h + 80));
+  --site-hmain: 72px;
+}
+
+body {
+  background: var(--kf-surface);
+  color: var(--kf-ink-soft);
+  font-family: var(--kf-font-sans);
+  font-size: 16px;
+  line-height: 1.8;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+/* Original body.-js-fixed — when the drawer opens, pins the body at top −scroll */
+body.is-fixed { position: fixed; width: 100%; height: 100%; overflow-y: hidden; }
+
+/* Original common frame (PC): every link fades to .6 over .3s on hover — only bracket buttons stay at 1. Links with their own transition (icon menu · Swiper cards) change immediately */
+@media (min-width: 768px) {
+  a { transition: opacity 0.3s; }
+  a:hover { opacity: 0.6; }
+  .ot-lbtn:hover { opacity: 1; }
+}
+
+.ot-page { padding-top: var(--site-hmain); }
+.ot-wrap { width: 980px; max-width: 100%; margin: 0 auto; }
+.ot-sp { display: none; }
+.ot-ico { width: 1em; height: 1em; display: block; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── Header bar ─────────────────────────────────────────── */
+.ot-header { position: relative; padding-bottom: 73px; }
+.ot-hmain {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 97;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: var(--site-hmain);
+  padding: 0 40px;
+  background: var(--kf-surface);
+  border-bottom: 1px solid color-mix(in oklab, var(--kf-line) 60%, var(--kf-surface));
+  transition: height 0.3s, border 0.2s;
+}
+.ot-logo { flex: 0 1 auto; width: 213px; margin: 0 auto 0 0; color: var(--kf-ink-soft); line-height: 1.2; }
+.ot-logo svg { display: block; width: 100%; height: auto; overflow: visible; }
+.ot-logo__leaf { fill: var(--kf-accent); }
+.ot-logo__small { fill: currentColor; font: 700 7px/1 var(--kf-font-latin); letter-spacing: 0.32em; }
+.ot-logo__name { fill: currentColor; font: 500 20px/1 var(--kf-font-sans); letter-spacing: 0.02em; }
+
+.ot-lang { position: relative; flex: 0 1 auto; margin-left: 30px; user-select: none; }
+.ot-lang__btn {
+  position: relative;
+  display: inline-block;
+  margin: 0;
+  padding: 0 0.9em;
+  border: 0;
+  background: none;
+  color: var(--kf-ink-soft);
+  font: 400 14px/1.8 var(--kf-font-latin);
+  letter-spacing: 0.075em;
+  cursor: pointer;
+}
+.ot-lang__btn .ot-ico { display: none; }
+.ot-lang__btn::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-top: 1px solid currentColor;
+  border-right: 1px solid currentColor;
+  transform: rotate(135deg);
+}
+.ot-lang.is-open .ot-lang__btn { color: var(--kf-accent); }
+/* Original slide-toggle — from height 0, min-height grows to the list height in .3s */
+.ot-lang__list {
+  position: absolute;
+  top: 30px;
+  left: 3px;
+  z-index: 10;
+  width: 100px;
+  height: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0 5px;
+  overflow: hidden;
+  background: var(--kf-accent);
+  box-shadow: var(--kf-shadow-lift);
+  font-size: 12px;
+  transition: min-height 0.3s;
+}
+.ot-lang__list li:not(:last-child) { border-bottom: 1px solid var(--site-leaf-line); }
+.ot-lang__list a { display: block; padding: 5px 0; color: var(--kf-on-accent); text-align: center; }
+.ot-lang__label { display: none; }
+
+.ot-hlink { flex: 0 1 auto; width: 100px; margin: 3px 0 0 30px; }
+/* Official messaging app ‹Add Friend› button slot — brand green pill */
+.ot-line { display: flex; align-items: center; justify-content: center; gap: 4px; height: 32px; border-radius: 4px; color: var(--kf-on-accent); font: 700 11px/1 var(--kf-font-sans); }
+.ot-line { background: #06c755; } /* Not skin: messaging brand color (official add-friend button) */
+.ot-line svg { width: 16px; height: 16px; fill: currentColor; }
+
+.ot-burger {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  margin: 0 0 0 30px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.ot-burger i, .ot-burger i::before, .ot-burger i::after {
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 26px;
+  height: 2px;
+  background: var(--kf-ink-soft);
+}
+.ot-burger i { margin-top: -1px; }
+.ot-burger i::before, .ot-burger i::after { content: ""; }
+.ot-burger i::before { margin-top: -10px; }
+.ot-burger i::after { margin-top: 8px; }
+
+/* Opening hours row (desktop) — on phones, tapping the ‹Hours› row drops a panel from the top */
+.ot-infoswitch { display: none; }
+.ot-info { padding: 15px; font-size: 14px; line-height: 1.54; }
+.ot-info__inner { display: flex; }
+.ot-info__close { display: none; }
+.ot-info__heading {
+  flex: 0 0 auto;
+  width: 100px;
+  height: 50px;
+  margin: 0;
+  border: 1px solid var(--kf-line);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 48px;
+  letter-spacing: 0.2em;
+  text-align: center;
+}
+.ot-info__group { display: flex; flex: 1 1 auto; width: calc(100% - 160px); }
+.ot-shopinfo { flex: 1 1 auto; width: 50%; padding: 0 28px; font-size: 14px; font-weight: 500; }
+.ot-shopinfo + .ot-shopinfo { width: 46%; border-left: 1px solid var(--kf-line); }
+.ot-shopinfo table { margin: 0; border-collapse: collapse; }
+.ot-shopinfo th, .ot-shopinfo td { padding: 0; font-weight: 500; text-align: left; vertical-align: top; }
+.ot-shopinfo th { padding-right: 1em; }
+.ot-shopinfo td { letter-spacing: 0.08em; }
+.ot-shopinfo__note { margin-top: 0.5em; font-size: 13px; }
+.ot-info__link { flex: 0 0 auto; width: 160px; margin: 0 0 0 auto; border-left: 1px solid var(--kf-line); }
+.ot-info__link a { display: block; color: var(--kf-danger); font-size: 14px; }
+.ot-info__link a > span { position: relative; display: block; padding: 0 10px 0 30px; }
+.ot-info__link a > span::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-top: 1px solid currentColor;
+  border-right: 1px solid currentColor;
+  transform: rotate(45deg);
+}
+
+/* Green icon menu — sits at the bottom end of the header, then once it passes that spot it sticks under the white header line (72px) */
+.ot-gnav { position: absolute; bottom: 0; z-index: 96; width: 100%; background: var(--kf-accent); text-align: center; transition: all 0.3s; }
+.ot-gnav.is-fix { position: fixed; top: var(--site-hmain); bottom: auto; }
+.ot-gnav ul { display: flex; justify-content: space-between; }
+.ot-gnav li { position: relative; flex: 1 1 auto; }
+.ot-gnav li:not(.ot-pc)::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  height: 35px;
+  border-right: 1px solid var(--site-leaf-line);
+  transform: translate(0, -50%);
+}
+.ot-gnav a { display: block; padding: 12px 0; color: var(--kf-on-accent); line-height: 1.7; transition: padding 0.3s; }
+/* Without a size the outer svg defaults to 300px and collapses the menu cell — so set the width (wide icons use viewBox 30×24) */
+.ot-gnav .ot-ico { width: 20px; height: 20px; margin: 0 auto 6px; overflow: visible; }
+.ot-gnav .ot-ico[viewBox] { width: 25px; }
+.ot-gnav__text { display: block; margin: 0; font-size: 13px; white-space: nowrap; }
+.ot-gnav__text span span { display: inline; }
+.ot-sdgsmark { stroke: none; }
+.ot-sdgsmark path { fill: none; stroke-width: 4; }
+
+/* ── Menu drawer (side-drawer part) ─────────────────────── */
+.ot-header [data-fx-part="lay"] { background: color-mix(in srgb, var(--kf-ink) 60%, transparent); }
+.ot-menu {
+  width: 100%;
+  max-width: 460px;
+  padding: 28px 0 0;
+  overflow: auto;
+  background: var(--kf-accent);
+  color: var(--kf-on-accent);
+  line-height: 1.31;
+  text-align: center;
+}
+.ot-menu a { display: block; color: var(--kf-on-accent); }
+.ot-menu__close { position: relative; float: right; width: 26px; height: 26px; margin: 0 40px 20px 0; padding: 0; border: 0; background: none; cursor: pointer; }
+.ot-menu__close i::before, .ot-menu__close i::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 26px;
+  height: 2px;
+  background: var(--kf-on-accent);
+}
+.ot-menu__close i::before { transform: rotate(45deg); }
+.ot-menu__close i::after { transform: rotate(-45deg); }
+.ot-menu__heading { clear: right; margin: 0 0 1em; font-size: 18px; font-weight: 700; letter-spacing: 0.1em; }
+.ot-menu__sec { padding: 0 15px; }
+.ot-menu__sec + .ot-menu__sec { border-top: 5px solid var(--site-leaf-line); }
+.ot-menu__tel { margin-bottom: 12px; }
+.ot-menu__tel a { display: inline-flex; align-items: center; gap: 0.3em; padding: 2px 0; font-size: 14px; }
+.ot-menu__tel .ot-ico { width: 20px; height: 20px; }
+.ot-menu__row { display: flex; flex-wrap: wrap; }
+.ot-menu__row li { position: relative; flex: 1 1 auto; padding: 5px 3px; font-size: 13px; }
+.ot-menu__row li:not(:last-child) a::before {
+  content: "";
+  position: absolute;
+  right: -3px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  height: 100%;
+  margin: auto;
+  background: var(--site-leaf-line);
+}
+.ot-menu__row a { position: relative; height: 100%; padding: 10px 0; }
+.ot-menu__row a:hover { opacity: 0.7; }
+.ot-menu__row.is-col2 li { flex-basis: 50%; }
+.ot-menu__row.is-col2 li:first-child a::before { content: none; }
+.ot-menu__btn { margin: 10px 0; }
+.ot-menu__btn a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  padding: 5px 25px;
+  background: var(--kf-surface);
+  color: var(--kf-accent);
+  font-size: 14px;
+}
+.ot-menu__btn a::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  border-top: 1px solid currentColor;
+  border-right: 1px solid currentColor;
+  transform: rotate(45deg);
+}
+.ot-menu__row.is-col2 li:last-child a { font-size: 12px; }
+.ot-menu__en { display: block; font-family: var(--kf-font-latin); font-size: 1.5em; letter-spacing: 0.075em; }
+.ot-menu__row.is-col4 li { width: 25%; flex: 0 0 25%; }
+.ot-menu__row.is-col4 li a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -5px;
+  width: 100%;
+  height: 1px;
+  margin: auto;
+  background: var(--site-leaf-line);
+}
+.ot-menu__row .ot-ico { width: 33px; height: 33px; margin: 0 auto; }
+.ot-menu__row .ot-ico[viewBox] { width: 41px; }
+.ot-menu__label { display: table; width: 100%; height: 2.62em; margin: 0.5em 0 0; }
+.ot-menu__label > span { display: table-cell; vertical-align: middle; }
+.ot-menu__group { margin: 30px 0 0; }
+.ot-menu__grouptitle { margin: 0; padding: 0.463em; background: var(--kf-accent-soft); color: var(--kf-ink-soft); font-size: 18px; font-weight: 700; line-height: 1.3; letter-spacing: 0.025em; }
+.ot-menu__box { padding: 20px 14px 10px; border: 1px solid var(--site-leaf-line); border-top: 0; }
+.ot-menu__box .wf-img { margin: 0 auto 15px; border-color: var(--site-leaf-line); }
+.ot-menu__box p { margin: 0; font-size: 13px; }
+.ot-menu__list { margin-top: 30px; }
+.ot-menu__list li { border-bottom: 1px solid var(--site-leaf-line); text-align: left; }
+.ot-menu__list li:first-child { border-top: 1px solid var(--site-leaf-line); }
+.ot-menu__list a { display: flex; align-items: center; width: 100%; height: 74px; font-size: 14px; }
+.ot-menu__list a::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  margin: 0 4px 0 auto;
+  border-top: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+.ot-menu__sns { display: flex; align-items: center; height: 70px; margin: 30px -15px 0; padding: 0 15px; background: var(--site-leaf-deep); }
+.ot-menu__sns span { font-family: var(--kf-font-latin); }
+.ot-menu__sns div { display: flex; margin-left: auto; }
+.ot-menu__sns a { display: grid; place-items: center; width: 44px; height: 44px; margin: 0 4px; border: 1px solid var(--kf-on-accent); border-radius: 50%; }
+.ot-menu__sns svg { width: 20px; height: 20px; fill: currentColor; }
+
+/* ── Back to top — turns on from 150px down with 400ms easeOutQuad, rests above the footer when it touches it ── */
+.ot-pagetop {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 95;
+  width: 70px;
+  height: 70px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--kf-accent);
+  cursor: pointer;
+}
+.ot-pagetop::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -4px 0 0 -8.6px;
+  border-top: 2px solid var(--kf-on-accent);
+  border-right: 2px solid var(--kf-on-accent);
+  transform: rotate(-39deg) skew(10deg);
+}
+
+/* ── Footer ─────────────────────────────────────────── */
+.ot-footer { margin-top: 120px; padding-top: 77px; border-top: 1px solid color-mix(in oklab, var(--kf-line) 80%, var(--kf-ink)); background: var(--kf-surface); }
+.ot-foot__top { display: flex; flex-wrap: wrap; margin-bottom: 80px; }
+.ot-foot__logo { flex: 0 0 auto; align-self: center; width: 206px; margin: 0 30px 30px 0; }
+.ot-foot__logo .ot-logo { width: 206px; }
+.ot-foot__address { width: calc(100% - 236px); margin-bottom: 30px; font-size: 14px; }
+.ot-foot__address p { margin: 0; }
+.ot-foot__address span { display: inline-block; }
+.ot-foot__note { width: calc(100% - 230px); font-size: 12px; }
+.ot-foot__btn { width: 220px; margin: 0 0 0 auto; }
+/* Original .l-button — on hover two corner brackets wrap the button in .3s and fill green (corner-wrap-fill motion part) */
+.ot-lbtn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 50px;
+  max-width: 256px;
+  margin: 0 auto;
+  line-height: 1.4;
+  text-align: center;
+}
+.ot-lbtn > span { position: relative; display: block; width: 100%; padding: 0 30px; font-size: 14px; }
+.ot-lbtn > span::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 21px;
+  width: 7px;
+  height: 7px;
+  margin-top: -4px;
+  border-top: 1px solid currentColor;
+  border-right: 1px solid currentColor;
+  transform: rotate(45deg);
+  transition: right 0.3s ease-out;
+}
+.ot-foot__bottom { padding: 20px; background: var(--kf-accent); color: var(--kf-on-accent); }
+.ot-foot__bottom .ot-wrap { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+.ot-foot__bottom ul { display: flex; flex-wrap: wrap; font-size: 13px; }
+.ot-foot__bottom li { margin-right: 1em; }
+.ot-foot__bottom a { color: var(--kf-on-accent); }
+.ot-copy { margin: 0; font-family: var(--kf-font-latin); font-size: 12px; white-space: nowrap; }
+
+@media (max-width: 767px) {
+  :root { --site-hmain: 60px; }
+  .ot-pc { display: none !important; }
+  .ot-sp { display: block; }
+  .ot-wrap { width: 100%; padding: 0 15px; }
+  .ot-header { padding-bottom: 0; }
+  .ot-hmain { height: 60px; padding: 0 15px; }
+  .ot-logo { width: 140px; max-width: 45%; }
+  .ot-lang__btn { padding: 0 0 13px; font-size: 11px; z-index: 11; }
+  .ot-lang__btn .ot-ico { display: block; width: 17px; height: 17px; margin: 0 auto; }
+  .ot-lang__text { display: none; }
+  .ot-lang__btn::after { top: 100%; right: 50%; margin: -9px -3px 0 0; }
+  .ot-lang.is-open .ot-lang__btn::after { border-color: var(--kf-on-accent); }
+  .ot-lang__list { top: 22px; left: auto; right: -4px; width: 84px; font-size: 11px; }
+  .ot-lang__label { display: block; padding: 2px 0 7px; color: var(--kf-on-accent); font-family: var(--kf-font-latin); font-size: 11px; line-height: 1; letter-spacing: 0.075em; text-align: center; }
+  .ot-hlink { width: 70px; margin-left: 15px; }
+  .ot-line { height: 24px; font-size: 9px; }
+  .ot-burger { margin-left: 15px; }
+  .ot-infoswitch {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-bottom: 1px solid var(--kf-line);
+    background: var(--kf-surface);
+    color: var(--kf-accent);
+    font: 500 14px/50px var(--kf-font-sans);
+    text-align: center;
+    cursor: pointer;
+  }
+  .ot-infoswitch span { position: relative; display: inline-block; padding-left: 2.1em; }
+  .ot-infoswitch .ot-ico { position: absolute; left: 0; top: 50%; width: 1.57em; height: 1.57em; margin-top: -0.8em; }
+  .ot-info {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 99;
+    width: 100%;
+    height: 100%;
+    padding: 15px 0;
+    overflow: auto;
+    background: var(--kf-surface);
+    font-size: 16px;
+    text-align: center;
+    transform: translate3d(0, -100%, 0);
+    transition: transform 0.4s;
+  }
+  .ot-info.is-open { transform: translate3d(0, 0, 0); }
+  .ot-info__inner { flex-wrap: wrap; }
+  .ot-info__close { display: block; position: relative; width: 26px; height: 26px; margin: 0 0 18px auto; padding: 0; border: 0; background: none; cursor: pointer; }
+  .ot-info__close i::before, .ot-info__close i::after { content: ""; position: absolute; left: 0; top: 50%; width: 26px; height: 2px; background: var(--kf-ink-soft); }
+  .ot-info__close i::before { transform: rotate(45deg); }
+  .ot-info__close i::after { transform: rotate(-45deg); }
+  .ot-info__heading { width: 100%; height: auto; margin: 0 0 30px; border: 0; color: var(--kf-accent); font-size: 18px; font-weight: 700; line-height: 1; }
+  .ot-info__group { flex-wrap: wrap; width: 100%; }
+  .ot-shopinfo, .ot-shopinfo + .ot-shopinfo { width: 100%; margin-bottom: 35px; padding: 0; border-left: 0; font-size: 16px; }
+  .ot-shopinfo table { width: 100%; margin-top: -30px; }
+  .ot-shopinfo th, .ot-shopinfo td { display: block; width: 100%; text-align: center; }
+  .ot-shopinfo th { margin-top: 30px; padding: 0.567em; background: var(--kf-accent-soft); color: var(--kf-accent); font-size: 15px; }
+  .ot-shopinfo td { padding: 0.6em 0 0; font-size: 20px; letter-spacing: normal; }
+  .ot-shopinfo__note { margin-top: 0.6em; text-align: left; }
+  .ot-info__link { width: 100%; margin: 10px 0; border: 0; }
+  .ot-info__link a { position: relative; display: flex; align-items: center; height: 43px; max-width: 215px; margin: 0 auto; border: 1px solid var(--kf-accent); color: var(--kf-accent); }
+  /* Original phone: same corner bracket type (15px) — phones have no hover, so brackets only */
+  .ot-info__link a::before, .ot-info__link a::after { content: ""; position: absolute; width: 15px; height: 15px; border: 0 solid var(--kf-accent); }
+  .ot-info__link a::before { top: -6px; left: -6px; border-width: 1px 0 0 1px; }
+  .ot-info__link a::after { bottom: -6px; right: -6px; border-width: 0 1px 1px 0; }
+  .ot-info__link a > span { width: 100%; padding: 0; text-align: center; }
+  .ot-info__link a > span::after { content: none; }
+  /* Phone: the icon menu becomes a bar at the bottom of the screen — it hides while scrolling and returns when scrolling stops (idle-return-bar) */
+  .ot-gnav { position: fixed; bottom: 0; left: 0; z-index: 98; padding-bottom: env(safe-area-inset-bottom); background: var(--site-leaf-mist); box-shadow: 0 -1px 3px rgb(196 184 163 / 0.6); }
+  .ot-gnav.is-fix { position: fixed; top: auto; bottom: 0; }
+  .ot-gnav li { width: calc(100% / 6); }
+  .ot-gnav li::before { content: none !important; }
+  .ot-gnav a { display: flex; flex-direction: column; justify-content: center; height: 60px; padding: 0; color: var(--kf-accent); }
+  .ot-gnav .ot-ico { width: 22px; height: 22px; margin: 0 auto 0.1em; }
+  .ot-gnav .ot-ico[viewBox] { width: 28px; }
+  .ot-gnav__text { display: table; width: 100%; height: 2.2em; font-size: 10px; line-height: 1.11; }
+  .ot-gnav__text > span { display: table-cell; vertical-align: middle; transform: scale(0.9); }
+  .ot-gnav__text span span { display: block; }
+  .ot-menu { padding-top: 15px; }
+  .ot-menu__close { margin: 0 15px 15px 0; }
+  .ot-menu__row li { font-size: 11px; }
+  .ot-menu__row .ot-ico { width: 26px; height: 26px; }
+  .ot-menu__row .ot-ico[viewBox] { width: 32px; }
+  .ot-menu__list a { height: 57px; }
+  .ot-pagetop { width: 45px; height: 45px; right: 15px; bottom: 80px; }
+  .ot-pagetop::before { width: 10px; height: 10px; margin: -4px 0 0 -5.6px; }
+  .ot-footer { margin-top: 70px; padding-top: 30px; text-align: center; }
+  .ot-foot__top { flex-direction: column; margin-bottom: 35px; }
+  .ot-foot__logo { width: 220px; margin: 0 auto 10px; order: 1; }
+  .ot-foot__logo .ot-logo { width: 220px; max-width: none; margin: 0 auto; }
+  .ot-foot__address { width: 100%; margin-bottom: 26px; font-size: 12px; order: 2; }
+  .ot-foot__note { width: 100%; margin-top: 24px; text-align: left; order: 4; }
+  .ot-foot__btn { width: 200px; margin: 0 auto; order: 3; }
+  .ot-lbtn { height: 43px; max-width: 215px; --fx-tick: 15px; }
+  .ot-lbtn > span { padding: 0 22px; font-size: 16px; }
+  .ot-lbtn > span::after { right: 17px; }
+  .ot-foot__bottom { padding: 20px 0 80px; }
+  .ot-foot__bottom .ot-wrap { display: block; padding: 0; }
+  .ot-foot__bottom ul { justify-content: center; }
+  .ot-foot__bottom li { position: relative; margin: 0 0 0.3em; padding: 0 0.7em; font-size: 11px; }
+  .ot-foot__bottom li:not(:first-child)::before { content: ""; position: absolute; left: 0; top: 0.4em; width: 1px; height: 1em; background: var(--kf-on-accent); }
+  .ot-foot__bottom li:nth-child(4)::before, .ot-foot__bottom li:nth-child(6)::before { content: none; }
+  .ot-copy { margin-top: 16px; font-size: 11px; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ot-hmain, .ot-gnav, .ot-gnav a, .ot-lang__list, .ot-info, .ot-lbtn > span::after { transition: none; }
+}

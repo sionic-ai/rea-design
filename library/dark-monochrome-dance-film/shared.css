@@ -1,0 +1,235 @@
+/* Shared across the whole site — four-corner fixed UI, loader, center line, cursor, menu, page-turn mask. The original fits one screen at 1440 (no scroll), so everything is fixed. */
+:root {
+  --site-line-faint: color-mix(in oklab, var(--kf-ink) 6.5%, transparent);
+  --site-line: color-mix(in oklab, var(--kf-ink) 15%, transparent);
+  --site-ghost: color-mix(in oklab, var(--kf-ink) 15%, transparent);
+  --site-menu-fill: color-mix(in oklab, var(--kf-ink) 12%, var(--kf-contrast-bg));
+  --site-loader-ink: color-mix(in oklab, var(--kf-ink) 22%, var(--kf-bg));
+  --site-arrow-fill: color-mix(in srgb, var(--kf-ink) 25%, transparent);
+  --site-arrow-ink: color-mix(in srgb, var(--kf-ink) 50%, transparent);
+  --site-lang: color-mix(in srgb, var(--kf-contrast-ink) 35%, transparent);
+  --site-corner: 150px;
+  --site-pad: 80px;
+}
+@media (max-width: 720px) {
+  :root { --site-line-faint: var(--site-line); --site-pad: 35px; }
+}
+
+html, body { width: 100%; height: 100%; }
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  font-size: 12px;
+  line-height: 1.5;
+  overflow: hidden;
+  word-break: keep-all;
+}
+.is-desktop body, .is-desktop a, .is-desktop button { cursor: none; }
+.is-grabbing body { cursor: none; }
+.l-container { position: relative; width: 100%; height: 100%; }
+.l-wrapper { position: relative; width: 100%; height: 100%; }
+.l-transition-wrapper { position: relative; width: 100%; height: 100%; }
+
+.l-content-wrapper { position: relative; width: 100%; max-width: 100%; height: 100%; margin: 0 auto; padding: 0 150px; }
+.l-content-inner { position: relative; height: 100%; max-width: 1440px; margin: 0 auto; padding: 0 50px; }
+.l-content { position: relative; width: 100%; height: 100%; }
+@media (max-width: 1280px) { .l-content-wrapper { padding: 0 100px; } }
+@media (max-width: 720px) { .l-content-wrapper { padding: 0 35px; } .l-content-inner { padding: 0; } }
+
+/* Background WebGL (three) — video planes, pixel dot cloud, film grain post-processing */
+.g-background-canvas { position: fixed; inset: 0; overflow: hidden; z-index: -1; background: var(--kf-surface); }
+.g-background-canvas canvas { display: block; width: 100%; height: 100%; }
+.g-background-canvas video { display: none; }
+.g-background-canvas video.bb-file-video { display: block; position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; filter: grayscale(1) contrast(1.2); }
+.g-background-canvas::after { z-index: 0; }
+
+.g-center-line { position: fixed; top: 50%; left: 0; width: 100%; height: 1px; background: var(--site-line-faint); pointer-events: none; opacity: 0; transform-origin: 0 50%; z-index: 0; }
+
+/* Transparent shield that blocks presses during the slide */
+.g-content-mask { position: fixed; inset: 0; z-index: 9999; opacity: 0; visibility: hidden; }
+
+/* Loader — a 1px center line fills both sides with progress, and the percent at bottom left changes to Completed */
+.g-loading { position: fixed; inset: 0; z-index: 999; overflow: hidden; background: var(--kf-surface); }
+.g-loading .progress { position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: var(--site-line-faint); transform: scaleX(0); }
+.g-loading .progress .bar { position: absolute; top: 0; width: 50%; height: 100%; background: var(--kf-ink); transform: scaleX(0); z-index: 1; }
+.g-loading .progress .bar._left { right: 50%; transform-origin: 100% 50%; }
+.g-loading .progress .bar._right { left: 50%; transform-origin: 0 50%; }
+.g-loading .loading-percent { position: absolute; left: 0; bottom: 0; display: flex; align-items: center; height: var(--site-corner); padding-left: var(--site-pad); }
+.g-loading .txt-wrap { position: relative; display: inline-block; color: var(--site-loader-ink); font-size: 15px; overflow: hidden; }
+.g-loading .num { display: inline-block; margin-left: 10px; }
+.g-loading .num-wrap .txt { display: inline-block; }
+.g-loading .completed { position: absolute; top: 0; left: 0; width: 100%; opacity: 0; visibility: hidden; transform: translate3d(0, 100%, 0); }
+@media (max-width: 720px) { .g-loading .loading-percent { height: 80px; } .g-loading .txt-wrap { font-size: 14px; } }
+
+/* Top-left identity label (first page wordmark) — for each word, inner and outer layers slide in staggered */
+.home-ttl { position: fixed; top: 0; left: 0; display: flex; align-items: center; height: var(--site-corner); padding-left: var(--site-pad); z-index: 2; opacity: 0; visibility: hidden; }
+.home-ttl .ttl { display: inline-flex; position: relative; font: var(--kf-weight-display) 14px/1 var(--kf-font-display); white-space: nowrap; cursor: pointer; }
+.home-ttl .txt, .detail-header-ttl .txt { display: inline-block; position: relative; }
+.home-ttl .txt { height: 1em; }
+.home-ttl .txt._space { margin: 0 0.35em; }
+.home-ttl .clip, .detail-header-ttl .clip { display: inline-block; position: relative; color: var(--kf-ink); height: 1em; }
+.detail-header-ttl .clip { height: auto; }
+.home-ttl .outer, .home-ttl .inner, .detail-header-ttl .outer, .detail-header-ttl .inner { display: inline-block; position: relative; width: 100%; height: 100%; overflow: hidden; }
+.home-ttl .outer, .detail-header-ttl .outer { transform: translate3d(-100%, 0, 0); }
+.home-ttl .inner, .detail-header-ttl .inner { transform: translate3d(100%, 0, 0); }
+.home-ttl .shadow, .detail-header-ttl .shadow { position: absolute; top: 0; left: 0; color: var(--site-ghost); opacity: 0; visibility: hidden; }
+@media (max-width: 720px) { .home-ttl { height: 80px; } .home-ttl .ttl { font-size: 13px; } }
+
+/* Sub-section header: ‹Back to start› + section name */
+.detail-back-to-home { position: fixed; top: 0; left: 0; display: flex; align-items: center; height: var(--site-corner); padding-left: var(--site-pad); z-index: 4; opacity: 0; visibility: hidden; }
+.back-to-home-btn, .scroll-down-btn { display: inline-flex; align-items: center; position: relative; padding: 17px 0; color: var(--kf-ink); line-height: 16px; cursor: pointer; }
+.scroll-down-btn { font-weight: 500; }
+.back-to-home-btn .txt, .scroll-down-btn .txt { position: relative; display: block; margin-left: 40px; line-height: 1; }
+.detail-header { position: fixed; top: 144px; left: 0; padding-left: var(--site-pad); z-index: 2; }
+.detail-header-ttl { display: flex; align-items: center; }
+.detail-header-ttl .txt { font: var(--kf-weight-display) 24px/1 var(--kf-font-display); }
+.detail-header-ttl .inner, .detail-header-ttl .shadow { padding: 3px 0; }
+@media (max-width: 720px) {
+  .detail-back-to-home { height: 80px; }
+  .back-to-home-btn .txt { margin-left: 35px; }
+  .detail-header { top: 80px; }
+  .detail-header-ttl { padding-top: 15px; }
+  .detail-header-ttl .txt { font-size: 18px; }
+}
+
+/* On hover the words slide up and out and the lower layer rises (.8s quint.out, .03s stagger) */
+.js-txt-animation .txt .top { position: relative; display: block; width: 100%; }
+.js-txt-animation .txt .bottom { position: absolute; top: 0; left: 0; display: block; white-space: nowrap; }
+.js-txt-animation .txt .top span, .js-txt-animation .txt .bottom span { display: inline-block; }
+.js-txt-animation .txt .bottom span { opacity: 0; }
+
+/* 16px arrow — two dots leading the way */
+.c-arrow-wrap { position: relative; display: inline-block; width: 16px; height: 16px; flex: none; }
+.c-arrow-wrap .arrow-inner { position: absolute; inset: 0; }
+/* The back dot follows the face color (25%), the center dot follows the text color (50%), and only the arrowhead is always white — on hover both go to 100% (face .25s with .1s delay, text .25s) */
+.c-arrow-wrap svg { width: 100%; height: 100%; min-width: 16px; min-height: 16px; fill: var(--site-arrow-fill); color: var(--site-arrow-ink); transition: fill 0.2s ease 0s, color 0.2s ease 0s; }
+.c-arrow-wrap .dot-2 { fill: currentColor; }
+.c-arrow-wrap .arrow { fill: var(--kf-ink); }
+.js-arrow:hover .c-arrow-wrap svg { fill: var(--kf-ink); color: var(--kf-ink); transition: fill 0.25s ease 0.1s, color 0.25s ease 0s; }
+
+/* Details button — 200×60, on hover a 30×20 block fills in and the underline slides out */
+.c-detail-link { position: relative; display: block; width: 200px; height: 60px; color: var(--kf-ink); }
+.c-detail-link .txt { position: relative; display: block; width: 100%; height: 100%; padding-left: 15px; line-height: 60px; }
+.c-detail-link .txt::before, .c-detail-link .underline { position: absolute; left: 0; background: var(--site-line); }
+.c-detail-link .txt::before { content: ""; top: 50%; margin-top: -10px; width: 30px; height: 20px; z-index: -1; transform-origin: 100% 50%; transform: scaleX(0); transition: transform 0.45s cubic-bezier(0.165, 0.84, 0.44, 1) 0s; }
+.c-detail-link .underline { display: block; bottom: 0; width: 80px; height: 3px; transform-origin: 0 50%; transform: scaleX(0); transition: transform 0.65s cubic-bezier(0.165, 0.84, 0.44, 1) 0.25s; }
+.c-detail-link .c-arrow-wrap { position: absolute; top: 50%; right: 15px; margin-top: -10px; }
+.is-visible > .c-detail-link .underline { transform: scaleX(1); transition: transform 0.65s cubic-bezier(0.77, 0, 0.175, 1) 0s; }
+.is-hover .is-visible > .c-detail-link:hover .txt::before { transform-origin: 0 50%; transform: scaleX(1); transition: transform 0.45s cubic-bezier(0.165, 0.84, 0.44, 1) 0.25s; }
+.is-hover .is-visible > .c-detail-link:hover .underline { transform-origin: 100% 50%; transform: scaleX(0); transition: transform 0.65s cubic-bezier(0.77, 0, 0.175, 1) 0s; }
+@media (max-width: 720px) { .c-detail-link { width: 180px; } .c-detail-link .underline { width: 65px; } }
+
+/* Page numbers 01 — 04 (right center, horizontal at top right on phone) */
+.m-slides-pagination { position: absolute; top: 50%; right: 0; margin-top: -50px; width: 150px; height: 100px; z-index: 1; font-family: var(--kf-font-num); font-size: 13px; letter-spacing: 0.05em; }
+.m-slides-pagination .slides-pagination-inner { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; height: 100%; }
+.m-slides-pagination .line { position: relative; margin: 15px 0; width: 35px; height: 1px; background: var(--kf-ink); transform: scaleX(0); }
+.m-slides-pagination .num { position: relative; width: 100%; height: 1em; line-height: 1; text-align: center; overflow: hidden; opacity: 0; }
+.m-slides-pagination .num._top { display: flex; justify-content: center; align-items: flex-start; }
+.m-slides-pagination .left, .m-slides-pagination .right, .m-slides-pagination .total { display: inline-block; }
+.m-slides-pagination .current { overflow: hidden; }
+.m-slides-pagination .num-wrap { position: relative; overflow: hidden; }
+.m-slides-pagination .num-wrap span { display: block; }
+.m-slides-pagination .num-wrap span.is-prev { position: absolute; top: -100%; left: 0; }
+.m-slides-pagination .num-wrap span.is-next { position: absolute; bottom: -100%; left: 0; }
+@media (max-width: 720px) {
+  .m-slides-pagination { top: 80px; right: 35px; margin-top: 0; width: auto; height: 60px; }
+  .m-slides-pagination .slides-pagination-inner { flex-wrap: nowrap; }
+  .m-slides-pagination .line { min-width: 20px; margin: 0; }
+  .m-slides-pagination .num { width: auto; }
+  .m-slides-pagination .num._top { margin-right: 5px; }
+  .m-slides-pagination .num._bottom { margin-left: 5px; margin-right: -5px; }
+}
+
+/* Menu button — three lines (hamburger) and two X lines. Each line’s two halves shrink outward and grow back */
+.menu-btn { position: fixed; top: 0; right: 0; width: var(--site-corner); height: var(--site-corner); z-index: 99; cursor: pointer; opacity: 0; visibility: hidden; background: none; border: 0; padding: 0; }
+.menu-btn .menu-btn-inner, .menu-btn .lines { position: absolute; inset: 0; margin: auto; width: 22px; }
+.menu-btn .menu-btn-inner { height: 22px; }
+.menu-btn .lines { height: 1px; }
+.menu-btn .lines-inner { position: absolute; display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; }
+.menu-btn .lines._1 .lines-inner { margin-top: -4px; }
+.menu-btn .lines._3 .lines-inner { margin-top: 4px; }
+.menu-btn .lines._4 { transform: rotate(45deg); }
+.menu-btn .lines._5 { transform: rotate(-45deg); }
+.menu-btn .line { position: relative; display: block; width: 50%; height: 100%; background: var(--kf-ink); }
+.menu-btn .lines._4 .line { width: calc(100% - 3px); transform: scaleX(0); }
+.menu-btn .lines._4 .line._left { margin-right: 3px; }
+.menu-btn .lines._4 .line._right { margin-left: 3px; }
+.menu-btn .lines._5 .line { transform: scaleX(0); }
+@media (max-width: 720px) { .menu-btn { width: 92px; height: 80px; } }
+
+/* Menu panel — outer from the top, inner from the bottom, interlocking over 1.35s. Four section names serve as brush-stroke masks */
+.g-menu { position: fixed; inset: 0; z-index: 98; display: none; overflow: hidden; background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); transform: translate3d(0, -100%, 0); }
+.g-menu .menu-inner { position: relative; width: 100%; height: 100%; overflow: hidden; transform: translate3d(0, 100%, 0); }
+.g-menu .menu-line { position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: var(--site-line); z-index: -1; }
+.g-menu .menu-items { position: relative; display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; z-index: 1; }
+.g-menu .menu-item { position: relative; display: inline-flex; justify-content: center; align-items: center; width: 25%; height: 100%; padding: 0 25px; }
+.g-menu .menu-item-inner { position: relative; width: 100%; height: 100%; }
+.g-menu .menu-item a { position: absolute; inset: 0; z-index: 2; }
+.g-menu .svg-txt-wrap, .g-menu .svg-background-txt-wrap { position: absolute; inset: 0; margin: auto; display: flex; justify-content: center; align-items: center; width: 100%; height: 4vw; }
+.g-menu .svg-txt-wrap { z-index: 1; }
+.g-menu .svg-background-txt-wrap { z-index: -1; }
+.g-menu .svg-txt { display: block; width: 100%; height: 100%; overflow: visible; }
+.g-menu .svg-txt text { font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); font-size: 62px; }
+.g-menu .svg-txt .word { fill: var(--kf-contrast-ink); }
+.g-menu .svg-background-txt-wrap .word { fill: var(--site-menu-fill); }
+.g-menu .svg-txt .stroke { fill: none; stroke: var(--kf-contrast-ink); stroke-linecap: butt; }
+.g-menu .lang-switch-wrap { position: absolute; left: 0; bottom: 0; width: var(--site-corner); height: var(--site-corner); display: flex; justify-content: center; align-items: center; z-index: 2; }
+/* Language button — the 35% text exits 1em upward and the other language rises in white (.45s quint.out) */
+.g-menu .lang-switch { position: relative; display: block; font-size: 12px; font-weight: 700; line-height: 1; text-transform: uppercase; letter-spacing: 0.1em; }
+.g-menu .lang-txt { display: block; height: 1em; color: var(--site-lang); text-align: center; transition: all 0.45s cubic-bezier(0.165, 0.84, 0.44, 1) 0s; }
+.g-menu .lang-txt._top { position: relative; opacity: 1; visibility: visible; }
+.g-menu .lang-txt._bottom { position: absolute; inset: 0; margin: auto; opacity: 0; visibility: hidden; transform: translate3d(0, 1em, 0); }
+.is-hover .g-menu .lang-switch:hover .lang-txt._top { opacity: 0; visibility: hidden; transform: translate3d(0, -1em, 0); }
+.is-hover .g-menu .lang-switch:hover .lang-txt._bottom { color: var(--kf-contrast-ink); opacity: 1; visibility: visible; transform: translateZ(0); }
+.g-menu .menu-back-to-home { position: absolute; top: 0; left: 0; display: flex; align-items: center; height: var(--site-corner); padding-left: var(--site-pad); z-index: 2; }
+@media (max-width: 720px) {
+  .g-menu .menu-items { flex-direction: column; height: auto; position: absolute; inset: 0; justify-content: center; }
+  .g-menu .menu-item { width: 100%; height: 18vh; }
+  .g-menu .svg-txt-wrap, .g-menu .svg-background-txt-wrap { height: 11vw; }
+  .g-menu .menu-line { display: none; }
+  .g-menu .menu-back-to-home { height: 80px; }
+}
+
+/* Sound button — five bars rise and fall like a pulse (sound on) */
+.sound-toggle-btn-wrap { position: fixed; right: 0; bottom: 0; width: var(--site-corner); height: var(--site-corner); z-index: 98; }
+.c-sound-toggle-btn { position: absolute; inset: 0; cursor: pointer; opacity: 0; visibility: hidden; }
+.c-sound-toggle-btn .sound-toggle-btn-inner, .c-sound-toggle-btn .lines { position: absolute; inset: 0; margin: auto; width: 22px; height: 22px; }
+.c-sound-toggle-btn .lines { display: flex; justify-content: space-between; align-items: center; }
+.c-sound-toggle-btn .line { display: block; width: 1px; height: 100%; background: var(--kf-ink); transform: scaleY(0.12); transform-origin: 50% 50%; }
+@media (max-width: 1024px) { .sound-toggle-btn-wrap { display: none; } }
+
+/* Cursor — a 9px dot follows with .35s expo.out, turns into a ring next to buttons and pulls the button along */
+.dragger-wrap { position: fixed; inset: 0; pointer-events: none; z-index: 100; opacity: 0; visibility: hidden; }
+.c-dragger { position: fixed; top: 0; left: 0; pointer-events: none; will-change: transform; transform: translate3d(-200px, -200px, 0); }
+.dragger-cursor-wrap { position: absolute; top: 0; left: 0; }
+.dragger-cursor { position: absolute; top: -50px; left: -50px; width: 100px; height: 100px; overflow: visible; }
+.dragger-cursor-path { fill: var(--kf-ink); }
+.dragger-arrow polygon { fill: var(--kf-ink); }
+.dragger-arrow { opacity: 0; visibility: hidden; }
+.movies-waiting { position: absolute; top: -50px; left: -50px; width: 100px; height: 100px; opacity: 0; }
+.movies-waiting.is-waiting { opacity: 1; }
+.movies-waiting .circular { width: 100%; height: 100%; animation: bb-rotate 2s linear infinite; }
+.movies-waiting .path { fill: none; stroke: var(--kf-ink); stroke-width: 1; stroke-dasharray: 1, 200; stroke-dashoffset: 0; animation: bb-dash 1.5s ease-in-out infinite; }
+@keyframes bb-rotate { to { transform: rotate(360deg); } }
+@keyframes bb-dash { 0% { stroke-dasharray: 1, 200; stroke-dashoffset: 0; } 50% { stroke-dasharray: 89, 200; stroke-dashoffset: -35px; } 100% { stroke-dasharray: 89, 200; stroke-dashoffset: -124px; } }
+@media (hover: none), (max-width: 1024px) { .dragger-wrap { display: none !important; } }
+
+/* Brush mask — shared.js draws a 56-frame sprite on a canvas and applies it as --bb-mask */
+.txt-mask { position: relative; -webkit-mask-size: 5600% 100%; mask-size: 5600% 100%; -webkit-mask-image: var(--bb-mask); mask-image: var(--bb-mask); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: 0% 100%; mask-position: 0% 100%; }
+.txt-mask.is-mask-off { -webkit-mask-image: none; mask-image: none; }
+
+/* Thin scrollbar for the vertical text box (IScroll custom) */
+.iScrollVerticalScrollbar { position: absolute; z-index: 9999; width: 1px; bottom: 2px; top: 40px; right: 0; overflow: hidden; background: var(--site-line); opacity: 0; transition: opacity 0.45s var(--kf-ease-out); }
+.iScrollIndicator { position: absolute; width: 100%; background: var(--kf-ink); }
+[data-scroller-area]:hover .iScrollVerticalScrollbar { opacity: 1; }
+
+.wf-note { top: 160px; }
+@media (prefers-reduced-motion: reduce) {
+  .c-detail-link .txt::before, .c-detail-link .underline, .g-menu .lang-txt, .c-arrow-wrap svg { transition: none; }
+  .movies-waiting .circular, .movies-waiting .path { animation: none; }
+}
+
+/* On the first page, hide Home in the menu panel (as in the original) */
+body[data-page="home"] .g-menu .menu-back-to-home { display: none; }

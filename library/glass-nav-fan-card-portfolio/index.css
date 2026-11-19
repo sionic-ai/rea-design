@@ -1,0 +1,65 @@
+/* Work (first page): one intro sentence → 4-column card grid + bottom filter pill → timeline list + bottom preview card */
+.h-intro { padding-top: clamp(4rem, 1rem + 13vw, 14.5rem); text-align: center; }
+.h-intro h1 { max-width: 27.5rem; margin-inline: auto; font-size: var(--fs-hlg); line-height: 1.17; font-weight: 500; }
+.h-intro a { text-underline-offset: .15em; }
+
+.h-works { position: relative; padding-top: clamp(3rem, 1rem + 11vw, 15rem); }
+.h-grid { display: grid; grid-template-columns: repeat(4, 1fr); column-gap: var(--gutter); row-gap: clamp(1.25rem, 1rem + 1vw, 2rem); }
+/* Each card floats up once when it enters within 20% of the top and bottom of the screen — delayed .1s per column index (opacity .15s · move .3s power2.out). 
+   Filtered-out cells stay in place, faded and gray (.3s) */
+.h-grid > li { --col-index: 1; transition: opacity var(--d-base) var(--ease-power2-out), filter var(--d-base) var(--ease-power2-out); }
+.h-grid > li > article { opacity: 0; transform: translate3d(0, calc(var(--sp) * 10), 0); transition: opacity var(--d-fast) var(--ease-power2-out) calc(.1s * var(--col-index)), transform var(--d-base) var(--ease-power2-out) calc(.1s * var(--col-index)); }
+.h-grid > li.is-inview > article { opacity: 1; transform: none; }
+html.s-settle .h-grid > li > article { transition: none; }
+.h-grid > li.is-dimmed { opacity: .4; filter: grayscale(1); }
+@media (min-width: 560px) { .h-grid > li { --col-index: mod(var(--index), 2); } }
+@media (min-width: 768px) { .h-grid > li { --col-index: mod(var(--index), 3); } }
+@media (min-width: 1024px) { .h-grid > li { --col-index: mod(var(--index), 4); } }
+
+/* Filter pill: three cells in a glass panel, and two white pill layers slide behind the selected cell 50ms apart (.45s overshoot) */
+.h-filter { position: sticky; bottom: clamp(1.5rem, 1.3239rem + .7512vw, 2rem); z-index: 40; display: flex; justify-content: center; margin-top: clamp(1.5rem, 1.3239rem + .7512vw, 2rem); pointer-events: none; opacity: 0; transform: translateY(.4rem); transition: opacity var(--d-base) var(--ease-power2-out), transform var(--d-base) var(--ease-power2-out); }
+.h-works.is-inview .h-filter { opacity: 1; transform: none; }
+.s-switch { position: relative; display: grid; grid-template-columns: repeat(var(--count), 1fr); gap: var(--sp); width: 19.5rem; height: 3.1rem; padding: var(--sp); border-radius: 9999px; background: var(--site-glass); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); pointer-events: auto; }
+.s-switch::before, .s-switch::after { content: ""; position: absolute; top: var(--sp); left: var(--sp); width: calc((100% - var(--sp) * (var(--count) + 1)) / var(--count)); height: calc(100% - var(--sp) * 2); border-radius: 9999px; background: var(--kf-surface); transform: translateX(calc(var(--at) * (100% + var(--sp)))); transition: transform var(--d-medium) var(--ease-overshoot); pointer-events: none; }
+.s-switch::before { transition-delay: 50ms; }
+.s-switch label { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: var(--fs-in); user-select: none; }
+.s-switch input { position: absolute; width: 0; height: 0; opacity: 0; }
+.s-switch span { color: var(--site-ink-40); transition: color var(--d-fast) var(--ease-power2-out); }
+.s-switch input:checked ~ span, .s-switch label:hover span, .s-switch label:focus-within span { color: var(--kf-ink); }
+
+/* Past work list: each row rises from 10% below once it comes 100px above the bottom of the screen (.8s power2.out), and on the way back it hides with .6s power4.out */
+.h-list { padding-top: clamp(4rem, 3rem + 6vw, 10rem); }
+.h-list__head { width: min(100%, 42rem); margin: 0 auto 3rem; }
+.h-list__head p { max-width: 20rem; }
+.h-list__head h2 { display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem; font-size: var(--fs-in); font-weight: 500; }
+.h-list__head .s-counter { --s-counter-bg: var(--kf-accent); --s-counter-ink: var(--kf-on-accent); }
+.h-list__head p { font-size: var(--fs-xs); line-height: 1.4; }
+.h-rows { position: relative; width: min(100%, 42rem); margin-inline: auto; }
+/* Pill (arrow) attached to the left of the active row: first it stands right in place (is-snapping), then moves between rows with a .45s overshoot */
+.s-row__ind { position: absolute; left: 0; top: 0; display: inline-flex; align-items: center; justify-content: center; width: 2em; height: 1.4em; border-radius: 1em; background: var(--kf-ink); color: var(--kf-bg); font-size: var(--fs-in); pointer-events: none; opacity: 0; transform: translate3d(calc(var(--x, 0px) - 100% - .75rem), calc(var(--y, 0px) - 50%), 0); transition: opacity var(--d-medium) var(--ease-power2-out), transform var(--d-medium) var(--ease-overshoot); }
+.s-row__ind.is-snapping { transition: opacity var(--d-medium) var(--ease-power2-out); }
+.s-row__ind.is-visible { opacity: 1; }
+.s-row__ind svg { width: .75em; height: .75em; }
+:root[data-theme="dark"] .s-row__ind { background: var(--kf-surface); color: var(--kf-ink); }
+/* Line height is 1em above and below the heading as in the original (body text size) — the distance the pill travels follows this height too */
+.s-row__link { display: grid; grid-template-columns: 4rem 1fr auto; align-items: baseline; column-gap: var(--gutter); font-size: var(--fs-body); line-height: 1.6; transition: opacity var(--d-medium) var(--ease-power2-out); }
+.s-row__title { padding-block: 1em; }
+.h-rows:has(.s-row__link:hover) .s-row__link:not(:hover) { opacity: .4; }
+.s-row__year, .s-row__title { transition: transform var(--d-medium) var(--ease-bounce); }
+.s-row__year { color: var(--kf-dim); }
+.s-row__client span { display: inline-block; padding: .4em .8em; border-radius: 1.8em; background: var(--kf-raised); font-size: var(--fs-xs); transition: transform var(--d-medium) var(--ease-bounce); }
+@media (hover: hover) {
+  .s-row__link:hover .s-row__year { transform: translateX(.75rem); }
+  .s-row__link:hover .s-row__title { transform: translateX(.75rem); }
+  .s-row__link:hover .s-row__client span { transform: translateX(-.75rem); }
+}
+
+@media (max-width: 1023px) { .h-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 767px) { .h-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 559px) {
+  .h-grid { grid-template-columns: 1fr; }
+  .s-row__link { grid-template-columns: 3.2rem 1fr auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .h-grid > li > article { opacity: 1; transform: none; transition: none; }
+}

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sound-line-tunnel — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); margin: 0; }
+  .demo-hint { position: relative; z-index: 2; margin: 0; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .stage { height: 80vh; background: var(--kf-contrast-bg); }
+  .row { display: flex; gap: 8px; padding: 16px 20px; flex-wrap: wrap; }
+  .row button { font: inherit; padding: 6px 12px; }
+  .row button[aria-pressed="true"] { background: var(--kf-accent); color: var(--kf-on-accent); }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>sound-line-tunnel</b> — Move the mouse. Turn on a sound line with the button below and its waveform becomes wider and brighter.</p>
+<div class="stage" id="stage" data-fx="sound-line-tunnel" data-fx-sound-line-tunnel="lines: 9; on: 0"></div>
+<div class="row" id="row"></div>
+<script>
+// Late arrivals and removals — after 1 second one more small panel is attached (late arrival), and after 2.5 seconds that panel leaves (detach)
+(() => {
+  const stage = document.getElementById("stage"), row = document.getElementById("row");
+  for (let i = 0; i < 9; i++) {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = `Line ${i + 1}`; b.setAttribute("aria-pressed", String(i === 0));
+    b.addEventListener("click", () => { const on = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", String(on)); stage.dispatchEvent(new CustomEvent("fx:channel", { detail: { index: i, on } })); });
+    row.append(b);
+  }
+  const late = document.createElement("div");
+  late.style.cssText = "height: 120px";
+  setTimeout(() => { late.dataset.fx = "sound-line-tunnel"; late.setAttribute("data-fx-sound-line-tunnel", "lines: 3; thin: 4; dust: 20"); document.body.append(late); }, 1000);
+  setTimeout(() => late.remove(), 2500);
+})();
+</script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

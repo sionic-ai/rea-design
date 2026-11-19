@@ -1,0 +1,343 @@
+/* Home: each section has a stage stuck to it (sticky) and scrolls through the original cell height while video interludes · section titles · diagrams change. Positions and sizes are measured on the 1440×900 original screen */
+
+.wf-note { z-index: 60; }
+section { position: relative; }
+
+/* Shared scene rules — as in the original, the stage stays fixed (sticky 100svh), and the height of the stacked [data-section] blocks behind it sets the scroll length and each section’s share.
+   Cell heights are the original style.css per-section values as is (px · split at 768 width) */
+.fn-stick { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+.fn-area { position: relative; width: 1px; visibility: hidden; pointer-events: none; }
+.fn-area > [data-section] { height: 0; }
+
+/* 1. Hero — in is set by js like the original as max(screen height × 2, slogan width) × .5 (phone: top margin 500) */
+.hero .fn-area [data-section="in"] { margin-top: 500px; }
+.hero .fn-area [data-section="stay-before"] { height: 100px; }
+.hero .fn-area [data-section="stay"] { height: 2000px; }
+.hero .fn-area [data-section="out-before"] { height: 250px; }
+.hero .fn-area [data-section="out"] { height: 1500px; }
+@media (min-width: 768px) {
+  .hero .fn-area [data-section="in"] { margin-top: 0; }
+  .hero .fn-area [data-section="stay-before"] { height: 500px; }
+  .hero .fn-area [data-section="out-before"] { height: 500px; }
+  .hero .fn-area [data-section="out"] { height: 3000px; }
+}
+.hero__stage { z-index: 1; }
+.hero__intro { position: absolute; inset: 0; }
+.hero__intro.is-hide { opacity: 0; }
+.hero__mask { position: absolute; inset: 0; z-index: 3; background: none; opacity: 0; }
+.hero__defs { position: absolute; }
+.hero__maskin { position: absolute; inset: 0; clip-path: url(#fn-cabbage-clip); background: var(--site-teal); }
+.hero__v2 { opacity: 0; }
+.hero__title { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--site-paper); opacity: 0; }
+.hero__we { font-weight: 300; font-size: 45px; line-height: 1.2; letter-spacing: 0.02em; }
+.hero__name { font-weight: 700; font-size: 45px; line-height: 1.2; letter-spacing: 0.02em; }
+.hero__sub { margin-top: 38px; font-weight: 700; font-size: 16px; line-height: 2; }
+@media (min-width: 768px) { .hero__we, .hero__name { font-size: 70px; } .hero__sub { font-size: 20px; margin-top: 44px; } }
+/* Original zigzag entrance: each letter flips in 160° from a direction picked half vertical, half horizontal (.6s · letter order × .1s · cubic-bezier(.47,.16,.24,1)) */
+.hero__title .fn-sp { display: inline-block; will-change: transform, opacity; }
+.hero__title .fn-sp > span { display: inline-block; overflow: hidden; perspective: 1000px; line-height: 1.2em; vertical-align: top; }
+.hero__title .fn-sp i { display: inline-block; font-style: normal; transform: translate3d(calc(var(--dx) * -100%), calc(var(--dy) * -100%), 0) rotateX(calc(var(--dy) * 160deg)) rotateY(calc(var(--dx) * 160deg)); transition: transform 0.6s calc(var(--ri) * 0.1s) var(--site-ease-zig); }
+.hero__title.is-on .fn-sp i { transform: translateZ(0); transition-delay: calc(var(--i) * 0.1s); }
+.hero__logo { position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none; }
+.hero__logo svg { display: block; width: 100%; height: 100%; overflow: visible; fill: var(--site-paper); stroke: var(--kf-accent); stroke-width: 2.5; }
+/* Original cabbage-chr: width 731/1440 (phone 96%) · 731:410 · starts from outside the top right of the screen (bottom 100% · left 100%) */
+.hero__fly { position: absolute; left: 100%; bottom: 100%; width: 96%; z-index: 5; pointer-events: none; }
+@media (min-width: 768px) { .hero__fly { width: calc(731 / 1440 * 100%); } }
+@media (prefers-reduced-motion: reduce) { .hero__mask { opacity: 1; } .hero__intro { opacity: 0; } .hero__title { opacity: 1; } .hero__title .fn-sp i { transform: none; } }
+.hero__slogan {
+  position: absolute; left: 10px; top: 225px; white-space: nowrap;
+  color: var(--kf-accent); font-weight: 800; font-size: 350px; line-height: 1; letter-spacing: -0.02em;
+}
+/* Original top-kv-chr-group: left 190/1440 · character width max(137/1440 vw, 230px) — the walking share a (the share at which the panel reaches the screen center) is tied to this position and width */
+.hero__chr { position: absolute; left: calc(190 / 1440 * 100%); top: 230px; width: max(calc(137 / 1440 * 100vw), 230px); z-index: 2; }
+.hero__bubble {
+  position: absolute; left: calc(190 / 1440 * 100% - 24px); top: 140px; z-index: 2; min-width: 190px; height: 34px; padding: 0 16px;
+  display: grid; place-items: center; border: 2px solid var(--kf-accent); border-radius: 8px; background: var(--site-paper);
+  font-size: 12px; font-weight: 700; box-shadow: 3px 4px 0 rgba(0, 0, 0, 0.18);
+}
+.hero__bubble::after { content: ""; position: absolute; left: 50%; bottom: -9px; width: 14px; height: 14px; translate: -50% 0; rotate: 45deg; background: var(--site-paper); border-right: 2px solid var(--kf-accent); border-bottom: 2px solid var(--kf-accent); }
+.hero__typed::after { content: "|"; margin-left: 2px; animation: fn-blink 0.8s steps(1) infinite; }
+@keyframes fn-blink { 50% { opacity: 0; } }
+.hero__copy { position: absolute; right: 120px; top: 580px; z-index: 2; }
+
+/* 3. Pledge + ring — like the original top-kv__content, on wide screens it rises overlapping the end (out) of the first Hero section by calc(-50vh - 500px) (no overlap on phones) · 300px to the next section */
+.statement { display: grid; grid-template-columns: 1fr 1fr; align-items: center; min-height: 120vh; padding: 0 180px; gap: 80px; margin-bottom: 300px; }
+@media (min-width: 768px) { .statement { margin-top: calc(-50vh - 500px); } }
+.statement__text { display: grid; gap: 28px; max-width: 460px; }
+.statement__photo { aspect-ratio: 440 / 280; }
+.statement__ring { width: 440px; justify-self: center; }
+.statement__knob, .statement__dot { transform-origin: 220px 220px; }
+
+/* Section title ‹Next› — center of the stage */
+/* Like the original, the section title is a layer beneath the video panel (the video comes in and covers it) */
+.chapter__label { position: absolute; left: 0; right: 0; top: 50%; translate: 0 -50%; z-index: 0; pointer-events: none; }
+.chapter__stage { background: var(--site-paper); }
+
+/* 4. Procurement section — original intro-video: truck 499px (phone 335) at bottom left, the video panel resizes from its top left. The box starts at −25vh (phone 0) behind the stage */
+.chapter--truck .fn-area { margin-top: -25vh; }
+.chapter--truck .fn-area [data-section="in"] { height: 1000px; }
+.chapter--truck .fn-area [data-section="stay-before"] { height: 1000px; }
+.chapter--truck .fn-area [data-section="stay"] { height: 1000px; }
+@media (min-width: 768px) {
+  .chapter--truck .fn-area [data-section="in"] { height: 2500px; }
+  .chapter--truck .fn-area [data-section="stay-before"] { height: 1500px; }
+  .chapter--truck .fn-area [data-section="stay"] { height: 1500px; }
+}
+@media (max-width: 767px) { .chapter--truck .fn-area { margin-top: 0; } }
+.truck-stage { pointer-events: none; }
+.tube { position: absolute; inset: 0; transform-origin: 0 100%; transform: translate3d(-200vw, 0, 0); }
+.tube__inner { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.tube__round { position: absolute; inset: 0; overflow: hidden; }
+.tube__text { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 14px; text-align: center; color: var(--site-paper); }
+.tube__v2 { opacity: 0; }
+.truck { position: absolute; left: 0; bottom: 0; width: 335px; z-index: 3; transform: translate3d(-100%, 0, 0); }
+@media (min-width: 768px) { .truck { width: 499px; } }
+
+/* 5. Procurement — original main-content2: top margin min(50vh, 320px), text 400/1219 · right box 571/726 (where the video lands) · farmer illustration / main-content3: second text + four graph layers.
+   The margin pulled upward is measured by js at the box position */
+.split { position: relative; z-index: 2; display: grid; grid-template-columns: 396px 1fr; column-gap: 54px; row-gap: 40px; padding: min(50vh, 320px) 240px 120px 180px; pointer-events: none; }
+.split > * { pointer-events: auto; }
+.split__text { display: grid; gap: 22px; align-content: start; grid-row: 1 / 3; }
+.split__photo { grid-column: 2; grid-row: 1; aspect-ratio: 640 / 360; }
+.split__art { grid-column: 2; grid-row: 2; width: 486px; }
+.split__text--2 { grid-column: 1; grid-row: 3; margin-top: 80px; }
+.split__graph { grid-column: 2; grid-row: 3; position: relative; width: 100%; max-width: 681px; aspect-ratio: 420 / 300; margin-top: 80px; }
+.split__graph > div { position: absolute; inset: 0; }
+
+/* 6~9. Planning section — original: the content stage (sticky) overlaps 70vh behind the hole stage (sticky), and the whole cell (in 3500 · gap 1500 · second cell) starts at the same spot as the content stage */
+.plan__intro { background: var(--site-paper); }
+.plan__label { top: 22%; }
+.plan__circle { position: absolute; inset: 0; z-index: 1; clip-path: ellipse(0 0 at 50% 50%); }
+.plan__circle .wf-video { opacity: 0; }
+.plan__title { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: var(--site-paper); opacity: 0; }
+/* Original overlay: in the second cell where the circle video shrinks into a ”!” dot, a lime panel covers it in the .5~1 portion so the dot turns lime */
+.plan__over { position: absolute; inset: 0; background: var(--kf-accent); opacity: 0; }
+.plan__hole { position: absolute; inset: 0; z-index: 2; clip-path: inset(50%); }
+/* Original dinosaur: 250/1440 vw (phone 173/390) */
+.plan__hole .hole__blob { position: absolute; left: 50%; bottom: 50%; width: calc(173 / 390 * 100vw); translate: -50% 0; transform: translate3d(0, 100%, 0); }
+@media (min-width: 768px) { .plan__hole .hole__blob { width: calc(250 / 1440 * 100vw); } }
+.plan__hole .hole__blob .fn-pupil { animation: fn-roll 2.4s var(--kf-ease-in-out) infinite; }
+.plan__hole .hole__blob.is-follow .fn-pupil { animation: none; }
+@keyframes fn-roll { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-6px, -4px); } 50% { transform: translate(5px, -5px); } 75% { transform: translate(2px, 5px); } }
+.plan__wrap { margin-top: -30vh; margin-top: -30svh; z-index: 2; visibility: hidden; overflow: hidden; pointer-events: none; }
+.plan__track { display: flex; height: 100%; will-change: transform; }
+.plan__panel { position: relative; flex: 0 0 100vw; height: 100%; pointer-events: auto; }
+.plan__area { margin-top: -100vh; margin-top: -100svh; }
+.plan__a1 > [data-section="in"] { height: 3500px; }
+.plan__gap { height: 1500px; }
+.plan__a2 > [data-section="in"] { height: 2000px; }
+.plan__a2 > [data-section="move1-before"], .plan__a2 > [data-section="content-before"], .plan__a2 > [data-section="out-before"] { height: 500px; }
+.plan__a2 > [data-section="move1"], .plan__a2 > [data-section="move2"], .plan__a2 > [data-section="out"] { height: 1500px; }
+.plan__a2 > [data-section="content"] { height: 2500px; }
+@media (min-width: 768px) {
+  .plan__a2 > [data-section="move1"], .plan__a2 > [data-section="move2"] { height: 2000px; }
+  .plan__a2 > [data-section="content"] { height: 5000px; }
+}
+
+/* 7. Answer */
+.answer__text { position: absolute; left: 216px; top: 306px; width: 420px; display: grid; gap: 26px; }
+.answer__art { position: absolute; left: 720px; top: 460px; width: 360px; opacity: 0; }
+.answer__photo { position: absolute; left: 1008px; top: 216px; width: 328px; aspect-ratio: 1; }
+.answer__blob { position: absolute; left: 676px; top: 430px; width: 19px; height: 19px; border-radius: 50%; background: var(--kf-accent); opacity: 0; }
+
+/* 8. Cycle diagram — original cate-management: circle spots are radius = Width × (1 − 139/466) × .5, larger the further front (right on wide screens · bottom on phones) */
+.cycle__stage { position: relative; height: 100%; display: grid; grid-template-columns: 1fr 360px; align-items: center; padding: 0 54px 0 180px; gap: 60px; }
+.cycle__diagram { position: relative; width: 520px; height: 520px; justify-self: center; }
+.cycle__arrows { position: absolute; inset: 0; }
+.cycle__core { position: absolute; inset: 90px; border-radius: 50%; background: var(--kf-raised); display: grid; place-items: center; text-align: center; font-size: 13px; font-weight: 700; }
+.cycle__ring { position: absolute; inset: 0; }
+.cycle__node { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+.cycle__ball {
+  position: absolute; left: -64px; top: -64px; width: 128px; height: 128px; border-radius: 50%; background: var(--c);
+  display: grid; place-items: center; align-content: center; gap: 4px; text-align: center; font-size: 11px; font-weight: 600;
+}
+.cycle__ball span { width: 44px; }
+.cycle__card { position: absolute; left: 330px; top: 380px; width: 260px; height: 160px; border: 2px solid var(--site-teal); border-radius: 10px; background: var(--site-paper); box-shadow: 4px 6px 0 rgba(0, 0, 0, 0.12); z-index: 3; }
+.cycle__cardin { position: absolute; inset: 0; padding: 22px 22px; display: grid; gap: 4px; align-content: start; opacity: 0; }
+.cycle__no { font-size: 11px; font-weight: 600; }
+.cycle__name { font-size: 24px; font-weight: 700; }
+.cycle__photos { position: relative; height: 720px; }
+/* Original cates-img: the photo for the current circle’s turn opens from the bottom — clip-path .7s cubic-bezier(.47,.16,.24,1) */
+.cycle__photos .wf-img { position: absolute; inset: 0; height: 100%; clip-path: inset(100% 0 0 0); transition: clip-path 0.7s var(--site-ease-zig); }
+
+/* 9. R&D */
+.rnd__text { position: absolute; left: 162px; top: 216px; width: 380px; display: grid; gap: 26px; }
+.rnd__p1 { position: absolute; left: 756px; top: 108px; width: 225px; aspect-ratio: 1; }
+.rnd__p2 { position: absolute; left: 1026px; top: 54px; width: 360px; height: 414px; }
+.rnd__p3 { position: absolute; left: 612px; top: 400px; width: 200px; aspect-ratio: 1; }
+.rnd__p4 { position: absolute; left: 864px; top: 560px; width: 260px; aspect-ratio: 1.15; }
+/* Original chr3: a flock of flags stuck to the bottom left of the screen — height 355/810 svh, hanging 66/810 svh below the edge (phone is 100% width) · appears at the end of the planning section and walks out while the diagonal of the manufacturing section opens (js) */
+.rnd__crowd { position: fixed; left: 0; bottom: calc(-66 / 810 * 100svh); height: calc(355 / 810 * 100svh); aspect-ratio: 396 / 355; z-index: 3; display: none; pointer-events: none; }
+/* The box keeps the original image ratio (396:355) — our group image (360:220) sticks to the bottom of the box */
+.rnd__crowd.fn-art > svg { position: absolute; left: 0; bottom: 0; }
+
+/* 10. Making section: in the original, cells start 50vh behind the stage, and the number section overlaps and rises 150vh before the cells end */
+.chapter--diag .fn-area { margin-top: -50vh; margin-top: -50svh; }
+.chapter--diag .fn-area [data-section="in"] { height: 100px; }
+.chapter--diag .fn-area [data-section="stay-before"] { height: 300px; }
+.chapter--diag .fn-area [data-section="stay"] { height: 1500px; }
+.chapter--diag .fn-area [data-section="out-before"] { height: 1000px; }
+.chapter--diag .fn-area [data-section="out"] { height: 100vh; height: 100svh; }
+@media (min-width: 768px) {
+  .chapter--diag .fn-area [data-section="in"] { height: 100vh; height: 100svh; }
+  .chapter--diag .fn-area [data-section="stay"] { height: 2000px; }
+  .chapter--diag .fn-area [data-section="out-before"] { height: 1500px; }
+  .chapter--diag .fn-area [data-section="out"] { height: 2000px; }
+}
+.diag { position: absolute; inset: 0; z-index: 3; clip-path: polygon(0 100%, 0 100%, 0 100%); }
+.diag__text { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 14px; text-align: center; color: var(--site-paper); }
+
+/* 11. Numbers */
+/* Original content height 3198~3347px (three widths) — the share where the fly passes (content tracker .3~.6) is tied to this height */
+.stats { position: relative; z-index: 2; margin-top: -150vh; margin-top: -150svh; min-height: 3250px; padding: 54px 108px 120px 216px; }
+.stats__lead { display: grid; grid-template-columns: 420px 535px; gap: 120px; align-items: center; margin-bottom: 120px; }
+.stats__leadtext { display: grid; gap: 24px; }
+.stats__v0 { aspect-ratio: 535 / 335; }
+.stats__row { display: grid; grid-template-columns: 288px 288px 360px; gap: 0; }
+.stats__row li { display: grid; gap: 10px; align-content: start; }
+.stats__num { font-weight: 700; font-size: 140px; line-height: 1; letter-spacing: -0.02em; display: flex; align-items: baseline; gap: 6px; }
+.stats__num small { font-size: 22px; font-weight: 600; }
+.stats__row li:last-child small { font-size: 60px; }
+.stats__art { width: 160px; }
+.stats__art--tall { width: 240px; }
+.stats__body { width: 420px; display: grid; gap: 24px; margin-top: 110px; }
+.stats__p1 { position: absolute; left: 846px; bottom: 260px; width: 140px; aspect-ratio: 750 / 1080; }
+.stats__p2 { position: absolute; left: 1020px; bottom: 300px; width: 235px; aspect-ratio: 1; }
+/* Original scene03-fly: three layers of 830×573 (phone 577×398), stuck to the screen, crossing the number section */
+.stats__fly { position: fixed; left: 0; top: 0; width: 148vw; aspect-ratio: 830 / 573; z-index: 4; pointer-events: none; transform: translate3d(-200vw, 0, 0); }
+@media (min-width: 768px) { .stats__fly { width: calc(830 / 1440 * 100vw); } }
+.stats__fly > div { position: absolute; width: 21%; }
+.stats__fly > div:nth-child(1) { left: 6%; top: 12%; }
+.stats__fly > div:nth-child(2) { left: 46%; top: 44%; width: 15%; }
+.stats__fly > div:nth-child(3) { left: 78%; top: 8%; width: 12%; }
+
+/* 12. Sales section — original section-intro: the cell starts at the same place as the stage (in 2000 · stay 0 · out-before 1500 · out 50svh), and the PB text rises over the stage at the end of the cell */
+.fresh .fn-area { margin-top: -100vh; margin-top: -100svh; }
+.fresh .fn-area [data-section="in"] { height: 2000px; }
+.fresh .fn-area [data-section="out-before"] { height: 1000px; }
+.fresh .fn-area [data-section="out"] { height: 50vh; height: 50svh; }
+@media (min-width: 768px) { .fresh .fn-area [data-section="out-before"] { height: 1500px; } }
+.fresh__stage { background: var(--site-paper); }
+.fresh__sticker { position: absolute; left: 50%; top: 50%; z-index: 1; width: 316px; aspect-ratio: 1; margin: -158px 0 0 -158px; pointer-events: none; }
+.fresh__sticker canvas { position: absolute; left: -100%; top: -100%; width: 300%; height: 300%; }
+.fresh__stage > .wf-video { z-index: 2; opacity: 0; }
+/* Original video-overay: teal panel over the video inside the growing box — it clears at .35~.5 of the box’s progress */
+.fresh__over { position: absolute; inset: 0; z-index: 2; background: var(--site-teal); opacity: 0; pointer-events: none; }
+.fresh__text { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; align-content: center; gap: 14px; text-align: center; color: var(--site-paper); }
+@media (max-width: 767px) { .fresh__sticker { width: 200px; margin: -100px 0 0 -100px; } }
+@media (prefers-reduced-motion: reduce) { .fresh__stage > .wf-video { opacity: 1; } .fresh__sticker, .fresh__over { display: none; } }
+
+/* 13. PB */
+/* Original section-content: the top 50vw is left empty, and in that spot a white panel of a 100vw square (raised 50vw) shows the video through a bottom-center semicircle hole, which shrinks until it closes */
+.pb { position: relative; z-index: 2; padding-top: 50vw; pointer-events: none; }
+.pb__cover { position: absolute; left: 0; top: 0; width: 100vw; height: 100vw; translate: 0 calc(-50vw - 1px); background: var(--site-paper); clip-path: inset(50%); }
+.pb__in { position: relative; min-height: 100vh; margin-top: -2px; background: var(--site-paper); pointer-events: auto; }
+.pb__text { position: absolute; left: 180px; top: 54px; width: 400px; display: grid; gap: 24px; }
+.pb__art { position: absolute; left: 640px; top: 18px; width: 460px; }
+.pb__vid { position: absolute; left: 1120px; top: 300px; width: 247px; aspect-ratio: 1; }
+
+/* 14~15. Footer section — original section-intro: cells (8500) continue behind the stage and the footer attaches at the end */
+.spiral .fn-area [data-section="in"] { height: 2000px; }
+.spiral .fn-area [data-section="text1"], .spiral .fn-area [data-section="text2"] { height: 2500px; }
+.spiral .fn-area [data-section="text3"] { height: 1000px; }
+.spiral .fn-area [data-section="stay"] { height: 400px; }
+.spiral .fn-area [data-section="out"] { height: 100px; }
+.spiral__stage { background: var(--site-paper); }
+.spiral__mask { position: absolute; inset: 0; }
+.spiral__defs { position: absolute; }
+.spiral__in { position: absolute; inset: 0; clip-path: url(#fn-spear-clip); }
+.spiral__v2 { opacity: 0; }
+.spiral__cover { position: absolute; inset: 0; background: var(--site-paper); opacity: 0; }
+.spiral__t1, .spiral__t2 { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: var(--site-paper); opacity: 0; }
+/* Original chr-flying-02: 287×282 (phone 186) · starts from the bottom right corner of the screen */
+.spiral__fly { position: absolute; right: 0; bottom: 0; width: 186px; z-index: 3; pointer-events: none; }
+@media (min-width: 768px) { .spiral__fly { width: 287px; } }
+.end__text { --end-ink: 0; position: absolute; inset: 0; display: grid; place-items: center; align-content: center; text-align: center; opacity: 0; color: color-mix(in oklab, var(--kf-ink) calc(var(--end-ink) * 100%), var(--site-paper)); }
+.end__we { font-weight: 300; font-size: clamp(28px, -158px + 24.22vw, 90px); line-height: 1; letter-spacing: 0.05em; }
+.end__title { font-weight: 700; font-size: clamp(44px, -244px + 37.5vw, 140px); line-height: 1; letter-spacing: 0.06em; margin-top: 17px; }
+@media (min-width: 768px) { .end__we { font-size: clamp(90px, 6.25vw, 120px); } .end__title { font-size: clamp(140px, 9.72vw, 186px); margin-top: 54px; } }
+/* Original end-chrs: 487/1440 vw (phone 260/375) · 487:586 · centered */
+.end-chrs { position: absolute; left: 50%; top: 50%; width: calc(260 / 375 * 100vw); aspect-ratio: 487 / 586; translate: -50% -50%; pointer-events: none; }
+@media (min-width: 768px) { .end-chrs { width: calc(487 / 1440 * 100vw); } }
+.end-chrs > div { position: absolute; width: 26%; opacity: 0; }
+.end-chrs > div:nth-child(1) { left: 37%; top: -6%; }
+.end-chrs > div:nth-child(2) { left: -38%; top: 22%; }
+.end-chrs > div:nth-child(3) { left: 112%; top: 18%; }
+.end-chrs > div:nth-child(4) { left: -26%; top: 74%; }
+.end-chrs > div:nth-child(5) { left: 100%; top: 76%; }
+.spiral .fn-foot { position: relative; z-index: 2; margin-top: -80px; }
+
+/* Tablet (768~1279) — 1440 px positions converted to screen ratios so nothing overflows horizontally */
+@media (min-width: 768px) and (max-width: 1279px) {
+  .statement { padding: 0 6vw; gap: 5vw; }
+  .statement__ring { width: 34vw; }
+  .split { grid-template-columns: 1fr 1fr; padding-left: 5vw; padding-right: 5vw; column-gap: 4vw; }
+  .split__art { width: 100%; }
+  .answer__text { left: 6vw; top: 24vh; width: 40vw; }
+  .answer__art { left: 46vw; top: 52vh; width: 30vw; }
+  .answer__photo { left: 62vw; top: 16vh; width: 30vw; }
+  .answer__blob { left: 47vw; top: 47vh; }
+  .cycle__stage { grid-template-columns: 1fr 28vw; padding: 0 4vw; gap: 4vw; }
+  .cycle__diagram { width: min(520px, 58vw); height: min(520px, 58vw); }
+  .cycle__photos { height: 60vh; }
+  .rnd__text { left: 6vw; width: 36vw; }
+  .rnd__p1 { left: 48vw; top: 10vh; width: 18vw; }
+  .rnd__p2 { left: auto; right: 4vw; top: 6vh; width: 26vw; height: 34vh; }
+  .rnd__p3 { left: 44vw; top: 40vh; width: 16vw; }
+  .rnd__p4 { left: 64vw; top: 56vh; width: 22vw; }
+  .stats { padding: 54px 5vw 120px; }
+  .stats__lead { grid-template-columns: 1fr 1fr; gap: 5vw; }
+  .stats__row { grid-template-columns: repeat(3, 1fr); }
+  .stats__num { font-size: 90px; }
+  .stats__body { width: 44vw; }
+  .stats__p1 { left: 56vw; width: 12vw; }
+  .stats__p2 { left: 72vw; width: 20vw; }
+  .pb__text { left: 5vw; width: 40vw; }
+  .pb__art { left: 50vw; width: 42vw; }
+  .pb__vid { left: auto; right: 5vw; top: 360px; width: 20vw; }
+}
+
+/* ── Phone ── */
+@media (max-width: 767px) {
+  .hero__slogan { left: 0; top: 90px; font-size: 110px; line-height: 1.02; white-space: normal; width: 100%; padding: 0 4px; }
+  .hero__chr { left: 50%; top: auto; bottom: 120px; width: 120px; translate: -50% 0; }
+  .hero__bubble { left: 50%; top: auto; bottom: 470px; translate: -50% 0; min-width: 150px; }
+  .hero__copy { left: 0; right: 0; top: auto; bottom: 30px; text-align: center; font-size: 22px; }
+  .statement { grid-template-columns: 1fr; padding: 100px 30px; gap: 40px; }
+  .statement__ring { width: 260px; }
+  .split { grid-template-columns: 1fr; padding: min(50vh, 320px) 30px 80px; row-gap: 30px; }
+  .split__text, .split__photo, .split__art, .split__text--2, .split__graph { grid-column: 1; grid-row: auto; margin-top: 0; }
+  .split__photo { order: -1; }
+  .split__art { width: 100%; }
+  .plan__panel { padding: 0; }
+  .answer__text { left: 20px; right: 20px; top: auto; bottom: 40px; width: auto; gap: 14px; }
+  .answer__art { left: 20px; top: 110px; width: 52%; }
+  .answer__photo { left: auto; right: 20px; top: 150px; width: 181px; }
+  .answer__blob { left: 46%; top: 260px; width: 7px; height: 7px; }
+  .cycle__stage { grid-template-columns: 1fr; padding: 70px 10px 20px; gap: 10px; align-content: center; }
+  .cycle__diagram { width: 340px; height: 340px; }
+  .cycle__core { inset: 60px; font-size: 10px; }
+  .cycle__ball { left: -44px; top: -44px; width: 88px; height: 88px; font-size: 9px; }
+  .cycle__ball span { width: 30px; }
+  .cycle__card { left: 30px; top: 300px; width: 280px; height: 140px; }
+  .cycle__name { font-size: 20px; }
+  .cycle__photos { display: none; }
+  .rnd__text { left: 20px; right: 20px; top: auto; bottom: 40px; width: auto; gap: 14px; }
+  .rnd__p1 { left: 20px; top: 100px; width: 119px; }
+  .rnd__p2 { left: auto; right: 20px; top: 80px; width: 150px; height: 180px; }
+  .rnd__p3 { left: 60px; top: 240px; width: 110px; }
+  .rnd__p4 { left: auto; right: 40px; top: 280px; width: 130px; }
+  .rnd__crowd { width: 100%; height: auto; }
+  .stats { padding: 80px 30px; }
+  .stats__lead { grid-template-columns: 1fr; gap: 30px; margin-bottom: 60px; }
+  .stats__v0 { width: 100%; }
+  .stats__row { grid-template-columns: 1fr; gap: 50px; text-align: left; }
+  .stats__num { font-size: 90px; }
+  .stats__body { width: auto; }
+  .stats__p1, .stats__p2 { position: relative; left: auto; bottom: auto; display: inline-block; margin-top: 20px; }
+  .stats__p1 { width: 97px; }
+  .stats__p2 { width: 165px; margin-left: 20px; }
+  .pb__in { padding: 80px 30px; min-height: auto; display: grid; gap: 30px; }
+  .pb__text, .pb__art, .pb__vid { position: relative; left: auto; top: auto; width: 100%; }
+  .pb__vid { width: 118px; justify-self: end; }
+}

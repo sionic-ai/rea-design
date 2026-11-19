@@ -1,0 +1,149 @@
+/* One set of site Frame — all text at one size (3.3vw · letter-spacing -.05em), a header menu that hides and reappears when scrolling up, glass layer, About overlay panel, Footer list, big wordmark, screensaver. 
+   /  Text with the difference blend stays white — white is the value that inverts the backdrop, so even when the skin changes it is always the opposite color of the background. */
+:root {
+  --fs: 3.3vw;
+  --lh: 1.035;
+  --baseMargin: 1.035rem;
+  --padding-left: calc(20px - 0.08rem);
+  --padding-top: calc(20px - 0.02rem);
+  --gutter: 10px;
+  --site-flip: #fff; /* Not Skin: the operand value (white) that inverts the background in difference blending */
+  --site-none: #000; /* Not skin: a no-op value in difference blending (black) — mask band over the intro text */
+  --site-glass: color-mix(in srgb, var(--kf-bg) 20%, transparent);
+}
+@media (max-width: 720px) {
+  :root { --fs: 5.5vw; --lh: 1.15; --gutter: 7px; --padding-left: calc(11px - 0.1em); --padding-top: calc(15px - 0.175em); }
+}
+html {
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  font-size: var(--fs);
+  line-height: var(--lh);
+  letter-spacing: -0.05em;
+  color: var(--kf-ink);
+}
+html, body { background: var(--kf-bg); overscroll-behavior: none; }
+body { min-height: 100vh; overflow-x: hidden; overflow-y: scroll; font: inherit; color: inherit; word-break: keep-all; }
+/* Placeholder text with -.05em letter spacing meant for Latin fonts makes letters collide — loosen only the Korean body paragraphs */
+.uu-ko { letter-spacing: -0.02em; }
+.wf-note { letter-spacing: 0; }
+img { width: 100%; }
+p { margin: 0; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+body.no-scroll main { height: 100vh; overflow: hidden; }
+.mobile-only { display: none; }
+@media (max-width: 720px) { .mobile-only { display: block; } }
+.hide { display: none !important; }
+.uu-hover { transition: color 0.2s var(--kf-ease-out), opacity 0.2s var(--kf-ease-out); }
+@media (hover: hover) and (pointer: fine) { .uu-hover:hover { color: var(--kf-dim); } }
+
+/* Photo and video slot — the original lays each photo’s representative color on the cell background and settles it in .2s once the image loads. The representative color is converted to the gray steps of the skin */
+.uu-ph.wf-img { position: absolute; inset: 0; height: 100%; border: 0; background-color: var(--ph, var(--kf-raised)); }
+.uu-ph.wf-img::after { white-space: normal; width: max-content; max-width: 88%; text-align: center; letter-spacing: 0; }
+.uu-ph.is-dark { --ph: color-mix(in oklab, var(--kf-ink) 82%, var(--kf-bg)); }
+.uu-ph.is-mid { --ph: color-mix(in oklab, var(--kf-ink) 45%, var(--kf-bg)); }
+.uu-ph.is-cool { --ph: color-mix(in oklab, var(--kf-ink) 18%, var(--kf-bg)); }
+.uu-pad { position: relative; margin: 0; padding-top: var(--r, 100%); }
+.lazy { transition: opacity 0.2s var(--kf-ease-out); }
+.lazy:not(.lazyloaded) { opacity: 0; }
+/* Video slot — plays when it enters the view (loop, muted). A thin line below fills every 6s to show it is playing */
+.uu-video::before { content: ""; position: absolute; left: 0; bottom: 0; z-index: 1; width: 0; height: 2px; background: var(--kf-bg); }
+.uu-video.is-playing::before { animation: uu-play 6s linear infinite; }
+@keyframes uu-play { to { width: 100%; } }
+
+/* ── Header menu: hidden by default, hovering the top row reveals it and the screen behind blurs through 30px glass over .2s ── */
+.menu { position: fixed; top: 0; left: 0; z-index: 10; width: 100%; height: 100%; pointer-events: none; }
+.menu-nav {
+  position: relative; z-index: 1; display: flex; justify-content: space-between; width: 100%;
+  padding: round(up, var(--padding-top), 1px) calc(var(--padding-left) + 0.075rem) 0 var(--padding-left);
+  pointer-events: auto; user-select: none;
+}
+.menu-nav a { text-decoration: none; }
+.menu:not(.menu-shown) .menu-nav a:not(.persistent) { opacity: 0; }
+.to-about .close, .to-about[data-state="close"] .title { display: none; }
+.to-about[data-state="close"] .close { display: block; }
+.overlay-background {
+  position: fixed; top: 0; left: 10px; z-index: 8; width: calc(100% - 20px); height: 100%;
+  background: var(--site-glass); backdrop-filter: blur(30px);
+  transition: all 0.2s var(--kf-ease-out);
+}
+.overlay-background.hidden { opacity: 0; pointer-events: none; }
+.placeholder-header { display: flex; justify-content: space-between; padding: round(up, var(--padding-top), 1px) calc(var(--padding-left) + 0.075rem) 0 var(--padding-left); }
+.placeholder-header .hidden { opacity: 0; }
+.placeholder-header .about-title-placeholder .close, .placeholder-header .about-title-placeholder[data-state="close"] .title { display: none; }
+.placeholder-header .about-title-placeholder[data-state="close"] .close { display: block; }
+@media (max-width: 720px) {
+  .placeholder-header { display: none; }
+  .menu { color: var(--site-flip); mix-blend-mode: difference; }
+  .menu-nav { padding: var(--padding-top) calc(var(--padding-left) + 0.075rem) var(--padding-top) var(--padding-left); }
+  .menu:not(.menu-shown) .menu-nav a { pointer-events: auto; }
+  .menu:not(.menu-shown) .menu-nav a:not(.persistent) { opacity: 1; }
+  .menu.mobile-hidden .menu-nav a, .menu.mobile-hidden:not(.menu-shown) .menu-nav a:not(.persistent) { opacity: 0; }
+}
+
+/* ── Large wordmark (two SVG letters) ── */
+.logo { width: 100%; }
+.logo svg { display: block; width: 100%; overflow: visible; }
+.logo text { font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); font-size: 190px; letter-spacing: -0.03em; fill: currentColor; }
+.common-footer { position: relative; z-index: 0; margin-top: auto; padding: calc(var(--baseMargin) * 3) 20px 0; }
+.common-footer .logo, .project-footer .logo { width: 100%; padding-bottom: 20px; overflow: hidden; }
+.common-footer .logo svg, .project-footer .logo svg { transform: translateY(17%); }
+@media (max-width: 720px) {
+  .common-footer { margin-top: calc((1em * var(--lh) + 0.25em) * 3); padding: 0 11px; }
+  .common-footer .logo, .project-footer .logo { padding-bottom: 5px; }
+  .common-footer .logo svg, .project-footer .logo svg { transform: translateY(0); }
+}
+
+/* ── About (layered panels and single page shared) ── */
+.about-inner { position: relative; }
+.about-header-sticky { position: absolute; top: 0; left: 0; z-index: 3; width: 100%; height: 100%; pointer-events: none; }
+.about-header-sticky-inner { position: relative; padding: round(up, var(--padding-top), 1px) var(--padding-left) 0; }
+.about-layout { padding: var(--baseMargin) var(--padding-left) 0; }
+.about-layout .line { display: grid; grid-template-columns: repeat(12, 1fr); grid-gap: 30px; }
+.about-layout .line:not(:first-child) { margin-top: calc(var(--baseMargin) * 2); }
+.about-layout .column { grid-column-start: span var(--span, 6); }
+.about-layout p + p { margin-top: calc(1em * var(--lh)); }
+.about-layout a { transition: color 0.2s var(--kf-ease-out), opacity 0.2s var(--kf-ease-out); }
+@media (hover: hover) and (pointer: fine) { .about-layout a:hover { color: var(--kf-dim); } }
+.about-bottom { position: relative; min-height: 100vh; margin-top: calc(1em * var(--lh) - var(--padding-top)); padding-top: round(up, var(--padding-top), 1px); }
+.about-last-text { padding: 0 var(--padding-left); }
+.about-footer { position: sticky; }
+.about-overlay { position: relative; z-index: 9; color: var(--site-flip); mix-blend-mode: difference; transform: translateZ(0); transition: opacity 0.2s var(--kf-ease-out); }
+.about-overlay.temp-hidden { opacity: 0; pointer-events: none; }
+main.fixed { position: fixed; top: 0; left: 0; width: 100%; }
+@media (max-width: 720px) {
+  .about-header-sticky { display: none; }
+  .about-layout { padding-top: calc(var(--padding-top) + var(--lh) * 1em * 2); }
+  .about-layout .line { display: block; }
+  .about-layout .line:not(:first-child) { margin-top: calc(1em * var(--lh) * 2); }
+  .about-layout .column + .column { margin-top: calc(1em * var(--lh) * 2); }
+  .about-bottom { min-height: 0; }
+  .about-footer { position: relative; }
+}
+
+/* ── Footer list: each row’s background gradient band wipes away to reveal it (fade-band-lines), and on hover the other rows fade to gray and a cover appears on the right ── */
+.index { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; padding: 0 var(--padding-left); background: var(--kf-bg); }
+.index-list { display: flex; flex-direction: column; align-items: flex-start; margin-top: calc(1em * var(--lh)); }
+.index-line { position: relative; transition: color 0.2s var(--kf-ease-out); }
+.index-line.faded, .index-line.visited { color: var(--kf-dim); }
+.index-covers { position: absolute; top: 0; right: 0; z-index: 1; width: 100%; height: 100%; padding: 10px; pointer-events: none; }
+.index-covers-inner { position: sticky; top: 10px; width: calc((100% - 10px * 11) / 12 * 5 + 10px * 4); height: calc(100vh - 20px); margin-left: auto; }
+.index-cover { position: absolute; inset: 0; transition: opacity 0.2s var(--kf-ease-out); }
+.index-cover.hidden { opacity: 0; }
+.index-cover .uu-ph { left: auto; width: var(--w, 100%); height: auto; aspect-ratio: var(--ar, 0.765); max-height: 100%; }
+.index.mobile-only { display: none; }
+@media (max-width: 720px) { .index { min-height: 0; } .index.mobile-only { display: flex; } .index-covers { display: none; } }
+
+/* ── Screensaver: after 120s without interaction a white veil covers in .4s and a pair of half-width two-column photos swaps every 2 seconds ── */
+.screensaver { position: fixed; top: 0; left: 0; z-index: 999; width: 100%; height: 100vh; padding: 25px 20px 0; background: var(--kf-bg); opacity: 0; pointer-events: none; transition: opacity 0.4s var(--kf-ease-out); }
+.screensaver.temp-shown { opacity: 1; }
+.screensaver-text { position: relative; z-index: 1; font-size: calc((100vw - 40px) * 0.1385); line-height: 0.95; letter-spacing: -0.06em; }
+.screensaver-layouts { position: absolute; inset: 0; z-index: 2; }
+.screensaver-layout { position: absolute; inset: 0; display: flex; gap: var(--gutter); padding: var(--gutter) var(--gutter) 0; }
+.screensaver-layout.hide { display: flex !important; opacity: 0; }
+.screensaver-layout .column { position: relative; width: calc(50% - var(--gutter) / 2); height: 100%; }
+@media screen and (min-aspect-ratio: 1440/750) { .screensaver .tall-only { display: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay-background, .index-line, .index-cover, .screensaver, .uu-hover, .about-overlay { transition: none !important; }
+}

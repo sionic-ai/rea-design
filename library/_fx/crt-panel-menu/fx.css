@@ -1,0 +1,103 @@
+/* Original values: on .6s cubic-bezier(.16,1,.3,1) (a 1px line and brightness 2 at 35%) · off .4s cubic-bezier(.22,.61,.36,1) (line at 60% → dot) · 
+   Noise .5s step-end · glitch .42s step-end (after .2s) · content flickers .2s after .5s · waveform light beam 3s linear (2s at 37.5rem or below) */
+[data-fx~="crt-panel-menu"] {
+  --fx-cpm-on: 0.6s;
+  --fx-cpm-off: 0.4s;
+  --fx-cpm-wave: 3s;
+  --fx-cpm-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --fx-cpm-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+[data-fx~="crt-panel-menu"] [data-fx-part="panel"] { visibility: hidden; }
+[data-fx~="crt-panel-menu"]:is(.is-open, .is-closing) [data-fx-part="panel"] { visibility: visible; }
+[data-fx~="crt-panel-menu"].is-open [data-fx-part="panel"] { animation: fx-cpm-on var(--fx-cpm-on) var(--fx-cpm-out) backwards; }
+[data-fx~="crt-panel-menu"].is-closing [data-fx-part="panel"] { animation: fx-cpm-off var(--fx-cpm-off) var(--fx-cpm-ease) both; }
+
+[data-fx~="crt-panel-menu"] [data-fx-part="noise"] {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.32;
+  background: var(--fx-grain, none) 0 0 / 16rem;
+  animation: 0.5s step-end infinite fx-cpm-grain;
+}
+[data-fx~="crt-panel-menu"] [data-fx-part="static"] {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  filter: contrast(3) brightness(1.4);
+  background: var(--fx-grain, none) 0 0 / 8rem;
+}
+[data-fx~="crt-panel-menu"].is-open [data-fx-part="static"] { animation: 0.42s step-end 0.2s both fx-cpm-static; }
+[data-fx~="crt-panel-menu"] :is([data-fx-part="channel"], [data-fx-part="body"], [data-fx-part="wave"]) { opacity: 0; }
+[data-fx~="crt-panel-menu"].is-open :is([data-fx-part="channel"], [data-fx-part="body"], [data-fx-part="wave"]) { animation: 0.2s step-end 0.5s both fx-cpm-flicker; }
+[data-fx~="crt-panel-menu"] [data-fx-part="channel-num"].is-on { animation: 0.2s step-end both fx-cpm-flicker; }
+
+[data-fx~="crt-panel-menu"] [data-fx-part="wave"] { display: block; overflow: hidden; color: var(--kf-accent); }
+[data-fx~="crt-panel-menu"] [data-fx-part="wave"].is-on { animation: 0.2s step-end both fx-cpm-flicker; }
+[data-fx~="crt-panel-menu"] [data-fx-part="wave"] path { fill: none; stroke: currentColor; stroke-linejoin: round; stroke-linecap: round; }
+[data-fx~="crt-panel-menu"] .fx-cpm-fine { stroke-width: 1.2px; }
+[data-fx~="crt-panel-menu"] .fx-cpm-slow { stroke-width: 1px; opacity: 0.45; }
+[data-fx~="crt-panel-menu"] .fx-cpm-glow { opacity: 0.35; }
+[data-fx~="crt-panel-menu"] :is(.fx-cpm-beam, .fx-cpm-new, .fx-cpm-old) { transform-box: view-box; transform-origin: 0 0; }
+[data-fx~="crt-panel-menu"] .fx-cpm-new { transform: scaleX(0); }
+[data-fx~="crt-panel-menu"].is-open .fx-cpm-beam { animation: fx-cpm-beam var(--fx-cpm-wave) linear infinite; }
+[data-fx~="crt-panel-menu"].is-open .fx-cpm-new { animation: fx-cpm-new var(--fx-cpm-wave) linear infinite; }
+[data-fx~="crt-panel-menu"].is-open .fx-cpm-old { animation: fx-cpm-old var(--fx-cpm-wave) linear infinite; }
+@media (max-width: 37.5rem) {
+  [data-fx~="crt-panel-menu"] { --fx-cpm-wave: 2s; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="crt-panel-menu"]:is(.is-open, .is-closing) [data-fx-part="panel"],
+  [data-fx~="crt-panel-menu"].is-open [data-fx-part="static"],
+  [data-fx~="crt-panel-menu"] [data-fx-part="noise"] { animation: none; }
+  [data-fx~="crt-panel-menu"].is-open :is([data-fx-part="channel"], [data-fx-part="body"], [data-fx-part="wave"]) { animation: none; opacity: 1; }
+  [data-fx~="crt-panel-menu"] .fx-cpm-glow { opacity: 0.8; }
+  [data-fx~="crt-panel-menu"] .fx-cpm-ray { display: none; }
+  [data-fx~="crt-panel-menu"] .fx-cpm-new { transform: none; }
+  [data-fx~="crt-panel-menu"].is-open :is(.fx-cpm-beam, .fx-cpm-new, .fx-cpm-old) { animation: none; }
+}
+
+@keyframes fx-cpm-on {
+  0% { clip-path: inset(50% 0); filter: brightness(3); }
+  35% { clip-path: inset(calc(50% - 1px) 0); filter: brightness(2); }
+  to { clip-path: inset(0); filter: brightness(1); }
+}
+@keyframes fx-cpm-off {
+  0% { clip-path: inset(0); filter: brightness(1); }
+  60% { clip-path: inset(calc(50% - 1px) 0); filter: brightness(2); }
+  to { clip-path: inset(calc(50% - 1px) 50%); filter: brightness(3); }
+}
+@keyframes fx-cpm-flicker {
+  0%, 39% { opacity: 1; }
+  20%, 59% { opacity: 0; }
+  60%, to { opacity: 1; }
+}
+@keyframes fx-cpm-static {
+  0% { opacity: 1; background-position: 0 0; }
+  20% { opacity: 0.9; background-position: -2.3125rem 1.3125rem; }
+  40% { opacity: 1; background-position: 3.25rem -0.875rem; }
+  60% { opacity: 0.6; background-position: -1.125rem -2.8125rem; }
+  80% { opacity: 0.85; background-position: 2.5625rem 0.5625rem; }
+  to { opacity: 0; background-position: 0 0; }
+}
+@keyframes fx-cpm-grain {
+  0% { background-position: 0 0; }
+  20% { background-position: -5.3rem 3.1rem; }
+  40% { background-position: 3.7rem -7.9rem; }
+  60% { background-position: -9.1rem -2.3rem; }
+  80% { background-position: 6.1rem 8.7rem; }
+}
+@keyframes fx-cpm-beam {
+  0% { transform: translate(0); }
+  80%, to { transform: translate(118%); }
+}
+@keyframes fx-cpm-new {
+  0% { transform: scaleX(0); }
+  67.8%, to { transform: scaleX(1); }
+}
+@keyframes fx-cpm-old {
+  0% { transform: translate(0); }
+  67.8%, to { transform: translate(100%); }
+}

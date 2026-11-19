@@ -1,0 +1,112 @@
+/* Home page: the full-screen video of the month is cropped at the sides and bottom as you scroll and shrinks into a frame (background goes night → paper), 
+   Vertical month name at frame center → thin vertical line → vertical title and three-column essay → footer. */
+
+.tw-fv__frame, .tw-fv__texts {
+  position: fixed; left: 0; top: calc(50% - 20.84vw); width: 100%;
+  will-change: transform; pointer-events: none;
+}
+/* After scrolling one full screen, it sticks at document position screen height + 380px */
+.tw-fv__frame.is-fixed, .tw-fv__texts.is-fixed { position: absolute; top: calc(var(--fv-scroll-area-height, 100vh) + 380px); transform: none !important; }
+.tw-fv__frame { z-index: 1; }
+/* The outer frame (--fv-wrapper-video-scale) crops an equal share from both sides and two shares from the bottom to keep the ratio, 
+   The video inside (--fv-video-scale) is given separately, later, from the top. In fullscreen the video scale is turned off (--fullscreen-flg) */
+.tw-fv__clip {
+  --fv-video-scale: 1; --fv-wrapper-video-scale: 1;
+  position: relative; width: 100%; aspect-ratio: 1920 / 800; overflow: hidden; background: var(--kf-contrast-bg);
+  clip-path: polygon(
+    calc(100% * (1 - var(--fv-wrapper-video-scale)) / 2) 0, calc(100% - 100% * (1 - var(--fv-wrapper-video-scale)) / 2) 0,
+    calc(100% - 100% * (1 - var(--fv-wrapper-video-scale)) / 2) calc(100% * var(--fv-wrapper-video-scale)), calc(100% * (1 - var(--fv-wrapper-video-scale)) / 2) calc(100% * var(--fv-wrapper-video-scale))
+  );
+}
+.tw-fv__video {
+  position: absolute; inset: 0; height: 100%; border: 0; transform-origin: top center; will-change: transform;
+  transform: scale(calc(var(--fv-video-scale) + (1 - var(--fv-video-scale)) * var(--fullscreen-flg, 0)));
+}
+.tw-fv__clip:fullscreen { clip-path: none; aspect-ratio: auto; }
+
+.tw-fv__texts {
+  z-index: 2; display: flex; justify-content: center; align-items: center;
+  height: calc(41.6667vw - var(--tw-pad) / 1.2);
+}
+.tw-fv__date { display: flex; flex-direction: column; align-items: center; }
+.tw-fv__en, .tw-fv__ja {
+  display: block; writing-mode: vertical-rl; color: var(--kf-on-accent); opacity: 0; letter-spacing: .8em; transform: translateY(90px);
+  transition: opacity .5s var(--site-ease-sine), transform .5s var(--site-ease-sine), letter-spacing .5s var(--site-ease-sine) .5s;
+}
+.tw-fv__en { font-size: 12px; }
+.tw-fv__ja { margin-top: 20px; font: 300 60px/1 var(--kf-font-display); }
+.tw-fv__texts.is-text .tw-fv__en, .tw-fv__texts.is-text .tw-fv__ja {
+  opacity: 1; letter-spacing: 0; transform: none;
+  transition: opacity 1.8s var(--site-ease-fade), transform 1.8s var(--kf-ease-out), letter-spacing 1.8s var(--kf-ease-out);
+}
+.tw-fv__texts.is-text .tw-fv__ja { transition-delay: .1s; }
+.tw-fv__line {
+  position: absolute; top: calc(41.6667vw - var(--tw-pad) / 1.2 - min(var(--tw-w) / 10.6667, 120px) / 2); left: calc(50% - .25px); z-index: 2;
+  width: .5px; height: min(var(--tw-w) / 10.6667, 120px); background: var(--kf-contrast-ink);
+  transform: scaleY(0); transform-origin: top; transition: transform .25s var(--site-ease-sine);
+}
+.tw-fv__texts.is-line .tw-fv__line { transform: scaleY(1); transition-delay: .2s; }
+
+/* Thin white line flowing down from the bottom center of the Hero */
+.tw-fv__hint { position: fixed; top: calc(100vh - 40px); left: calc(50% - .25px); z-index: 3; width: .5px; height: 40px; opacity: 0; pointer-events: none; }
+.tw-fv__hint::after { content: ""; position: absolute; inset: 0; background: var(--kf-on-accent); transform: scaleY(0); }
+.tw-fv__hint.is-active::after { animation: tw-hint 3.5s var(--site-ease-sine) .5s infinite; }
+@keyframes tw-hint {
+  0% { transform: scaleY(0); transform-origin: top; }
+  45% { transform: scaleY(1); transform-origin: top; }
+  55% { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+
+/* ---------- Essay ---------- */
+.tw-essay { position: relative; z-index: 2; padding: 0 var(--tw-in); }
+.tw-essay__title-wrap { display: flex; justify-content: center; padding-top: 120px; }
+.tw-essay__title {
+  color: var(--kf-ink); writing-mode: vertical-rl; font: 300 40px/1 var(--kf-font-display); letter-spacing: .32em;
+  transition: opacity 1.8s var(--site-ease-fade), transform 1.8s var(--kf-ease-out), letter-spacing 2s var(--kf-ease-out);
+}
+.tw-essay__title.show { letter-spacing: .12em; }
+.tw-essay__text {
+  margin-top: 88px; column-count: 3; column-gap: calc(var(--tw-w) / 23.2727);
+  color: var(--kf-ink); font: 300 15px/28px var(--kf-font-display); letter-spacing: .1em; text-align: justify;
+}
+.tw-essay__text p + p { text-indent: 1em; }
+.tw-essay__notes { margin-top: 110px; text-align: center; }
+.tw-essay__note-en { color: var(--site-ink-38); font-size: 10px; letter-spacing: .04em; }
+.tw-essay__note { margin-top: 18px; color: var(--site-ink-26); font-size: 10px; line-height: 1.7; }
+.tw-essay__credit { margin-top: 44px; text-align: center; }
+.tw-essay__credit-ja { color: var(--kf-ink); font: 300 13px/26px var(--kf-font-display); letter-spacing: .1em; }
+.tw-essay__credit-ja small { font-size: 10px; }
+.tw-essay__credit-en { margin-top: 16px; color: var(--site-ink-63); font-size: 9px; line-height: 1.8; }
+
+@media (min-width: 768px) and (max-width: 1280px) {
+  .tw-fv__en { font-size: calc(var(--tw-w) / 106.667); }
+  .tw-fv__ja { font-size: calc(var(--tw-w) / 21.3333); }
+  .tw-essay__title { font-size: calc(var(--tw-w) / 32); }
+}
+@media (min-width: 768px) and (max-width: 960px) { .tw-essay__text { column-count: 2; } }
+
+@media (max-width: 767px) {
+  .tw-fv__frame, .tw-fv__texts { top: 16.2304%; }
+  .tw-fv__frame.is-fixed, .tw-fv__texts.is-fixed { top: calc(var(--fv-scroll-area-height, 100vh) + 180px); }
+  .tw-fv__clip { aspect-ratio: 1; }
+  /* On phone, a 12:5 video is attached at the top, then cropped in the center at 2.41x to fill a square */
+  .tw-fv__video video { object-fit: contain; object-position: top center; transform: scale(2.41); transform-origin: top center; }
+  .tw-fv__texts { height: 80vw; }
+  .tw-fv__en { font-size: 1.6vw; }
+  .tw-fv__ja { margin-top: 2.67vw; font-size: 9.33vw; }
+  .tw-fv__line { top: 72vw; height: 16vw; }
+  .tw-fv__hint { top: calc(94.67vw + 16.2304%); height: 10.67vw; }
+  .tw-essay { padding: 0 10vw; }
+  .tw-essay__title-wrap { padding-top: 16vw; }
+  .tw-essay__title { font-size: 5.6vw; }
+  .tw-essay__text { margin-top: 10.67vw; column-count: 1; font-size: 3.2vw; line-height: 5.33vw; letter-spacing: .065em; }
+  .tw-essay__notes { margin-top: 16vw; }
+  .tw-essay__note-en, .tw-essay__note { font-size: 2.4vw; }
+  .tw-essay__credit { margin-top: 10vw; }
+  .tw-essay__credit-ja { font-size: 3.2vw; line-height: 5.6vw; }
+  .tw-essay__credit-en { font-size: 2.4vw; }
+}
+
+/* Video slot label moves lower so it doesn’t cover the month name */
+.tw-fv__video.wf-img::after { top: auto; bottom: 14px; translate: -50% 0; z-index: 2; }

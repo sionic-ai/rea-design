@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tear-sheet-page — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .demo { padding: 48px 20px; }
+  .demo-spacer { height: 90vh; display: grid; place-items: center; color: var(--kf-dim); }
+  .row { display: flex; gap: 24px; font: 13px var(--kf-font-mono); } .row a, .row button { color: var(--kf-accent); background: none; border: 0; cursor: pointer; font: inherit; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>tear-sheet-page</b> — Click ‹Next page› and a light panel tears into pieces and fills up from the bottom to cover, then navigates (returning to the same demo), and on the arriving page it lifts the same way upward. ‹Cover with event› covers with an fx:tear event like barba and lifts after 1 second.</p>
+<main data-fx="tear-sheet-page"><section class="demo row" data-fx-part="hide"><a href="demo.html?next">[ Next Page ]</a><button type="button" data-ev>[ Cover it with an incident ]</button></section>
+<div class="demo-spacer">Body slot</div><div class="demo-spacer">Very bottom</div></main>
+<script>
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-ev]");
+  if (!b) return;
+  const root = b.closest('[data-fx~="tear-sheet-page"]');
+  root.dispatchEvent(new CustomEvent("fx:tear", { detail: { phase: "cover", done: () => setTimeout(() => root.dispatchEvent(new CustomEvent("fx:tear", { detail: { phase: "clear" } })), 1000) } }));
+});
+// Late arrivals and removals — checks that fx-core attaches to an element added after 1s and detaches from an element removed after 2.5s
+(() => {
+  const src = document.querySelector('[data-fx~="tear-sheet-page"]');
+  if (!src) return;
+  const html = src.outerHTML.replace(/\sid="[^"]*"/g, "");
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = html; const el = t.content.firstElementChild; el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => src.after(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1s another identical one comes in (the late arrival), and after 2.5s one drops out (the detach).");
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

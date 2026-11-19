@@ -1,0 +1,217 @@
+/* The document is a single non-scrolling screen — the canvas lies at the bottom and the HUD (wordmark · menu · four-corner text) floats above it. 
+   Dark panels (journal, articles, legal notices) flip ink and background with body.is-dark. */
+:root {
+  --site-ink: var(--kf-ink);
+  --site-panel: color-mix(in oklab, var(--kf-contrast-bg) 96%, var(--kf-contrast-ink));
+  --site-panel-ink: var(--kf-contrast-ink);
+  --site-panel-rule: color-mix(in oklab, var(--kf-contrast-ink) 14%, transparent);
+  --site-veil: color-mix(in oklab, var(--kf-contrast-bg) 10%, transparent);
+  --site-film: color-mix(in oklab, var(--kf-ink) 92%, var(--kf-bg));
+  --site-film-print: color-mix(in oklab, var(--kf-bg) 85%, var(--kf-ink));
+  --site-hud: 11px;
+}
+
+html, body { height: 100%; }
+body.hc {
+  margin: 0;
+  background: var(--kf-bg);
+  color: var(--site-ink);
+  font-family: var(--kf-font-sans);
+  overflow: hidden;
+}
+body.hc.is-dark {
+  --site-ink: var(--kf-contrast-ink);
+  background: var(--kf-contrast-bg);
+}
+/* The original is a single app, so whichever URL opens, a light background paints first, then a black loader panel is attached, and then the dark panel is revealed — same order */
+body.hc.is-dark:not(.is-booted) { background: var(--kf-bg); }
+body.hc.is-dark:not(.is-booted) .hc-page { visibility: hidden; }
+.hc-app { position: fixed; inset: 0; touch-action: none; -webkit-tap-highlight-color: transparent; }
+.hc-app canvas { display: block; width: 100%; height: 100%; }
+.hc-mono {
+  font-family: var(--kf-font-mono);
+  font-size: var(--site-hud);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.hc a:focus-visible, .hc button:focus-visible { outline: 1px solid var(--site-ink); outline-offset: 4px; }
+
+/* ── HUD ─────────────────────────────────── */
+.hc-hud { position: fixed; inset: 0; z-index: 30; pointer-events: none; color: var(--site-ink); opacity: 0; transition: color 0.5s; }
+body.is-ready .hc-hud { opacity: 1; transition: color 0.5s, opacity 0.9s; }
+.hc-hud > * { pointer-events: auto; }
+.hc-mark {
+  position: fixed;
+  top: 25px;
+  left: 34px;
+  font-family: var(--kf-font-display);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: inherit;
+}
+.hc-count { position: fixed; bottom: 26px; left: 34px; }
+.hc-pose { position: fixed; bottom: 26px; right: 34px; }
+.hc-hud .hc-count, .hc-hud .hc-pose { pointer-events: none; transition: opacity 0.4s; }
+
+/* Text roll: two copies of the same text stacked, on hover they move up half a line */
+.hc-roll { display: inline-flex; }
+.hc-roll__clip { display: inline-block; height: 1.15em; overflow: hidden; }
+.hc-roll__in { display: block; transition: translate 0.24s cubic-bezier(0.35, 0.7, 0.25, 1); }
+.hc-roll__in > span { display: block; height: 1.15em; line-height: 1.15; white-space: pre; }
+a:hover > .hc-roll .hc-roll__in, a:focus-visible > .hc-roll .hc-roll__in { translate: 0 -50%; }
+
+/* ── Menu ─────────────────────────────────── */
+.hc-menu-btn {
+  position: fixed;
+  top: 18px;
+  right: 26px;
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--kf-accent);
+  cursor: pointer;
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.3, 0.7, 0.2, 1.2), opacity 0.9s, background-color 0.45s;
+}
+body.is-ready .hc-menu-btn { opacity: 1; }
+.hc-menu-btn:hover { transform: scale(1.07); }
+.hc-menu-btn i {
+  display: block;
+  width: 17px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--kf-on-accent);
+  transition: transform 0.35s cubic-bezier(0.6, 0.05, 0.2, 1), background-color 0.45s;
+}
+.hc-menu-btn[aria-expanded="true"] i:first-child { transform: translateY(4px) rotate(45deg); }
+.hc-menu-btn[aria-expanded="true"] i:last-child { transform: translateY(-4px) rotate(-45deg); }
+body.is-dark .hc-menu-btn { background: var(--kf-on-accent); }
+body.is-dark .hc-menu-btn i { background: var(--kf-accent); }
+
+.hc-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  background: var(--site-veil);
+  -webkit-backdrop-filter: blur(0);
+  backdrop-filter: blur(0);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s, backdrop-filter 0.45s, -webkit-backdrop-filter 0.45s;
+}
+.hc-veil.is-open { opacity: 1; pointer-events: auto; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.hc-menu {
+  position: fixed;
+  top: 78px;
+  right: 26px;
+  z-index: 50;
+  width: 236px;
+  padding: 34px 32px;
+  border-radius: var(--kf-radius-md);
+  background: var(--site-panel);
+  box-shadow: var(--kf-shadow-lift);
+  color: var(--site-panel-ink);
+  visibility: hidden;
+}
+.hc-menu a { display: flex; align-items: center; padding: 13px 0; color: inherit; font-size: 13px; letter-spacing: 0.2em; }
+.hc-menu__tick { display: inline-block; width: 1.2em; opacity: 0; transition: opacity 0.3s; }
+.hc-menu a[aria-current="page"] .hc-menu__tick { opacity: 1; }
+.hc-menu__legal { display: flex; gap: 18px; margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--site-panel-rule); }
+.hc-menu__legal a, .hc-menu a.hc-menu__sign { padding: 0; font-size: 10px; letter-spacing: 0.16em; opacity: 0.5; transition: opacity 0.25s; }
+.hc-menu a.hc-menu__sign { padding-top: 12px; }
+.hc-menu__legal a:hover, .hc-menu a.hc-menu__sign:hover { opacity: 1; }
+
+/* ── Loader (iris) ─────────────────────────── */
+/* Original draws the light background first and attaches the black loader panel when the script runs — in the same order */
+.hc-loader { position: fixed; inset: 0; z-index: 80; display: none; background: var(--kf-contrast-bg); }
+.hc-loader.is-on { display: block; }
+.hc-loader canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hc-loader.is-opening { background: transparent; }
+body.is-ready .hc-loader { pointer-events: none; }
+
+/* ── Page transition (like a film advancing one frame) ─────────── */
+.hc-advance { position: fixed; inset: 0; z-index: 70; pointer-events: none; visibility: hidden; }
+.hc-advance__gate { position: absolute; left: 0; right: 0; height: 11vh; background: var(--kf-contrast-bg); }
+
+/* ── Photo slots (used outside the canvas) ────────── */
+.hc-photo.wf-img { border: 0; background-color: var(--site-film-print); }
+
+@media (max-width: 700px) {
+  .hc-pose { display: none; }
+  .hc-menu-btn { top: 12px; right: 14px; }
+  .hc-menu { top: 68px; right: 14px; width: min(300px, calc(100vw - 28px)); }
+  .hc-mark { top: 24px; left: 18px; }
+  .hc-count { left: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hc-roll__in, .hc-menu-btn, .hc-menu-btn i, .hc-veil { transition: none; }
+}
+
+/* ── Inner panel (journal · article · legal notice) — the document stays one screen tall and scrolls inside the panel (the original also uses a document height of 900) ── */
+.hc-page {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  color: var(--site-ink);
+}
+.hc-page::-webkit-scrollbar { display: none; }
+.hc-inner { padding: 0 34px; }
+.hc-print-layer { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+.hc-print-layer canvas { display: block; width: 100%; height: 100%; }
+[data-print] { position: relative; }
+.hc-grid4 { display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 28px; }
+.hc-small { font-size: clamp(13px, 1vw, 18px); line-height: 1.34; letter-spacing: 0.02em; text-transform: uppercase; }
+.hc-dim { opacity: 0.55; }
+@media (max-width: 700px) { .hc-inner { padding: 0 18px; } }
+
+/* Document panels (journal · posts · legal notice) scroll like the original — journal 8.4 · posts 3.5~4.5 · legal notice 3~3.5 screens */
+html:has(body.is-scroll), body.hc.is-scroll { height: auto; overflow: visible; }
+.is-scroll .hc-page { position: relative; inset: auto; overflow: visible; }
+
+/* Cursor — only on bright panels (strips, photo paper): an 8px ink dot follows at 10 per second, and over photos a 140px empty ring plus the slot number */
+.hc-cursor { position: fixed; left: 0; top: 0; z-index: 50; pointer-events: none; transition: opacity 0.2s; }
+.hc-cursor.is-hidden { opacity: 0; }
+.hc-cursor__ring {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid var(--kf-ink);
+  border-radius: 50%;
+  background: var(--kf-ink);
+  translate: -50% -50%;
+  transition: width 0.28s, height 0.28s, background-color 0.28s;
+}
+.hc-cursor.is-loupe .hc-cursor__ring { width: 140px; height: 140px; background: transparent; }
+.hc-cursor__label {
+  position: absolute;
+  left: 0;
+  top: 14px;
+  translate: -50% 0;
+  font-family: var(--kf-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--kf-ink);
+  opacity: 0;
+  transition: opacity 0.25s, top 0.28s;
+}
+.hc-cursor.is-loupe .hc-cursor__label { opacity: 1; top: 82px; }
+.hc-app.has-cursor { cursor: none !important; }
+body.is-dark .hc-cursor { display: none; }

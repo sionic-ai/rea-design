@@ -1,0 +1,147 @@
+/* Shared by all pages: a thin text-line header (hides upward on scroll down, returns in .8s on scroll up), a large wordmark on the right,
+   Drawer sliding in from the right (cart, subscription), expanded menu curtain, large wordmark footer, drag-to-flip photo strip */
+:root {
+  --pad: 1.5rem;
+  --bar-h: 4.4rem;
+  --site-veil: color-mix(in oklab, var(--kf-raised) 85%, transparent);
+  --site-half: color-mix(in oklab, var(--kf-bg) 50%, transparent);
+  --site-shade: color-mix(in oklab, var(--kf-ink) 35%, transparent);
+}
+html { font-size: 15px; }
+@media (min-width: 768px) { html { font-size: 13.99687px; } :root { --bar-h: 4.4rem; } }
+@media (min-width: 768px) and (max-width: 959px) { html { font-size: 11px; } }
+@media (min-width: 1494px) { html { font-size: 0.9375vw; } }
+@media (min-width: 1707px) { html { font-size: 16.00313px; } }
+@media (max-width: 767px) { :root { --pad: 15px; --bar-h: 3.8rem; } }
+
+html.r-wait body { opacity: 0; }
+body { font-family: var(--kf-font-sans); font-weight: var(--kf-weight-body); color: var(--kf-ink); background: var(--kf-bg); word-break: keep-all; }
+h1, h2, h3, h4, h5, h6 { font-weight: inherit; font-size: inherit; }
+button { background: none; border: 0; padding: 0; color: inherit; cursor: pointer; font: inherit; }
+[hidden] { display: none !important; }
+.no-touch a:hover, .r-hover:hover { opacity: 0.6; }
+
+/* Text size steps — original Messina size chart */
+.r-t-body { font-size: 1.2667rem; line-height: 1.2; letter-spacing: -0.03em; }
+.r-t-cap { font-size: 1.3333rem; font-weight: 500; line-height: 24px; }
+.r-t-head { font-size: 1.9333rem; font-weight: 500; line-height: 35px; letter-spacing: -1px; }
+.r-t-title { font-size: 4.3333rem; line-height: 1; }
+.r-t-small { font-size: 12px; line-height: 1.3; }
+@media (max-width: 767px) {
+  .r-t-body { font-size: 1.1rem; }
+  .r-t-cap { font-size: 0.7333rem; line-height: 13.2px; }
+  .r-t-head { font-size: 1rem; line-height: 18px; letter-spacing: 0; }
+  .r-t-title { font-size: 2rem; }
+}
+
+/* ── Header ── */
+.r-bar-gap { height: var(--bar-h); }
+.r-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; justify-content: space-between; align-items: center;
+  height: var(--bar-h); padding: 0 var(--pad);
+  background: var(--kf-bg);
+  font-size: 1.2667rem; line-height: 1.2em; letter-spacing: -0.03em;
+}
+/* When the drawer opens, the header-row background clears in .8s (original header-toolbar-desktop background-color .8s) — in line with the hidden part’s sliding transition */
+.r-bar[data-fx~="hide-on-scroll"][data-fx-hide-on-scroll] { transition: transform 0.8s ease, background-color 0.8s ease; }
+html.is-panel .r-bar { background-color: transparent; }
+.r-bar__links, .r-bar__right { display: flex; align-items: center; column-gap: 0.75em; }
+.r-bar__links a.is-here { text-decoration: underline; text-underline-offset: 0.2em; }
+.r-bar__lang { display: inline-flex; margin-left: 0.35em; }
+.r-bar__lang button { margin-left: 0.35em; }
+.r-bar__lang button.is-on { opacity: 0.2; pointer-events: none; }
+/* Login waits .5s like the original, then fades over .5s */
+.r-bar .r-login { transition: opacity 0.5s 0.5s; }
+.r-carousel__nav .is-next { order: 2; }
+.r-bar__burger { display: none; width: 1.5em; height: 1.5em; }
+.r-bar__burger svg { width: 100%; height: 100%; }
+@media (max-width: 767px) {
+  .r-bar__links, .r-bar__right > :not(.r-bar__burger):not(.r-cart-open) { display: none; }
+  .r-bar__burger { display: block; width: 1.2em; height: 1.2em; font-size: 1.6667rem; }
+  .r-bar { transition: background-color 0.3s, opacity 0.3s; }
+}
+
+/* Big wordmark — slot for the original logo art (our text placeholder) */
+.r-word { font-family: var(--kf-font-display); font-weight: 500; letter-spacing: -0.04em; line-height: 0.9; }
+.r-logo { display: flex; justify-content: flex-end; padding: 0 var(--pad); margin-bottom: var(--pad); }
+.r-logo .r-word { font-size: 6.4rem; }
+@media (max-width: 767px) { .r-logo { justify-content: flex-start; padding: calc(var(--pad) * 2) var(--pad) var(--pad); } .r-logo .r-word { font-size: 3.4rem; } }
+
+/* ── Expanded menu curtain: translucent white curtain .4s, inner text .4s later over .7s — on close the text goes off first and the curtain follows .7s later ── */
+.r-menu {
+  position: fixed; inset: 0; z-index: 99; overflow-y: auto;
+  background: var(--site-half); opacity: 0; pointer-events: none;
+  transition: opacity 0.4s 0.7s;
+}
+.r-menu > * { opacity: 0; transition: opacity 0.7s 0s; }
+html.is-menu .r-menu { opacity: 1; pointer-events: auto; transition-delay: 0s; }
+html.is-menu .r-menu > * { opacity: 1; transition-delay: 0.4s; }
+.r-menu__top { display: flex; justify-content: space-between; align-items: center; height: var(--bar-h); padding: 0 var(--pad); }
+.r-menu__links { display: grid; grid-template-columns: repeat(4, 1fr); column-gap: var(--pad); padding: 2rem var(--pad) 0; font-size: 2.2rem; line-height: 1.2em; }
+.r-menu__links a { display: block; }
+.r-menu__links a.is-here { opacity: 0.6; }
+.r-menu .r-foot { position: absolute; left: 0; right: 0; bottom: 0; }
+@media (max-width: 767px) {
+  .r-menu { background: var(--kf-bg); }
+  .r-menu__links { grid-template-columns: 1fr; width: 87.5%; }
+  .r-menu .r-foot { position: static; margin-top: 4rem; }
+}
+
+/* ── Right drawer: slides in from outside 100% in .5s, the back film (.85) in .4s, the close arrow .5s later for .5s ── */
+.r-escape { position: fixed; inset: 0; z-index: 98; background: var(--site-veil); opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+html.is-panel .r-escape { opacity: 1; pointer-events: auto; }
+.r-panel {
+  position: fixed; top: 0; bottom: 0; z-index: 99; width: 100%; left: 0;
+  padding: var(--pad); background: var(--kf-bg);
+  transform: translate3d(100.1%, 0, 0); opacity: 0; visibility: hidden; pointer-events: none;
+  transition: transform 0.5s, visibility 0.5s;
+}
+.r-panel.is-open { transform: translate3d(0, 0, 0); opacity: 1; visibility: visible; pointer-events: auto; }
+.r-panel__close { position: absolute; top: var(--pad); left: var(--pad); width: 1.2em; height: 1.2em; font-size: 1.6667rem; opacity: 0; transition: opacity 50ms; }
+.r-panel.is-open .r-panel__close { opacity: 1; transition: opacity 0.5s 0.5s; }
+.r-panel__close svg { width: 100%; height: 100%; }
+.r-panel__body { padding-top: calc(var(--bar-h) + var(--pad)); display: flex; flex-direction: column; row-gap: 1.2rem; height: 100%; }
+.r-panel__body.is-empty { align-items: center; justify-content: center; padding-top: 0; }
+.r-panel__field { border: 0; border-bottom: 1px solid var(--kf-ink); padding: 0.6em 0; font: inherit; background: none; color: inherit; }
+.r-panel__btn { padding: 1em 0.25em; border: 1px solid var(--kf-ink); text-align: center; }
+@media (min-width: 768px) { .r-panel { width: 39rem; left: calc(100% - 39rem); } }
+
+/* ── Photo Slot ── */
+.r-img { position: relative; overflow: hidden; background: var(--kf-surface); }
+.r-img .wf-img { position: absolute; inset: 0; height: 100%; border: 0; }
+.r-sq { padding-top: 100%; }
+.r-cap { padding-top: 1em; }
+.r-cap__head { margin: 0 0 0.5em; }
+@media (max-width: 767px) { .r-cap { padding-top: 0.75em; } .r-cap__head { margin-bottom: 0.75em; } }
+
+/* ── Drag-through photo strip (attract-carousel part rebuilt from the original Flickity physics) ── */
+.r-carousel { position: relative; }
+.r-carousel__nav { position: absolute; top: calc(100% + var(--pad)); right: var(--pad); display: flex; column-gap: 26px; }
+.r-carousel__nav button { width: 24px; height: 24px; }
+.r-carousel__nav button:disabled { opacity: 0.3; cursor: default; }
+.r-carousel__nav svg { width: 100%; height: 100%; }
+
+/* ── Footer ── */
+.r-foot { padding: 0 var(--pad) var(--pad); font-size: 12px; line-height: 1.2; }
+.r-foot__mark { margin-bottom: 1rem; }
+.r-foot__mark .r-word { font-size: 4.2rem; }
+.r-foot__text { line-height: 1.3; }
+.r-foot__col { margin-bottom: 1rem; }
+.r-foot__col p { margin: 0; }
+.r-foot__social { display: flex; align-items: flex-end; justify-content: flex-end; column-gap: 10px; }
+.r-foot__social a { display: block; width: 16px; height: 16px; }
+.r-foot__social svg { width: 100%; height: 100%; }
+@media (min-width: 768px) {
+  .r-foot { display: flex; flex-direction: column; justify-content: space-between; margin-top: 10rem; }
+  .r-foot__mark { width: 25%; margin: 0; }
+  .r-foot__text { display: flex; justify-content: flex-start; padding-top: 2rem; }
+  .r-foot__col { margin: 0 3rem 0 0; }
+  .r-foot__social { margin: 0 0 0 auto; }
+}
+.r-bar a:hover, .r-bar button:hover:not(.is-on), .r-menu a:hover, .r-carousel__nav button:hover { opacity: 0.6; }
+.r-foot a.is-here { opacity: 0.6; }
+
+@media (prefers-reduced-motion: reduce) {
+  .r-menu, .r-menu > *, .r-panel, .r-panel__close, .r-escape, .r-bar { transition: none !important; }
+}

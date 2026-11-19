@@ -1,0 +1,167 @@
+/* The original is a one-screen 3D world instead of a page — the document is pinned to the screen so it does not scroll, leaving only overlay UI (loader · sound · joystick · notices). */
+/* All colors in the world are made from the skin — relative colors where the current skin yields the original values (sky #659fdd→#161a38, grass #55da86, rock #363d98 …) as they are, and
+   index.js uses MF.color("<Name>") computed values are read and painted onto materials · lights · canvas. Changing the skin changes the island color too */
+:root {
+  --site-sky-top: oklch(from var(--kf-bg) calc(l + 0.4565) calc(c + 0.0528) calc(h - 24.05));
+  --site-sky-bottom: var(--kf-bg);
+  --site-ease-fade: cubic-bezier(0.08, 0.82, 0.17, 1);
+  --site-grass: oklch(from var(--kf-accent) calc(l - 0.0116) calc(c + 0.0596) calc(h - 70.26));
+  --site-grass-side: oklch(from var(--kf-accent) calc(l - 0.1307) calc(c + 0.0150) calc(h - 60.50));
+  --site-rock: oklch(from var(--kf-bg) calc(l + 0.1785) calc(c + 0.0891) calc(h - 0.68));
+  --site-rock-dark: oklch(from var(--kf-bg) calc(l + 0.1049) calc(c + 0.0716) calc(h - 1.00));
+  --site-wood: oklch(from var(--kf-bg) calc(l + 0.3264) calc(c + 0.0806) calc(h - 1.82));
+  --site-wood-dark: oklch(from var(--kf-bg) calc(l + 0.1944) calc(c + 0.0620) calc(h - 0.40));
+  --site-fence: oklch(from var(--kf-bg) calc(l + 0.2434) calc(c + 0.0843) calc(h - 4.33));
+  --site-cap: oklch(from var(--kf-ink-soft) calc(l - 0.3510) calc(c + 0.1417) calc(h - 51.50));
+  --site-stone: oklch(from var(--kf-bg) calc(l + 0.5164) calc(c + 0.0475) calc(h - 0.12));
+  --site-wall: oklch(from var(--kf-bg) calc(l + 0.2277) calc(c + 0.1034) calc(h - 3.90));
+  --site-wall-dark: oklch(from var(--kf-bg) calc(l + 0.1380) calc(c + 0.0745) calc(h - 3.03));
+  --site-roof: oklch(from var(--kf-bg) calc(l + 0.1182) calc(c + 0.0587) calc(h + 56.53));
+  --site-trim: oklch(from var(--kf-ink-soft) calc(l - 0.3510) calc(c + 0.1417) calc(h - 51.50));
+  --site-pine: oklch(from var(--kf-accent) calc(l - 0.0858) calc(c + 0.0326) calc(h - 62.80));
+  --site-pine-2: oklch(from var(--kf-accent) calc(l - 0.1794) calc(c - 0.0057) calc(h - 43.24));
+  --site-trunk: oklch(from var(--kf-bg) calc(l + 0.1666) calc(c + 0.0472) calc(h + 17.26));
+  --site-crystal: oklch(from var(--kf-bg) calc(l + 0.6719) calc(c - 0.0113) calc(h - 12.73));
+  --site-well: oklch(from var(--kf-bg) calc(l + 0.3467) calc(c + 0.1182) calc(h - 13.79));
+  --site-metal: oklch(from var(--kf-bg) calc(l + 0.0812) calc(c + 0.0289) calc(h + 0.57));
+  --site-post: oklch(from var(--kf-ink-soft) calc(l - 0.3698) calc(c + 0.1186) calc(h - 53.40));
+  --site-night-fog: oklch(from var(--kf-bg) calc(l + 0.2669) calc(c + 0.1233) calc(h - 6.14));
+  --site-cloud-far: oklch(from var(--kf-bg) calc(l + 0.3677) calc(c + 0.0909) calc(h - 4.83));
+  --site-hemi-sky: oklch(from var(--kf-bg) calc(l + 0.4755) calc(c + 0.0959) calc(h + 0.36));
+  --site-hemi-ground: oklch(from var(--kf-bg) calc(l + 0.0564) calc(c + 0.0523) calc(h - 0.87));
+  --site-moon: oklch(from var(--kf-bg) calc(l + 0.5615) calc(c + 0.0472) calc(h + 0.72));
+  --site-window-glow: oklch(from var(--kf-ink-soft) calc(l - 0.1867) calc(c + 0.1414) calc(h - 58.12));
+  --site-forge: oklch(from var(--kf-ink-soft) calc(l - 0.2257) calc(c + 0.1620) calc(h - 21.95));
+  --site-spark: oklch(from var(--kf-ink-soft) calc(l - 0.1545) calc(c + 0.1209) calc(h - 5.20));
+  --site-crystal-glow: oklch(from var(--kf-bg) calc(l + 0.3995) calc(c + 0.1396) calc(h - 5.62));
+  --site-water: oklch(from var(--kf-bg) calc(l + 0.5653) calc(c + 0.0518) calc(h - 29.70));
+  --site-water-glow: oklch(from var(--kf-bg) calc(l + 0.4183) calc(c + 0.1303) calc(h - 17.21));
+  --site-lamp-core: oklch(from var(--kf-ink-soft) calc(l - 0.1493) calc(c + 0.1190) calc(h - 64.97));
+  --site-lamp-halo: oklch(from var(--kf-ink-soft) calc(l - 0.1992) calc(c + 0.1595) calc(h - 62.97));
+  --site-lamp-light: oklch(from var(--kf-ink-soft) calc(l - 0.2270) calc(c + 0.1784) calc(h - 58.73));
+  --site-board: oklch(from var(--kf-bg) calc(l + 0.0333) calc(c + 0.0242) calc(h + 1.15));
+  --site-rune-line: oklch(from var(--kf-ink-soft) calc(l - 0.0343) calc(c + 0.0568) calc(h + 15.80));
+  --site-rune-glow: oklch(from var(--kf-ink-soft) calc(l - 0.0990) calc(c + 0.0985) calc(h + 8.60));
+  --site-sign-glow: oklch(from var(--kf-ink-soft) calc(l - 0.0924) calc(c + 0.0757) calc(h - 3.55));
+  --site-key-board: oklch(from var(--kf-bg) calc(l + 0.0847) calc(c + 0.0325) calc(h + 5.54));
+  --site-key-line: oklch(from var(--kf-bg) calc(l + 0.3417) calc(c + 0.0477) calc(h + 19.60));
+  --site-shot-fill: oklch(from var(--kf-ink) calc(l - 0.0823) calc(c + 0.0054) calc(h + 106.50));
+  --site-shot-line: oklch(from var(--kf-ink) calc(l - 0.1469) calc(c + 0.0068) calc(h + 106.54));
+  --site-shot-ink: oklch(from var(--kf-ink) calc(l - 0.5161) calc(c + 0.0078) calc(h + 106.69));
+  --site-plate-light: oklch(from var(--kf-accent) calc(l - 0.0372) calc(c + 0.0920) calc(h - 73.97));
+  --site-beast: oklch(from var(--kf-ink-soft) calc(l - 0.1671) calc(c + 0.0854) calc(h - 1.63));
+  --site-beast-tail: oklch(from var(--kf-ink-soft) calc(l - 0.0488) calc(c + 0.0327) calc(h + 8.66));
+  --site-cloth: oklch(from var(--kf-bg) calc(l + 0.3982) calc(c + 0.1013) calc(h - 14.23));
+  --site-cloth-dark: oklch(from var(--kf-bg) calc(l + 0.2034) calc(c + 0.0841) calc(h - 5.90));
+  --site-skin: oklch(from var(--kf-bg) calc(l + 0.6580) calc(c - 0.0042) calc(h - 1.60));
+  --site-scarf: oklch(from var(--kf-ink-soft) calc(l - 0.3317) calc(c + 0.1442) calc(h - 50.83));
+  --site-orb: oklch(from var(--kf-accent) calc(l + 0.0910) calc(c + 0.0657) calc(h - 65.02));
+  --site-orb-light: oklch(from var(--kf-accent) calc(l + 0.0599) calc(c + 0.0527) calc(h - 65.85));
+}
+
+html, body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  min-width: 320px;
+  height: 100dvh;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--site-sky-top) 0%, var(--site-sky-bottom) 100%);
+  background-color: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-display);
+  line-height: 1.5;
+  touch-action: none;
+}
+
+.mf-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-content: center;
+  padding: clamp(1rem, 10vw, 10rem);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.mf-loader {
+  font-family: var(--kf-font-mono);
+  font-size: clamp(4rem, 8vh, 9rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.mf-loader.is-done { display: none; }
+
+.mf-sound {
+  position: fixed;
+  z-index: 10;
+  top: 5vh;
+  right: 5vh;
+  width: clamp(4rem, 5vw, 5rem);
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  user-select: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.mf-sound.is-on { pointer-events: auto; }
+.mf-sound svg { width: 100%; height: 100%; }
+.mf-sound .mf-sound__off { display: none; }
+.mf-sound[aria-pressed="false"] .mf-sound__on { display: none; }
+.mf-sound[aria-pressed="false"] .mf-sound__off { display: block; }
+
+/* Round joystick shown only on touch devices — original values as they are (vertical 20vw · bottom 10%, horizontal 30vh · left 10vw) */
+.mf-joystick {
+  position: fixed;
+  z-index: 10;
+  width: var(--joy);
+  height: var(--joy);
+  border-radius: 50%;
+  background: var(--kf-ink);
+  transform: translate(-50%, 50%);
+  opacity: 0;
+  pointer-events: none;
+  touch-action: none;
+  user-select: none;
+  transition: opacity 0.25s;
+}
+.mf-joystick.is-visible { opacity: 0.5; pointer-events: auto; animation: mf-joy-in 1s; }
+.mf-joystick.is-active { opacity: 1; }
+.mf-joystick__knob {
+  position: absolute;
+  inset: 25%;
+  border-radius: 50%;
+  background: var(--kf-ink);
+  opacity: 0.5;
+  transition: transform 0.1s;
+}
+@media (orientation: portrait) {
+  .mf-sound { top: 5vw; right: 5vw; }
+  .mf-joystick { --joy: 20vw; bottom: 10%; left: 50%; }
+}
+@media (orientation: landscape) {
+  .mf-joystick { --joy: 30vh; bottom: 10vw; left: 10vw; }
+}
+@keyframes mf-joy-in { 0% { opacity: 0; } }
+
+/* Original: pressing Enter on a sign goes straight to the external URL. Only when the URL is a placeholder (#) does a small note say what would open */
+.mf-toast {
+  position: fixed;
+  z-index: 11;
+  left: 50%;
+  bottom: 8vh;
+  translate: -50% 0;
+  padding: 0.6em 1.2em;
+  border: 1px solid color-mix(in srgb, var(--kf-ink) 60%, transparent);
+  background: color-mix(in srgb, var(--kf-bg) 72%, transparent);
+  color: var(--kf-ink-soft);
+  font: 400 15px/1.4 var(--kf-font-display);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+}

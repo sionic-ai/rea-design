@@ -1,0 +1,35 @@
+/* Photo panel fade + only the active one slowly draws closer (same overlap as Swiper fade · crossFade false) */
+[data-fx~="fade-zoom-slides"] { position: relative; overflow: hidden; }
+[data-fx~="fade-zoom-slides"] [data-fx-part="slide"] { position: absolute; inset: 0; opacity: 0; z-index: 0; transition: opacity var(--fx-fade, 1.5s) ease; overflow: hidden; }
+[data-fx~="fade-zoom-slides"] [data-fx-part="slide"].is-prev { opacity: 1; z-index: 1; transition: none; }
+[data-fx~="fade-zoom-slides"] [data-fx-part="slide"].is-active { opacity: 1; z-index: 2; }
+[data-fx~="fade-zoom-slides"] [data-fx-part="media"] { width: 100%; height: 100%; transition: transform var(--fx-every, 5.5s) var(--fx-fade, 1.5s) ease-out; }
+[data-fx~="fade-zoom-slides"] .is-active [data-fx-part="media"] { transform: scale(var(--fx-zoom, 1.05)); transition-delay: 0s; }
+/* look: out — like Swiper fade crossFade, the old section also turns off together, and the photos of the lit section and the just-off section recede from the zoom scale to 1 */
+[data-fx-fade-zoom-slides*="look: out"] [data-fx-part="slide"] { transition-timing-function: var(--fx-curve, ease); }
+[data-fx-fade-zoom-slides*="look: out"] [data-fx-part="slide"].is-prev { opacity: 0; transition: opacity var(--fx-fade, 1.5s) var(--fx-curve, ease); }
+[data-fx-fade-zoom-slides*="look: out"] [data-fx-part="media"], [data-fx-fade-zoom-slides*="look: out"] .is-active [data-fx-part="media"] { transform: none; transition: none; }
+[data-fx-fade-zoom-slides*="look: out"] .is-active [data-fx-part="media"], [data-fx-fade-zoom-slides*="look: out"] .is-prev [data-fx-part="media"] { animation: fx-fzs-out var(--fx-zoom-dur, 9s) var(--fx-zoom-curve, linear) both; }
+@keyframes fx-fzs-out { from { scale: var(--fx-zoom, 1.3); } to { scale: 1; } }
+/* look: pan — like slick fade, the old section also fades out, and the photo in the active section (wider than the panel by --fx-pan-width) drifts sideways in a straight line by --fx-pan over pan-dur.
+   A fading-out field also keeps the same flow until the fade ends, then returns to place when fully off */
+[data-fx-fade-zoom-slides*="look: pan"] [data-fx-part="slide"].is-prev { opacity: 0; transition: opacity var(--fx-fade, 1.5s) ease; }
+[data-fx-fade-zoom-slides*="look: pan"] [data-fx-part="media"], [data-fx-fade-zoom-slides*="look: pan"] .is-active [data-fx-part="media"] { width: var(--fx-pan-width, 110%); max-width: none; transform: none; transition: none; }
+[data-fx-fade-zoom-slides*="look: pan"] .is-active [data-fx-part="media"], [data-fx-fade-zoom-slides*="look: pan"] .is-prev [data-fx-part="media"] { animation: fx-fzs-pan var(--fx-pan-dur, 15s) linear both; }
+@keyframes fx-fzs-pan { from { translate: var(--fx-pan-from, 0px) 0; } to { translate: var(--fx-pan, -8%) 0; } }
+/* look: in — a crossfade where the old section fades out too, and the newly lit section’s photo eases toward zoom times over zoom-dur (much longer than the beat, so it moves on before arriving).
+   A section that fades out keeps its approached size until the fade ends, then returns over the same length */
+[data-fx-fade-zoom-slides*="look: in"] [data-fx-part="slide"] { transition-timing-function: var(--fx-curve, ease); }
+[data-fx-fade-zoom-slides*="look: in"] [data-fx-part="slide"].is-prev { opacity: 0; transition: opacity var(--fx-fade, 1.5s) var(--fx-curve, ease); }
+[data-fx-fade-zoom-slides*="look: in"] [data-fx-part="media"] { transition: transform var(--fx-zoom-dur, 19s) var(--fx-curve, ease); }
+[data-fx-fade-zoom-slides*="look: in"] :is(.is-active, .is-prev) [data-fx-part="media"] { transform: scale(var(--fx-zoom, 1.1)); transition-delay: 0s; }
+/* look: breathe — a crossfade where the old section fades out too, and photos all breathe 1 → zoom → 1 with ease-in-out for zoom-dur regardless of section changes
+   (Brand hero #mv-img: 16s keyframe fade per li, 1s fade · 3s hold, img uses animationZoom1 32s 1 → 1.08 → 1) */
+[data-fx-fade-zoom-slides*="look: breathe"] [data-fx-part="slide"].is-prev { opacity: 0; transition: opacity var(--fx-fade, 1.5s) ease; }
+[data-fx-fade-zoom-slides*="look: breathe"] [data-fx-part="media"], [data-fx-fade-zoom-slides*="look: breathe"] .is-active [data-fx-part="media"] { transform: none; transition: none; animation: fx-fzs-breathe var(--fx-zoom-dur, 32s) ease-in-out infinite; }
+@keyframes fx-fzs-breathe { 0%, 100% { scale: 1; } 50% { scale: var(--fx-zoom, 1.08); } }
+@media (prefers-reduced-motion: reduce) {
+  [data-fx-fade-zoom-slides*="look: out"] [data-fx-part="media"], [data-fx-fade-zoom-slides*="look: pan"] [data-fx-part="media"], [data-fx-fade-zoom-slides*="look: breathe"] [data-fx-part="media"] { animation: none !important; }
+  [data-fx~="fade-zoom-slides"] [data-fx-part="slide"], [data-fx~="fade-zoom-slides"] [data-fx-part="media"] { transition: none; }
+  [data-fx~="fade-zoom-slides"] .is-active [data-fx-part="media"] { transform: none; }
+}

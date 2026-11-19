@@ -1,0 +1,137 @@
+/* Document page: large title within side borders, fixed table of contents on the left + numbered sections on the right */
+:root { --doc-text: "Inter", var(--kf-font-sans); --strip-h: 0px; }
+
+.lit { color: var(--kf-accent); text-shadow: 0 0 28px color-mix(in srgb, var(--kf-accent) 45%, transparent); }
+
+/* 2px read-progress bar at the top */
+.read-top { position: fixed; inset: 0 0 auto; z-index: 80; height: 2px; background: var(--kf-raised); }
+.read-top > span, .doc-prog-bar > span { display: block; width: 100%; height: 100%; background: var(--kf-accent); transform: scaleX(var(--read, 0)); transform-origin: 0 50%; }
+
+.top.has-nav { height: 58px; }
+.sys { margin-left: auto; }
+.nav-toggle { display: flex; align-items: center; gap: 6px; margin-left: auto; padding: 4px 0; border: 0; background: none; font: 400 10px/1 var(--kf-font-mono); letter-spacing: 0.3em; text-transform: uppercase; cursor: pointer; }
+.nav-toggle i { width: 6px; height: 6px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; rotate: 45deg; translate: 0 -2px; transition: rotate 0.21s var(--kf-ease-ui); }
+.nav-toggle[aria-expanded="true"] i { rotate: 225deg; translate: 0 2px; }
+.top.has-nav > .btn { display: none; }
+.nav-drop {
+  position: absolute;
+  inset: 100% 0 auto;
+  display: grid;
+  padding: 8px var(--gutter) 16px;
+  border-bottom: 1px solid var(--kf-line);
+  background: color-mix(in srgb, var(--kf-bg) 96%, transparent);
+  font: 400 11px/1 var(--kf-font-mono);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 0.3s var(--kf-ease-ui);
+}
+.nav-drop {
+  height: calc(100svh - 58px);
+  align-content: start;
+  /* The header row already uses backdrop-filter so the inner blur has no effect — it darkens by as much as the blurred backdrop in the original */
+  background: color-mix(in srgb, var(--kf-bg) 94%, transparent);
+}
+.nav-drop a { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--kf-line); color: var(--kf-ink); }
+.nav-drop a::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: color-mix(in srgb, var(--kf-accent) 45%, transparent); }
+.nav-drop a[aria-current="page"]::before { background: var(--kf-accent); }
+.nav-drop a[aria-current="page"]::after { content: "→"; margin-left: auto; color: var(--kf-accent); }
+.nav-drop .nav-drop-cta { justify-content: center; margin-top: 24px; padding: 14px 0; border: 0; background: var(--kf-accent); color: var(--kf-on-accent); font: 700 12px/1 var(--kf-font-display); letter-spacing: 0; }
+.nav-drop .nav-drop-cta::before { display: none; }
+.nav-drop.is-open { clip-path: inset(0 0 0 0); }
+.nav-toggle::before { content: ""; width: 5px; height: 5px; margin-right: 28px; border-radius: 50%; background: var(--kf-accent); box-shadow: 0 0 6px var(--kf-accent); }
+@media (min-width: 992px) {
+  .nav-toggle, .nav-drop { display: none; }
+  .top.has-nav > .btn { display: inline-flex; }
+  .sys { margin-left: 0; }
+}
+
+/* ---------- Header ---------- */
+.doc { padding: 0 var(--gutter); }
+.doc-hero, .doc-grid, .doc-index-toggle { border-inline: 1px solid var(--kf-line); }
+.doc-hero { padding: 64px 20px 56px; border-bottom: 1px solid var(--kf-line); }
+.doc-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font: 400 10px/1 var(--kf-font-mono); letter-spacing: 0.22em; text-transform: uppercase; color: var(--kf-dim); }
+.doc-meta .tag { border-color: var(--kf-line); padding: 7px 10px; }
+.doc-title { margin-top: 40px; font: 700 clamp(3.5rem, 10vw, 9rem) / 0.82 var(--kf-font-display); letter-spacing: -0.02em; }
+
+/* On narrow screens the contents collapse into a single line */
+.doc-index-toggle {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px 20px;
+  border-top: 0;
+  border-bottom: 1px solid var(--kf-line);
+  background: none;
+  font: 400 10px/1 var(--kf-font-mono);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--kf-dim);
+  cursor: pointer;
+}
+
+/* ---------- Table of contents + body ---------- */
+.doc-grid { position: relative; display: grid; }
+.doc-aside { display: none; }
+.doc-aside.is-open { display: block; padding: 0; border-bottom: 1px solid var(--kf-line); }
+.doc-aside.is-open :is(.doc-k, .doc-prog, .doc-prog-bar) { display: none; }
+.doc-aside.is-open .doc-index { gap: 0; }
+.doc-aside.is-open .doc-index a { padding: 10px 20px; border-left: 0; border-bottom: 1px solid var(--kf-line); }
+.doc-k { margin-bottom: 24px; font: 400 10px/1.5 var(--kf-font-mono); letter-spacing: 0.3em; text-transform: uppercase; color: color-mix(in srgb, var(--kf-ink) 55%, transparent); }
+.doc-index { display: grid; gap: 2px; }
+.doc-index a {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 8px;
+  padding: 8px 0 8px 12px;
+  border-left: 1px solid transparent;
+  font: 400 10px/1.6 var(--kf-font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--kf-dim);
+  transition: color 0.21s var(--kf-ease-ui), border-color 0.21s var(--kf-ease-ui);
+}
+.doc-index a > span:first-child { color: color-mix(in srgb, var(--kf-ink) 40%, transparent); }
+.doc-index a[aria-current="true"] { border-left-color: var(--kf-accent); color: var(--kf-ink); }
+.doc-index a[aria-current="true"] > span:first-child { color: var(--kf-accent); }
+@media (hover: hover) { .doc-index a:hover { color: var(--kf-ink); } }
+.doc-prog { display: flex; justify-content: space-between; margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--kf-line); font: 400 8px/1 var(--kf-font-mono); letter-spacing: 0.2em; text-transform: uppercase; color: color-mix(in srgb, var(--kf-ink) 45%, transparent); }
+.doc-prog-bar { display: block; height: 2px; margin-top: 10px; background: var(--kf-line); }
+
+.doc-article { position: relative; min-width: 0; padding: 16px 20px 40px; }
+.doc-marker { display: none; }
+.doc-sec { display: grid; grid-template-columns: 40px 1fr; gap: 0; padding: 48px 0; border-bottom: 1px solid var(--kf-line); scroll-margin-top: 100px; }
+.doc-sec:first-of-type { padding-top: 16px; }
+.doc-num { padding-top: 6px; font: 400 11px/1 var(--kf-font-mono); letter-spacing: 0.2em; color: var(--kf-accent); }
+.doc-body h2 { font: 700 clamp(1.7rem, 4vw, 3rem) / 1 var(--kf-font-display); }
+.doc-body h2 + * { margin-top: 28px; }
+.doc-body p, .doc-list { font: 400 15px/1.85 var(--doc-text); color: color-mix(in srgb, var(--kf-ink) 75%, transparent); }
+.doc-body p + p, .doc-body p + .doc-list, .doc-list + p { margin-top: 20px; }
+.doc-body b { font-weight: 600; color: var(--kf-ink); }
+.doc-list { display: grid; gap: 4px; padding: 16px 20px; border: 1px solid var(--kf-line); background: var(--kf-surface); }
+.doc-list li { position: relative; padding-left: 22px; }
+.doc-list li::before { content: ""; position: absolute; left: 0; top: 0.8em; width: 5px; height: 5px; background: var(--kf-accent); }
+
+@media (min-width: 992px) {
+  .doc { padding: 0 40px; }
+  .doc-hero { padding: 100px 56px 80px; }
+  .doc-title { margin-top: 30px; }
+  .doc-index-toggle { display: none; }
+  .doc-grid { grid-template-columns: 280px 1fr; }
+  .doc-aside { display: block; border-right: 1px solid var(--kf-line); }
+  .doc-aside { position: relative; padding: 40px 28px; }
+  .doc-aside-in { position: sticky; top: 98px; }
+  .doc-article { padding: 56px 96px 72px; }
+  /* Highlight line that follows the section currently being read */
+  .doc-marker { position: absolute; left: 32px; top: 0; display: block; width: 2px; height: 214px; background: var(--kf-accent); box-shadow: 0 0 12px color-mix(in srgb, var(--kf-accent) 60%, transparent); }
+  .doc-sec { grid-template-columns: 78px 1fr; padding: 64px 0; }
+  .doc-sec:first-of-type { padding-top: 16px; }
+  .doc-body p, .doc-list { font-size: 17px; line-height: 32px; }
+}
+.doc-foot { border-inline: 0; }
+/* Document footer links and cookie settings turn accent color immediately on hover (no underline) */
+@media (hover: hover) { .doc-foot a:hover, .doc-foot .foot-btn:hover { color: var(--kf-accent); text-decoration: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .doc-index a, .nav-drop, .nav-toggle i { transition: none; }
+}

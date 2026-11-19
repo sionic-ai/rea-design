@@ -1,0 +1,55 @@
+/* Transparent header row (text color over a photo) → panel (background color, ink text). The background switches instantly like the original, only the text color eases out over .2s */
+[data-fx~="wordmark-icon-header"] {
+  background-color: var(--fx-bg-solid, var(--kf-bg));
+  color: var(--fx-ink-solid, var(--kf-ink));
+  transition: color var(--fx-ink-dur, 0.2s) ease-out;
+}
+[data-fx~="wordmark-icon-header"]:not([data-solid]) {
+  background-color: transparent;
+  color: var(--fx-ink, var(--kf-on-accent));
+}
+
+/* Wordmark and icon overlap in one cell — the cell’s (parent’s) position·size is set by the side that uses it */
+[data-fx~="wordmark-icon-header"] [data-fx-part="wordmark"],
+[data-fx~="wordmark-icon-header"] [data-fx-part="icon"] { position: absolute; }
+
+/* As a plate: the wordmark folds to .4 width and switches off at .1s (fold .2s easeOutQuart), the icon switches on immediately with a curve that overshoots to 1.2x then settles (.2s) */
+[data-fx~="wordmark-icon-header"] [data-fx-part="wordmark"] {
+  opacity: 0;
+  pointer-events: none;
+  transform: scaleX(0.4);
+  transition: opacity var(--fx-out, 0.1s) ease, transform var(--fx-fold, 0.2s) var(--fx-fold-ease, cubic-bezier(0.165, 0.84, 0.44, 1));
+}
+[data-fx~="wordmark-icon-header"] [data-fx-part="icon"] {
+  opacity: 1;
+  transform: scale(var(--fx-icon-scale, 1.2)) translateY(0);
+  transition: opacity 0s, transform var(--fx-pop, 0.2s) var(--fx-pop-ease, cubic-bezier(0.59, 1.72, 0.52, 0.88));
+}
+
+/* When transparent: the wordmark stands and the icon hides at .7x scale and .2rem lower (.1s transparent · .3s easeOutQuart) */
+[data-fx~="wordmark-icon-header"]:not([data-solid]) [data-fx-part="wordmark"] {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+[data-fx~="wordmark-icon-header"]:not([data-solid]) [data-fx-part="icon"] {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.7) translateY(0.2rem);
+  transition: opacity var(--fx-out, 0.1s) ease, transform var(--fx-hide, 0.3s) var(--fx-fold-ease, cubic-bezier(0.165, 0.84, 0.44, 1));
+}
+
+/* Below 1024px drop the wordmark and keep only the icon (original) — the header row’s panel switching stays the same */
+@media (max-width: 1024px) {
+  [data-fx~="wordmark-icon-header"] [data-fx-part="wordmark"] { display: none; }
+  [data-fx~="wordmark-icon-header"] [data-fx-part="icon"],
+  [data-fx~="wordmark-icon-header"]:not([data-solid]) [data-fx-part="icon"] { opacity: 1; transform: none; pointer-events: auto; transition: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="wordmark-icon-header"],
+  [data-fx~="wordmark-icon-header"] [data-fx-part="wordmark"],
+  [data-fx~="wordmark-icon-header"] [data-fx-part="icon"],
+  [data-fx~="wordmark-icon-header"]:not([data-solid]) [data-fx-part="wordmark"],
+  [data-fx~="wordmark-icon-header"]:not([data-solid]) [data-fx-part="icon"] { transition: none; }
+}

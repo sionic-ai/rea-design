@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>video-scene-progress — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .stage { position: relative; margin: 24px 20px; padding-bottom: 150px; }
+  .stage video { display: block; width: 100%; aspect-ratio: 16 / 9; max-height: 60vh; object-fit: cover; }
+  .line { position: absolute; left: 0; right: 0; bottom: 130px; height: 1px; background: var(--kf-line); }
+  .line i { position: absolute; inset: 0; display: block; }
+  .frame { position: absolute; left: calc(50% - 60px); bottom: 0; width: 120px; height: 172px; outline: 8px solid var(--kf-bg); }
+  .frame .wf-img::after { white-space: normal; max-width: 90%; text-align: center; }
+  .scene { margin: 0 20px; font: 500 12px/1.4 var(--kf-font-mono); color: var(--kf-dim); }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>video-scene-progress</b> While the video plays, the progress line below fills. Every 5 seconds the vertical center photo changes and slowly shrinks. At the end the line folds to the right and rewinds.</p>
+<section class="stage" data-fx="video-scene-progress" data-fx-video-scene-progress="scene: 5; tail: .6; zoom: 1.5">
+  <video data-fx-part="video" muted loop playsinline autoplay src="demo.mp4"></video>
+  <div class="line"><i data-fx-part="bar"></i></div>
+  <div class="frame">
+    <div data-fx-part="slide"><div class="wf-img" data-label="Scene 1 photo"></div></div>
+    <div data-fx-part="slide"><div class="wf-img" data-label="Scene 2 photo"></div></div>
+    <div data-fx-part="slide"><div class="wf-img" data-label="Scene 3 photo"></div></div>
+    <div data-fx-part="slide"><div class="wf-img" data-label="Scene 4 photo"></div></div>
+  </div>
+</section>
+<p class="scene">fx:scene → <span id="scene">0</span></p>
+<div id="host"></div>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+// Late arrivals · removals — after 1s the same board is added once more (late arrival), after 2.5s one is removed (detach)
+(() => {
+  addEventListener("fx:scene", (e) => { document.getElementById("scene").textContent = e.detail.scene; });
+  const src = document.querySelector('[data-fx~="video-scene-progress"]');
+  setTimeout(() => {
+    const late = src.cloneNode(true);
+    late.querySelectorAll(".fx-on").forEach((s) => s.classList.remove("fx-on"));
+    document.getElementById("host").append(late);
+    late.querySelector("video").play().catch(() => {});
+    setTimeout(() => late.remove(), 1500);
+  }, 1000);
+})();
+</script>
+</body>
+</html>

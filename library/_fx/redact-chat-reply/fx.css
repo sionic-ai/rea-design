@@ -1,0 +1,30 @@
+[data-fx~="redact-chat-reply"] { position: relative; display: inline; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: help; }
+[data-fx~="redact-chat-reply"].is-fx-open { cursor: auto; }
+[data-fx~="redact-chat-reply"] [data-fx-part="glyphs"] { font-family: var(--kf-font-mono); }
+/* Group — hidden: 8px blur · 1.05x · transparent → open: every value animates over .8s with a bouncy curve (.2,-.25,0,1.6) */
+[data-fx~="redact-chat-reply"] [data-fx-part="chat"] {
+  position: absolute; left: 0; bottom: calc(100% + var(--fx-gap, 16px)); display: flex; flex-direction: column; justify-content: flex-end; gap: 8px;
+  font-family: var(--kf-font-sans); text-align: left;
+  visibility: hidden; opacity: 0; filter: blur(8px); transform: scale(1.05);
+  transition: all var(--fx-dur, 0.8s) var(--fx-ease, cubic-bezier(0.2, -0.25, 0, 1.6));
+}
+[data-fx~="redact-chat-reply"].is-fx-open [data-fx-part="chat"] { visibility: visible; opacity: 1; filter: blur(0); transform: scale(1); }
+[data-fx~="redact-chat-reply"] [data-fx-part="bubble"] { display: flex; max-width: max-content; padding: 4px 12px; border-radius: var(--kf-radius-lg); background: var(--kf-raised); color: var(--kf-ink); white-space: nowrap; line-height: 1.5; }
+[data-fx~="redact-chat-reply"] [data-fx-part="bubble"][hidden] { display: none; }
+/* When a balloon attaches, it rises from 10px below over .25s cubic-bezier(.3,0,0,1) */
+[data-fx~="redact-chat-reply"] [data-fx-part="bubble"].is-fx-in { animation: fx-redact-chat-in 0.25s cubic-bezier(0.3, 0, 0, 1) both; }
+@keyframes fx-redact-chat-in { from { opacity: 0; transform: translateY(10px); } }
+/* While typing, three dots instead of text (2s pulse, delayed .1s each while open) */
+[data-fx~="redact-chat-reply"] [data-fx-part="bubble"].is-fx-typing { font-size: 0; }
+[data-fx~="redact-chat-reply"] [data-fx-part="bubble"].is-fx-typing::before {
+  content: ""; width: 8px; height: 8px; margin: 9px 24px 9px 0; border-radius: 50%;
+  background: color-mix(in oklab, var(--kf-ink) 50%, transparent);
+  box-shadow: 12px 0 0 color-mix(in oklab, var(--kf-ink) 50%, transparent), 24px 0 0 color-mix(in oklab, var(--kf-ink) 50%, transparent);
+  animation: fx-redact-chat-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes fx-redact-chat-pulse { 50% { opacity: 0.5; } }
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="redact-chat-reply"] [data-fx-part="chat"] { transition: none; }
+  [data-fx~="redact-chat-reply"] [data-fx-part="bubble"] { animation: none !important; }
+  [data-fx~="redact-chat-reply"] [data-fx-part="bubble"].is-fx-typing::before { animation: none; }
+}

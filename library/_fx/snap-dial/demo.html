@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>snap-dial — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .demo-stage { position: relative; height: 70vh; overflow: hidden; perspective: 1400px; background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); outline: none; }
+  .demo-stage h2 { position: absolute; left: 50%; bottom: 12%; width: 10em; margin-left: -5em; text-align: center; font: 900 clamp(32px, 6vw, 96px)/.9 var(--kf-font-display); text-transform: uppercase;
+    transform: translateZ(-40vw) rotateY(calc(var(--fx-offset) * 30deg)) translateZ(40vw); backface-visibility: hidden; opacity: calc(1 - min(1, max(var(--fx-offset), calc(var(--fx-offset) * -1)) / 3)); }
+  .demo-stage h2:not([aria-current]) { color: transparent; -webkit-text-stroke: 1px var(--kf-contrast-ink); }
+  .demo-pos { position: absolute; left: 20px; top: 16px; font: 500 13px var(--kf-font-mono); }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>snap-dial</b> — Roll the wheel over the stage or drag horizontally (arrow keys work too). When released, it snaps to the nearest name after .35s.</p>
+<section class="demo-stage" data-fx="snap-dial" tabindex="0">
+  <span class="demo-pos">Location <b>0</b></span>
+  <h2 data-fx-part="item">Name one</h2>
+  <h2 data-fx-part="item">Name two</h2>
+  <h2 data-fx-part="item">Name three</h2>
+  <h2 data-fx-part="item">Name four</h2>
+  <h2 data-fx-part="item">Fifth name</h2>
+  <h2 data-fx-part="item">Sixth name</h2>
+</section>
+<script>
+document.addEventListener("fx:dial", (e) => { const b = e.target.querySelector?.(".demo-pos b"); if (b) b.textContent = e.detail.pos.toFixed(2); });
+</script>
+<script>
+// Late arrivals and removals — checks that fx-core attaches to an element added after 1s and detaches from an element removed after 2.5s
+(() => {
+  const src = document.querySelector('[data-fx~="snap-dial"]');
+  if (!src) return;
+  const html = src.outerHTML.replace(/\sid="[^"]*"/g, "");
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = html; const el = t.content.firstElementChild; el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => src.after(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1s another identical one comes in (the late arrival), and after 2.5s one drops out (the detach).");
+})();
+</script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

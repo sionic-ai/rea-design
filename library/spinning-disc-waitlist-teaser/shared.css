@@ -1,0 +1,75 @@
+/* A 3D stage covering the whole screen and a waitlist card floating on top (four states) — it is a one-page site, so everything lives here */
+:root {
+  --site-card-shadow: color-mix(in srgb, var(--kf-ink) 10%, transparent);
+  --site-input: color-mix(in srgb, var(--kf-line) 50%, transparent);
+  --site-on-ink: color-mix(in srgb, var(--kf-surface) 100%, var(--kf-bg));
+  --site-disabled: color-mix(in srgb, var(--kf-ink) 20%, transparent);
+}
+html { background: var(--kf-bg); font: var(--kf-weight-body) 18px/1.25 var(--kf-font-sans); overscroll-behavior-x: none; --vvh: 100dvh; }
+body { background: var(--kf-bg); }
+button { border: 0; background: none; cursor: pointer; }
+button:disabled { cursor: default; opacity: 0.2; }
+
+.d-gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.d-ui { position: fixed; inset: 0; z-index: 2; height: var(--vvh); display: flex; align-items: center; justify-content: center; overflow: hidden; pointer-events: none; overscroll-behavior: contain; }
+.d-overlay { position: fixed; inset: 0; height: var(--vvh); }
+.d-spin { position: absolute; z-index: 9; width: 54px; height: 54px; transition: opacity 0.2s; }
+.d-spin.is-off { opacity: 0; }
+.d-spin i { position: absolute; left: 47%; top: 43%; width: 6%; height: 16%; border-radius: 50px; background: var(--kf-ink); opacity: 0; animation: d-fade 1s linear infinite; transform: rotate(calc(var(--n) * 30deg)) translateY(-130%); animation-delay: calc(var(--n) * -0.0833s); }
+@keyframes d-fade { from { opacity: 1; } to { opacity: 0.25; } }
+
+.d-box { pointer-events: none; }
+.d-head { position: absolute; top: -36px; left: 30px; width: calc(100% - 60px); height: 26px; display: flex; align-items: center; gap: 5px; pointer-events: all; }
+.d-head__pill { flex: 1; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; white-space: nowrap; border-radius: 13px; background: var(--kf-ink); color: var(--site-on-ink); font-size: 12px; font-weight: 700; }
+.d-round { flex: none; display: flex; width: 26px; height: 26px; align-items: center; justify-content: center; border-radius: 50%; background: var(--kf-surface); }
+.d-round svg { width: 18px; height: 18px; fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.d-round--x svg { stroke: var(--kf-dim); }
+.d-round--ok svg { stroke: var(--kf-accent-text); }
+.d-card { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: 25px; background: var(--kf-surface); box-shadow: 0 0 40px var(--site-card-shadow); pointer-events: all; user-select: none; --line: var(--kf-line); }
+.d-pane { position: absolute; left: 50%; top: 50%; width: 100%; height: 100%; transform: translate(-50%, -50%); display: flex; flex-direction: column; justify-content: center; padding: 10px; color: var(--kf-on-accent); }
+
+/* Base panel */
+.d-pane--home { min-width: 280px; min-height: 200px; padding-top: 25px; }
+.d-info { position: absolute; left: 15px; top: 15px; display: flex; width: 26px; height: 26px; align-items: center; justify-content: center; border-radius: 50%; background: var(--line); color: var(--kf-surface); font: 800 12px/1 var(--kf-font-mono); }
+.d-wave { position: absolute; left: 50px; top: 15px; display: flex; align-items: center; gap: 2px; height: 26px; cursor: pointer; }
+.d-wave i { width: 3px; height: 5px; border-radius: 1.5px; background: var(--line); }
+.d-wave.is-playing i:nth-child(1) { animation: d-w10 0.5s ease-in-out 0.1s infinite; }
+.d-wave.is-playing i:nth-child(2) { animation: d-w25 0.7s ease-in-out 0.2s infinite; }
+.d-wave.is-playing i:nth-child(3) { animation: d-w20 0.8s ease-in-out 0.3s infinite; }
+.d-wave.is-playing i:nth-child(4) { animation: d-w15 0.9s ease-in-out 0.4s infinite; }
+.d-wave.is-playing i:nth-child(5) { animation: d-w20 0.8s ease-in-out 0.5s infinite; }
+.d-wave.is-playing i:nth-child(6) { animation: d-w10 0.9s ease-in-out 0.6s infinite; }
+.d-wave.is-playing i:nth-child(7) { animation: d-w10 0.7s ease-in-out 0.3s infinite; }
+@keyframes d-w10 { 0%, 100% { height: 5px; } 50% { height: 10px; } }
+@keyframes d-w15 { 0%, 100% { height: 5px; } 50% { height: 15px; } }
+@keyframes d-w20 { 0%, 100% { height: 12px; } 50% { height: 20px; } }
+@keyframes d-w25 { 0%, 100% { height: 15px; } 50% { height: 25px; } }
+.d-switch { position: absolute; right: 15px; top: 15px; width: 45.5px; height: 26px; }
+.d-switch input { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.d-switch label { position: relative; display: block; width: 45.5px; height: 26px; padding: 2px; border-radius: 13px; background: var(--kf-raised); transition: background-color 0.1s linear; }
+.d-switch label::after { content: ""; position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--line); transition: transform 0.1s linear, background-color 0.1s linear; }
+.d-switch input:checked + label::after { background: var(--kf-ink); transform: translateX(75%); }
+.d-switch input:focus-visible + label { outline: 2px solid var(--site-on-ink); }
+.d-title { flex: 1; display: flex; align-items: center; justify-content: center; margin: 30px 0; padding-top: 10px; white-space: nowrap; text-align: center; font: var(--kf-weight-display) 28px/1.25 var(--kf-font-display); letter-spacing: -1px; color: var(--kf-ink); }
+.d-actions { display: flex; flex-direction: column; gap: 7.5px; }
+.d-cta { display: flex; height: 55px; align-items: center; justify-content: space-between; padding: 5px 20px; border-radius: 20px; background: var(--kf-ink); color: var(--site-on-ink); font: 700 16px/1 var(--kf-font-sans); letter-spacing: -0.25px; transition: transform 0.05s linear, background-color 0.1s linear; }
+.d-cta:active { transform: scale(0.98); }
+.d-cta svg { position: relative; right: -5px; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Info Panel */
+.d-pane--info { justify-content: flex-start; align-items: center; padding: 20px 24px; }
+.d-pane--info .d-logo { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; padding-top: 60px; font: var(--kf-weight-display) 34px/1 var(--kf-font-display); letter-spacing: -1.5px; color: var(--kf-ink); }
+.d-pill { display: flex; width: fit-content; height: 20px; margin: 0 auto 20px; padding: 0 10px; align-items: center; border-radius: 10px; background: var(--kf-ink); color: var(--site-on-ink); font-size: 10px; font-weight: 700; }
+.d-para { margin-bottom: 30px; text-align: center; color: var(--kf-ink); font: 700 16px/20px var(--kf-font-sans); letter-spacing: -0.5px; }
+.d-ver { position: absolute; right: 20px; top: 20px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; opacity: 0.2; }
+
+/* Registration Panel */
+.d-pane--form form { display: flex; flex-direction: column; gap: 7.5px; }
+.d-pane--form input { display: flex; width: 100%; height: 55px; padding: 5px 20px; border: 0; border-radius: 20px; background: var(--site-input); font: 700 16px/1 var(--kf-font-sans); letter-spacing: -0.25px; color: var(--kf-ink); opacity: 0.5; }
+.d-pane--form input::placeholder { color: var(--kf-ink-soft); }
+.d-pane--form input:focus { opacity: 1; outline: 2px solid var(--site-on-ink); }
+
+/* Loading Panel */
+.d-pane--wait { align-items: center; }
+.d-pane--wait .d-spin { position: relative; }
+@media (prefers-reduced-motion: reduce) { .d-spin i, .d-wave i { animation: none !important; } .d-switch label, .d-switch label::after, .d-cta { transition: none; } }

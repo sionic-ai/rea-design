@@ -1,0 +1,40 @@
+/* Card ring plate — the canvas fills the plate, and the DOM cards hide where they cover the chosen sheet (on press they flip in place, grow and vanish) */
+[data-fx~="card-ring-3d"] { position: relative; }
+[data-fx~="card-ring-3d"] > .fx-cr3-gl { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: pan-y; }
+[data-fx~="card-ring-3d"] > .fx-cr3-kira { position: absolute; z-index: 9; left: 50%; top: 50%; width: min(800px, 100%); height: 300px; translate: -50% -50%; pointer-events: none; }
+[data-fx~="card-ring-3d"] [data-fx-part="card"] {
+  position: absolute;
+  z-index: 8;
+  left: 50%;
+  top: 50%;
+  height: var(--fx-card-h, 70%);
+  aspect-ratio: var(--fx-card-ratio, 326 / 566);
+  width: auto;
+  margin: 0;
+  translate: -50% -50%;
+  opacity: 0;
+  pointer-events: none;
+  transform-style: preserve-3d;
+  perspective: 1200px;
+}
+[data-fx~="card-ring-3d"] [data-fx-part="card"].is-picked {
+  opacity: 1;
+  animation: fx-cr3-out 1s cubic-bezier(0.19, 1, 0.22, 1) 0.75s forwards;
+}
+/* Front face (data-fx-part=front) turns once (0→360°), the back goes the opposite way (180→−180°) in .9s — the back shows around the middle. Without a front marker the whole card turns */
+[data-fx~="card-ring-3d"] [data-fx-part="front"] { position: absolute; inset: 0; backface-visibility: hidden; }
+[data-fx~="card-ring-3d"] [data-fx-part="back"] { position: absolute; inset: 0; transform: rotateY(180deg); backface-visibility: hidden; }
+[data-fx~="card-ring-3d"] .is-picked [data-fx-part="front"] { transform: rotateY(360deg); transition: transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+[data-fx~="card-ring-3d"] .is-picked [data-fx-part="back"] { transform: rotateY(-180deg); transition: transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+[data-fx~="card-ring-3d"] [data-fx-part="card"].is-picked:not(:has([data-fx-part="front"])) { transform: rotateY(360deg); transition: transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+@keyframes fx-cr3-out {
+  from { opacity: 1; scale: 1; }
+  to { opacity: 0; scale: var(--fx-card-out, 1.71); }
+}
+@media (max-width: 768px) {
+  [data-fx~="card-ring-3d"] > .fx-cr3-kira { width: 100vw; height: 40vw; }
+  [data-fx~="card-ring-3d"] [data-fx-part="card"] { --fx-card-out: 1.41; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="card-ring-3d"] [data-fx-part="card"].is-picked { animation: none; transition: none; opacity: 0; }
+}

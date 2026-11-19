@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paper list · dotted list filtered by category</title>
+<link rel="stylesheet" href="../../_shared/wire.css">
+<link rel="stylesheet" href="../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="news.css">
+</head>
+<body data-page="news">
+
+<header data-slot="nav"></header>
+
+<main class="cp-main">
+  <section class="lp-plain" data-slot="hero">
+    <div class="lp-hero">
+      <div class="lp-hero__media"><div class="ph-cover wf-img" data-label="Cloudy grassland hill · clear day · wide scenery · full-width landscape"></div></div>
+      <div class="lp-hero__grad"></div>
+      <div class="lp-hero__content"><div class="lp-hero__box">
+        <h1 class="lp-hero__heading" data-label="Section name in English, large title">Publications</h1>
+        <p class="lp-hero__body">Your two lines here on what the list of papers supports.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- List: category picker · count · dotted rows (date·type | chip·title·link) · load more -->
+  <section class="glist wrap" data-slot="grid-list">
+    <span class="wf-note">List · choosing a category filters the rows, and the remaining rows rise from 24px below at .5s with a .08 stagger · Load more 6 rows at a time</span>
+    <div class="glist__header" data-fade="kids">
+      <h2 class="t-h1" data-label="List section English title">Review the research</h2>
+      <p class="t-legal">Your one line goes here explaining how to choose and that it links to an outside site.</p>
+    </div>
+    <div class="glist__controls">
+      <label class="glist__select"><span class="sr-only">Category</span><select><option value="">Select Category</option><option value="a">Category A</option><option value="b">Category B</option><option value="c">Category C</option></select><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></label>
+      <span class="glist__count eyebrow eyebrow--sm">Showing <b>6</b> of <b>12</b></span>
+    </div>
+    <ul class="glist__list"></ul>
+    <div class="glist__more"><button class="cp-btn cp-btn--sm" type="button" data-more><span class="cp-btn__pill">View more</span></button></div>
+  </section>
+
+  <section class="cta-banner" data-slot="cta-banner">
+    <div class="cta-banner__box" data-fade>
+      <h2 class="t-h3" data-label="Research name in English, two lines">Study name<br>here</h2>
+      <div class="cta-banner__aside"><p class="t-md">Your two lines go here on where to see more of this research.</p><a class="cp-btn" href="#" data-roll="Visit study"></a></div>
+    </div>
+  </section>
+
+  <section class="quicklinks" data-slot="quicklinks">
+    <h2 class="quicklinks__title t-h1" data-fade data-label="Shortcut section English title">Continue exploring</h2>
+    <div class="quicklinks__grid is-two" data-fade="kids">
+      <article class="ql-card"><a class="ql-card__link" href="about.html" aria-label="View details"></a><div class="ph-cover wf-img" data-label="Seaside hill landscape · pink clouds at dusk · landscape 4:3"></div><div class="ql-card__text"><h3 class="t-h5" data-label="English section name">Our Purpose</h3><a class="cp-btn cp-btn--secondary" href="about.html">Learn more</a></div></article>
+      <article class="ql-card"><a class="ql-card__link" href="page.html" aria-label="View details"></a><div class="ph-cover wf-img" data-label="Profile of an elderly person · soft window light · landscape 4:3"></div><div class="ql-card__text"><h3 class="t-h5" data-label="English section name">Patients &amp; Caregivers</h3><a class="cp-btn cp-btn--secondary" href="page.html">Learn more</a></div></article>
+    </div>
+  </section>
+</main>
+
+<footer data-slot="footer"></footer>
+
+<script src="../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../../_shared/vendor/gsap/ScrollTrigger.min.js"></script>
+<script src="frames.js"></script>
+<script src="shared.js"></script>
+<script>
+  CP.lpHero(document.querySelector(".lp-plain"), {});
+  CP.fadeUps();
+  (() => {
+    const list = document.querySelector(".glist__list"), select = document.querySelector(".glist__select select"), count = document.querySelector(".glist__count");
+    const cats = ["a", "b", "c"], tags = ["Journal name A", "Journal name B", "Journal name C"];
+    const items = Array.from({ length: 12 }, (_, i) => ({ cat: cats[i % 3], tag: tags[i % 3], date: `0${(i % 9) + 1} Mon 0000`, kind: i % 2 ? "Clinical: AA" : "Preclinical" }));
+    let shown = 6;
+    const render = (animate) => {
+      const pool = items.filter((it) => !select.value || it.cat === select.value);
+      const rows = pool.slice(0, shown);
+      list.innerHTML = rows.map((it, i) => `<li class="glist__row"><div class="glist__meta eyebrow eyebrow--sm"><span>${it.date}</span><span>${it.kind}</span></div><div class="glist__content"><span class="glist__chip eyebrow eyebrow--sm">${it.tag}</span><p class="glist__title">Your paper title goes here in one or two lines — what was examined and how, at original length ${String(i + 1).padStart(2, "0")}</p><a class="cp-link-mono" href="#">View publication <svg viewBox="0 0 10 10"><path d="M2 8l6-6M3 2h5v5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></a></div></li>`).join("");
+      count.innerHTML = `Showing <b>${rows.length}</b> of <b>${pool.length}</b>`;
+      document.querySelector(".glist__more").hidden = rows.length >= pool.length;
+      if (animate && !CP.reduce) gsap.from(list.children, { opacity: 0, y: 24, duration: 0.5, ease: "power2.out", stagger: 0.08 });
+      ScrollTrigger.refresh();
+    };
+    select.addEventListener("change", () => { shown = 6; render(true); });
+    document.querySelector("[data-more]").addEventListener("click", () => { shown += 6; render(true); });
+    render(false);
+  })();
+</script>
+<script src="../../_shared/wire.js"></script>
+</body>
+</html>

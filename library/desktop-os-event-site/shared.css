@@ -1,0 +1,378 @@
+/* What makes up the desktop OS — menu bar, dock, windows, modals, notifications, loader, screensaver. Even as pages grow, this one file gives them all the same chrome. */
+
+/* Site-specific colors made from the skin — they follow along even if theme.css is swapped */
+:root {
+  --site-select: oklch(from var(--kf-accent) calc(l - 0.061) calc(c + 0.053) calc(h + 1.7));
+  --site-toggle-on: oklch(from var(--kf-accent) calc(l - 0.119) calc(c + 0.035) calc(h + 5.9));
+  --site-dock: var(--kf-contrast-bg);
+  --site-dock-ink: var(--kf-contrast-ink);
+  --site-dock-line: color-mix(in srgb, var(--kf-contrast-ink) 16%, var(--kf-contrast-bg));
+  --site-dock-hover: color-mix(in srgb, var(--kf-contrast-ink) 11%, var(--kf-contrast-bg));
+  --site-dock-rule: color-mix(in srgb, var(--kf-contrast-ink) 12%, var(--kf-contrast-bg));
+  --site-dock-img: color-mix(in srgb, var(--kf-contrast-ink) 13%, var(--kf-contrast-bg));
+  --site-dock-img-line: color-mix(in srgb, var(--kf-contrast-ink) 20%, var(--kf-contrast-bg));
+  --site-dim-on-ink: color-mix(in srgb, var(--kf-contrast-ink) 64%, var(--kf-contrast-bg));
+  --site-body-soft: color-mix(in srgb, var(--kf-ink) 81%, var(--kf-surface));
+  --site-glass-line: color-mix(in srgb, var(--kf-surface) 60%, transparent);
+  /* When an icon cell is hovered or selected — the desktop gets only a white border, inside a folder it is a dark tile */
+  --site-tile-hover-line: color-mix(in srgb, var(--kf-surface) 30%, transparent);
+  --site-tile: color-mix(in srgb, var(--kf-ink) 28%, transparent);
+  --site-tile-line: color-mix(in srgb, var(--kf-surface) 18%, transparent);
+  /* Read-more paper icon */
+  --site-paper-line: color-mix(in srgb, var(--kf-ink) 18%, var(--kf-surface));
+  --site-paper-fold: color-mix(in srgb, var(--kf-ink) 6%, var(--kf-surface));
+  --site-paper-rule: color-mix(in srgb, var(--kf-ink) 29%, var(--kf-surface));
+  /* Purple of the background art (tube lettering) — made by rotating the hue from the accent color */
+  --site-tube-1: oklch(from var(--kf-accent) calc(l - 0.234) calc(c + 0.038) calc(h + 19.5));
+  --site-tube-2: oklch(from var(--kf-accent) calc(l - 0.09) calc(c + 0.062) calc(h + 27.2));
+  --site-tube-3: oklch(from var(--kf-accent) calc(l + 0.147) calc(c - 0.058) calc(h + 34.3));
+  --site-tube-smoke: oklch(from var(--kf-accent) calc(l + 0.016) calc(c - 0.05) calc(h + 32.5));
+  --site-tube-shadow: oklch(from var(--kf-accent) calc(l - 0.309) calc(c - 0.005) calc(h + 19.9));
+  /* Stickers on a folder — red, pink, blue */
+  --site-sticker-red: oklch(from var(--kf-danger) calc(l - 0.011) calc(c + 0.085) calc(h - 3.5));
+  --site-sticker-pink: oklch(from var(--kf-accent) calc(l + 0.138) calc(c + 0.007) calc(h + 80.1));
+  --site-folder-1: color-mix(in srgb, var(--kf-contrast-ink) 8%, var(--kf-contrast-bg));
+  --site-folder-2: color-mix(in srgb, var(--kf-contrast-ink) 17%, var(--kf-contrast-bg));
+  --site-folder-3: color-mix(in srgb, var(--kf-contrast-ink) 4%, var(--kf-contrast-bg));
+  --site-folder-rim: color-mix(in srgb, var(--kf-contrast-ink) 23%, var(--kf-contrast-bg));
+  --site-ease-acc: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* As in the original, between 992 and 1440 the rem grows with the screen width */
+html { font-size: calc(0.625rem + 0.42vw); scrollbar-width: none; }
+@media (max-width: 991px) { html { font-size: 16px; } }
+@media (min-width: 1440px) { html { font-size: 16px; } }
+::-webkit-scrollbar { display: none; }
+
+body {
+  margin: 0;
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-size: 1rem;
+  line-height: 1.4;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+* { -webkit-tap-highlight-color: transparent; }
+button { border: 0; padding: 0; background: none; cursor: pointer; }
+
+.g-xs { font-size: 0.875rem; line-height: 1.2; letter-spacing: -0.00875rem; }
+.g-xxs { font-size: 0.75rem; line-height: 1.2; }
+.g-sm { font-size: 1rem; line-height: 1.4; letter-spacing: -0.00875em; }
+.g-upper { text-transform: uppercase; }
+.g-med { font-weight: 500; }
+.g-dim { color: var(--kf-dim); }
+
+/* ── Menu bar ── */
+.g-bar {
+  position: fixed; inset: 0 0 auto; z-index: 950;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.75rem 0.75rem 0;
+  pointer-events: none;
+}
+.g-bar > * { pointer-events: auto; }
+.g-bar__right { position: relative; display: flex; gap: 0.375rem; }
+.g-pill {
+  display: flex; align-items: center; gap: 0.5rem;
+  min-height: 2.75rem; padding: 0.25rem 0.75rem;
+  border-radius: var(--kf-radius-sm);
+  background: var(--kf-surface);
+  white-space: nowrap;
+  transition: background-color 0.35s;
+}
+.g-pill:hover { background: var(--kf-raised); }
+.g-pill--id { font-size: 0.875rem; font-weight: 500; text-transform: uppercase; }
+.g-pill--left { padding-left: 0.25rem; }
+.g-pill--cta { color: var(--kf-surface); background: var(--kf-ink); cursor: pointer; }
+.g-pill--cta a { color: inherit; text-decoration: none; }
+.g-pill--cta:hover { background: var(--kf-accent); }
+.g-pill--clock { cursor: pointer; }
+.g-pill__icon { width: 1rem; height: 1rem; flex: none; }
+.g-pill__icon--lg { width: 1.5rem; }
+.g-dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--kf-accent); }
+
+.g-cover { position: relative; width: 2.25rem; height: 2.25rem; border-radius: 0.25rem; overflow: hidden; flex: none; }
+.g-cover .wf-img { height: 100%; border: 0; }
+.g-cover .wf-img::after { display: none; }
+.g-cover__play {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  color: var(--kf-contrast-ink); background: color-mix(in srgb, var(--kf-contrast-bg) 25%, transparent);
+}
+.g-cover__play svg { width: 0.875rem; height: 0.875rem; }
+.g-cover__play [data-icon-pause] { display: none; }
+.is-playing .g-cover__play [data-icon-pause] { display: block; }
+.is-playing .g-cover__play [data-icon-play] { display: none; }
+
+/* Sound wave Lottie (270×160 panel) — like original .sound, width 1.5rem, height follows the panel ratio */
+.g-wave { display: block; width: 1.5rem; aspect-ratio: 270 / 160; }
+.g-wave svg path { fill: var(--kf-ink); }
+
+/* Like the original, the circle jumps from end to end via justify-content and only the background changes over .3s */
+.g-toggle {
+  position: relative; display: flex; align-items: center; justify-content: flex-start;
+  width: 2.25rem; height: 1.25rem; padding: 0 0.1125rem;
+  border-radius: 1rem; background: color-mix(in srgb, var(--kf-ink) 25%, var(--kf-surface));
+  transition: background-color 0.3s;
+}
+.g-toggle i {
+  position: absolute; width: 1.125rem; height: 1.125rem; border-radius: 50%; background: var(--kf-surface);
+}
+.g-toggle.is-active { justify-content: flex-end; background: var(--site-toggle-on); }
+
+.g-player {
+  position: absolute; top: 110%; left: 0; width: 22rem;
+  display: none; opacity: 0;
+  padding: 0.5rem; border-radius: var(--kf-radius-sm);
+  background: color-mix(in srgb, var(--kf-surface) 50%, transparent); border: 1px solid color-mix(in srgb, var(--kf-surface) 75%, transparent);
+  backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+  transition: opacity 0.2s;
+}
+.g-player.is-active { opacity: 1; }
+.g-player__row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.g-player__meta { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+.g-player__cover { width: 4rem; height: 4rem; flex: none; border-radius: var(--kf-radius-sm); overflow: hidden; }
+.g-player__cover .wf-img { height: 100%; }
+.g-player__cover .wf-img::after { white-space: normal; width: 90%; font-size: 8px; text-align: center; }
+.g-player__ctrl { display: flex; align-items: center; gap: 0.75rem; }
+.g-player__ctrl svg { width: 1rem; height: 1rem; }
+.g-player__ctrl [data-prev] { opacity: 0.35; }
+.g-player__ctrl [data-prev].is-active { opacity: 1; }
+
+/* ── Window Common ── */
+[data-window] { position: fixed; top: 0; left: 0; display: none; z-index: 500; }
+.g-win__frame {
+  padding: 0.5rem;
+  border-radius: var(--kf-radius-lg);
+  background: color-mix(in srgb, var(--kf-ink) 10%, transparent);
+  backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+}
+.g-win__body {
+  position: relative; width: 100%; height: 100%;
+  border-radius: 1.25rem; background: var(--kf-surface);
+  overflow: auto; scrollbar-width: none;
+}
+.g-win__bar {
+  position: sticky; top: 0; z-index: 2;
+  background: var(--kf-surface); cursor: grab;
+  padding-top: 1rem;
+}
+.g-win__bar-row {
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  padding: 0 1rem 1rem;
+}
+.g-win__title { font-size: 0.875rem; font-weight: 400; text-transform: uppercase; white-space: nowrap; }
+.g-win__line { height: 1px; background: var(--kf-line); }
+.g-lights { display: flex; gap: 0.375rem; }
+.g-light {
+  position: relative; width: 1rem; height: 1rem; border-radius: 50%;
+  display: grid; place-items: center; cursor: pointer;
+}
+.g-light--close { background: var(--kf-danger); }
+.g-light--min { background: var(--kf-warning); }
+.g-light svg { width: 0.5rem; height: 0.5rem; opacity: 0; transition: opacity 0.15s; color: color-mix(in srgb, var(--kf-ink) 55%, transparent); }
+.g-lights:hover .g-light svg { opacity: 1; }
+.g-win__foot {
+  position: sticky; bottom: 0; z-index: 2;
+  background: var(--kf-surface);
+}
+.g-win__foot-row { display: flex; justify-content: space-between; align-items: center; padding: 1rem; }
+.g-link-btn { display: inline-flex; align-items: center; gap: 0.25rem; color: var(--kf-accent); }
+.g-link-btn svg { width: 0.875rem; height: 0.875rem; }
+
+/* ── Dock (bottom menu) ── */
+.g-dock {
+  position: fixed; left: 0; right: 0; bottom: 0.75rem; z-index: 983;
+  width: 100%; max-width: 30rem; margin: 0 auto;
+  border: 2px solid var(--site-dock-line); border-radius: 1rem;
+  background: var(--site-dock); color: var(--site-dock-ink);
+  overflow: hidden;
+}
+.g-dock__menu { height: 0; display: none; overflow: hidden; }
+.g-dock__item {
+  display: block; color: var(--site-dock-ink);
+  transition: background-color 0.25s;
+}
+.g-dock__item:hover { background: var(--site-dock-hover); }
+.g-dock__item-row { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; }
+.g-dock__item-l { display: flex; align-items: center; gap: 0.75rem; }
+.g-dock__thumb { width: 2.5rem; height: 2.5rem; border-radius: 0.375rem; overflow: hidden; flex: none; }
+.g-dock__thumb .wf-img { display: block; height: 100%; border-color: var(--site-dock-img-line); background-color: var(--site-dock-img); }
+.g-dock__thumb .wf-img::after { display: none; }
+.g-dock__item-t { font-size: 1rem; font-weight: 500; text-transform: uppercase; }
+.g-dock__item svg { width: 1rem; height: 1rem; }
+.g-dock__line { height: 1px; background: var(--site-dock-rule); }
+.g-dock__bar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0.875rem 1rem; }
+.g-dock__logo { width: 2rem; height: 2rem; }
+.g-dock__label { font-size: 1.125rem; font-weight: 500; text-transform: uppercase; }
+/* Fit the hamburger Lottie (177×126 panel) to a 1.4rem cell */
+.g-burger { justify-self: end; position: relative; width: 1.4rem; height: 1.4rem; }
+.g-burger [data-lottie] { display: block; width: 100%; height: 100%; }
+.g-burger svg path { stroke: var(--site-dock-ink); }
+
+/* ── Blur Backdrop · Modal ── */
+.g-blur {
+  position: fixed; inset: 0; z-index: 984;
+  opacity: 0; pointer-events: none;
+  backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px);
+}
+/* The overlay is laid down instantly with no transition, as in the original */
+.g-blur.is-active { opacity: 1; pointer-events: auto; }
+
+.g-modal {
+  position: fixed; top: 0; bottom: 0; z-index: 985;
+  display: flex; flex-direction: column; justify-content: space-between;
+  width: 35vw; height: 98svh; margin: auto 0;
+  border-radius: 1.25rem; background: var(--kf-surface); color: var(--kf-ink);
+  overflow: hidden;
+  transition: transform 0.65s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+.g-modal--about { min-width: 26rem; max-width: 32rem; left: -100vw; }
+.g-modal--about.is-open { transform: translateX(101vw); }
+.g-modal--form { min-width: 24rem; max-width: 33rem; left: 100vw; }
+.g-modal--form.is-open { transform: translateX(-102%); }
+.g-modal__scroll { flex: 1; overflow: auto; scrollbar-width: none; }
+.g-modal__hero { position: relative; margin: 0 1rem; height: 11rem; border-radius: var(--kf-radius-sm); overflow: hidden; }
+.g-modal__hero .wf-img { height: 100%; }
+.g-modal__in { padding: 1.25rem 1rem; display: grid; gap: 1rem; }
+.g-modal__kicker { font-family: var(--kf-font-mono); font-size: 0.75rem; text-transform: uppercase; }
+.g-modal__h { margin: 0; font-size: 2rem; line-height: 1.1; font-weight: 500; text-transform: uppercase; letter-spacing: -0.02rem; }
+.g-modal__p { margin: 0; font-size: 0.875rem; line-height: 1.45; color: var(--site-body-soft); }
+.g-modal__links { display: flex; gap: 1rem; padding: 1rem; color: var(--kf-dim); font-size: 0.75rem; }
+.g-field { display: grid; gap: 0.25rem; }
+.g-field label { font-size: 0.75rem; color: var(--kf-dim); }
+.g-field input, .g-field select {
+  font: inherit; font-size: 0.875rem; padding: 0.625rem 0.75rem;
+  border: 1px solid var(--kf-line); border-radius: var(--kf-radius-sm); background: color-mix(in srgb, var(--kf-ink) 2%, var(--kf-surface));
+}
+.g-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.g-check { display: flex; gap: 0.5rem; align-items: flex-start; font-size: 0.75rem; color: var(--site-body-soft); }
+.g-check input { margin: 0.1rem 0 0; }
+
+/* Speaker list — black panel growing in height above the dock */
+.g-speakers {
+  position: fixed; left: 0; right: 0; bottom: 0.75rem; z-index: 992;
+  width: 100%; max-width: 30rem; margin: 0 auto;
+  height: 0; display: none; overflow: hidden;
+  border-radius: 1rem; background: var(--site-dock); color: var(--site-dock-ink);
+}
+.g-speakers__in { padding: 2rem 1.5rem 1.5rem; max-height: 80vh; overflow: auto; scrollbar-width: none; }
+.g-speakers__close {
+  position: absolute; top: 2rem; right: 1.5rem; padding: 0.9rem;
+  border-radius: var(--kf-radius-sm); background: var(--site-dock-ink); color: var(--site-dock);
+}
+.g-speakers__close svg { width: 0.75rem; height: 0.75rem; }
+.g-speakers__h { margin: 0 0 1.5rem; font-size: 1.5rem; font-weight: 500; text-transform: uppercase; }
+.g-speakers__row { border-top: 1px solid var(--site-dock-img); padding: 0.75rem 0; }
+.g-speakers__top { display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+.g-speakers__num { font-size: 1rem; color: var(--site-dim-on-ink); font-weight: 300; width: 1.75rem; }
+.g-speakers__face { width: 2.5rem; height: 2.5rem; border-radius: 0.375rem; overflow: hidden; flex: none; }
+.g-speakers__face .wf-img { display: block; height: 100%; border-color: var(--site-dock-img-line); background-color: var(--site-dock-img); }
+.g-speakers__face .wf-img::after { display: none; }
+.g-speakers__btns { display: flex; gap: 1rem; padding: 0.75rem 0 0 4.25rem; font-size: 0.875rem; }
+
+/* Accordion: opens the height with grid-template-rows 0fr→1fr like the original */
+.g-acc__bottom {
+  display: grid; grid-template-rows: 0fr; overflow: hidden;
+  transition: grid-template-rows 0.6s var(--site-ease-acc);
+}
+[data-acc-status="active"] > .g-acc__bottom { grid-template-rows: 1fr; }
+.g-acc__wrap { overflow: hidden; min-height: 0; }
+.g-acc__icon { display: inline-flex; transform: rotate(180deg); transition: transform 0.6s var(--site-ease-acc); }
+.g-acc__icon svg { width: 0.875rem; height: 0.875rem; }
+[data-acc-status="active"] > .g-acc__top .g-acc__icon { transform: rotate(0deg); }
+.g-acc__top { display: flex; align-items: center; gap: 0.25em; cursor: pointer; font-weight: 500; }
+
+/* ── Notices ── */
+.g-notis {
+  position: fixed; right: 0.75rem; bottom: 1rem; z-index: 200;
+  display: flex; flex-direction: column; gap: 0.5rem;
+  max-width: 24rem; opacity: 0; pointer-events: none;
+}
+.g-notis.is-active { opacity: 1; pointer-events: auto; }
+.g-noti {
+  position: relative; min-width: 24rem; padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--kf-ink) 6%, var(--kf-surface)); border-radius: 1rem;
+  background: color-mix(in srgb, var(--kf-surface) 70%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.05);
+  cursor: pointer; transition: background-color 0.25s;
+}
+.g-noti:hover { background: color-mix(in srgb, var(--kf-surface) 90%, transparent); }
+.g-noti__x {
+  position: absolute; top: -0.4rem; left: -0.4rem; z-index: 2;
+  width: 1.25rem; height: 1.25rem; border-radius: 50%;
+  display: grid; place-items: center; opacity: 0;
+  background: color-mix(in srgb, var(--kf-line) 80%, transparent); border: 1px solid color-mix(in srgb, var(--kf-ink) 16%, var(--kf-surface));
+  transition: opacity 0.2s;
+}
+.g-noti:hover .g-noti__x { opacity: 1; }
+.g-noti__x svg { width: 0.5rem; height: 0.5rem; }
+/* Original cell: 4rem image + text column (.25rem gap between head and title, .5rem gap between body and button) */
+.g-noti__row { display: grid; grid-template-columns: min-content 1fr; gap: 1rem; }
+.g-noti__row > div:last-child { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+.g-noti__ico { width: 4rem; height: 4rem; border-radius: 0.875rem; overflow: hidden; flex: none; }
+.g-noti__ico .wf-img { height: 100%; }
+.g-noti__ico .wf-img::after { display: none; }
+.g-noti__head { display: flex; justify-content: space-between; gap: 1rem; color: var(--kf-dim); font-size: 0.75rem; line-height: 1.2; letter-spacing: -0.00875rem; }
+.g-noti__t { font-size: 1.125rem; line-height: 1.4; letter-spacing: -0.025em; font-weight: 500; margin: 0 0 0.25rem; }
+.g-noti__p { font-size: 0.75rem; color: color-mix(in srgb, var(--kf-ink) 74%, var(--kf-surface)); margin: 0 0 0.25rem; line-height: 1.2; }
+
+/* ── Loader ── */
+.g-loader {
+  position: fixed; inset: 0; z-index: 99999;
+  display: flex; flex-direction: column; justify-content: space-between;
+  background: var(--site-dock); color: var(--site-dock-ink);
+}
+.g-loader__mid { flex: 1; display: grid; place-content: center; justify-items: center; gap: 1.5rem; }
+.g-loader__media { width: 12rem; height: 12rem; border: 0; background-color: color-mix(in srgb, var(--kf-contrast-ink) 7%, var(--kf-contrast-bg)); border-radius: 0.5rem; }
+.g-loader__media::after { white-space: normal; width: 90%; text-align: center; background: color-mix(in srgb, var(--kf-contrast-ink) 7%, var(--kf-contrast-bg)); color: color-mix(in srgb, var(--kf-contrast-ink) 47%, var(--kf-contrast-bg)); }
+.g-loader__bar { position: relative; width: 7rem; height: 0.1875rem; border-radius: 0.5rem; background: color-mix(in srgb, var(--kf-contrast-ink) 12.5%, var(--kf-contrast-bg)); }
+.g-loader__bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 0.5rem; background: var(--site-dock-ink); }
+.g-loader__foot { display: flex; align-items: center; gap: 1rem; padding: 0 1.5rem 1.5rem; font-size: 4rem; line-height: 1.15; font-weight: 500; letter-spacing: -0.04em; }
+.g-loader__slot { position: relative; height: 4.75rem; overflow: hidden; }
+.g-loader__slot::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(var(--site-dock), transparent 30%, transparent 70%, var(--site-dock));
+}
+.g-loader__list > div { height: 4.75rem; display: flex; align-items: center; white-space: nowrap; }
+
+/* ── Screensaver ── */
+.g-saver {
+  position: fixed; inset: 0; z-index: 999; display: none;
+  background: color-mix(in srgb, var(--kf-ink) 91%, transparent);
+  backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px);
+}
+.g-saver__logo { position: absolute; top: 0; left: 0; width: 15rem; color: var(--kf-surface); will-change: transform; }
+
+/* ── Select Box ── */
+.g-select {
+  position: fixed; top: 0; left: 0; width: 0; height: 0; z-index: 970;
+  opacity: 0; pointer-events: none;
+  background: color-mix(in srgb, var(--kf-surface) 25%, transparent); border: 1px solid var(--site-glass-line);
+}
+
+/* Video slot: fills the cell, autoplays and loops — the label stays on top */
+.wf-img > video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border: 0; }
+
+/* With the comment switched off, hide the placeholder label */
+.wf-hide-notes .wf-img::after { opacity: 0; }
+
+/* Same as the Webflow standard: tablet hides at 991 and below, landscape at 767 and below */
+@media (max-width: 991px) {
+  .g-hide-tablet { display: none !important; }
+}
+@media (max-width: 767px) {
+  .g-hide-landscape { display: none !important; }
+  .g-bar { padding: 0.75rem 0.25rem 0; justify-content: flex-end; }
+  .g-pill { min-height: 2.25rem; padding: 0.25rem 0.375rem; }
+  .g-dock { width: 90vw; max-width: 27rem; }
+  .g-speakers { width: 90vw; }
+  .g-modal { width: 95vw; min-width: 0; }
+  .g-modal--form.is-open { transform: translateX(calc(-100% - 2.5vw)); }
+  .g-modal--about.is-open { transform: translateX(102vw); }
+  .g-fields { grid-template-columns: 1fr; }
+  .g-loader__foot { font-size: 2.25rem; }
+  .g-loader__slot, .g-loader__list > div { height: 2.75rem; }
+  .g-loader__media { width: 8rem; height: 8rem; }
+}

@@ -1,0 +1,31 @@
+/* When a swipe slide becomes the current one — the photo settles from 1.15x in 5s and sharpens in 2s,
+   After 1.2s the wave line is drawn from the left over 1.5s, and at 1.75s the glow over the line spreads once for 2s.
+   The current-section marker reads both Swiper’s .swiper-slide-active and [data-active] set by the consumer. When moving to the next section it returns to its starting position after .5s */
+[data-fx~="swoosh-slide"] { position: relative; overflow: hidden; }
+[data-fx~="swoosh-slide"] [data-fx-part="photo"] {
+  position: absolute; inset: 0; opacity: 0; transform: scale(var(--fx-from, 1.15)); transform-origin: center;
+  transition: opacity var(--fx-fade, 2s) cubic-bezier(0.65, 0, 0.35, 1), transform 0s linear var(--fx-fade, 2s);
+}
+[data-fx~="swoosh-slide"] [data-fx-part="line"], [data-fx~="swoosh-slide"] [data-fx-part="glow"] { position: absolute; left: 0; top: 0; bottom: 0; z-index: 2; overflow: hidden; pointer-events: none; }
+[data-fx~="swoosh-slide"] [data-fx-part="line"] { width: 0; transition: width 0s linear var(--fx-hold, 5s); }
+[data-fx~="swoosh-slide"] [data-fx-part="line"] > *, [data-fx~="swoosh-slide"] [data-fx-part="glow"] > * { width: 100vw; max-width: none; height: 100%; }
+[data-fx~="swoosh-slide"] [data-fx-part="glow"] { right: 0; opacity: 0; }
+:is(.swiper-slide-active, [data-active]) > [data-fx~="swoosh-slide"] [data-fx-part="photo"],
+[data-fx~="swoosh-slide"]:is(.swiper-slide-active, [data-active]) [data-fx-part="photo"] {
+  opacity: 1; transform: scale(1);
+  transition: opacity var(--fx-fade, 2s) cubic-bezier(0.65, 0, 0.35, 1), transform var(--fx-settle, 5s) cubic-bezier(0.33, 1, 0.68, 1);
+}
+:is(.swiper-slide-active, [data-active]) > [data-fx~="swoosh-slide"] [data-fx-part="line"],
+[data-fx~="swoosh-slide"]:is(.swiper-slide-active, [data-active]) [data-fx-part="line"] {
+  width: calc(100% + 20%); transition: width var(--fx-draw, 1.5s) cubic-bezier(0.33, 1, 0.68, 1) var(--fx-line-at, 1.2s);
+}
+:is(.swiper-slide-active, [data-active]) > [data-fx~="swoosh-slide"] [data-fx-part="glow"],
+[data-fx~="swoosh-slide"]:is(.swiper-slide-active, [data-active]) [data-fx-part="glow"] {
+  animation: fx-swoosh-glow var(--fx-glow, 2s) var(--fx-glow-at, 1.75s) 1 forwards;
+}
+@keyframes fx-swoosh-glow { 50% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="swoosh-slide"] [data-fx-part="photo"] { opacity: 1; transform: none; transition: none !important; }
+  [data-fx~="swoosh-slide"] [data-fx-part="line"] { width: 120%; transition: none !important; }
+  [data-fx~="swoosh-slide"] [data-fx-part="glow"] { animation: none !important; }
+}

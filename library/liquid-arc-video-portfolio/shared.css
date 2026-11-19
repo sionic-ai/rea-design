@@ -1,0 +1,220 @@
+/* Original measures margins in 1536-column canvas units (100vw/1536), and font size is stretched to the width by a single html font-size line.
+   So spacing uses multiples of --u and text uses rem. Breakpoints: sm 640 · md 768 · lg 1024. */
+:root {
+  --u: calc(100vw / 1536);
+  --site-bc-45: color-mix(in oklab, var(--kf-bg) 45%, transparent);
+  --site-bc-65: color-mix(in oklab, var(--kf-bg) 65%, transparent);
+  --site-ink-10: color-mix(in oklab, currentColor 10%, transparent);
+  --site-pad: calc(var(--u) * 100);
+  --site-bar: calc(var(--u) * 150);
+  --site-text: 1.266rem;
+  --site-text-lh: 1.75rem;
+  --site-text-xl: 1.424rem;
+}
+@media (min-width: 640px) {
+  :root { --site-bar: calc(var(--u) * 100); --site-text: 1rem; --site-text-lh: 1.5rem; }
+}
+@media (min-width: 768px) {
+  :root { --site-pad: calc(var(--u) * 50); --site-bar: calc(var(--u) * 50); }
+}
+
+html {
+  font-size: max(clamp(10px, 2.5641vw, 12px), min(0.9375vw, 14.4px));
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  scrollbar-width: none;
+}
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  font-size: var(--site-text);
+  line-height: var(--site-text-lh);
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-kerning: normal;
+}
+.ma-sr { position: absolute; top: 0; left: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* Header row and bottom bar that float up with a 1s expo after ready — original fade-in-on-ready */
+.ma-ready-fade { opacity: 0; transition: opacity 1s var(--kf-ease-out-expo); }
+.is-ready .ma-ready-fade { opacity: 1; }
+
+/* Headline */
+.ma-head {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 20;
+  padding: var(--site-pad);
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+  mix-blend-mode: difference;
+}
+.ma-head__name, .ma-head__role { font: inherit; font-weight: 400; }
+.ma-head__line { position: relative; overflow: hidden; }
+.ma-head__role { display: none; }
+@media (min-width: 640px) { .ma-head__role { display: block; } }
+
+/* Top-right button (About/Close · View in Case) — the two words roll up and down to swap */
+.ma-corner {
+  position: fixed;
+  top: var(--site-pad);
+  right: var(--site-pad);
+  z-index: 32;
+  height: var(--site-text-lh);
+  pointer-events: none;
+}
+.ma-roll {
+  position: relative;
+  display: block;
+  height: var(--site-text-lh);
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  pointer-events: auto;
+  color: inherit;
+  text-align: right;
+}
+/* The two words roll and swap on the outside (span) via GSAP, and the inside (i) fades to .45 on hover — original group-hover:opacity-45 · .3s */
+.ma-roll__a, .ma-roll__b { display: inline-block; white-space: nowrap; vertical-align: top; }
+.ma-roll__b { position: absolute; top: 0; left: 0; }
+.ma-roll i { display: block; font-style: normal; transition: opacity 0.3s var(--kf-ease-ui); }
+.ma-roll:hover i { opacity: 0.45; }
+
+/* Bottom bar — gallery progress circle on the left · prev/title/next in the center · close on the right */
+.ma-controls {
+  position: fixed;
+  left: var(--site-pad);
+  right: var(--site-pad);
+  bottom: var(--site-pad);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+/* The original pill looks one tone lighter even on the same black (a backdrop with SVG filter #b) — lay one more layer of 5% text color */
+.ma-glass {
+  background: var(--site-bc-45);
+  box-shadow: inset 0 0 0 100vmax color-mix(in oklab, var(--kf-ink) 5%, transparent);
+  backdrop-filter: blur(4px) saturate(180%);
+  -webkit-backdrop-filter: blur(4px) saturate(180%);
+  border-radius: var(--kf-radius-md);
+  overflow: hidden;
+}
+.ma-square {
+  position: relative;
+  width: var(--site-bar);
+  height: var(--site-bar);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  clip-path: inset(50% round 0.375rem);
+  opacity: 0;
+  border: 0;
+  padding: 0;
+  color: var(--kf-ink);
+}
+.ma-square svg { width: calc(var(--site-bar) * 0.5); height: calc(var(--site-bar) * 0.5); overflow: visible; }
+.ma-square--close { cursor: pointer; }
+.ma-square__bg { position: absolute; inset: 0; background: var(--kf-bg); border-radius: var(--kf-radius-md); }
+.ma-pill {
+  display: flex;
+  align-items: center;
+  height: var(--site-bar);
+  width: fit-content;
+  flex-shrink: 0;
+  margin: 0 auto;
+}
+.ma-pill__btn {
+  position: relative;
+  width: var(--site-bar);
+  height: 100%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--kf-ink);
+  cursor: pointer;
+  pointer-events: auto;
+}
+.ma-pill__fill { position: absolute; inset: 0; background: var(--kf-bg); transform: scaleX(0); }
+.ma-pill__btn--prev .ma-pill__fill { transform-origin: right; border-radius: var(--kf-radius-md) 0 0 var(--kf-radius-md); }
+.ma-pill__btn--next .ma-pill__fill { transform-origin: left; border-radius: 0 var(--kf-radius-md) var(--kf-radius-md) 0; }
+.ma-pill__ico { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.ma-pill__ico svg { width: calc(var(--site-bar) * 0.3); height: calc(var(--site-bar) * 0.3); }
+.ma-pill__btn--prev .ma-pill__ico--b { inset: 0 -100% 0 100%; opacity: 0; }
+.ma-pill__btn--next .ma-pill__ico--b { inset: 0 100% 0 -100%; opacity: 0; }
+.ma-pill__title {
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  margin: 0 var(--site-bar);
+  font-size: var(--site-text-xl);
+  line-height: 1;
+  font-weight: 500;
+  pointer-events: none;
+  color: var(--kf-ink);
+}
+.ma-pill__title span { position: absolute; left: 50%; top: 0; white-space: nowrap; padding: 1px 0; will-change: transform; }
+.ma-pill__title i { display: block; visibility: hidden; font-style: normal; white-space: nowrap; padding: 1px 0; }
+.ma-icon { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Loader — 000→100 digits roll up column by column, and the arc above unfolds from the center then bends */
+.ma-loader-veil { position: fixed; inset: 0; z-index: 15; background: var(--kf-bg); cursor: wait; }
+.ma-count {
+  position: fixed;
+  left: var(--site-pad);
+  right: var(--site-pad);
+  bottom: var(--site-pad);
+  height: var(--site-bar);
+  z-index: 21;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.ma-count__clip { overflow: hidden; }
+.ma-count__row { display: flex; font-size: var(--site-text-xl); line-height: 1; padding: 1px 0; font-weight: 500; font-variant-numeric: tabular-nums; opacity: 0.45; }
+.ma-count__col { position: relative; display: block; overflow: hidden; }
+.ma-count__col i { visibility: hidden; font-style: normal; }
+.ma-count__col span { position: absolute; inset: 0; }
+.ma-arc {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--u) * 325);
+  transform: translateX(-50%);
+  z-index: 20;
+  pointer-events: none;
+  mix-blend-mode: difference;
+  color: var(--kf-ink);
+}
+@media (min-width: 640px) { .ma-arc { bottom: calc(var(--u) * 250); } }
+@media (min-width: 768px) { .ma-arc { bottom: calc(var(--u) * 125); } }
+.ma-arc svg { display: block; overflow: visible; }
+
+/* A section entered through a page transition draws its first picture with no loader, on the bright panel where the previous section ended (a one-line script in the head sets the marker) */
+html.ma-from-home .ma-loader-veil, html.ma-from-home .ma-count,
+html.ma-from-case .ma-loader-veil, html.ma-from-case .ma-count { display: none; }
+html.ma-from-case, html.ma-from-case body { background: var(--kf-contrast-bg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ma-ready-fade, .ma-roll i { transition: none; }
+}
+/* The bar lets pointer events pass through, once a case opens, the progress circle and close cell take them (original pointer-events-auto) */
+.ma-controls.is-case .ma-square { pointer-events: auto; }

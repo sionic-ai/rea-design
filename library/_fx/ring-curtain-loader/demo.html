@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ring-curtain-loader — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); margin: 0; }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo { padding: 48px 20px; display: grid; gap: 24px; }
+  .demo-btn { justify-self: start; height: 40px; padding: 0 16px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-sm); background: var(--kf-surface); color: var(--kf-ink); cursor: pointer; }
+  .demo-card { padding: 20px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-md); background: var(--kf-surface); }
+  .demo-logo { font: 300 22px/1 var(--kf-font-display); letter-spacing: .4em; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>ring-curtain-loader</b> — As soon as it opens, a patterned ring spins in, the logo appears and disappears, then two curtains lift upward. Pressing the button attaches a new loader and replays it.</p>
+<section class="demo">
+  <button class="demo-btn" type="button" id="again">Replay loader</button>
+  <div class="demo-card">First body card — appears when the curtain lifts.</div>
+  <div class="demo-card">Body second card</div>
+</section>
+<div data-fx="ring-curtain-loader" id="loader" aria-hidden="true">
+  <div data-fx-part="first"></div>
+  <div data-fx-part="second"></div>
+  <div data-fx-part="ring">
+      <svg viewBox="-150 -150 300 300" fill="none" stroke="currentColor" stroke-width=".5">
+        <circle r="146"/><circle r="140"/><circle r="104"/><circle r="60"/><circle r="22"/>
+        <g id="fx-rc-petal"><path d="M0-60C14-80 14-98 0-104C-14-98-14-80 0-60Z"/><path d="M0-104C10-116 8-128 0-140C-8-128-10-116 0-104Z"/><circle cy="-122" r="2"/></g>
+        <use href="#fx-rc-petal" transform="rotate(30)"/><use href="#fx-rc-petal" transform="rotate(60)"/><use href="#fx-rc-petal" transform="rotate(90)"/>
+        <use href="#fx-rc-petal" transform="rotate(120)"/><use href="#fx-rc-petal" transform="rotate(150)"/><use href="#fx-rc-petal" transform="rotate(180)"/>
+        <use href="#fx-rc-petal" transform="rotate(210)"/><use href="#fx-rc-petal" transform="rotate(240)"/><use href="#fx-rc-petal" transform="rotate(270)"/>
+        <use href="#fx-rc-petal" transform="rotate(300)"/><use href="#fx-rc-petal" transform="rotate(330)"/>
+        <g id="fx-rc-leaf"><path d="M0-22C8-34 8-48 0-58C-8-48-8-34 0-22Z"/></g>
+        <use href="#fx-rc-leaf" transform="rotate(45)"/><use href="#fx-rc-leaf" transform="rotate(90)"/><use href="#fx-rc-leaf" transform="rotate(135)"/>
+        <use href="#fx-rc-leaf" transform="rotate(180)"/><use href="#fx-rc-leaf" transform="rotate(225)"/><use href="#fx-rc-leaf" transform="rotate(270)"/><use href="#fx-rc-leaf" transform="rotate(315)"/>
+      </svg>
+  </div>
+  <div data-fx-part="logo" class="demo-logo">LOGO</div>
+</div>
+<script>
+// Late arrivals and removals — checks that fx-core attaches to an element added after 1s and detaches from an element removed after 2.5s
+(() => {
+  const src = document.getElementById("loader");
+  if (!src) return;
+  const html = src.outerHTML.replace(/\sid="[^"]*"/g, "");
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = html; const el = t.content.firstElementChild; el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => src.after(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.getElementById("again").addEventListener("click", () => document.body.append(make("again")));
+  document.addEventListener("fx:done", (e) => e.target.dataset.demo && e.target.remove());
+  document.querySelector(".demo-hint").append(" · After 1 second one more loader comes in (a late arrival), and after 2.5 seconds one is removed (detach).");
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

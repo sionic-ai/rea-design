@@ -1,0 +1,221 @@
+/* Shared by all pages — logo top left · menu top right (both difference blend), menu panel sliding in from the right, progress dots, footer, 
+   How text and photos appear, the light canvas behind them, and the noise. Values are exactly the original CSS (html font size 62.5% = 1rem 10px). */
+:root {
+  --site-easing: var(--kf-ease-out);
+  --site-band: color-mix(in oklab, var(--kf-contrast-bg) 88%, var(--kf-contrast-ink));
+  --site-rule: color-mix(in oklab, var(--kf-ink) 50%, transparent);
+  /* Specks — gray dots like the original pattern, with the same alpha 18/255 in every cell */
+  --site-noise: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27240%27 height=%27240%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%27.9%27 numOctaves=%272%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix values=%27.55 0 0 0 0 .55 0 0 0 0 .55 0 0 0 0 0 0 0 0 .07%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27/%3E%3C/svg%3E");
+}
+
+html { font-size: 62.5%; }
+body {
+  font-family: var(--kf-font-sans);
+  font-weight: 400;
+  line-height: 2;
+  letter-spacing: 0;
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-feature-settings: "palt";
+}
+body.hidden { overflow: hidden; }
+::selection { background: var(--kf-ink); color: var(--kf-bg); }
+.t-garamond { font-family: var(--kf-font-display); font-weight: 300; font-style: normal; }
+p { font-size: 1.4rem; color: var(--kf-ink); }
+a { font-size: 1.4rem; color: var(--kf-ink); cursor: pointer; transition: 0.5s var(--site-easing); }
+a:hover { opacity: 0.5; }
+h1, h2, h3, h4, h5 { line-height: 1.5; font-weight: 700; color: var(--kf-ink); letter-spacing: 0.1rem; }
+h2 { font-size: 3.6rem; margin-bottom: 35px; }
+h3 { font-size: 2.8rem; margin-bottom: 20px; }
+h4 { font-size: 2.1rem; margin-bottom: 20px; }
+img, .t-img { margin-bottom: 20px; }
+
+.t-section { width: calc(100% - 80px); max-width: 960px; margin: 0 auto 120px; padding-top: 30px; }
+
+/* Underline button — on hover the underline shrinks and vanishes in .4s around its right end */
+.t-btn { margin: 10px 0 0; position: relative; display: inline-block; font-size: 1.8rem; line-height: 1.5; color: var(--kf-ink); }
+.t-btn::after {
+  content: "";
+  width: 100%;
+  height: 1px;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  background: color-mix(in oklab, var(--kf-ink) 60%, var(--kf-bg));
+  transform: scale(1, 1);
+  transform-origin: left top;
+  transition: transform 0.4s var(--site-easing);
+}
+.t-btn:hover { opacity: 1; }
+.t-btn:hover::after { transform-origin: right top; transform: scale(0, 1); }
+.t-btn-sq { border: 1px solid color-mix(in oklab, var(--kf-ink) 25%, transparent); padding: 6px 70px 3px; display: inline-block; text-align: center; font-size: 1.8rem; }
+/* Original hover: light gray text (200) on an ink-colored plate — from the skin, 80% light text and 20% ink */
+.t-btn-sq:hover { opacity: 1; background: var(--kf-ink); border-color: var(--kf-ink); color: color-mix(in srgb, var(--kf-contrast-ink) 80%, var(--kf-ink)); }
+
+/* Title rising one character at a time — each char 0.1s later, waits 1s after entering the screen, then 1s */
+.t-chars { display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 0.3em; overflow: hidden; }
+.t-word { display: inline-flex; }
+.t-word span { transform: translateY(20%); opacity: 0; }
+.t-chars.appeartext .t-word span { animation: t-text-on 1s ease-in-out forwards 1s; }
+@keyframes t-text-on {
+  0% { opacity: 0; transform: translateX(20%); }
+  100% { opacity: 1; transform: translateY(0%); }
+}
+
+/* When visible, rises from 10px below in .8s */
+.t-inview { opacity: 0; transform: translateY(10px); transition: 0.8s ease-in-out; }
+.t-inview.is-show { opacity: 1; transform: translateX(0); }
+
+/* The photo clears from a large blur and scales to 1.05 — blur .8s delayed .2s, opacity 1s delayed .3s, size 1s delayed .4s. The outer box floats up in .8s like the other text */
+.t-cover.t-inview { overflow: hidden; }
+.t-cover > .t-cover__in {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transform: scale(1);
+  filter: blur(50px);
+  transition: transform 1s var(--site-easing) 0.4s, opacity 1s var(--site-easing) 0.3s, filter 0.8s var(--site-easing) 0.2s;
+}
+.t-cover.is-show > .t-cover__in { opacity: 1; transform: scale(1.05); filter: blur(0); }
+.t-cover .wf-img { display: block; height: 100%; border: 0; }
+
+.wf-img { --wf-fill: var(--kf-raised); --wf-line: color-mix(in oklab, var(--kf-ink) 20%, transparent); --wf-fill-ink: var(--kf-dim); }
+.t-dark-img .wf-img { --wf-fill: color-mix(in oklab, var(--kf-contrast-bg) 80%, var(--kf-bg)); --wf-fill-ink: color-mix(in oklab, var(--kf-contrast-ink) 70%, transparent); --wf-line: color-mix(in oklab, var(--kf-contrast-ink) 18%, transparent); }
+
+/* ───── Logo · header line — difference blend, so it brightens by itself over photos and dark bands ───── */
+.t-logo { position: fixed; top: 25px; left: 40px; z-index: 3000; mix-blend-mode: difference; color: var(--kf-on-accent); }
+.t-logo svg { display: block; width: 125px; height: 24px; margin: 3px 0 8px; }
+.t-logo text, .t-foot__logo text, .t-intro__logo text { fill: currentColor; font-family: var(--kf-font-display); font-weight: 400; letter-spacing: 0; }
+.t-head { width: calc(100% - 60px); position: fixed; top: 25px; left: 30px; z-index: 2000; display: flex; align-items: flex-start; justify-content: flex-end; mix-blend-mode: difference; pointer-events: none; }
+.t-head__menu { display: flex; pointer-events: auto; }
+.t-head__menu > a { font-size: 1.4rem; color: var(--kf-on-accent); line-height: 1.5; margin: 0 20px 10px 0; }
+.t-menu-btn { width: 40px; height: 37px; position: relative; cursor: pointer; transform: translateY(3px); background: none; border: 0; padding: 0; }
+.t-menu-btn span { width: 30px; height: 1px; background: var(--kf-on-accent); position: absolute; right: 5px; transition: 0.3s var(--site-easing); }
+.t-menu-btn span:nth-of-type(1) { top: 5px; }
+.t-menu-btn span:nth-of-type(2) { width: 50%; bottom: 25px; }
+.t-menu-btn.active span:nth-of-type(1) { top: 5px; transform: rotate(-20deg); }
+.t-menu-btn.active span:nth-of-type(2) { width: 30px; bottom: 31px; transform: rotate(20deg); }
+.t-menu-btn i { font-style: normal; font-size: 1.4rem; line-height: 2; color: var(--kf-on-accent); position: absolute; right: 5px; bottom: 0; mix-blend-mode: difference; opacity: 1; }
+.t-menu-btn i:nth-of-type(2) { opacity: 0; }
+.t-menu-btn.active i:nth-of-type(1) { opacity: 0; }
+.t-menu-btn.active i:nth-of-type(2) { opacity: 1; }
+
+/* Menu panel — .6s from 100% on the right, list follows .2s later from 5% to the side over .6s */
+.t-nav { display: block; height: 100vh; background: var(--kf-bg); position: fixed; top: 0; right: 0; z-index: 1000; transform: translateX(100%); transition: transform 0.6s var(--site-easing); pointer-events: none; }
+.t-nav.active { transform: translateX(0); pointer-events: auto; overflow-y: auto; }
+/* The original doesn’t change box-sizing, so padding is added to the 300px text cell (panel width 500px) */
+.t-nav__list { box-sizing: content-box; max-width: 300px; padding: 0 140px 50px 60px; margin-top: 100px; transition: 0.6s ease-in-out 0.2s; transform: translateX(5%); opacity: 0; }
+.t-nav.active .t-nav__list { transform: translateX(0); opacity: 1; }
+.t-nav__list a { display: block; font-family: var(--kf-font-display); font-weight: 400; color: var(--kf-ink-soft); font-size: 1.5rem; letter-spacing: 0.1rem; margin-bottom: 30px; line-height: 1.45; }
+.t-nav__list a span { font-family: var(--kf-font-sans); font-weight: 300; font-size: 1.2rem; letter-spacing: 0.04rem; margin-left: 5px; }
+
+/* Progress dot: moves 0→93% along the 200px vertical line in the center */
+.t-progress { width: 1px; height: 200px; background: color-mix(in oklab, var(--kf-contrast-ink) 75%, transparent); position: fixed; top: 0; right: 30px; bottom: 0; margin: auto 0; z-index: 200; mix-blend-mode: difference; }
+.t-progress span { width: 10px; height: 10px; position: absolute; background: var(--kf-contrast-ink); top: 0; left: 50%; transform: translateX(-50%); border-radius: var(--kf-radius-pill); }
+
+main { position: relative; z-index: 100; width: 100%; }
+
+/* ───── Footer ───── */
+.t-foot { position: relative; z-index: 100; }
+.t-foot .t-section { width: calc(100% - 300px); max-width: 100%; margin-bottom: 80px; }
+.t-go-up { width: 50px; height: 55px; position: absolute; top: 100px; right: 80px; margin: 0; cursor: pointer; background: none; border: 0; padding: 0; color: inherit; }
+.t-go-up span { width: 30px; height: 1px; background: var(--kf-dim); position: absolute; top: 10px; transition: 0.3s var(--site-easing); }
+.t-go-up span:nth-of-type(1) { left: -7px; transform: rotate(-45deg); }
+.t-go-up span:nth-of-type(2) { right: -7px; transform: rotate(45deg); }
+.t-go-up i { font-style: normal; font-size: 1rem; text-align: center; position: absolute; bottom: 0; left: 0; right: 0; margin: 0 auto; transition: 0.3s var(--site-easing); }
+.t-go-up:hover span { top: -1px; }
+.t-go-up:hover span:nth-of-type(1) { left: -1px; }
+.t-go-up:hover span:nth-of-type(2) { right: 0; }
+.t-go-up:hover i { transform: rotate(90deg); }
+.t-foot__logo { width: 150px; height: 26px; margin-bottom: 40px; color: var(--kf-ink); }
+.t-foot__logo svg { display: block; width: 100%; height: 100%; }
+.t-col2 { display: flex; align-items: flex-start; flex-wrap: wrap; }
+.t-col2 > .t-box { width: calc(50% - 30px); margin-right: 60px; margin-bottom: 20px; }
+.t-col2 > .t-box:nth-of-type(2n) { margin-right: 0; }
+.t-foot .t-col2 { margin-bottom: 30px; }
+.t-foot .t-box h5, .t-foot .t-box a, .t-foot .t-box p { font-size: 1.4rem; margin: 0; }
+.t-foot .t-contact { line-height: 1; margin-bottom: 10px; }
+.t-foot .t-tel { display: block; }
+.t-foot .t-box h5 { font-size: 2.6rem; font-weight: 400; color: var(--kf-contrast-bg); font-family: var(--kf-font-display); }
+.t-foot .t-box h5 span { font-size: 1.2rem; display: inline-block; margin-left: 7px; }
+.t-foot .t-box h5 time { font-size: 1.4rem; }
+.t-foot .t-tel-desc { font-size: 1.1rem; line-height: 1.75; margin: 5px 0 15px; }
+.t-foot .t-mail { display: inline-block; text-decoration: underline; text-decoration-color: color-mix(in oklab, var(--kf-ink) 50%, var(--kf-bg)); margin-bottom: 30px; }
+.t-foot .t-links a { display: block; font-size: 1.3rem; margin-bottom: 3px; }
+.t-copy, .t-copy p { width: 100%; font-size: 1.2rem; }
+
+/* ───── Background glow and speckle ───── */
+.t-canvas { position: relative; z-index: 2; }
+.t-canvas canvas { position: fixed; inset: 0; width: 100%; height: 100%; opacity: 0.1; filter: blur(25px); pointer-events: none; }
+.t-noise { pointer-events: none; position: fixed; z-index: 2; top: -50%; left: -50%; width: 200%; height: 200vh; background: var(--site-noise) repeat 0 0; animation: t-noise 0.2s infinite; opacity: 0.5; }
+@keyframes t-noise {
+  0% { transform: translate(0, 0); }
+  10% { transform: translate(-5px, -5px); }
+  20% { transform: translate(-10px, 5px); }
+  30% { transform: translate(5px, -10px); }
+  40% { transform: translate(-5px, 15px); }
+  50% { transform: translate(-10px, 5px); }
+  60% { transform: translate(15px, 0); }
+  70% { transform: translate(0, 10px); }
+  80% { transform: translate(-15px, 0); }
+  90% { transform: translate(10px, 5px); }
+  100% { transform: translate(5px, 0); }
+}
+
+/* ───── Subpage header ───── */
+.t-hero { margin: 80px 0; height: 490px; display: flex; align-items: center; justify-content: center; position: relative; }
+.t-hero > .wf-img { position: absolute; inset: 0; height: 100%; border: 0; }
+/* Photo slot where the white title sits — shaded toward the dark side like the original photo */
+.t-hero > .wf-img { --wf-fill: color-mix(in oklab, var(--kf-contrast-bg) 72%, var(--kf-bg)); --wf-line: color-mix(in oklab, var(--kf-contrast-ink) 16%, transparent); --wf-fill-ink: color-mix(in oklab, var(--kf-contrast-ink) 60%, transparent); }
+.t-hero--none { height: auto; padding-top: 100px; margin-bottom: 40px; }
+.t-hero__title { text-align: center; position: relative; z-index: 2; }
+.t-hero__title * { color: var(--kf-contrast-ink); line-height: 1.25; }
+.t-hero--none .t-hero__title * { color: var(--kf-ink); }
+.t-hero__en { font-family: var(--kf-font-display); font-size: 5rem; font-weight: 400; }
+.t-hero__title h1 { font-size: 1.4rem; font-weight: 400; }
+.t-inview.delay { transition-delay: 0.3s; }
+
+/* Sub-page text, photos, tables */
+.t-page .t-main h2 { font-size: 3rem; }
+.t-page .t-main h3, .t-page .t-main p { margin-bottom: 40px; }
+.t-shot { display: block; width: 100%; aspect-ratio: 3 / 2; margin-bottom: 20px; border: 0; }
+.t-dl { display: flex; align-items: stretch; flex-wrap: wrap; color: var(--kf-ink); }
+.t-dl dt, .t-dl dd { font-size: 1.4rem; margin: 0; padding: 10px 0; border-bottom: 1px solid var(--site-rule); }
+.t-dl dt { width: 130px; }
+.t-dl dd { width: calc(100% - 130px); }
+
+/* Dark panel page — only flips background and text color */
+body.bk { background: var(--kf-contrast-bg); }
+body.bk :is(p, a, h1, h2, h3, h4, h5, .t-dl), body.bk .t-foot .t-box h5, body.bk .t-foot__logo { color: var(--kf-contrast-ink); }
+body.bk .t-go-up span { background: var(--kf-contrast-ink); }
+body.bk .t-shot { --wf-fill: color-mix(in oklab, var(--kf-contrast-bg) 80%, var(--kf-contrast-ink)); --wf-line: color-mix(in oklab, var(--kf-contrast-ink) 18%, transparent); --wf-fill-ink: color-mix(in oklab, var(--kf-contrast-ink) 65%, transparent); }
+
+.t-pc { display: block; }
+.t-sp { display: none; }
+
+@media (max-width: 960px) {
+  .t-foot .t-section { width: calc(100% - 120px); }
+  .t-go-up { right: 60px; }
+}
+@media (max-width: 480px) {
+  .t-pc { display: none; }
+  .t-sp { display: block; }
+  .t-logo { top: 20px; left: 20px; }
+  .t-logo svg { width: 100px; height: 20px; }
+  .t-head { width: calc(100% - 30px); top: 18px; left: 15px; }
+  .t-section { width: calc(100% - 40px); margin-bottom: 80px; }
+  .t-nav { width: 100%; }
+  .t-nav__list { max-width: none; padding: 0 40px 50px; }
+  .t-progress { right: 12px; height: 120px; }
+  .t-foot .t-section { width: calc(100% - 40px); }
+  .t-go-up { right: 20px; top: 40px; }
+  .t-col2 > .t-box { width: 100%; margin-right: 0; }
+  .t-hero { height: 300px; margin: 60px 0; }
+  .t-hero__en { font-size: 3.6rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0s !important; transition-delay: 0s !important; animation-duration: 0s !important; animation-delay: 0s !important; }
+  .t-noise { animation: none; }
+}

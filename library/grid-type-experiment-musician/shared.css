@@ -1,0 +1,141 @@
+/* Colors the standard --kf-* lacks — kept here so they survive swapping theme.css, all made from --kf-*. Tuned so that the original skin yields the original values exactly. 
+   Brightness comes from the text/background mix (color-mix), so it follows even when flipped on dark skins, and only the hue is fixed. */
+:root {
+  /* The three colors of the About pattern-band shader (original red #BE3F39 · navy #37447B · beige #F4E0C2) */
+  --site-pattern-red: oklch(from color-mix(in srgb, var(--kf-ink) 55.16%, var(--kf-bg)) l 0.164 26.68);
+  --site-pattern-blue: oklch(from color-mix(in srgb, var(--kf-ink) 72.97%, var(--kf-bg)) l 0.0937 271.62);
+  --site-pattern-beige: oklch(from color-mix(in srgb, var(--kf-ink) 5.17%, var(--kf-bg)) l 0.0453 78.04);
+  /* Lettered hands of the activity — four tones mixing the pattern red into the background (bright back of hand → shade) */
+  --site-hand-1: color-mix(in srgb, var(--site-pattern-red) 19%, var(--kf-bg));
+  --site-hand-2: color-mix(in srgb, var(--site-pattern-red) 40%, var(--kf-bg));
+  --site-hand-3: color-mix(in srgb, var(--site-pattern-red) 63%, var(--kf-bg));
+  --site-hand-4: color-mix(in srgb, var(--site-pattern-red) 81%, var(--kf-bg));
+}
+/* The original splits the screen width into a 24-column (10 at 750 and below) square grid, and scales 1rem to 1px at 1440 width (phone 393 width). */
+html {
+  --split-num: 24;
+  --grid-size: calc(100vw / var(--split-num));
+  --grid-margin: calc(var(--grid-size) / 2);
+  font-size: calc(100 / 1440 * 1vw);
+  font-feature-settings: "palt" 1;
+  background: var(--kf-bg);
+}
+@media (max-width: 750px) {
+  html { --split-num: 10; font-size: calc(100 / 393 * 1vw); }
+  [pc-only] { display: none !important; }
+}
+@media (min-width: 751px) { [sp-only] { display: none !important; } }
+@media (min-width: 1921px) { html { font-size: 1px; } }
+
+body {
+  min-height: 100vh;
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-size: 14rem;
+  -webkit-font-smoothing: antialiased;
+  opacity: 0;
+}
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+::selection { background: var(--kf-ink); color: var(--kf-bg); }
+a { line-height: 1; }
+
+/* One grid cell — outer · inner lines .5px each so adjacent cells look like one 1px line */
+.sh-cell {
+  width: var(--grid-size);
+  height: var(--grid-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: 0.5px solid var(--kf-line);
+  border: 0.5px solid var(--kf-line);
+  background: var(--kf-bg);
+}
+
+.sh-container { position: relative; min-height: 100vh; }
+
+/* ── Background grid: 1px dot at each cell center, and with sound on the bars of cells near the cursor stretch to the sound ── */
+.sh-pattern { position: absolute; top: 0; left: 0; z-index: -1; width: 100%; height: 100%; overflow: hidden; pointer-events: none; }
+.sh-pattern__grid { display: grid; grid-template-columns: repeat(var(--split-num), var(--grid-size)); }
+.sh-pattern__item { position: relative; width: var(--grid-size); height: var(--grid-size); transition: transform 0.2s ease-out; }
+.sh-pattern__bar {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 1px;
+  height: 1px;
+  background: var(--kf-line);
+  transform: rotate(var(--sounds-angle, 0deg));
+  transition: height 0.5s ease;
+}
+.sh-pattern__item[sounds-target] .sh-pattern__bar { height: calc(var(--grid-size) * var(--sounds-num, 0)); transition: height 0.1s ease; }
+.sh-pattern__item[hidden-tile] { background: var(--kf-surface) !important; }
+
+/* ── Header: left vertical column menu ── */
+.sh-head {
+  position: fixed;
+  top: var(--grid-margin);
+  left: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  padding-inline: var(--grid-margin);
+}
+.sh-head__home svg { width: 62%; height: auto; }
+.sh-head__home svg .is-cut { stroke: var(--kf-bg); }
+.sh-head__nav { display: flex; flex-direction: column; margin-top: var(--grid-size); }
+.sh-head__item, .sh-head__contact { font-family: var(--kf-font-display); font-size: 18rem; line-height: 1; }
+.sh-head__contact { position: fixed; z-index: 100; left: var(--grid-margin); bottom: var(--grid-margin); }
+.sh-head [aria-current="page"] { background: var(--kf-ink); color: var(--kf-bg); }
+@media (max-width: 750px) {
+  .sh-head { flex-direction: row; width: 100%; justify-content: space-between; }
+  .sh-head__nav { flex-direction: row; margin-top: 0; }
+  .sh-head__contact { top: auto; left: auto; right: var(--grid-margin); }
+}
+
+/* ── Sound on/off (bottom right) ── */
+.sh-sounds { position: fixed; right: var(--grid-margin); bottom: var(--grid-margin); z-index: 10; display: flex; flex-direction: column; }
+.sh-sounds__title { font-family: var(--kf-font-display); font-size: 20rem; cursor: pointer; padding: 0; color: inherit; }
+.sh-sounds__title .is-del { display: none; }
+.sh-sounds[track-muted="false"] .sh-sounds__title { font-size: 13rem; }
+.sh-sounds[track-muted="false"] .sh-sounds__title .is-del { display: block; }
+.sh-sounds[track-muted="false"] .sh-sounds__title .is-name { display: none; }
+.sh-sounds__button { font-family: var(--kf-font-display); font-size: 16rem; cursor: pointer; padding: 0; color: inherit; }
+.sh-sounds[track-muted="true"] .is-unmute, .sh-sounds[track-muted="false"] .is-mute { opacity: 0.3; }
+@media (max-width: 750px) { .sh-sounds { display: none; } }
+
+/* ── Page transition cover: white rectangle the size of a grid cell ── */
+.sh-cover { position: fixed; inset: 0; z-index: 200; pointer-events: none; }
+.sh-cover__grid { display: grid; grid-template-columns: repeat(var(--split-num), var(--grid-size)); }
+.sh-cover__item { width: var(--grid-size); height: var(--grid-size); background: var(--kf-surface); opacity: 0; }
+html.is-leaving .sh-cover { pointer-events: auto; }
+
+/* ── Bottom ‹Next› strip: keep scrolling past the end and a bar fills, then goes to the next page ── */
+.sh-foot { position: relative; z-index: 2; margin-top: calc(var(--grid-size) * 2); padding-inline: calc(var(--grid-margin) + var(--grid-size) * 2); padding-bottom: var(--grid-margin); }
+.sh-foot__next { position: relative; z-index: 1; display: flex; max-height: var(--grid-size); outline: 0.5px solid var(--kf-line); border: 0.5px solid var(--kf-line); background: var(--kf-bg); }
+.sh-foot__title-box { width: calc(var(--grid-size) * 2); display: flex; align-items: center; justify-content: center; }
+.sh-foot__title { font-family: var(--kf-font-mono); font-size: 20rem; line-height: 1; }
+.sh-foot__progress-box { position: relative; flex: 1; height: var(--grid-size); display: flex; align-items: center; justify-content: center; }
+.sh-foot__progress-box::before, .sh-foot__progress-box::after { content: ""; position: absolute; top: 0; width: 1px; height: 100%; background: var(--kf-line); }
+.sh-foot__progress-box::before { left: -1px; }
+.sh-foot__progress-box::after { right: -1px; }
+.sh-foot__progress { width: 90%; height: 2px; background: var(--kf-line); overflow: hidden; }
+.sh-foot__progress-child { width: 100%; height: 100%; background: var(--kf-ink); transform: scaleX(var(--progress, 0)); transform-origin: left; }
+@media (max-width: 750px) {
+  .sh-foot { padding-left: var(--grid-margin); }
+  .sh-foot__title { font-size: 12rem; }
+  .sh-foot__progress { height: 1px; }
+}
+
+/* Round cell height up to a multiple of the grid — original round-height */
+[round-height] { min-height: var(--height-fallback, auto); }
+
+.wf-note { top: calc(var(--grid-margin) + var(--grid-size) * 5); left: calc(var(--grid-margin) + var(--grid-size) * 1.5); }
+.wf-ui { bottom: calc(var(--grid-margin) + var(--grid-size) * 2 + 8px); }
+@media (max-width: 750px) { .wf-note { top: calc(var(--grid-margin) + var(--grid-size) * 1.5); left: var(--grid-margin); } }
+
+@media (prefers-reduced-motion: reduce) {
+  body { opacity: 1; }
+}

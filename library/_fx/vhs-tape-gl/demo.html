@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vhs-tape-gl — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); margin: 0; }
+  .demo-hint { margin: 0; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .screen { height: 70vh; margin: 24px; overflow: hidden; border-radius: var(--kf-radius-md); }
+  .screen canvas { display: block; width: 100%; height: 100%; }
+  .row { margin: 0 24px; display: flex; gap: 12px; }
+  .row button { font: 500 13px/1 var(--kf-font-mono); padding: 10px 14px; border: 1px solid var(--kf-line); background: var(--kf-surface); color: var(--kf-ink); border-radius: var(--kf-radius-sm); cursor: pointer; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>vhs-tape-gl</b> — Text · shapes drawn on canvas shake and bleed like a video tape screen (band wobble · bottom transition noise · scanlines · color overlap). A button toggles the load static noise on and off.</p>
+<div class="screen" id="screen" data-fx="vhs-tape-gl" data-fx-vhs-tape-gl="static: 1">
+  <canvas data-fx-part="source" id="paint"></canvas>
+</div>
+<div class="row"><button type="button" id="noise">Static noise on/off</button></div>
+<script>
+// Paint the original canvas every frame — read colors from skin variables, and a second screen enters after 1s and leaves after 2.5s (late element · release)
+(() => {
+  const cv = document.getElementById("paint"), ctx = cv.getContext("2d");
+  const css = getComputedStyle(document.documentElement);
+  const paint = (t) => {
+    const w = (cv.width = cv.clientWidth), h = (cv.height = cv.clientHeight);
+    ctx.fillStyle = css.getPropertyValue("--kf-contrast-bg");
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = css.getPropertyValue("--kf-accent");
+    ctx.fillRect(w * 0.1 + Math.sin(t / 900) * w * 0.05, h * 0.3, w * 0.3, h * 0.35);
+    ctx.fillStyle = css.getPropertyValue("--kf-contrast-ink");
+    ctx.font = `700 ${Math.round(h * 0.16)}px ${css.getPropertyValue("--kf-font-mono")}`;
+    ctx.fillText("CH 03", w * 0.5, h * 0.6);
+    requestAnimationFrame(paint);
+  };
+  requestAnimationFrame(paint);
+  let on = true;
+  document.getElementById("noise").addEventListener("click", () => { on = !on; document.getElementById("screen").dispatchEvent(new CustomEvent("fx:static", { detail: on ? 1 : 0 })); });
+  setTimeout(() => {
+    const s = document.createElement("div"); s.className = "screen"; s.dataset.fx = "vhs-tape-gl";
+    const c = document.createElement("canvas"); c.dataset.fxPart = "source"; s.append(c); document.body.append(s);
+    setTimeout(() => s.remove(), 1500);
+  }, 1000);
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../../_vendor/shader-doodle@1.0.0-alpha.22/shader-doodle.umd.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>helix-plane-wheel — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); margin: 0; }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .stage { height: 80vh; }
+  .stage.small { height: 50vh; border-top: 1px solid var(--kf-line); }
+  .demo-name { position: absolute; left: 50%; bottom: 24px; transform: translate(-50%); padding: 6px 14px; border-radius: var(--kf-radius-pill); background: var(--kf-ink); color: var(--kf-bg); opacity: 0; transition: opacity .25s; pointer-events: none; }
+  .demo-name.on { opacity: 1; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>helix-plane-wheel</b> — Scroll the wheel or drag sideways on the board. Hovering darkens it, pressing scatters it and spreads it back out. After 1s a small stage attaches below late, and after 3s parts fall from that stage.</p>
+<div class="stage" id="stage" data-fx="helix-plane-wheel"><span class="demo-name" id="name"></span></div>
+<script>
+// Demo art — six panels with numbers drawn in skin colors
+(() => {
+  const s = getComputedStyle(document.documentElement);
+  const C = ["--kf-accent", "--kf-ink-soft", "--kf-dim", "--kf-accent-text", "--kf-raised", "--kf-accent-soft"].map((n) => s.getPropertyValue(n).trim());
+  const font = s.getPropertyValue("--kf-font-sans").trim();
+  window.demoCards = C.map((c, i) => {
+    const cv = Object.assign(document.createElement("canvas"), { width: 512, height: 288 });
+    const g = cv.getContext("2d");
+    g.fillStyle = c; g.fillRect(0, 0, 512, 288);
+    g.fillStyle = s.getPropertyValue("--kf-bg").trim(); g.font = `700 120px ${font}`; g.textAlign = "center"; g.textBaseline = "middle";
+    g.fillText(String(i + 1).padStart(2, "0"), 256, 150);
+    return cv.toDataURL();
+  });
+  const stage = document.getElementById("stage");
+  demoCards.forEach((src) => { const img = new Image(); img.src = src; img.alt = ""; img.setAttribute("data-fx-part", "card"); stage.append(img); });
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="three-global.js"></script>
+<script src="../../_vendor/three@0.180.0/build/three.cjs"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+  const stage = document.getElementById("stage"), name = document.getElementById("name");
+  stage.addEventListener("fx:hover", (e) => { name.classList.toggle("on", !!e.detail); if (e.detail) name.textContent = `Panel ${e.detail.index + 1}`; });
+  stage.addEventListener("fx:pick", () => { stage.dispatchEvent(new Event("fx:hide")); setTimeout(() => stage.dispatchEvent(new Event("fx:show")), 900); });
+  setTimeout(() => {
+    const small = document.createElement("div");
+    small.className = "stage small";
+    small.setAttribute("data-fx-helix-plane-wheel", "repeat: 3; radius: 1.6");
+    demoCards.slice(0, 3).forEach((src) => { const img = new Image(); img.src = src; img.alt = ""; img.setAttribute("data-fx-part", "card"); small.append(img); });
+    small.setAttribute("data-fx", "helix-plane-wheel");
+    document.body.append(small);
+    setTimeout(() => small.removeAttribute("data-fx"), 2000);
+  }, 1000);
+</script>
+</body>
+</html>

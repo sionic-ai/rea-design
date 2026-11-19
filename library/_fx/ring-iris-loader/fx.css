@@ -1,0 +1,79 @@
+/* Progress ring loader — a veil covering the screen. On opening, the center hole (--fx-reveal radius) grows with its blurred edge */
+[data-fx~="ring-iris-loader"] {
+  --fx-reveal: 84px;
+  position: fixed;
+  inset: 0;
+  z-index: var(--fx-z, 30);
+  display: grid;
+  place-items: center;
+  background: var(--fx-ril-bg, var(--kf-bg));
+  color: var(--fx-ril-ink, var(--kf-ink));
+}
+[data-fx~="ring-iris-loader"][hidden] { display: none; }
+[data-fx~="ring-iris-loader"] [data-fx-part="stack"] { display: flex; flex-direction: column; align-items: center; gap: 1.35rem; }
+[data-fx~="ring-iris-loader"] [data-fx-part="stage"] {
+  position: relative;
+  width: 168px;
+  height: 168px;
+  display: grid;
+  place-items: center;
+  transition: opacity 320ms ease, transform 320ms ease;
+}
+[data-fx~="ring-iris-loader"] .fx-ril-ring { width: 168px; height: 168px; transform: rotate(-90deg); }
+[data-fx~="ring-iris-loader"] .fx-ril-bg { fill: none; stroke: color-mix(in srgb, var(--fx-ril-ink, var(--kf-ink)) 14%, var(--fx-ril-bg, var(--kf-bg))); stroke-width: 2.5; }
+[data-fx~="ring-iris-loader"] .fx-ril-fill {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 414.69;
+  stroke-dashoffset: 414.69;
+  transition: stroke-dashoffset 180ms ease;
+}
+[data-fx~="ring-iris-loader"] [data-fx-part="num"] {
+  position: absolute;
+  margin: 0;
+  font-family: var(--kf-font-display);
+  font-size: 48px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+[data-fx~="ring-iris-loader"] [data-fx-part="status"] {
+  margin: 0;
+  min-height: 1em;
+  font-family: var(--kf-font-display);
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, currentColor 55%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 220ms ease, transform 320ms ease;
+}
+[data-fx~="ring-iris-loader"].is-fx-status [data-fx-part="status"] { opacity: 1; animation: fx-ril-pulse 1.6s ease-in-out infinite; }
+/* When full, the ring and number (100 reads as ”still downloading”) drop out and the status text moves to the center */
+[data-fx~="ring-iris-loader"].is-fx-done [data-fx-part="stage"] { opacity: 0; transform: scale(0.92); }
+[data-fx~="ring-iris-loader"].is-fx-done [data-fx-part="status"] { transform: translateY(calc(-84px - 0.675rem)); }
+[data-fx~="ring-iris-loader"].is-fx-revealing {
+  will-change: mask-image;
+  /* The mask only reads alpha — empty the text color (opaque) step by step to decide where the curtain remains */
+  -webkit-mask-image: radial-gradient(circle at center, transparent calc(var(--fx-reveal) - 80px), color-mix(in srgb, currentColor 55%, transparent) calc(var(--fx-reveal) - 28px), color-mix(in srgb, currentColor 92%, transparent) calc(var(--fx-reveal) - 8px), currentColor calc(var(--fx-reveal) + 1px));
+  mask-image: radial-gradient(circle at center, transparent calc(var(--fx-reveal) - 80px), color-mix(in srgb, currentColor 55%, transparent) calc(var(--fx-reveal) - 28px), color-mix(in srgb, currentColor 92%, transparent) calc(var(--fx-reveal) - 8px), currentColor calc(var(--fx-reveal) + 1px));
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+@keyframes fx-ril-pulse {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.9; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="ring-iris-loader"] [data-fx-part="stage"],
+  [data-fx~="ring-iris-loader"] [data-fx-part="status"],
+  [data-fx~="ring-iris-loader"] .fx-ril-fill { transition: none; animation: none; }
+}

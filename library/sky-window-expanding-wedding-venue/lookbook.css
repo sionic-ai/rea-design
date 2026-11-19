@@ -1,0 +1,81 @@
+/* Photo album: cover (big photo on the right) → left 102rem photo section | right fixed index → per section a 3:2 cover photo + endlessly flowing thumbnail strip →
+   Clicking a thumbnail opens a large photo window filling a white screen */
+
+.sl-article { position: relative; width: calc(100% - 6rem); margin: 18rem auto 0; }
+.sl-article__label { font-size: max(1.2rem, 10px); line-height: 1.4166666667; }
+.sl-article__heading { font-size: max(3.8rem, 10px); line-height: 1.2631578947; }
+.sl-article__main { position: relative; display: flex; align-items: flex-start; gap: 9rem; margin: 5rem auto 0; }
+.sl-toc { order: 3; position: sticky; top: 7.8rem; flex: 0 0 27rem; width: 27rem; padding: 1.2rem 0 0; border-top: 1px solid var(--kf-line); }
+.sl-toc__link { position: relative; display: block; padding: .5rem 3rem .5rem 0; }
+.sl-toc__link.is-active::after { content: ""; position: absolute; right: 1.2rem; top: calc(50% - .3rem); width: .6rem; height: .6rem; border-radius: 50%; background: var(--kf-ink); }
+.sl-article__body { order: 2; flex: 0 0 102rem; width: 102rem; }
+
+.sl-gal { position: relative; width: 100%; margin-top: -3rem; padding-top: 3rem; }
+.sl-gal + .sl-gal { margin-top: 7rem; }
+.sl-gal__cover { position: relative; width: 100%; aspect-ratio: 990 / 660; overflow: hidden; }
+.sl-gal__cover-img { position: absolute; left: 0; bottom: 0; width: 100%; height: 100%; }
+.sl-gal__titleset { position: absolute; left: 3rem; top: 2rem; z-index: 1; width: calc(100% - 6rem); color: var(--site-on-night); }
+.sl-gal:nth-child(2n) .sl-gal__titleset { text-align: right; }
+.sl-gal__en { margin-bottom: -.3rem; }
+.sl-gal__ja { font-size: max(1.3rem, 10px); }
+.sl-gal__pager { width: 100%; height: 6rem; margin-top: 1rem; overflow: hidden; }
+.sl-gal__track { display: flex; width: max-content; height: 6rem; }
+.sl-gal__set { display: flex; gap: 1rem; padding-right: 1rem; flex: none; }
+.sl-gal__page { position: relative; display: block; flex: none; width: 6rem; height: 6rem; }
+.sl-gal__page .wf-img { height: 100%; border: 0; }
+.sl-gal__page .wf-img::after { font-size: 8px; }
+.sl-gal__page::before { content: ""; position: absolute; inset: 0; z-index: 1; border: 1px solid var(--site-line-strong); opacity: 0; }
+.sl-gal__page::after { content: ""; position: absolute; left: 1px; top: 1px; z-index: 1; width: calc(100% - 2px); height: calc(100% - 2px); border: 5px solid var(--kf-bg); opacity: 0; }
+@media (hover: hover) { .sl-gal__page:hover::before, .sl-gal__page:hover::after { opacity: 1; } }
+
+/* ---------- Large photo window: white screen, left and right halves are prev/next buttons, number below ---------- */
+.sl-modal { position: fixed; inset: 0; z-index: 1001; display: none; background: var(--kf-bg); }
+.sl-modal.is-open { display: block; }
+/* Original: shows immediately on open, on close it fades in .3s, then drops out at .5s */
+.sl-modal.is-open:not(.is-active) { opacity: 0; transition: opacity .3s linear; }
+.sl-modal.is-active { opacity: 1; transition: none; }
+.sl-modal__container { position: absolute; inset: 0; }
+.sl-modal__image { position: absolute; left: 12rem; top: 7.5rem; width: calc(100% - 24rem); height: calc(100% - 17rem); border: 0; }
+.sl-modal__prev, .sl-modal__next { position: absolute; top: 0; z-index: 1; width: 50%; height: 100%; cursor: pointer; }
+.sl-modal__prev { left: 0; cursor: w-resize; }
+.sl-modal__next { left: 50%; cursor: e-resize; }
+/* Dot row under the number: slides one cell (2rem) at a time over 0.75s so the current dot is centered, and the end dots shrink */
+.sl-modal__pager { position: absolute; left: calc(50% - 8rem); bottom: 2.4rem; width: 16rem; height: 5rem; padding: 3rem 2rem 0; overflow: hidden; }
+.sl-modal__num { position: absolute; left: 0; top: .5rem; display: flex; justify-content: center; gap: 0 4rem; width: 100%; font-size: max(1.3rem, 10px); line-height: 1.5384615385; }
+.sl-modal__dots { width: 12rem; overflow: hidden; }
+.sl-modal__dots-track { display: flex; transition: transform .75s var(--kf-ease-out); }
+.sl-modal__dot { position: relative; flex: none; width: 2rem; height: 2rem; }
+.sl-modal__dot::before { content: ""; position: absolute; left: calc(50% - .5rem); top: calc(50% - .5rem); width: 1rem; height: 1rem; border-radius: 50%; background: var(--site-gray-20); transform: scale(.7); transition: transform .75s var(--kf-ease-out), background-color .3s; }
+.sl-modal__dot.is-mini::before { transform: scale(.35); }
+.sl-modal__dot.is-current::before { background: var(--kf-ink); transform: scale(.7); }
+.sl-modal__current, .sl-modal__max { min-width: 2rem; text-align: center; }
+.sl-modal__sep { position: absolute; left: calc(50% - 1rem); top: 50%; width: 2rem; height: 1px; background: var(--site-gray-20); }
+.sl-modal__close { position: absolute; right: 3rem; top: 3rem; z-index: 2; width: 5.8rem; height: 5.8rem; }
+.sl-modal__close::before, .sl-modal__close::after { content: ""; position: absolute; left: calc(50% - 4rem); top: 50%; width: 8rem; height: 1px; background: var(--kf-ink); }
+.sl-modal__close::before { transform: rotate(45deg); }
+.sl-modal__close::after { transform: rotate(-45deg); }
+
+@media (max-width: 767px) {
+  .sl-article { width: calc(100% - 3rem); margin-top: 10rem; }
+  .sl-article__title { text-align: center; }
+  .sl-article__label { font-size: max(1.1rem, 10px); }
+  .sl-article__heading { margin-top: .5rem; font-size: max(2.8rem, 10px); line-height: 1.1785714286; }
+  .sl-article__main { display: block; margin-top: 3rem; }
+  .sl-toc { position: relative; top: auto; display: flex; flex-flow: row wrap; gap: 0 1rem; width: 100%; padding: 0; border-top: 0; }
+  .sl-toc li { flex: 0 0 calc(50% - .5rem); border-top: 1px solid var(--kf-line); }
+  .sl-toc__link { padding: 1rem 3rem 1rem 0; }
+  .sl-toc__link.is-active::after { display: none; }
+  .sl-toc__link::before { content: ""; position: absolute; right: 1.2rem; top: calc(50% - .7rem); width: 1rem; height: 1rem; border-right: 1px solid var(--kf-ink); border-bottom: 1px solid var(--kf-ink); transform: rotate(45deg); }
+  .sl-article__body { width: 100%; margin-top: 3rem; }
+  .sl-gal { margin-top: -2.5rem; padding-top: 1.5rem; }
+  .sl-gal + .sl-gal { margin-top: 3.5rem; }
+  .sl-gal__cover { aspect-ratio: 1 / 1; }
+  .sl-gal__titleset { top: auto; bottom: 1.5rem; left: 1.5rem; width: calc(100% - 3rem); }
+  .sl-gal__pager, .sl-gal__track { height: 5.5rem; }
+  .sl-gal__pager { margin-top: .5rem; }
+  .sl-gal__set { gap: .5rem; padding-right: .5rem; }
+  .sl-gal__page { width: 5.5rem; height: 5.5rem; }
+  .sl-modal__image { left: 1.5rem; width: calc(100% - 3rem); top: 9rem; height: calc(100% - 18rem); }
+  .sl-modal__close { right: 1rem; top: 1rem; width: 4.4rem; height: 4.4rem; }
+  .sl-modal__close::before, .sl-modal__close::after { left: calc(50% - 2.5rem); width: 5rem; }
+}

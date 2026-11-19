@@ -1,0 +1,23 @@
+/* Stage behind the big title — a canvas laid at panel size that lets the pointer pass through. The text is a sibling element above the stage */
+[data-fx~="slash-stage-gl"] { position: relative; overflow: hidden; pointer-events: none; }
+[data-fx~="slash-stage-gl"] > [data-fx-part="canvas"] { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* Blend the panel edges into the background (original edges — side · top · bottom ratios, softness set by the density of the center stop). 
+   wire side .2 · top .02 · bottom .5 / points side .2 · top .07 · bottom .4 / aurora side .3 · top .226 (max 210px) · bottom .46.
+   Phones (below 768) use the original mobile values: side .25 blurred only by .65, bottom .75 (wire) · .5 */
+[data-fx~="slash-stage-gl"] {
+  --ssg-side: 20%; --ssg-top: 2%; --ssg-bottom: 50%; --ssg-side-floor: transparent;
+  --ssg-on: var(--kf-ink);
+  --ssg-half: color-mix(in srgb, var(--kf-ink) 33%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, var(--ssg-side-floor), var(--ssg-half) calc(var(--ssg-side) / 2), var(--ssg-on) var(--ssg-side), var(--ssg-on) calc(100% - var(--ssg-side)), var(--ssg-half) calc(100% - var(--ssg-side) / 2), var(--ssg-side-floor)),
+    linear-gradient(180deg, transparent, var(--ssg-half) calc(var(--ssg-top) / 2), var(--ssg-on) var(--ssg-top), var(--ssg-on) calc(100% - var(--ssg-bottom)), var(--ssg-half) calc(100% - var(--ssg-bottom) / 2), transparent);
+  mask-image: linear-gradient(90deg, var(--ssg-side-floor), var(--ssg-half) calc(var(--ssg-side) / 2), var(--ssg-on) var(--ssg-side), var(--ssg-on) calc(100% - var(--ssg-side)), var(--ssg-half) calc(100% - var(--ssg-side) / 2), var(--ssg-side-floor)),
+    linear-gradient(180deg, transparent, var(--ssg-half) calc(var(--ssg-top) / 2), var(--ssg-on) var(--ssg-top), var(--ssg-on) calc(100% - var(--ssg-bottom)), var(--ssg-half) calc(100% - var(--ssg-bottom) / 2), transparent);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+[data-fx~="slash-stage-gl"][data-fx-slash-stage-gl*="look: points"] { --ssg-top: 7%; --ssg-bottom: 40%; }
+[data-fx~="slash-stage-gl"][data-fx-slash-stage-gl*="look: aurora"] { --ssg-side: 30%; --ssg-top: min(22.6%, 210px); --ssg-bottom: 46%; }
+@media (max-width: 767px) {
+  [data-fx~="slash-stage-gl"] { --ssg-side: 25%; --ssg-bottom: 50%; --ssg-side-floor: color-mix(in srgb, var(--kf-ink) 35%, transparent); }
+  [data-fx~="slash-stage-gl"]:not([data-fx-slash-stage-gl*="look: points"]):not([data-fx-slash-stage-gl*="look: aurora"]) { --ssg-bottom: 75%; }
+}

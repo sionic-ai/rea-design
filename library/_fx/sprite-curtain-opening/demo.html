@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sprite-curtain-opening — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .stage { position: relative; height: 70vh; min-height: 420px; background: var(--kf-accent); overflow: hidden; }
+  .stage + .stage { margin-top: 20px; height: 50vh; }
+  .stage [data-fx-part="greet"] { margin: 0 0 12px; font: 700 22px/1 var(--kf-font-display); color: var(--kf-accent); }
+  .stage [data-fx-part="window"] { width: 200px; height: 120px; }
+  .stage svg .body { fill: var(--kf-surface); stroke: var(--kf-ink); stroke-width: 3; }
+  .stage svg .cap { fill: var(--kf-accent-soft); stroke: var(--kf-ink); stroke-width: 3; }
+  .stage svg .water { fill: none; stroke: var(--kf-ink); stroke-width: 3; stroke-linecap: round; }
+  .controls { padding: 16px 20px; display: flex; gap: 8px; }
+  .first { padding: 40px 20px; opacity: .3; transition: opacity .6s; }
+  .first.is-open { opacity: 1; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>sprite-curtain-opening</b> — On refresh (first visit in the session) a character moves between two cells on a white curtain, stays 3 seconds, and the curtain lifts in .9s. Use the buttons below to run another cell order (dive-in) once.</p>
+<div class="stage">
+  <div data-fx="sprite-curtain-opening" data-fx-sprite-curtain-opening="frames: 6; seq: 2 3; key: fx-demo-sprite-curtain">
+    <p data-fx-part="greet">Your short greeting here</p>
+    <div data-fx-part="window"><div data-fx-part="strip"><svg viewBox="0 0 1200 120" aria-hidden="true">
+      <g><ellipse class="body" cx="100" cy="96" rx="22" ry="14"/><path class="water" d="M40 108q15-8 30 0t30 0t30 0t30 0"/></g>
+      <g transform="translate(200 0)"><ellipse class="body" cx="100" cy="80" rx="20" ry="28"/><path class="water" d="M40 108q15-8 30 0t30 0t30 0t30 0"/></g>
+      <g transform="translate(400 0)"><ellipse class="body" cx="100" cy="74" rx="20" ry="32"/><path class="cap" d="M74 50q26-34 52 0z"/><path class="water" d="M40 108q15-8 30 0t30 0t30 0t30 0"/></g>
+      <g transform="translate(600 0)"><ellipse class="body" cx="100" cy="80" rx="22" ry="26"/><path class="cap" d="M74 58q26-34 52 0z"/><path class="water" d="M40 110q15-8 30 0t30 0t30 0t30 0"/></g>
+      <g transform="translate(800 0)"><ellipse class="body" cx="130" cy="44" rx="18" ry="28" transform="rotate(50 130 44)"/><path class="water" d="M40 108q15-8 30 0t30 0t30 0t30 0"/></g>
+      <g transform="translate(1000 0)"><path class="water" d="M40 108q15-8 30 0t30 0t30 0t30 0M140 96q10-14 20 0"/></g>
+    </svg></div></div>
+  </div>
+</div>
+<div class="controls"><button type="button" data-act="jump">One dive-in sequence (2 3 4 5 → last cell)</button><button type="button" data-act="reset">Clear session history and refresh</button></div>
+<section class="first"><h1>Hero — comes into focus on receiving fx:open</h1></section>
+<script>
+document.addEventListener("fx:open", () => document.querySelector(".first").classList.add("is-open"));
+document.querySelector('[data-act="jump"]').addEventListener("click", () => {
+  document.querySelector('[data-fx~="sprite-curtain-opening"]').dispatchEvent(new CustomEvent("fx:sprite", { detail: { seq: "2 3 4 5", beat: 0.3, then: "hold" } }));
+});
+document.querySelector('[data-act="reset"]').addEventListener("click", () => { sessionStorage.clear(); location.reload(); });
+(() => {
+  const src = document.querySelector(".stage");
+  const late = src.cloneNode(true);
+  const opt = late.querySelector("[data-fx]");
+  opt.setAttribute("data-fx-sprite-curtain-opening", "frames: 6; seq: 0 1; hold: 1; fade: .5; lock: off; key: fx-demo-sprite-late");
+  const gone = src.cloneNode(true);
+  gone.querySelector("[data-fx]").setAttribute("data-fx-sprite-curtain-opening", "frames: 6; lock: off; key: fx-demo-sprite-gone");
+  src.after(gone);
+  setTimeout(() => gone.after(late), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1s another identical one comes in (the late arrival), and after 2.5s one drops out (the detach).");
+})();
+</script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

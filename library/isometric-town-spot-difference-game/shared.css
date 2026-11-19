@@ -1,0 +1,298 @@
+/* One-screen stage — logo, modal and menu overlap on a village picture. Menu, modal, loading, circle transition and press are used by every page through this file. 
+   rem is 10px on desktop like the original, and on portrait phone 2.67% of screen width (10.4px at 390), so values were carried over in rem as is. */
+:root {
+  --site-outline: var(--kf-ink);
+  --site-paper: var(--kf-surface);
+  --site-pink-soft: color-mix(in oklab, var(--kf-danger) 38%, var(--kf-surface));
+  --site-off: var(--kf-raised);
+  --site-off-line: color-mix(in oklab, var(--kf-ink) 17%, var(--kf-surface));
+  --site-doc-face: color-mix(in oklab, var(--kf-ink) 23%, var(--kf-surface));
+  --site-accent-softer: color-mix(in oklab, var(--kf-accent-soft) 50%, var(--kf-surface));
+  --site-veil: var(--kf-contrast-bg);
+  --site-credit: color-mix(in srgb, var(--kf-surface) 90%, transparent);
+
+  /* Original CSS linear() spring — overshoots to 1.225 and returns (modal · stage button · menu title) */
+  --site-spring: linear(0, 0.241 3.2%, 0.46 6.6%, 0.643 10%, 0.802 13.6%, 0.874 15.5%, 0.936 17.4%, 0.992 19.3%, 1.042 21.3%, 1.085 23.3%, 1.122 25.4%, 1.154 27.6%, 1.18 29.8%, 1.194 31.4%, 1.205 33%, 1.214 34.7%, 1.221 36.4%, 1.224 38.2%, 1.225 40%, 1.224 41.9%, 1.22 43.9%, 1.208 47.3%, 1.19 51.1%, 1.165 55.2%, 1.079 68.8%, 1.054 73.5%, 1.034 77.9%, 1.018 82.9%, 1.007 88%, 1.001 93.3%, 1);
+  --site-pop: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --site-back: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.t-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+html { font-size: 62.5%; background: var(--kf-bg); touch-action: manipulation; }
+@media (max-width: 780px) and (orientation: portrait) {
+  html { font-size: 2.66667vw; }
+}
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-size: 16px;
+  font-weight: var(--kf-weight-body);
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+}
+h1, h2, h3, h4, h5, h6 { margin: 0; font-weight: inherit; }
+.t-h1 { font: var(--kf-weight-display) 3.4rem/1.6 var(--kf-font-display); }
+.t-h2 { font: var(--kf-weight-display) 2.9rem/1.5 var(--kf-font-display); }
+.t-h3 { font: var(--kf-weight-display) 2.2rem/1.5 var(--kf-font-display); }
+.t-h4 { font: var(--kf-weight-display) 1.9rem/1.5 var(--kf-font-display); }
+.t-h5 { font: var(--kf-weight-display) 1.5rem/1.5 var(--kf-font-display); }
+.t-h6 { font-size: 1.4rem; font-weight: 500; line-height: 1.8; }
+.t-h8 { font-size: 1.2rem; line-height: 1.5; }
+@media (max-width: 780px) { .t-h8 { font-size: 1rem; } }
+.t-c { text-align: center; }
+
+/* White text with a black 3px outline: the original titles and button text all look like this */
+.t-outline {
+  color: var(--site-paper);
+  -webkit-text-stroke: 3px var(--site-outline);
+  paint-order: stroke fill;
+}
+.t-underline {
+  display: inline;
+  padding: 0 0.4rem;
+  background: linear-gradient(transparent 70%, var(--kf-warning) 70%, var(--kf-warning) 90%, transparent 90%) no-repeat;
+}
+.t-mark { position: relative; display: inline-flex; margin-right: 0.1rem; isolation: isolate; }
+.t-mark::before { content: ""; position: absolute; z-index: -1; left: 0; top: 20%; width: 100%; height: 65%; }
+.t-mark[data-tone="a"]::before { background: var(--kf-accent); }
+.t-mark[data-tone="b"]::before { background: var(--kf-warning); }
+.t-mark[data-tone="c"]::before { background: color-mix(in oklab, var(--kf-danger) 45%, var(--kf-surface)); }
+.t-bigger { font-size: 1.7rem; font-weight: 900; line-height: 1.4; }
+
+/* Pressables: hover 1.03x (.3s), .97x while pressed (.1s) — original a.has-click · .clicking */
+.t-press { cursor: pointer; transition: transform 0.3s ease, opacity 0.4s ease; }
+.t-press:hover { transform: scale(1.03); }
+.t-press.is-clicking { transform: scale(0.97); transition: transform 0.1s ease; }
+
+/* Rounded pill button — white 3px border inside a black 2px border, pink fill */
+.t-btn-wrap { display: flex; justify-content: center; }
+.t-btn-wrap:not(.is-on) { opacity: 0; transform: scale(1.2); }
+.t-btn-wrap.is-on { animation: t-batched 0.6s var(--site-pop) forwards; }
+.t-btn {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;
+  border: 2px solid var(--site-outline);
+  border-radius: var(--kf-radius-pill);
+  background: var(--site-paper);
+  text-align: center;
+}
+.t-btn.is-wide { width: 250px; }
+.t-btn__inner {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 3px solid var(--site-paper);
+  border-radius: var(--kf-radius-pill);
+  background: var(--site-pink-soft);
+}
+.t-btn__txt { display: block; padding: 0.9rem; letter-spacing: -0.05em; pointer-events: none; }
+.t-btn.has-arrow::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: calc(50% - 1.2rem);
+  right: 1.6rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  background: var(--site-paper);
+  -webkit-mask: var(--site-arrow) center / 100% no-repeat;
+  mask: var(--site-arrow) center / 100% no-repeat;
+  transition: transform 0.15s ease;
+}
+.t-btn.has-arrow:hover::before { transform: translateX(2px); }
+:root {
+  --site-arrow: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M9 5l7 7-7 7' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>"); /* Not skin: black used only for the mask shape */
+}
+.t-btn.is-locked { border-color: var(--site-off-line); pointer-events: none; }
+.t-btn.is-locked::before { background: var(--site-off-line); }
+.t-btn.is-locked .t-btn__inner { border-color: var(--site-off); background: var(--site-off); }
+.t-btn.is-locked .t-btn__txt { color: var(--site-off-line); -webkit-text-stroke: 0; }
+
+@keyframes t-batched {
+  from { transform: scale(1.4); }
+  20%, to { opacity: 1; transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+@keyframes t-batched2 {
+  from { transform: scale(1.4); }
+  20%, to { opacity: 1; transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+/* ── Stage: unfolds from a center circle (1s), closes back to a circle on leaving (.6s) ── */
+.t-stage {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: var(--kf-bg);
+  clip-path: circle(0%);
+  transition: clip-path 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19);
+}
+.t-stage.is-on { clip-path: circle(100%); transition: clip-path 1s ease; }
+.t-upper { position: absolute; z-index: 2; inset: 0; pointer-events: none; }
+
+/* Loading: eyes + text at the lower left behind the stage, hidden once the circle opens */
+.t-loading {
+  position: fixed;
+  z-index: 0;
+  bottom: 1rem;
+  left: 1.5rem;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.t-loading:not(.is-on) { opacity: 0; }
+.t-loading .t-eye { width: 2rem; margin-right: 0.3rem; }
+.t-loading p { opacity: 0.6; font-size: 1.1rem; }
+
+/* A pair of small eyes — attached to loading and menu titles */
+.t-eye { display: block; overflow: visible; }
+.t-eye__white { fill: var(--site-paper); stroke: var(--site-outline); stroke-width: 2px; }
+.t-eye__ball { fill: var(--site-outline); }
+.t-eye.is-blink { animation: t-eye-blink 0.4s steps(1) 1; }
+@keyframes t-eye-blink { 50% { transform: scaleY(0.1); } }
+
+/* ── Modal: the backdrop dims to 30% and the panel springs up from .7x. The close button follows after .7s ── */
+.t-modal {
+  position: fixed;
+  z-index: 3;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  max-height: 100svh;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.t-modal.is-tall { justify-content: flex-start; }
+.t-modal.is-on { opacity: 1; pointer-events: all; }
+.t-modal__veil {
+  position: fixed;
+  z-index: 1;
+  inset: 0;
+  background: var(--site-veil);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.t-modal.is-on .t-modal__veil { opacity: 0.3; }
+.t-modal__body { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; }
+.t-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 35.3rem;
+  margin: 44px 0;
+  padding: 3.5rem 3.4rem;
+  border: 1.7rem solid var(--kf-accent);
+  border-radius: 4.2rem;
+  background: var(--site-paper);
+  opacity: 0;
+  transform: scale(0.7);
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+.t-modal.is-on .t-card { opacity: 1; transform: scale(1); transition: transform 0.7s var(--site-spring), opacity 0.5s ease; }
+.t-card > .t-h1 { margin-top: -0.1rem; color: var(--kf-accent); }
+.t-close {
+  position: fixed;
+  z-index: 4;
+  top: 2.4rem;
+  right: 2.4rem;
+  width: 5rem;
+  height: 5rem;
+  border: 2px solid var(--site-outline);
+  border-radius: var(--kf-radius-pill);
+  background: var(--site-paper);
+  transition: transform 0.3s ease, opacity 0.5s ease;
+}
+.t-modal.is-on .t-close { transition: transform 0.3s ease 0.7s, opacity 0.5s ease 0.7s; }
+.t-close::before, .t-close::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  height: 2px;
+  margin: auto;
+  border-radius: 1px;
+  background: var(--site-outline);
+  transform: rotate(45deg);
+}
+.t-close::after { transform: rotate(-45deg); }
+.t-close:hover { transform: scale(1.03); }
+@media (max-width: 780px) {
+  .t-close { right: calc(50% - 16.7rem); }
+}
+
+/* ── Corner menu: after start, help at top right (90px from the top), two buttons at bottom right (from 9.2rem below) ── */
+.t-menu {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-direction: column;
+  padding: 2.5rem;
+  overflow: hidden;
+  pointer-events: none;
+}
+.t-menu a { pointer-events: all; }
+.t-menu__help {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  border: 2px solid var(--site-outline);
+  border-radius: var(--kf-radius-pill);
+  background: var(--site-paper);
+  transition: transform 0.3s ease;
+}
+.t-menu__help:not(.is-on) { transform: translateY(-90px); }
+.t-menu__help svg { width: 1.2rem; }
+.t-menu__dock { display: flex; gap: 1.4rem; transition: transform 0.5s ease; }
+.t-menu__dock:not(.is-on) { transform: translateY(9.2rem); }
+.t-tile {
+  position: relative;
+  display: block;
+  height: 5.7rem;
+  border: 2px solid var(--site-outline);
+  border-radius: 1.4rem;
+  background: var(--site-paper);
+}
+.t-tile__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border: 3px solid var(--site-paper);
+  border-radius: 1.3rem;
+}
+.t-tile[data-tone="quest"] .t-tile__inner { background: var(--kf-warning); }
+.t-tile[data-tone="doc"] .t-tile__inner { background: var(--kf-accent); }
+.t-tile__icon { position: absolute; top: 0; left: 50%; width: 3.4rem; transform: translate(-50%, -50%); }
+.t-tile__txt { padding: 1.4rem 1.2rem 0.7rem; font-size: 1.2rem; line-height: 1.1; white-space: nowrap; }
+.t-icon__face { fill: var(--site-paper); stroke: var(--site-outline); stroke-width: 2px; stroke-linejoin: round; }
+.t-icon__ink { fill: none; stroke: var(--site-outline); stroke-width: 2px; stroke-linecap: round; }
+@media (max-width: 780px) {
+  .t-menu { padding: 1.2rem; }
+  .t-menu__dock { gap: 0.8rem; }
+  .t-menu__dock:not(.is-on) { transform: translateY(7.85rem); }
+  .t-tile__txt { font-size: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-stage, .t-stage.is-on, .t-card, .t-modal, .t-modal__veil, .t-close, .t-menu__dock, .t-menu__help { transition: none !important; }
+  .t-btn-wrap.is-on { animation: none; opacity: 1; transform: none; }
+}

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>stack-explode — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); margin: 0; }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .pad { height: 40vh; display: grid; place-items: center; color: var(--kf-dim); }
+  .shop { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); height: 70vh; overflow-y: auto; border-block: 1px solid var(--kf-line); }
+  .col { border-left: 1px solid var(--kf-line); }
+  .col:first-child { border-left: 0; }
+  .head { position: sticky; top: 0; z-index: 6; height: 56px; display: grid; place-items: center; background: var(--kf-bg); font-size: 13px; letter-spacing: .1em; }
+  [data-fx~="stack-explode"] { --fx-top: 56px; --fx-frame: calc(70vh - 56px); }
+  .win [data-fx~="stack-explode"] { --fx-top: 0px; --fx-frame: 90vh; }
+  [data-fx-part="frame"] { padding-top: 24px; display: flex; justify-content: center; }
+  [data-fx-part="stack"] { width: 160px; }
+  .p { position: relative; height: 70px; border-radius: 50% / 18px; background: linear-gradient(90deg, var(--kf-dim), var(--kf-raised) 40%, var(--kf-line)); }
+  .p + .p { margin-top: -40px; }
+  .p:nth-child(1) { z-index: 5; height: 34px; }
+  .p:nth-child(2) { z-index: 4; }
+  .p:nth-child(3) { z-index: 3; }
+  .p:nth-child(4) { z-index: 2; height: 96px; }
+  .side { position: absolute; left: calc(100% + 12px); top: 50%; translate: 0 -50%; font-size: 12px; white-space: nowrap; color: var(--kf-dim); }
+  [data-fx-part="offer"] { position: absolute; left: calc(100% + 12px); top: 50%; z-index: 6; font-size: 13px; white-space: nowrap; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>stack-explode</b> — Turn the wheel over the center panel. The three stacks open together starting from the bottom pieces, and close like magnets when scrolled up. The bottom stack opens separately with window scroll. <span style="color:var(--kf-dim)">(After 1s one more tile comes in, and after 2.5s one panel leaves)</span></p>
+<div class="pad">Top section</div>
+<div class="shop" data-fx-scroller>
+  <div class="col"><div class="head">One</div>
+    <section data-fx="stack-explode" data-fx-stack-explode="group: demo; snap: on" id="late-host">
+      <div data-fx-part="frame"><div data-fx-part="stack">
+        <div class="p"><span class="side" data-fx-part="side">Lid · 00</span></div>
+        <div class="p" data-fx-part="piece"><span class="side" data-fx-part="side">Piece · 00</span></div>
+        <div class="p" data-fx-part="piece"><span class="side" data-fx-part="side">Piece · 00</span></div>
+        <div class="p" data-fx-part="piece"><span class="side" data-fx-part="side">Piece · 00</span></div>
+        <div data-fx-part="offer">Whole · 000</div>
+      </div></div>
+    </section>
+  </div>
+  <div class="col"><div class="head">Both</div>
+    <section data-fx="stack-explode" data-fx-stack-explode="group: demo; snap: on">
+      <div data-fx-part="frame"><div data-fx-part="stack">
+        <div class="p"></div>
+        <div class="p" data-fx-part="piece"></div>
+        <div class="p" data-fx-part="piece"></div>
+        <div class="p" data-fx-part="piece"></div>
+        <div data-fx-part="offer">Whole · 000</div>
+      </div></div>
+    </section>
+  </div>
+  <div class="col"><div class="head">Three (removed soon)</div>
+    <section data-fx="stack-explode" data-fx-stack-explode="group: demo; snap: on; each: 0" data-demo-remove>
+      <div data-fx-part="frame"><div data-fx-part="stack">
+        <div class="p"></div>
+        <div class="p" data-fx-part="piece"></div>
+        <div class="p" data-fx-part="piece"></div>
+      </div></div>
+    </section>
+    <section data-fx="stack-explode"></section>
+  </div>
+</div>
+<div class="pad">Window scroll dummy</div>
+<div class="win">
+  <section data-fx="stack-explode" data-fx-stack-explode="hold: 0.6">
+    <div data-fx-part="frame"><div data-fx-part="stack">
+      <div class="p"></div>
+      <div class="p" data-fx-part="piece"></div>
+      <div class="p" data-fx-part="piece"></div>
+      <div class="p" data-fx-part="piece"></div>
+      <div data-fx-part="offer">Whole · 000</div>
+    </div></div>
+  </section>
+</div>
+<div class="pad">Lower section</div>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../../../_shared/vendor/gsap/ScrollTrigger.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+setTimeout(() => {
+  const host = document.getElementById("late-host");
+  const stack = host.querySelector('[data-fx-part="stack"]');
+  const p = document.createElement("div");
+  p.className = "p";
+  p.setAttribute("data-fx-part", "piece");
+  stack.insertBefore(p, stack.querySelector('[data-fx-part="offer"]'));
+  host.setAttribute("data-fx", "");
+  requestAnimationFrame(() => host.setAttribute("data-fx", "stack-explode"));
+}, 1000);
+setTimeout(() => document.querySelectorAll("[data-demo-remove]").forEach((n) => n.remove()), 2500);
+</script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+/* Shared across several pages — header (underlay menu) · loader · page transition curtain · footer · text line reveal. Colors only via --kf-* */
+:root {
+  --site-ease: cubic-bezier(.625, .05, 0, 1);
+  --site-dim-ink: color-mix(in oklab, var(--kf-ink) 50%, transparent);
+  --site-faint: color-mix(in oklab, var(--kf-ink) 8%, var(--kf-bg));
+  --site-hair: color-mix(in oklab, var(--kf-ink) 16%, transparent);
+  --site-veil: color-mix(in oklab, var(--kf-ink) 30%, transparent);
+  --site-on-dark-dim: color-mix(in oklab, var(--kf-contrast-ink) 50%, transparent);
+  --menu-width: 30em;
+  --edge: 32px;
+}
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: clip; }
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  letter-spacing: -0.01em;
+  word-break: keep-all;
+  overflow-x: clip;
+}
+[data-barba="container"] { position: relative; background: var(--kf-bg); }
+.kk-split-line { display: block; }
+
+/* Still noise — the original lays one noise image over the whole screen at 3%, shifting its position every .18s. SVG noise is used instead of the image */
+.kk-noise {
+  position: fixed;
+  inset: -2.5rem;
+  z-index: 300;
+  pointer-events: none;
+  opacity: .03;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='288' height='288'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 18rem;
+  animation: kk-noise-shift .18s step-end infinite;
+}
+@keyframes kk-noise-shift {
+  0% { background-position: 0 0; } 9% { background-position: -417px 236px; } 27% { background-position: 233px -128px; }
+  45% { background-position: -91px -312px; } 63% { background-position: 301px 77px; } 81% { background-position: -205px 162px; }
+}
+
+/* ───── Header ───── */
+.kk-head { display: contents; }
+.kk-blur { --blur-reveal: 1; position: fixed; top: 0; left: 0; z-index: 50; width: 100%; height: 15em; pointer-events: none; isolation: isolate; contain: paint; }
+.kk-blur i { position: absolute; inset: 0; }
+.kk-blur i:nth-child(1) { backdrop-filter: blur(calc(.09375em * var(--blur-reveal))); mask: linear-gradient(transparent 12.5%, currentColor 25% 37.5%, transparent 50%); }
+.kk-blur i:nth-child(2) { backdrop-filter: blur(calc(.1875em * var(--blur-reveal))); mask: linear-gradient(transparent 0%, currentColor 12.5% 25%, transparent 37.5%); }
+.kk-blur i:nth-child(3) { backdrop-filter: blur(calc(.375em * var(--blur-reveal))); mask: linear-gradient(currentColor 0% 12.5%, transparent 25%); }
+.kk-blur i:nth-child(4) { backdrop-filter: blur(calc(.75em * var(--blur-reveal))); mask: linear-gradient(currentColor 0% 8%, transparent 18%); }
+.kk-blur i:nth-child(5) { backdrop-filter: blur(calc(1.5em * var(--blur-reveal))); mask: linear-gradient(currentColor 0% 12%, transparent 24%); }
+.kk-bar { position: fixed; inset: 0 0 auto; z-index: 100; color: var(--kf-contrast-ink); transition: color .2s ease; }
+body[data-head="ink"] .kk-bar,
+body[data-section-theme="active"] .kk-bar,
+body[data-footer-theme="active"] .kk-bar { color: var(--kf-ink); }
+body[data-menu-status="open"] .kk-bar,
+body[data-menu-status="closing"] .kk-bar { color: var(--kf-ink); }
+.kk-bar__in { display: flex; align-items: center; justify-content: space-between; padding: var(--edge); }
+.kk-logo { display: flex; align-items: center; width: clamp(3rem, 3vw, 3.25rem); margin: -.75em; padding: .75em; color: inherit; }
+.kk-logo svg { width: 100%; height: auto; fill: currentColor; }
+.kk-actions { display: flex; align-items: center; gap: clamp(1.5rem, 3vw, 2.75rem); }
+.kk-actions [data-fx~="tilt-fill-btn"] { font-size: .95rem; transition: opacity .3s ease; }
+body[data-menu-status="open"] .kk-actions [data-fx~="tilt-fill-btn"],
+body[data-menu-status="closing"] .kk-actions [data-fx~="tilt-fill-btn"] { opacity: 0; pointer-events: none; }
+.kk-toggle { display: flex; align-items: center; justify-content: center; margin: -1em; padding: 1em; border: 0; background: none; color: inherit; cursor: pointer; }
+.kk-toggle__icon { display: flex; flex-direction: column; justify-content: center; gap: .375em; width: 1.5em; }
+.kk-toggle__bar { display: block; width: 100%; height: .125em; background: currentColor; }
+body[data-page-transition="active"] .kk-toggle { pointer-events: none; }
+
+/* Underlay menu — body and header slide left by the menu width, revealing the menu laid beneath on the right */
+.kk-menu { position: fixed; top: 0; right: 0; bottom: 0; z-index: 1; width: var(--menu-width); background: var(--kf-bg); color: var(--kf-ink); }
+.kk-menu__in { display: flex; flex-direction: column; gap: 2em; width: 100%; height: 100%; padding: 7.5em 2em 2em; overflow: hidden auto; }
+.kk-menu__list { display: flex; flex-direction: column; width: 100%; }
+.kk-menu__big { display: block; width: 100%; padding: .75em 1em; border-radius: .125em; }
+.kk-menu__big.is-current { background: var(--kf-accent); color: var(--kf-on-accent); }
+.kk-menu__big span { font-size: clamp(1.9rem, 2.2vw, 3rem); line-height: 1.08; letter-spacing: -.04em; }
+.kk-menu__bottom { position: relative; display: flex; align-items: flex-start; width: 100%; margin-top: auto; padding-top: 1.5em; }
+.kk-menu__col { display: flex; flex: 1; flex-direction: column; gap: 1em; }
+.kk-menu__col .is-faded { opacity: .5; }
+.kk-menu__smalls { display: flex; flex-direction: column; gap: .75em; }
+.kk-menu__line { position: absolute; inset: 0 0 auto; height: 1px; background: currentColor; opacity: .15; transform-origin: 0%; }
+.kk-roll { position: relative; display: block; height: 1.1em; overflow: hidden; line-height: 1.1; }
+.kk-roll > span { display: block; white-space: nowrap; }
+.kk-roll > span + span { position: absolute; top: 100%; left: 0; }
+.kk-overlay { position: fixed; inset: 0 -1px 0 0; z-index: 100; overflow: clip; visibility: hidden; pointer-events: none; cursor: pointer; }
+.kk-overlay__dark { position: absolute; inset: 0; background: var(--site-veil); opacity: 0; }
+.kk-overlay__borders { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; }
+.kk-overlay__row { display: flex; flex-direction: column; align-items: flex-end; }
+.kk-overlay__border { width: 100%; height: 1em; background: var(--kf-bg); }
+.kk-overlay__corner { width: .625em; height: .625em; transform-origin: 100% 0; background-image: radial-gradient(circle farthest-side at 0 100%, transparent 99%, var(--kf-bg)); }
+.kk-overlay__corner.is-bottom { transform-origin: 100% 100%; background-image: radial-gradient(circle farthest-side at 0 0, transparent 99%, var(--kf-bg)); }
+[data-main] { position: relative; z-index: 2; background: var(--kf-bg); }
+
+/* Cookie settings panel: sits at bottom right without motion */
+.kk-cookie { position: fixed; right: 32px; bottom: 32px; left: 32px; z-index: 120; display: flex; justify-content: flex-end; pointer-events: none; }
+.kk-cookie[hidden] { display: none; }
+.kk-cookie__panel { width: min(100%, 28rem); padding: .75rem; border: 1px solid var(--site-hair); background: var(--kf-bg); color: var(--kf-ink); box-shadow: var(--kf-shadow-soft); pointer-events: auto; }
+.kk-cookie__title { margin-bottom: .35rem; font-size: 12px; font-weight: 500; line-height: 1.2; text-transform: uppercase; }
+.kk-cookie__copy { font-size: 12px; font-weight: 500; line-height: 1.35; }
+.kk-cookie__controls { display: flex; justify-content: space-between; align-items: flex-end; gap: .75rem; margin-top: 1rem; }
+.kk-cookie__toggle { display: inline-flex; align-items: center; gap: .4rem; font-size: 12px; font-weight: 500; line-height: 1; cursor: pointer; }
+.kk-cookie__toggle input { width: .875rem; height: .875rem; margin: 0; border: 1px solid; appearance: none; }
+.kk-cookie__toggle input:checked { background: linear-gradient(currentColor, currentColor) 50% / .5rem .5rem no-repeat; }
+.kk-cookie__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .35rem; }
+.kk-cookie__btn { min-height: 2rem; padding: 0 .6rem; border: 1px solid; background: none; font-size: 12px; font-weight: 500; line-height: 1; text-transform: uppercase; cursor: pointer; }
+.kk-cookie__btn.is-primary { background: var(--kf-ink); color: var(--kf-bg); }
+.kk-roll--btn { padding: 0; border: 0; background: none; font: inherit; text-align: left; cursor: pointer; }
+
+/* ───── Loader — two commas roll separately in vertical slots and stop, then the panel lifts up ───── */
+.kk-loader { position: fixed; inset: 0; z-index: 150; display: none; pointer-events: none; }
+body[data-initial-loader="pending"] .kk-loader { display: block; pointer-events: auto; }
+body[data-initial-loader="pending"] .kk-bar { opacity: 0; visibility: hidden; }
+.kk-loader__panel { position: absolute; inset: 0; }
+.kk-loader__fill, .kk-loader__bottom { background: var(--kf-bg); }
+.kk-loader__fill { position: absolute; inset: 0; }
+.kk-loader__bottom { position: absolute; top: calc(100% - .6rem); left: -10%; width: 120%; height: 20vw; min-height: 8rem; transform-origin: top; }
+.kk-loader__box { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+.kk-loader__logo { --slot: clamp(10rem, 15vw, 17rem); --slot-gap: clamp(1.6rem, 7vw, 7rem); --slot-extra: clamp(1.25rem, 6vw, 6rem); display: flex; align-items: center; gap: clamp(1rem, 2vw, 2.5rem); }
+.kk-loader__col { height: calc(var(--slot) + var(--slot-extra)); overflow: hidden; }
+.kk-loader__track { display: flex; flex-direction: column; gap: var(--slot-gap); will-change: transform; }
+.kk-loader__cell { display: flex; align-items: center; justify-content: center; flex: 0 0 var(--slot); height: var(--slot); }
+.kk-loader__cell svg { display: block; width: auto; height: 100%; fill: var(--kf-ink); }
+
+/* Page transition — an accent-color panel laid behind the current section */
+.kk-trans { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+.kk-trans__middle { position: fixed; inset: 0; background: var(--kf-accent); opacity: 0; }
+.kk-wipe { position: fixed; inset: 0; z-index: 90; background: var(--kf-bg); pointer-events: none; }
+
+/* ───── Footer — slides down from 25% above while the covering shade lifts ───── */
+.kk-foot-block { position: relative; overflow: clip visible; }
+.kk-foot-wrap { position: relative; overflow: hidden; background: var(--kf-bg); color: var(--kf-ink); }
+.kk-foot { position: relative; height: 100svh; max-height: 100svh; }
+.kk-foot__grid { position: relative; width: 100%; height: 100%; padding-inline: var(--edge); }
+.kk-foot__top { position: absolute; top: 50%; left: var(--edge); right: var(--edge); display: flex; justify-content: space-between; align-items: flex-start; gap: clamp(2rem, 5vw, 5rem); font-size: 14px; font-weight: 500; line-height: 1.35; transform: translateY(-50%); }
+.kk-foot__col { display: flex; flex-direction: column; align-items: flex-start; gap: 4rem; min-width: clamp(8rem, 12vw, 12rem); }
+.kk-foot__eyebrow { color: var(--site-dim-ink); text-transform: uppercase; }
+.kk-foot__links { display: flex; flex-direction: column; align-items: flex-start; }
+.kk-foot__links .kk-roll { height: 1.35em; line-height: 1.35; }
+.kk-foot__colon { display: inline-block; animation: kk-blink 1s step-end infinite; }
+@keyframes kk-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+.kk-foot__bottom { position: absolute; left: var(--edge); right: var(--edge); bottom: var(--edge); height: 36%; display: flex; align-items: flex-end; }
+.kk-foot__mark { --kk-mark: 120px; display: flex; justify-content: space-between; column-gap: .12em; width: 100%; font-family: var(--kf-font-display); font-size: var(--kk-mark); font-weight: 500; line-height: .78; letter-spacing: -.04em; text-transform: uppercase; white-space: nowrap; }
+.kk-foot__mark span { display: block; }
+.kk-foot__dark { position: absolute; inset: 0; background: var(--kf-ink); opacity: 0; pointer-events: none; }
+
+@media (max-width: 767px) {
+  :root { --menu-width: 80vw; --edge: 1rem; }
+  .kk-bar__in { padding: 1.5rem; }
+  .kk-actions [data-fx~="tilt-fill-btn"] { display: none; }
+  .kk-logo { width: 3rem; }
+  .kk-menu__in { padding: 5em 1.25em 1.25em; }
+  .kk-menu__bottom { flex-direction: column; gap: 2em; padding-inline: 1em; }
+  .kk-loader__bottom { height: 28vw; min-height: 6rem; }
+  .kk-loader__logo { --slot: clamp(8rem, 30vw, 11rem); --slot-gap: clamp(5rem, 17vw, 6.5rem); --slot-extra: clamp(4.5rem, 16vw, 6rem); gap: clamp(.8rem, 3vw, 1.35rem); }
+  .kk-loader__track { padding-top: calc(var(--slot-extra) / 2); }
+  .kk-foot__top { display: grid; grid-template-columns: 1fr; gap: 2rem 1rem; font-size: 12px; }
+  .kk-foot__col { gap: 2rem; min-width: 0; }
+  .kk-foot__bottom { height: 22%; }
+  .kk-cookie { right: .75rem; bottom: .75rem; left: .75rem; }
+  .kk-cookie__controls { flex-direction: column; align-items: flex-start; }
+  .kk-cookie__actions { justify-content: flex-start; width: 100%; }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .kk-foot__top { display: grid; grid-template-columns: repeat(2, max-content); gap: 3rem clamp(2rem, 10vw, 6rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kk-noise, .kk-foot__colon { animation: none; }
+}

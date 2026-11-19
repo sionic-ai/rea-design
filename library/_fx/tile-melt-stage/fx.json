@@ -1,0 +1,35 @@
+{
+  "kind": "Scroll",
+  "trigger": "scroll-scrub",
+  "fits": [
+    "Section",
+    "Page"
+  ],
+  "what": "A canvas the height of the screen covers the background of a long board (sticky at the end of the board). At first it is a grid of white cells (15 cells at 1440 wide, 10 on phone, 24 at 1920 and above), so the board looks white, then in the first interval each cell, starting from the bottom row (row delay .5), shrinks from square → circle with .6 corner radius → 0, and the white turns into the gray base color (smoothstep). In the second interval the gray base becomes transparent from the darkest areas first by a cloud pattern (5-layer value noise) threshold, so the board background (stage color) spreads into view. Both intervals are tied to scroll, and the curve is a per-cell smoothstep.",
+  "ease": "none",
+  "duration": null,
+  "needs": [
+    "gsap",
+    "ScrollTrigger"
+  ],
+  "options": {
+    "[data-fx-part=shrink]": "Reference child for the range where the cell shrinks (empty space 100vh etc.) — that child goes from top 50% to bottom 50%",
+    "[data-fx-part=melt]": "Reference child for the cloud-like melting range — top center → bottom center",
+    "shrink-start · shrink-end · melt-start · melt-end": "When changing the section start/end (ScrollTrigger term). If there is no child, panel top top → +=100%, top -100% → +=100%",
+    "cols": "Number of columns on wide screens, default 15 (×1.6 at 1920 and up)",
+    "cols-sp": "Column count below 1024, default 10",
+    "delay": "Row delay share (0~.95), default .5 — at 0 all cells move at once",
+    "cloud": "Cloud pattern size (smaller means larger clumps), default 2.2",
+    "--fx-stage": "Revealed panel background (via style), default var(--kf-accent)",
+    "--fx-panel": "Initial cell color, default var(--kf-surface)",
+    "--fx-ground": "Background left as cells shrink, default var(--kf-bg)"
+  },
+  "use": "<div data-fx=\"tile-melt-stage\"><section>…</section><div data-fx-part=\"shrink\" style=\"height:100vh\"></div><section>…</section><div data-fx-part=\"melt\" style=\"height:100vh\"></div><section class=\"on-stage\">…</section></div>",
+  "note": "The original draws this cover as the top layer of a three scene and receives the pattern of the gray melting away as one grayscale image — the part uses a single WebGL layer without three, and the pattern is rebuilt from noise. If the layer is shorter than the screen, the canvas overflows upward and is cut off by overflow: clip.",
+  "from": [
+    {
+      "slug": "white-to-green-stage-association",
+      "where": "index.js overlay shader — inside .l-world [data-trigger=ratio3] (cell track)·[data-trigger=ratio1|ratio4] (cloud melt)"
+    }
+  ]
+}

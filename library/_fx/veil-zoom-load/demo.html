@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>veil-zoom-load — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo { padding: 24px 20px; display: grid; gap: 24px; }
+  .stage { height: 60vh; min-height: 320px; border-radius: var(--kf-radius-md); }
+  .stage .photo { position: absolute; inset: 0; height: 100%; }
+  .stage h2 { position: absolute; left: 6%; top: 15%; z-index: 1; font: 400 clamp(64px, 12vw, 160px)/1 var(--kf-font-display); color: var(--kf-on-accent); writing-mode: vertical-rl; }
+  .stage p { position: absolute; right: 8%; top: 50%; z-index: 1; color: var(--kf-on-accent); }
+  .replay { justify-self: start; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>veil-zoom-load</b> — On open the curtain lifts, the photo slowly grows, and large type comes in from blur. Press “Replay” to watch again from the start.</p>
+<section class="demo">
+  <div class="stage" data-fx="veil-zoom-load">
+    <div class="photo wf-img" data-fx-part="zoom" data-label="Hero photo · Person upper body · Bright exam room · Landscape"></div>
+    <div data-fx-part="veil"></div>
+    <span data-fx-part="spinner"></span>
+    <h2 data-fx-part="blur-in">Large text</h2>
+    <p data-fx-part="slide-in">Your English line here</p>
+  </div>
+  <button type="button" class="wf-btn replay">Again</button>
+</section>
+<script>
+// Late arrivals and removals — checks that fx-core attaches to an element added after 1s and detaches from an element removed after 2.5s
+(() => {
+  const host = document.querySelector('[data-fx~="veil-zoom-load"]');
+  if (!host) return;
+  const html = host.outerHTML;
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = html; const el = t.content.firstElementChild; el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  host.after(gone);
+  setTimeout(() => host.after(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  let cur = host;
+  document.querySelector(".replay").addEventListener("click", () => { const again = make("again"); cur.replaceWith(again); cur = again; });
+  document.querySelector(".demo-hint").append(" · After 1s another identical one comes in (the late arrival), and after 2.5s one drops out (the detach).");
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

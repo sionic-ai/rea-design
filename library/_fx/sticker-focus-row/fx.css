@@ -1,0 +1,52 @@
+/* Panel: stickers are gathered at a single center point of the attached element, and each position spreads them out with transform (original ul 0×0 + li inset 0 flex center) */
+[data-fx~="sticker-focus-row"] { position: relative; user-select: none; -webkit-user-select: none; }
+[data-fx~="sticker-focus-row"] [data-fx-part="item"] {
+  position: absolute; left: 0; top: 0; width: 0; height: 0;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+/* The anchor box stands at the center of the slot at the pre-shrink image size — base of the name pill slot */
+[data-fx~="sticker-focus-row"] [data-fx-part="anchor"] { position: relative; flex: none; pointer-events: none; }
+/* The grab shell takes no input, only the shrunken image shell (logo) does — only the image spot shown at .5x is pressable, as in the original */
+[data-fx~="sticker-focus-row"] [data-fx-part="grab"] {
+  position: relative; z-index: 2; flex: none; pointer-events: none; outline: none;
+}
+[data-fx~="sticker-focus-row"] [data-fx-part="logo"] { pointer-events: auto; cursor: pointer; touch-action: none; outline: none; }
+[data-fx~="sticker-focus-row"] [data-fx-part="logo"]:active { cursor: grabbing; }
+[data-fx~="sticker-focus-row"] [data-fx-part="grab"][aria-disabled] [data-fx-part="logo"] { cursor: default; }
+/* Choosing by keyboard spreads that color’s glow behind the sticker (original :focus-visible::after — round glow .35) */
+[data-fx~="sticker-focus-row"] [data-fx-part="grab"]::after {
+  content: ""; position: absolute; inset: 35%; z-index: -1; border-radius: 50%;
+  background: var(--fx-glow, var(--kf-accent)); box-shadow: 0 0 5rem 5rem var(--fx-glow, var(--kf-accent));
+  opacity: 0; transform: scale(0.5); pointer-events: none;
+  transition: opacity 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.1), transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+}
+[data-fx~="sticker-focus-row"] [data-fx-part="grab"]:has(:focus-visible)::after { opacity: 0.35; transform: none; }
+[data-fx~="sticker-focus-row"] [data-fx-part="size"],
+[data-fx~="sticker-focus-row"] [data-fx-part="logo"],
+[data-fx~="sticker-focus-row"] [data-fx-part="bob"],
+[data-fx~="sticker-focus-row"] [data-fx-part="rock"] { transform-origin: 50% 50%; }
+[data-fx~="sticker-focus-row"] [data-fx-part="rock"] > * { display: block; max-width: none; pointer-events: none; }
+
+/* Name pill — hides above the sticker (85%) and rises 2rem from below in .2s on interaction. Hidden while dragging and on narrow screens */
+[data-fx~="sticker-focus-row"] [data-fx-part="label"] {
+  position: absolute; z-index: 1; bottom: 85%; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: center; pointer-events: none;
+}
+[data-fx~="sticker-focus-row"] [data-fx-part="label"] > span {
+  display: block; position: relative; padding: 1.2rem 1.05rem; white-space: nowrap;
+  background: var(--fx-pill, var(--kf-surface)); color: var(--kf-ink); border-radius: 2rem;
+  box-shadow: var(--kf-shadow-soft);
+  font-size: 1.125rem; line-height: 0;
+  opacity: 0; transform: translateY(2rem);
+  transition: opacity 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.1), transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+}
+[data-fx~="sticker-focus-row"] [data-fx-part="item"]:hover [data-fx-part="label"] > span,
+[data-fx~="sticker-focus-row"] [data-fx-part="item"]:focus-within [data-fx-part="label"] > span { opacity: 1; transform: none; }
+[data-fx~="sticker-focus-row"] [data-fx-part="item"][data-dragging="true"] [data-fx-part="label"] > span,
+[data-fx~="sticker-focus-row"]:not([data-focus="-1"]) [data-fx-part="label"] > span { opacity: 0; transform: translateY(2rem); }
+@media (max-width: 920px) { [data-fx~="sticker-focus-row"] [data-fx-part="label"] > span { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="sticker-focus-row"] [data-fx-part="label"] > span,
+  [data-fx~="sticker-focus-row"] [data-fx-part="grab"]::after { transition: none; }
+}

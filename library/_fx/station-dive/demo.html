@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>station-dive — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  html, body { height: 100%; overflow: hidden; margin: 0; background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: fixed; top: 0; left: 0; right: 0; z-index: 30; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint a { margin-left: 10px; text-decoration: underline; }
+  [data-fx-part="station"] { display: flex; flex-direction: column; justify-content: flex-end; padding: 80px 40px 60px; }
+  [data-fx-part="station"] h2 { margin: 0; font: 500 clamp(40px, 7vw, 96px)/0.95 var(--kf-font-display); transform: translateY(calc(var(--drift, 0) * -64px)); }
+  .demo-bar { position: fixed; right: 24px; top: 50%; z-index: 30; width: 2px; height: 120px; background: var(--kf-line); transform: translateY(-50%); }
+  .demo-bar i { position: absolute; inset: 0; background: var(--kf-accent); transform: scaleY(var(--dive, 0)); transform-origin: top; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>station-dive</b> — Move between stops with the wheel, drag or ↓. <a href="#" data-dive-go="c">Skip to the third</a><a href="#" data-dive-go="a">Back to start</a> (After 1s it re-attaches as a panel with one more sheet, and after 2.5s one panel drops out)</p>
+<main data-fx="station-dive" class="demo-root">
+  <section data-fx-part="station" data-key="a"><h2>Your first stop here</h2></section>
+  <section data-fx-part="station" data-key="b" data-stations="3"><h2>Section spanning three stops</h2></section>
+  <section data-fx-part="station" data-key="c"><h2>Your last stop here</h2></section>
+</main>
+<div class="demo-bar" aria-hidden="true"><i></i></div>
+<div data-fx="station-dive" data-demo-remove style="display:none"><section data-fx-part="station" data-key="x"><h2>Dropped Panel</h2></section></div>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../../../_shared/vendor/gsap/Observer.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+gsap.registerPlugin(Observer);
+const root = document.querySelector(".demo-root");
+root.addEventListener("fx:station", (e) => document.querySelector(".demo-bar").style.setProperty("--dive", (e.detail.index / Math.max(1, e.detail.count - 1)).toFixed(3)));
+setTimeout(() => {
+  const s = document.createElement("section");
+  s.dataset.fxPart = "station"; s.dataset.key = "late";
+  s.innerHTML = "<h2>Late-arriving section</h2>";
+  root.append(s);
+  root.dataset.fx = "";
+  requestAnimationFrame(() => { root.dataset.fx = "station-dive"; });
+}, 1000);
+setTimeout(() => document.querySelector("[data-demo-remove]")?.remove(), 2500);
+</script>
+</body>
+</html>

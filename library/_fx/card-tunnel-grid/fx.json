@@ -1,0 +1,45 @@
+{
+  "kind": "Hand",
+  "trigger": [
+    "drag",
+    "hover",
+    "click",
+    "loop"
+  ],
+  "fits": [
+    "Photo",
+    "Section",
+    "Page"
+  ],
+  "what": "A grid tiled endlessly by one shader from a bundle of photo cards — 3 cards on the short side, 2px gap between cards. It flows right on its own by .003 cards per frame, and when dragged (mouse 1px = .002 per step, touch .005) on release, then each frame it slides with decay .95 (the wheel adds delta × .0002 to velocity). The faster it moves, the wider the gaps open (velocity × 20 chased in .1 steps, max 9% of the card), and the edges bend inward like a tunnel pulled toward the center, darkening by .2 (velocity × 15 in .08 steps). Hovering a card scales only that cell’s photo to 1.07× (.4s power2.out), and leaving returns it in .3s. Clicking dispatches fx:open (cell position, card image). On first open it is bulged like a fisheye (lens: 1) until fx:release flattens it.",
+  "ease": "power2.out (hover) · power3.out (fisheye release, zoomed by the consumer) · per-frame damping (inertia .95 · gap .1 · tunnel .08)",
+  "duration": {
+    "Hover in": 0.4,
+    "Hover Out": 0.3
+  },
+  "needs": [
+    "gsap",
+    "three"
+  ],
+  "options": {
+    "rows": "Number of cards on the short side, default 3",
+    "drift": "Auto-flow amount (cards/frame), default .003 · 0 stops it",
+    "friction": "Speed damping after release, default .95",
+    "drag · touch · wheel": "Movement per 1px drag · 1px touch · wheel delta, default .002 · .005 · .0002",
+    "gap": "Default gap (px), default 2",
+    "hover": "Photo scale on hover, default 1.07",
+    "lens": "If 1, it stays fisheye-bulged ignoring the pointer until it receives fx:release and relaxes",
+    "[data-fx-part=card]": "Cards (children, placed into the atlas in order). If it is an img, that photo is used, otherwise a placeholder card — data-shape (3:2·2:3·1:1) · data-label (what photo) · data-top·data-bottom (small text above and below) · data-href (carried on fx:open)",
+    "fx:release": "The user foots the bill — detail { dur: 1, ease: 'power3.out', delay: 0 }",
+    "fx:busy": "Fired by the caller — when detail is true, the flow and interaction stop (during the opening animation)",
+    "fx:open": "The part fires — detail { index, rect: {x,y,w,h}, image (card picture dataURL), href, part }"
+  },
+  "use": "<div data-fx=\"card-tunnel-grid\" style=\"height: 100vh\"><canvas></canvas><ul hidden><li data-fx-part=\"card\" data-shape=\"3:2\" data-label=\"Cafe window · morning light\" data-top=\"Camera / Lens\" data-bottom=\"Photo diary\"></li>…</ul></div>",
+  "note": "The shader was newly written by measuring the original (fisheye radius .5 · strength .9, tunnel .3 · darken .2, gap 2px + speed 9%). Dragging is this part’s job, so touch drag is blocked (preventDefault). If it does not cover the full screen height, the page gets pushed from outside. Card text is painted on the canvas with --kf-font-sans and repainted if the font arrives late. With reduced motion set, the grid stays still with no flow or inertia. three loads three.cjs from _vendor/three@0.182.0 after three-global.js in this folder as a regular <script> Loaded via (window.THREE).",
+  "from": [
+    {
+      "slug": "draggable-photo-card-grid-aperture",
+      "where": "index.html .pi-grid (entire Hero — 25 photo diary shots)"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>block-shift-swap — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .demo { padding: 32px 20px; display: grid; gap: 16px; }
+  .stage { height: 60vh; border-radius: var(--kf-radius-md); }
+  .menu { display: flex; gap: 12px; flex-wrap: wrap; }
+  .menu button { padding: 10px 16px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-sm); background: var(--kf-surface); }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>block-shift-swap</b> — Hover over the button below (press on phones). The plate splits into 5×5 cells, slides and shifts color, then becomes a new image. <span style="color:var(--kf-dim)">(After 1s one more panel comes in, and one leaves 2.5s later)</span></p>
+<section class="demo">
+  <div class="menu"><button type="button" class="pick" data-key="0">Figure 1</button><button type="button" class="pick" data-key="1">Figure 2</button><button type="button" class="pick" data-key="2">Figure 3</button></div>
+  <div class="stage" data-fx="block-shift-swap" data-fx-block-shift-swap="on: .pick"><canvas data-fx-part="media" width="960" height="540"></canvas><canvas data-fx-part="media" width="960" height="540"></canvas><canvas data-fx-part="media" width="960" height="540"></canvas></div>
+  <div class="stage" data-demo-remove data-fx="block-shift-swap" data-fx-block-shift-swap="on: .pick; dur: 1.2"><canvas data-fx-part="media" width="960" height="540"></canvas><canvas data-fx-part="media" width="960" height="540"></canvas><canvas data-fx-part="media" width="960" height="540"></canvas></div>
+  <template data-demo-late><div class="stage" data-fx="block-shift-swap" data-fx-block-shift-swap="on: .pick; cells: 8"><canvas data-fx-part="media" width="960" height="540"></canvas><canvas data-fx-part="media" width="960" height="540"></canvas><canvas data-fx-part="media" width="960" height="540"></canvas></div></template>
+</section>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../../_vendor/ogl@1.0.11/ogl.min.js"></script>
+<script>
+// Demo art: three panels painted in skin variable colors (photo placeholders)
+const paint = (root) => root.querySelectorAll('canvas[data-fx-part="media"]').forEach((c, i) => {
+  const css = getComputedStyle(document.documentElement), v = (n) => css.getPropertyValue(n).trim();
+  const g = c.getContext("2d", { willReadFrequently: true });
+  g.fillStyle = v(["--kf-accent", "--kf-ink", "--kf-raised"][i % 3]);
+  g.fillRect(0, 0, c.width, c.height);
+  g.fillStyle = v(["--kf-on-accent", "--kf-bg", "--kf-ink"][i % 3]);
+  g.font = `700 120px ${v("--kf-font-display")}`;
+  g.textAlign = "center";
+  g.textBaseline = "middle";
+  g.fillText(`Figure ${i + 1}`, c.width / 2, c.height / 2);
+});
+paint(document);
+</script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+setTimeout(() => document.querySelectorAll("template[data-demo-late]").forEach((t) => { const n = t.content.cloneNode(true); paint(n); t.replaceWith(n); }), 1000);
+setTimeout(() => document.querySelectorAll("[data-demo-remove]").forEach((n) => n.remove()), 2500);
+</script>
+</body>
+</html>

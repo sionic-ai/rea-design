@@ -1,0 +1,80 @@
+/* Shared across the whole site — fixed full-screen background photo, four scattered menu items, bottom logo, screen blur veil, first loader, phone menu, scroll lock.
+   Colors are made only from --kf-* in theme.css. The original is a single screen, so every page stands on a 100vh board. */
+:root {
+  --site-dark: var(--kf-bg);
+  --site-light: var(--kf-surface);
+  --site-red: var(--kf-accent);
+  --site-shade: color-mix(in oklab, var(--kf-bg) 18%, transparent);
+  --site-nav-pad: 119px;
+}
+@media (min-height: 1100px) { :root { --site-nav-pad: 149px; } }
+html, body { margin: 0; height: 100%; }
+body { background: var(--site-dark); color: var(--site-light); font-family: var(--kf-font-sans); font-weight: var(--kf-weight-body); overflow: hidden; -webkit-font-smoothing: antialiased; }
+body.is-light { background: var(--site-light); color: var(--site-dark); overflow: auto; }
+a { color: inherit; text-decoration: none; }
+p, h1, h2, h3 { margin: 0; font-weight: inherit; }
+::selection { background: var(--site-red); color: var(--site-light); }
+
+/* Background photo — scaled 1.1x with a light veil. Sub pages get a 13px blur (phone 4px) */
+.b-bg { position: fixed; inset: 0; z-index: 0; will-change: filter; }
+.b-bg .wf-img { position: absolute; inset: 0; height: 100%; border: 0; transform: scale(1.1); }
+.b-bg__shade { position: absolute; inset: 0; background: var(--site-shade); pointer-events: none; }
+.wf-img.is-stage { --wf-fill: color-mix(in oklab, var(--kf-bg) 82%, var(--kf-dim)); --wf-line: color-mix(in oklab, var(--kf-ink) 12%, transparent); --wf-fill-ink: color-mix(in oklab, var(--kf-ink) 70%, transparent); }
+.wf-img.is-stage::after { background: color-mix(in oklab, var(--kf-bg) 50%, transparent); }
+/* Original photo composition — the bottom 1/6 is a light gray stage floor */
+.wf-img.is-stage::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 17%; background: linear-gradient(to bottom, color-mix(in oklab, var(--kf-dim) 70%, var(--kf-bg)), color-mix(in oklab, var(--kf-dim) 85%, var(--kf-surface))); }
+
+/* Four scattered menus — 28% screen row, 119px on each side, 90px cells */
+.b-nav { position: fixed; left: 0; top: 28%; z-index: 2; width: 100%; display: flex; justify-content: space-between; padding: 0 var(--site-nav-pad); box-sizing: border-box; color: var(--site-light); text-transform: uppercase; pointer-events: none; transform: translateY(50vh); will-change: transform; }
+.b-nav a { display: flex; align-items: center; justify-content: center; width: 90px; padding: 15px; font-size: 12px; font-weight: 500; line-height: 0.9; pointer-events: auto; box-sizing: border-box; }
+.b-nav a:first-child { justify-content: flex-start; margin-left: -16px; }
+.b-nav a:last-child { justify-content: flex-end; margin-right: -14px; }
+.is-light .b-nav { color: var(--site-dark); }
+
+/* Bottom center logo */
+.b-logo { position: fixed; left: 50%; bottom: 0; z-index: 13; padding: 17px; transform: translateX(-50%); color: var(--site-light); }
+.b-logo svg { display: block; width: 100px; height: auto; }
+.is-light .b-logo { color: var(--site-dark); }
+/* Hovering the logo blurs the screen scrim behind it */
+.b-veil { position: fixed; inset: 0; z-index: 10; pointer-events: none; will-change: backdrop-filter; }
+
+/* Page Board */
+.b-page { position: relative; z-index: 3; height: 100vh; min-height: 700px; color: var(--site-light); pointer-events: none; }
+.b-page a, .b-page button { pointer-events: auto; }
+.b-puce { display: block; width: 4px; height: 4px; border-radius: 1px; background: currentColor; }
+.b-up { text-transform: uppercase; }
+.b-link { transition: opacity 0.2s; }
+.b-link:hover { opacity: 0.5; }
+
+/* First loader — crimson panel, petal lines get drawn and the logo scales .7 → 1, then the panel slides up and out */
+.b-loader { position: fixed; inset: 0; z-index: 999; display: flex; align-items: center; justify-content: center; overflow: hidden; background: var(--site-red); pointer-events: none; will-change: transform; }
+.b-arrived .b-loader { display: none; }
+@media (prefers-reduced-motion: reduce) { .b-loader { display: none; } }
+.b-loader__in { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; opacity: 0; }
+.b-loader__flower { width: min(38vw, 520px); height: auto; color: var(--site-dark); }
+.b-loader__flower path { fill: none; stroke: currentColor; stroke-width: 1; }
+.b-loader__logo { position: absolute; width: 450px; opacity: 0; transform: scale(0.7); color: var(--site-dark); }
+@media (max-width: 1200px) { .b-loader__logo { width: 400px; } }
+@media (max-width: 1000px) { .b-loader__logo { width: 370px; } }
+@media (max-width: 768px) { .b-loader__logo { width: 250px; } .b-loader { height: calc(100vh + 200px); } }
+
+/* Transition curtain: if the next page is a white panel, a white curtain drops from the top to cover it */
+.b-cover { position: fixed; inset: 0; z-index: 100; background: var(--site-light); pointer-events: none; transform: translateY(-100%); }
+
+/* Phone — a single menu button, pressing it turns the links on and blurs the background by 4px · behind the scrim by 6px */
+.b-mnav { display: none; }
+@media (max-width: 922px) {
+  .b-nav { display: none; }
+  .b-mnav { position: fixed; inset: 0; z-index: 12; display: flex; flex-direction: column; align-items: center; padding: 110px 0; pointer-events: none; color: var(--site-light); text-transform: uppercase; }
+  .b-mnav button { pointer-events: auto; padding: 15px; font: 500 12px/1.5 var(--kf-font-sans); color: inherit; background: none; border: 0; text-transform: uppercase; cursor: pointer; position: relative; }
+  .b-mnav .b-mnav__close { position: absolute; left: 0; top: 15px; width: 100%; opacity: 0; }
+  .b-mnav__links { display: flex; flex-direction: column; align-items: center; margin-top: 30vh; }
+  .b-mnav__links a { display: block; padding: 15px; font-size: 12px; font-weight: 500; line-height: 1.5; opacity: 0; pointer-events: none; }
+  .b-mnav.is-open .b-mnav__links a { pointer-events: auto; }
+  .b-blurlayer { position: fixed; left: 0; top: 0; width: 100%; height: calc(100vh + 300px); z-index: 11; pointer-events: none; }
+  .is-light .b-mnav { color: var(--site-dark); }
+  .b-logo { padding: 20px; z-index: 501; }
+}
+@media (prefers-reduced-motion: reduce) { .b-link { transition: none; } }
+/* The white panel (work detail) has no menu, only a ”Back” link */
+.is-light .b-nav, .is-light .b-mnav { display: none; }

@@ -1,0 +1,30 @@
+{
+  "kind": "Hand",
+  "trigger": "click",
+  "fits": [
+    "Page",
+    "Link"
+  ],
+  "what": "Clicking a same-site link does not reload the document. Only the wrapper of the prefetched next page is swapped in (single-page app). The swap moment is wrapped in a browser View Transition so the old and new screens are transitioned with css (along with something like page-vt-reveal), while menus, fixed panels and scripts outside the wrapper stay put. Things that keep turning between pages, like the clock-wheel menu, are never interrupted. CSS and scripts found only in the new page are loaded before the swap, and scripts inside the wrapper are rerun after the swap.",
+  "ease": "none",
+  "duration": null,
+  "needs": [
+    "gsap"
+  ],
+  "options": {
+    "vt": "When 1 (default), the change is wrapped in a View Transition · when 0, it just swaps (the new body enters with the user’s css animation)",
+    "lag": "Delay before switching after a press (seconds), default 0 — the time the original takes to receive the next route code (Brand first screen .29 · shop .04 · playground .24). Attach it to the leaving page wrapper."
+  },
+  "use": "<body><div class=\"page\" data-fx=\"vt-swap-page\" data-fx-vt-swap-page=\"lag: 0.29\">Header, body and footer page script</div><nav>Leftover Menu</nav><script src=…>Shared script</script></body> — All pages share the same Type. Right before switching, fx:page-leave on document { url }(the leaving page’s script clears the effect), swap, run the new wrapper script, then fx:page-enter { url }, <html> On is-fx-arrived",
+  "note": "It loads with fetch, so it must be opened over http — opened as a file, nothing is hooked and links go through normally. Only pages in the same folder (one site set) are swapped and prefetched. Elements outside the wrapper that differ per page (except the header css) do not change — put anything that differs per page inside the wrapper. Back navigation (popstate) is swapped the same way.",
+  "from": [
+    {
+      "slug": "endless-photo-column-portfolio",
+      "where": "Every page .cd-page — original Next router + next-view-transitions (startViewTransition)"
+    },
+    {
+      "slug": "video-hero-photo-stairs-event",
+      "where": "All pages .of-site wrapper + page-vt-reveal (dur 1.1 · ease .75,0,.1,1 · shift 5vw · clip 85vh · rise 15vh) — the original Nuxt single-page app’s pageTransition ‹page› (leaving and entering panels run simultaneously for 1.1s). shared.js redraws the header · footer into the new wrapper on fx:page-enter, and the title box is taken down after 1.1s"
+    }
+  ]
+}

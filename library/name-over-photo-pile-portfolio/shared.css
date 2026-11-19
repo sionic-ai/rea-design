@@ -1,0 +1,138 @@
+/* Shared by all pages: + button, menu screen, blur veil (loader·page transition), slow fixed panel scroll, uppercase text lines standing up in 3D
+   Original values: curve cubic-bezier(.77,0,.175,1) .79s · blur curtain cubic-bezier(.5,0,.5,1) .49s · blur 12px */
+:root {
+  --gc-cubic: cubic-bezier(0.77, 0, 0.175, 1);
+  --gc-cubic-2: cubic-bezier(0.5, 0, 0.5, 1);
+  --gc-lh: 32px;
+  --gc-pad: 16px;
+  --gc-h1: clamp(36px, 5.5vw, 82px);
+  --gc-h3: clamp(21px, 3.4vw, 44px);
+  --gc-h4: clamp(19px, 3.2vw, 32px);
+  --gc-mini: clamp(12px, 1vw, 13px);
+  --wf-fill: color-mix(in oklab, var(--kf-ink) 12%, var(--kf-bg));
+  --wf-line: color-mix(in oklab, var(--kf-ink) 22%, var(--kf-bg));
+  --wf-fill-ink: var(--kf-dim);
+}
+@media (max-width: 768px) { :root { --gc-lh: 24px; --gc-pad: 12px; } }
+
+body {
+  background: var(--kf-bg); color: var(--kf-ink);
+  font: var(--kf-weight-body) var(--gc-h3) / 1 var(--kf-font-sans); font-stretch: 75%;
+  letter-spacing: 0.02em; text-transform: uppercase; overflow-x: hidden;
+}
+/* Blocks interaction until loading finishes (original body::before) */
+body::before { content: ""; position: fixed; inset: 0; z-index: 99999; }
+body.has--finished::before { transition: all 0s 300ms; visibility: hidden; }
+
+/* Slow fixed panel — on desktop the panel is fixed and the body height is set to the panel height, and the panel top rises by the scroll amount followed with a lerp */
+@media (min-width: 769px) { #phatscroll { position: fixed; top: 0; left: 0; width: 100%; } }
+
+/* Blur veil — starts covered, lifts once everything has loaded, and covers again when the page turns. Like the original, it is a pseudo-element of the panel so it is covered from the first paint (inserting it via JS would let the text inside the panel flash through once beforehand) */
+#phatscroll::before {
+  content: "";
+  position: fixed; top: 0; left: 0; width: 120%; height: 150%; z-index: 995; pointer-events: none;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background-color: var(--kf-bg); opacity: 1;
+  transition: backdrop-filter 0.49s var(--gc-cubic-2), background-color 0.49s var(--gc-cubic-2);
+}
+body.has--loaded:not(.js-nav--isopening):not(.js-nav--isopen) #phatscroll::before,
+body.has--loaded.js-nav--isclosing #phatscroll::before {
+  transition-delay: 0.1s; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px);
+  background-color: color-mix(in srgb, var(--kf-bg) 0%, transparent);
+}
+body.has--loaded.js-nav--isclosing #phatscroll::before { transition-delay: 0.4s; }
+html.js-transition--start body #phatscroll::before {
+  transition: backdrop-filter 0.49s var(--gc-cubic-2), background-color 0.49s var(--gc-cubic-2) !important;
+  backdrop-filter: blur(12px) !important; -webkit-backdrop-filter: blur(12px) !important; background-color: var(--kf-bg) !important;
+}
+
+/* Text standing in 3D — lines · words rise from half a step below at rotateX −40° */
+.gc-flip { display: block; perspective: 1000px; }
+.gc-flip > span, .gc-lines .line__inner {
+  display: block; transform-style: preserve-3d; transform-origin: center center; backface-visibility: hidden;
+  transform: translateY(50%) rotateX(-40deg); opacity: 0;
+}
+/* Keeps Korean placeholder text from breaking mid-word — the original English breaks by word */
+.gc-lines { word-break: keep-all; }
+.gc-lines .line { display: block; perspective: 1000px; }
+.gc-lines .line__inner { transition: all 0.79s var(--gc-cubic); transition-delay: calc(var(--i, 0) * 0.015s); }
+
+/* + button — top center, flips in 3D to × when pressed */
+.gc-head { position: fixed; top: var(--gc-pad); left: 50%; translate: -50% 0; z-index: 999; }
+.gc-opener { display: block; width: var(--gc-lh); height: var(--gc-lh); perspective: 700px; background: none; border: 0; padding: 0; cursor: pointer; color: var(--kf-ink); position: relative; }
+.gc-opener i { position: absolute; inset: 0; transform-style: preserve-3d; transform-origin: center center; backface-visibility: hidden; transition: transform 0.79s var(--gc-cubic); }
+.gc-opener i::before, .gc-opener i::after { content: ""; position: absolute; top: 50%; left: 50%; width: 100%; height: 3px; background: currentColor; translate: -50% -50%; backface-visibility: hidden; }
+.gc-opener .is-open::after { rotate: -90deg; }
+.gc-opener .is-open { transform: translateY(50%) rotateX(-90deg); }
+/* In the original the open · close cells stack vertically (relative) so the close cell sits one cell below — translateY(−100%) brings it up to the open position */
+.gc-opener .is-close { top: 100%; bottom: -100%; transform: translateY(-40%) rotateX(-90deg); transition: none; }
+.gc-opener .is-close::before { rotate: 45deg; }
+.gc-opener .is-close::after { rotate: -45deg; }
+html.has--landed body .gc-opener .is-open { transform: none; }
+body:not([data-page="home"]).has--loaded .gc-opener .is-open,
+body[data-page="home"].has--finished .gc-opener .is-open { transform: none; }
+body[data-page="detail"] .gc-head { pointer-events: none; }
+body[data-page="detail"] .gc-opener .is-open { transform: translateY(-50%) rotateX(90deg) !important; }
+body.js-nav--isopening:not(.js-nav--isclosing) .gc-opener .is-open,
+body.js-nav--isopen:not(.js-nav--isclosing) .gc-opener .is-open { transform: translateY(-60%) rotateX(90deg); }
+body.js-nav--isopening:not(.js-nav--isclosing) .gc-opener .is-close,
+body.js-nav--isopen:not(.js-nav--isclosing) .gc-opener .is-close { transform: translateY(-100%) rotateX(0deg); transition: transform 0.79s var(--gc-cubic); }
+body.js-nav--isopen:not(.js-nav--isclosing) .gc-opener .is-open { transform: translateY(60%) rotateX(-90deg); transition: none; }
+body.js-nav--isclosing .gc-opener .is-close { transform: translateY(-160%) rotateX(90deg); transition: transform 0.79s var(--gc-cubic); }
+
+/* Menu screen — opens at once from height 0 and the 12px blur clears in .49s. Original c-navscreen align--center, intro text 70% wide (about 1000px at 1440) */
+.gc-nav {
+  position: fixed; inset: 0 0 auto; z-index: 998; height: 0; overflow: hidden; pointer-events: none; filter: blur(12px);
+  transition: height 0.01s ease 0.8s, filter 0.49s var(--gc-cubic-2) 0.1s;
+}
+.gc-nav__in { text-align: center; height: 100svh; padding: var(--gc-pad) 24px; display: flex; flex-direction: column; justify-content: space-between; }
+.gc-nav__top { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-top: var(--gc-lh); }
+.gc-nav__menu { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.gc-nav__menu li { perspective: 1000px; }
+.gc-nav__menu a {
+  display: block; font-size: var(--gc-h1); line-height: 1; border-bottom: 4px solid transparent;
+  transform-style: preserve-3d; transform-origin: center center; backface-visibility: hidden;
+  transform: translateY(30%) rotateX(-40deg); opacity: 0; transition: transform 0.49s ease, opacity 0.49s ease;
+}
+.gc-nav__menu a:hover, .gc-nav__menu a[aria-current] { border-color: var(--kf-ink); }
+.gc-nav__about { margin-inline: auto; max-width: 70%; font-size: var(--gc-h4); line-height: 1.05; margin-bottom: 40px; }
+.gc-nav__foot { position: relative; display: flex; justify-content: space-between; gap: 32px; font-size: var(--gc-h4); line-height: var(--gc-lh); }
+.gc-nav__foot .gc-flip > a { display: block; transform-style: preserve-3d; transform-origin: center center; backface-visibility: hidden; transform: translateY(50%) rotateX(-40deg); opacity: 0; border-bottom: 2px solid transparent; line-height: 1; }
+.gc-nav__foot .gc-flip > a:hover { border-color: var(--kf-ink); }
+.gc-nav__foot .is-right { display: flex; gap: 32px; }
+.gc-copy { position: absolute; bottom: 0; left: 50%; translate: -50% 0; font: 400 var(--gc-mini) / 1.2 var(--kf-font-mono); text-transform: none; letter-spacing: 0; filter: blur(8px); opacity: 0; transition: all 0.49s var(--gc-cubic-2); white-space: nowrap; }
+body.js-nav--isopening:not(.js-nav--isclosing) .gc-nav, body.js-nav--isopen:not(.js-nav--isclosing) .gc-nav { pointer-events: all; height: 100%; filter: blur(0); transition: height 0.01s ease, filter 0.49s var(--gc-cubic-2); }
+body.js-nav--isopening .gc-nav__menu a, body.js-nav--isopen .gc-nav__menu a { transform: none; opacity: 1; transition: transform 0.79s var(--gc-cubic), opacity 0.79s var(--gc-cubic); transition-delay: calc(var(--i, 0) * 0.06s); }
+body.js-nav--isopening:not(.js-nav--isclosing) .gc-nav__foot .gc-flip > a, body.js-nav--isopen:not(.js-nav--isclosing) .gc-nav__foot .gc-flip > a { transform: none; opacity: 1; transition: transform 0.79s var(--gc-cubic) 0.1s, opacity 0.79s var(--gc-cubic) 0.1s; }
+body.js-nav--isopening:not(.js-nav--isclosing) .gc-nav .gc-lines .line__inner, body.js-nav--isopen:not(.js-nav--isclosing) .gc-nav .gc-lines .line__inner { transform: none; opacity: 1; }
+body.js-nav--isopening:not(.js-nav--isclosing) .gc-copy, body.js-nav--isopen:not(.js-nav--isclosing) .gc-copy { opacity: 1; filter: blur(0); transition-delay: 0.3s; }
+body.js-nav--isclosing .gc-nav__menu a, body.js-nav--isclosing .gc-nav__foot .gc-flip > a, body.js-nav--isclosing .gc-nav .gc-lines .line__inner { transform: translateY(-30%) rotateX(40deg); opacity: 0; transition: all 0.79s var(--gc-cubic); transition-delay: 0s !important; }
+body.js-nav--isopening, body.js-nav--isopen { overflow: hidden; }
+
+/* Small link strip at bottom center (Work list GRID/LIST · gallery INFO/INDEX/BACK) */
+.gc-bottom { position: fixed; bottom: var(--gc-pad); left: 50%; translate: -50% 0; z-index: 999; display: flex; gap: 24px; perspective: 1000px; white-space: nowrap; }
+.gc-bottom a, .gc-bottom button {
+  display: block; font: inherit; font-size: var(--gc-h4); line-height: var(--gc-lh); color: inherit; background: none; border: 0; padding: 0; cursor: pointer;
+  border-bottom: 2px solid transparent; transform-style: preserve-3d; transform-origin: center center; backface-visibility: hidden;
+  transform: translateY(50%) rotateX(-40deg); opacity: 0;
+}
+body.has--loaded .gc-bottom > * { transform: none; opacity: 1; transition: opacity 0.79s var(--gc-cubic), transform 0.79s var(--gc-cubic), border-color 0s; }
+body.has--loaded .gc-bottom > :nth-child(2) { transition-delay: 0.05s; }
+body.has--loaded .gc-bottom > :nth-child(3) { transition-delay: 0.1s; }
+@media (min-width: 769px) { .gc-bottom > :hover, .gc-bottom > .is--active { border-color: var(--kf-ink); } }
+body.js-nav--isopening:not(.js-nav--isclosing) .gc-bottom, body.js-nav--isopen:not(.js-nav--isclosing) .gc-bottom { opacity: 0; filter: blur(12px); transition: all 0.49s var(--gc-cubic); }
+.gc-bottom { transition: all 0.79s var(--gc-cubic) 0.2s; }
+
+/* Photo Slot */
+.gc-ph { display: block; border: 0; }
+
+@media (max-width: 768px) {
+  .gc-nav__in { padding-inline: 16px; }
+  .gc-nav__about { max-height: calc(100svh - 240px); overflow: hidden; }
+  .gc-nav__foot { gap: 16px; }
+  .gc-nav__foot .is-right { gap: 16px; }
+  .gc-copy { bottom: -16px; font-size: 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gc-flip > span, .gc-lines .line__inner, .gc-nav__menu a, .gc-bottom a, .gc-bottom button, .gc-nav__foot .gc-flip > a { transform: none !important; opacity: 1 !important; transition: none !important; }
+  #phatscroll::before, .gc-nav, .gc-opener i { transition: none !important; }
+}

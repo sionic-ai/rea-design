@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>card-wheel-grid — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: fixed; top: 0; left: 0; right: 0; z-index: 200; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint button { margin-left: 8px; font: inherit; }
+  .pad { height: 60vh; display: grid; place-items: center; font: 600 22px/1.2 var(--kf-font-display); }
+  .c { padding: 0; border: 0; background: none; cursor: pointer; }
+  .card { width: min(16vw, 240px); aspect-ratio: .71; border-radius: 6%; padding: 14px; text-align: left; font: 600 15px/1.1 var(--kf-font-display); color: var(--kf-ink);
+    background: linear-gradient(155deg, oklch(from var(--kf-accent) .9 .07 calc(h + var(--h))), oklch(from var(--kf-accent) .8 .12 calc(h + var(--h) + 40))); box-shadow: var(--kf-shadow-lift); }
+  .note { position: absolute; inset: auto 0 6vh; text-align: center; font: 500 14px/1.4 var(--kf-font-mono); color: var(--kf-dim); z-index: 1; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>card-wheel-grid</b> — Scroll down. A wheel rolls in and puts cards on top one by one, they settle into a grid, pass through a corner pile (spreads on hover), then scatter.
+  <button type="button" data-tag="all">Entire</button><button type="button" data-tag="a">only a</button><button type="button" data-tag="b">only b</button>
+  <span style="color:var(--kf-dim)">(After 1s one more card comes in, and after 2.5s one leaves — the panel is reattached)</span></p>
+<div class="pad">Start from Top</div>
+<section data-fx="card-wheel-grid" data-fx-card-wheel-grid="park: 1" style="--fx-length: 700vh">
+  <div data-fx-part="stage">
+      <button class="c" data-fx-part="card" data-tags="b"><div class="card" style="--h:0deg">Card 01</div></button>
+      <button class="c" data-fx-part="card" data-tags="a"><div class="card" style="--h:26deg">Card 02</div></button>
+      <button class="c" data-fx-part="card" data-tags="b"><div class="card" style="--h:52deg">Card 03</div></button>
+      <button class="c" data-fx-part="card" data-tags="a"><div class="card" style="--h:78deg">Card 04</div></button>
+      <button class="c" data-fx-part="card" data-tags="b"><div class="card" style="--h:104deg">Card 05</div></button>
+      <button class="c" data-fx-part="card" data-tags="a"><div class="card" style="--h:130deg">Card 06</div></button>
+      <button class="c" data-fx-part="card" data-tags="b"><div class="card" style="--h:156deg">Card 07</div></button>
+      <button class="c" data-fx-part="card" data-tags="a"><div class="card" style="--h:182deg">Card 08</div></button>
+      <button class="c" data-fx-part="card" data-tags="b"><div class="card" style="--h:208deg">Card 09</div></button>
+      <button class="c" data-fx-part="card" data-tags="a"><div class="card" style="--h:234deg">Card 10</div></button>
+      <button class="c" data-fx-part="card" data-tags="b"><div class="card" style="--h:260deg">Card 11</div></button>
+      <button class="c" data-fx-part="card" data-tags="a"><div class="card" style="--h:286deg">Card 12</div></button>
+      <button class="c" data-fx-part="card" data-tags="b"><div class="card" style="--h:312deg">Card 13</div></button>
+      <button class="c" data-fx-part="card" data-tags="a" data-demo-remove><div class="card" style="--h:338deg">Card 14</div></button>
+      <p class="note" data-demo-late-host>At the corner pile step, place your hand at the bottom right</p>
+      <div data-fx-part="park"></div>
+  </div>
+</section>
+<div class="pad">Footer</div>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../../../_shared/vendor/gsap/ScrollTrigger.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+gsap.registerPlugin(ScrollTrigger);
+const wheel = document.querySelector('[data-fx="card-wheel-grid"]');
+document.querySelectorAll("[data-tag]").forEach((b) => b.addEventListener("click", () => wheel.dispatchEvent(new CustomEvent("fx:wheel-filter", { detail: b.dataset.tag }))));
+wheel.addEventListener("fx:wheel-card", (e) => console.info("card", e.detail.card.textContent.trim()));
+// When the card count changes, parts are reattached (data-fx toggled off and on) — late and removed cards both enter the new cycle
+const rebuild = () => { wheel.setAttribute("data-fx", ""); requestAnimationFrame(() => wheel.setAttribute("data-fx", "card-wheel-grid")); };
+setTimeout(() => {
+  const b = document.createElement("button");
+  b.className = "c"; b.setAttribute("data-fx-part", "card"); b.setAttribute("data-tags", "a");
+  b.innerHTML = '<div class="card" style="--h:300deg">Late-arrived card</div>';
+  wheel.querySelector('[data-fx-part="stage"]').prepend(b);
+  rebuild();
+}, 1000);
+setTimeout(() => { document.querySelectorAll("[data-demo-remove]").forEach((n) => n.remove()); rebuild(); }, 2500);
+</script>
+</body>
+</html>

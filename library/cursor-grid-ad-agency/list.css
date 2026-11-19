@@ -1,0 +1,95 @@
+/* List (Work · News) — big section title + number circle, year drawer · category button, three-column cards (on hover the image grows and tilts opposite the cursor and four corner brackets blink in) */
+.ls { position: relative; z-index: 1; padding: calc(84 * var(--u)) var(--pad) calc(120 * var(--u)); min-height: 100lvh; }
+@media (min-width: 1024px) { .ls { padding-top: calc(170 * var(--u)); padding-bottom: calc(142 * var(--u)); } }
+.ls-head { position: relative; z-index: 1; display: flex; align-items: flex-start; gap: calc(4 * var(--u)); }
+@media (min-width: 1024px) { .ls-head { gap: calc(8 * var(--u)); } }
+.ls-title { margin: 0; font-size: calc(64 * var(--u)); letter-spacing: -0.06em; line-height: 0.82; text-transform: uppercase; }
+@media (min-width: 1024px) { .ls-title { font-size: calc(130 * var(--u)); } }
+.ls-count { display: flex; gap: 2px; margin-top: calc(5 * var(--u)); }
+@media (min-width: 1024px) { .ls-count { margin-top: calc(10 * var(--u)); } }
+.ls-count__c { --s: calc(16 * var(--u)); position: relative; width: var(--s); height: var(--s); border: 1px solid currentColor; border-radius: 50%; overflow: clip; font-size: calc(9 * var(--u)); line-height: var(--s); text-align: center; }
+@media (min-width: 1024px) { .ls-count__c { --s: calc(22 * var(--u)); font-size: calc(12 * var(--u)); } }
+.ls-count__c span { position: absolute; left: 0; width: 100%; top: 0; display: grid; }
+.ls-count__c span b { display: block; height: var(--s); font-weight: 500; }
+
+.ls-filter { position: relative; z-index: 3; margin-top: calc(53 * var(--u)); padding-bottom: calc(4 * var(--u)); display: flex; justify-content: flex-end; align-items: flex-start; gap: 20px; font-size: calc(12 * var(--u)); font-weight: 500; }
+@media (min-width: 1024px) { .ls-filter { position: sticky; top: calc(20 * var(--u)); margin-top: calc(90 * var(--u)); font-size: calc(12 * var(--u)); } }
+.ls-filter--cat { justify-content: space-between; }
+@media (min-width: 1024px) {
+  .ls-filter--cat.is-stuck { justify-content: flex-end; }
+  .ls-filter--cat.is-stuck .ls-cats { flex-direction: column; gap: calc(3 * var(--u)); margin-right: calc(270 * var(--u)); }
+}
+.ls-cats { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: calc(6 * var(--u)) calc(14 * var(--u)); text-transform: uppercase; }
+.ls-cats button, .ls-year__panel a { display: inline-grid; grid-template-columns: calc(8 * var(--u)) auto; gap: calc(4 * var(--u)); align-items: center; }
+.ls-cats i, .ls-year__panel i { width: calc(8 * var(--u)); aspect-ratio: 1; border: 1px solid currentColor; border-radius: 50%; transition: background-color 0.3s; }
+.ls-cats [aria-checked="true"] i, .ls-year__panel [aria-current] i { background: currentColor; }
+@media (hover: hover) { .ls-cats button:hover i, .ls-year__panel a:hover i { background: var(--kf-accent); } }
+.ls-year { position: relative; }
+.ls-year__toggle { display: flex; align-items: center; gap: calc(12 * var(--u)); padding: 5px 0 5px 5px; text-transform: uppercase; }
+.ls-year__toggle i { width: 6px; height: 5px; background: currentColor; clip-path: polygon(0 0, 100% 0, 50% 100%); transition: transform 0.45s var(--ease-in-out1); }
+.ls-year.is-open .ls-year__toggle i { transform: rotate(180deg); }
+/* Drawer — the backdrop panel unfolds from the top (.45s ease-in-out3) and items drop in from above one after another, .034s apart */
+.ls-year__drop { position: absolute; right: 5px; top: 100%; min-width: calc(85 * var(--u)); visibility: hidden; transition: visibility 0s 0.5s; }
+.ls-year.is-open .ls-year__drop { visibility: visible; transition-delay: 0s; }
+.ls-year__bg { position: absolute; inset: -33px -10px 0 -10px; background: var(--kf-bg); transform-origin: top; transform: scaleY(0); transition: transform 0.45s cubic-bezier(0.87, 0, 0.13, 1) 0.05s; }
+.ls-year.is-open .ls-year__bg { transform: scaleY(1); transition-delay: 0s; }
+.ls-year__panel { position: relative; margin: 0; padding: 12px 0; list-style: none; display: grid; gap: 10px; text-transform: uppercase; }
+.ls-year__panel li { overflow: clip; }
+.ls-year__panel a { translate: 0 -101%; transition: translate 0.35s cubic-bezier(0.87, 0, 0.13, 1); }
+.ls-year.is-open .ls-year__panel a { translate: 0 0; transition: translate 0.45s cubic-bezier(0.87, 0, 0.13, 1) calc(var(--i, 0) * 0.034s); }
+
+.ls-grid { position: relative; z-index: 1; list-style: none; margin: calc(20 * var(--u)) 0 0; padding: 0; display: grid; gap: calc(55 * var(--u)); }
+@media (min-width: 1024px) { .ls-grid { grid-template-columns: repeat(3, 1fr); gap: calc(162 * var(--u)) calc(23 * var(--u)); margin-top: calc(25 * var(--u)); } }
+/* Single-row cards match the tallest card’s height and pin the bottom line (category · date) to the base */
+.ls-grid > li { display: flex; }
+.ls-card { flex: 1; display: flex; flex-direction: column; }
+/* Card hover — the clipped polygon of the image plate tightens from 2.2x to 1x while two corners get cut (image 1.05x), and four corner brackets stand up from .8 to 1 and blink three times */
+@property --ls-crs { syntax: "<number>"; inherits: true; initial-value: 2.2; }
+@property --ls-tis { syntax: "<number>"; inherits: true; initial-value: 1; }
+.ls-card__thumb { position: relative; }
+.ls-card__persp { position: relative; transform-style: preserve-3d; }
+.ls-card__clip { --ls-crs: 2.2; --ls-tis: 1; display: block; overflow: hidden; scale: var(--ls-crs); clip-path: polygon(7.5% 7.6%, 80.6% 7.6%, 92.5% 50%, 92.4% 92.4%, 18.18% 92.4%, 7.5% 50%); transition: --ls-crs 0.45s var(--ease-in-out4), --ls-tis 0.45s var(--ease-in-out4); }
+.ls-card__img { display: block; aspect-ratio: 3442 / 1934; scale: calc(var(--ls-tis) / var(--ls-crs)); }
+.ls-card__frame { position: absolute; inset: 4% 5.5%; z-index: 2; pointer-events: none; scale: 0.8; opacity: 0; transition: scale 0.45s var(--ease-in-out4), opacity 0.3s cubic-bezier(0.43, 0.05, 0.17, 1); }
+.ls-card__frame i { position: absolute; width: calc(8 * var(--u)); height: calc(8 * var(--u)); border: 0 solid var(--kf-ink); }
+.ls-card__frame i:nth-child(1) { left: 0; top: 0; border-width: 1px 0 0 1px; }
+.ls-card__frame i:nth-child(2) { right: 0; top: 0; border-width: 1px 1px 0 0; }
+.ls-card__frame i:nth-child(3) { left: 0; bottom: 0; border-width: 0 0 1px 1px; }
+.ls-card__frame i:nth-child(4) { right: 0; bottom: 0; border-width: 0 1px 1px 0; }
+@media (hover: hover) and (pointer: fine) {
+  .ls-card:hover .ls-card__clip { --ls-crs: 1; --ls-tis: 1.05; }
+  .ls-card:hover .ls-card__frame { scale: 1; opacity: 1; }
+  .ls-card:hover .ls-card__frame i { animation: ls-blink 0.08s step-start 3 0.45s; }
+}
+@keyframes ls-blink { 50% { opacity: 0; } }
+.ls-card__client { margin: calc(14 * var(--u)) 0 calc(4 * var(--u)); font-size: calc(10 * var(--u)); }
+.ls-card__ttl { margin: 0; font-size: calc(13 * var(--u)); font-weight: 700; line-height: 1.5; }
+.ls-card__txt { margin: calc(12 * var(--u)) 0 0; font-size: calc(11 * var(--u)); line-height: 1.6; color: var(--site-gray); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.ls-card__tags { margin: auto 0 0; padding-bottom: calc(10 * var(--u)); border-bottom: 1px solid var(--kf-ink); font-size: calc(10 * var(--u)); color: var(--site-gray); }
+.ls-card__date { margin: auto 0 0; padding-bottom: calc(10 * var(--u)); border-bottom: 1px solid var(--kf-ink); font-size: calc(10 * var(--u)); font-weight: 500; }
+.ls-card__txt { margin-bottom: calc(20 * var(--u)); }
+.ls-grid[data-kind="news"] .ls-card__ttl { margin-top: calc(14 * var(--u)); }
+.ls-grid[data-kind="news"] .ls-card__txt { -webkit-line-clamp: 2; margin-bottom: calc(16 * var(--u)); }
+/* 1440 original measurements — figure 246 · work advertiser 12/title 20/description 14x3 lines/category 13, news title 16x2 lines/summary 14x2 lines/date 13, below footer line 20 */
+@media (min-width: 1024px) {
+  .ls-card__client { margin: calc(34 * var(--u)) 0 calc(15 * var(--u)); font-size: calc(12 * var(--u)); line-height: 1; }
+  .ls-card__ttl { font-size: calc(20 * var(--u)); line-height: 1; }
+  .ls-card__txt { margin: calc(20 * var(--u)) 0 calc(42 * var(--u)); font-size: calc(14 * var(--u)); }
+  .ls-card__tags, .ls-card__date { padding-bottom: calc(19 * var(--u)); font-size: calc(13 * var(--u)); line-height: 1; }
+  .ls-grid[data-kind="news"] .ls-card__ttl { margin-top: calc(30 * var(--u)); font-size: calc(16 * var(--u)); line-height: 1.6; }
+  .ls-grid[data-kind="news"] .ls-card__txt { margin: calc(21 * var(--u)) 0 calc(61 * var(--u)); }
+}
+.ls-card.tb-in-slash-wrap .ls-card__persp { clip-path: polygon(45% 0, 55% 0, 55% 100%, 45% 100%); opacity: 0; }
+.ls-card.tb-in-slash-wrap.is-inview .ls-card__persp { clip-path: polygon(-50% -50%, 150% -50%, 150% 150%, -50% 150%); opacity: 1; transition: clip-path 0.6s var(--ease-in-out1), opacity 0.35s; transition-delay: calc(var(--index, 0) * 0.1s); }
+
+.ls-pager { position: relative; z-index: 1; display: flex; justify-content: center; gap: calc(6 * var(--u)); margin-top: calc(70 * var(--u)); font-size: calc(11 * var(--u)); font-weight: 500; }
+@media (min-width: 1024px) { .ls-pager { margin-top: calc(142 * var(--u)); font-size: calc(13 * var(--u)); } }
+.ls-pager a, .ls-pager span { --edge: 5px; position: relative; isolation: isolate; display: grid; place-items: center; min-width: calc(26 * var(--u)); height: calc(20 * var(--u)); padding: 0 6px; clip-path: polygon(0 0, calc(100% - var(--edge)) 0, 100% 50%, 100% 100%, var(--edge) 100%, 0 50%); transition: color 0.45s var(--ease-in-out4); }
+.ls-pager [aria-current] { background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); }
+/* Hover — like the original angular button, a thin diagonal panel in the center spreads to both sides in .45s, going from black to yellow */
+.ls-pager a::after { content: ""; position: absolute; inset: 0; z-index: -1; opacity: 0; background: var(--kf-contrast-bg); clip-path: polygon(40% 0%, 45% 0%, calc(45% + 16px) 100%, calc(40% + 16px) 100%); transition: opacity 0.45s var(--ease-in-out4), clip-path 0.45s var(--ease-in-out4), background-color 0.45s var(--ease-in-out4); }
+@media (hover: hover) and (pointer: fine) {
+  .ls-pager a:hover { color: var(--kf-on-accent); }
+  .ls-pager a:hover::after { opacity: 1; background: var(--kf-accent); clip-path: polygon(-8px 0%, calc(100% - 8px) 0%, calc(100% + 8px) 100%, 8px 100%); }
+}
+@media (prefers-reduced-motion: reduce) { .ls-card.tb-in-slash-wrap .ls-card__persp { clip-path: none; opacity: 1; } .ls-card__clip, .ls-card__frame { transition: none; } }

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>burger-cross-stage — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { margin: 0; background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; margin: 0; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .bcs-row { display: flex; gap: 24px; padding: 40px 20px; }
+  .bcs-btn { width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--kf-surface); color: var(--kf-ink); box-shadow: var(--kf-shadow-soft); cursor: pointer; }
+  .bcs-btn--dark { background: var(--kf-ink); color: var(--kf-bg); }
+  .bcs-log { padding: 0 20px; font: 500 13px/1.4 var(--kf-font-mono); color: var(--kf-dim); }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>burger-cross-stage</b> — Press the round button. The three lines step into an X, and pressing again reverses it.</p>
+<div class="bcs-row" data-demo-host>
+  <button class="bcs-btn" type="button" aria-label="Menu" data-fx="burger-cross-stage"><span data-fx-part="line"></span></button>
+  <button class="bcs-btn bcs-btn--dark" type="button" aria-label="Menu" data-fx="burger-cross-stage" data-fx-burger-cross-stage="dur: .5"><span data-fx-part="line"></span></button>
+</div>
+<p class="bcs-log" id="bcs-log">fx:open and fx:close are logged here</p>
+<script>
+document.addEventListener("fx:open", (e) => { if (e.target.matches?.('[data-fx~="burger-cross-stage"]')) document.getElementById("bcs-log").textContent = "fx:open"; });
+document.addEventListener("fx:close", (e) => { if (e.target.matches?.('[data-fx~="burger-cross-stage"]')) document.getElementById("bcs-log").textContent = "fx:close"; });
+// Late arrivals and removals — checks that fx-core attaches to an element added after 1s and detaches from an element removed after 2.5s
+(() => {
+  const src = document.querySelector('[data-fx~="burger-cross-stage"]');
+  if (!src) return;
+  const host = src.closest("[data-demo-host]");
+  const make = () => { const t = document.createElement("template"); t.innerHTML = src.outerHTML; return t.content.firstElementChild; };
+  const gone = make();
+  host.append(gone);
+  setTimeout(() => host.append(make()), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1s another identical one comes in (the late arrival), and after 2.5s one drops out (the detach).");
+})();
+</script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

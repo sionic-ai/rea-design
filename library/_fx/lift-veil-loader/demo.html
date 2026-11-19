@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lift-veil-loader — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); margin: 0; }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .demo { padding: 48px 20px; display: grid; gap: 24px; }
+  .demo-btn { justify-self: start; display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-sm); background: var(--kf-surface); color: var(--kf-ink); cursor: pointer; }
+  .demo-card { padding: 20px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-md); background: var(--kf-surface); }
+  [data-fx-part="box"] p { margin: 0; font: 400 20px/2 var(--kf-font-display); }
+  [data-fx~="lift-veil-loader"] { --fx-fill: var(--kf-surface); }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>lift-veil-loader</b> On open, the Loading text and bar slide up after .5s, and the curtain lifts up after .7s. Press the button to attach a new loader and replay it.</p>
+<section class="demo">
+  <button class="demo-btn" type="button" id="again">Replay loader</button>
+  <div class="demo-card">First body card — appears when the curtain lifts.</div>
+  <div class="demo-card">Body second card</div>
+</section>
+<div data-fx="lift-veil-loader" id="loader" aria-hidden="true"><div data-fx-part="veil"></div><div data-fx-part="box"><p>Loading</p><div data-fx-part="bar"></div></div></div>
+<script>
+// Late arrivals and removals — checks that fx-core attaches to an element added after 1s and detaches from an element removed after 2.5s
+(() => {
+  const src = document.getElementById("loader");
+  if (!src) return;
+  const html = src.outerHTML.replace(/\sid="[^"]*"/g, "");
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = html; const el = t.content.firstElementChild; el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => src.after(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.getElementById("again").addEventListener("click", () => document.body.append(make("again")));
+  document.addEventListener("fx:done", (e) => e.target.dataset.demo && e.target.remove());
+  document.querySelector(".demo-hint").append(" · After 1 second one more loader comes in (a late arrival), and after 2.5 seconds one is removed (detach).");
+})();
+</script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

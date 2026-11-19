@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>frame-fly-page — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  :root { --fx-to-top: 80px; --fx-to-left: 24px; --fx-to-width: min(46vw, 520px); }
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); margin: 0; }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; padding: 120px 24px 40px; }
+  .card { display: block; color: inherit; }
+  .card__box { position: relative; aspect-ratio: 1; border-radius: var(--kf-radius-sm); background: var(--kf-surface); }
+  .card__frame { position: absolute; left: 50%; bottom: 0; width: 73%; aspect-ratio: 824 / 973; transform: translate(-50%); overflow: hidden; background: var(--kf-raised); }
+  .card__frame .wf-img { position: absolute; inset: 0; height: 100%; }
+  .out { padding: 0 24px; font: 500 13px/1 var(--kf-font-mono); color: var(--kf-dim); }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>frame-fly-page</b> — Press a card. The picture frame flies to the big top-left spot in .5s (the demo does not navigate and clears the plate after 1 second).</p>
+<p class="out">Waiting</p>
+<div class="grid">
+  <a class="card" href="#one" data-fx="frame-fly-page"><div class="card__box"><div class="card__frame" data-fx-part="frame"><div class="wf-img" data-label="Work Screen Image"></div></div></div></a>
+  <a class="card" href="#two" data-fx="frame-fly-page"><div class="card__box"><div class="card__frame" data-fx-part="frame"><div class="wf-img" data-label="Work Screen Image"></div></div></div></a>
+</div>
+<script>
+(() => {
+  document.addEventListener("fx:navigate", (e) => {
+    e.preventDefault();
+    document.querySelector(".out").textContent = "Advance request: " + e.detail.href;
+    setTimeout(() => { document.dispatchEvent(new Event("fx:land")); document.querySelectorAll('[data-fx-part="frame"]').forEach((f) => (f.style.opacity = "")); }, 1000);
+  });
+  const src = document.querySelector('[data-fx~="frame-fly-page"]');
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = src.outerHTML; const el = t.content.firstElementChild; el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => src.after(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1s another identical card comes in (a late arrival), and after 2.5s one is removed (detach).");
+})();
+</script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

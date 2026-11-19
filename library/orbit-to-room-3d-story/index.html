@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="ko" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your building name here — a 3D story you scroll into</title>
+  <link rel="stylesheet" href="../../_shared/wire.css">
+  <link rel="stylesheet" href="../../_shared/kf-defaults.css">
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="../_fx/chapter-rail-dots/fx.css">
+  <link rel="stylesheet" href="index.css">
+  <script>try { if (localStorage.getItem("bz-mode") === "cyber") document.documentElement.dataset.mode = "cyber"; } catch {}</script>
+</head>
+<body>
+  <!-- Opening act: on a deep navy panel a building icon in the center is drawn ground line → rise → sweeping light, then waits .8s after drawing and clears in .6s -->
+  <div class="bz-boot" id="boot" data-slot="boot-loader" aria-label="Loading 3D model">
+    <div class="bz-icon" aria-hidden="true">
+      <div class="bz-icon__ground"><svg viewBox="0 0 250 360"><path d="M20 340 H230"/></svg></div>
+      <div class="bz-icon__rise"><div class="bz-icon__rise-in"><svg viewBox="0 0 250 360"><path d="M86 334 V70 L92 18 M86 70 C126 86 168 160 186 334 M86 120 C118 132 146 196 156 334 M86 176 C108 186 124 236 128 334"/><path class="--fl" d="M86 250 H120 M86 290 H130 M150 120 h38 v-10 h-46"/></svg></div></div>
+      <div class="bz-icon__scan"><i></i></div>
+    </div>
+    <p class="bz-boot__name" lang="en" data-label="Building English Name">Place Name</p>
+    <p class="bz-boot__msg">Building the model<b>.</b><b>.</b><b>.</b></p>
+  </div>
+  <div class="bz-cyload" id="loader" aria-hidden="true">
+    <h2 lang="en">CONNECTING SYSTEM</h2>
+    <div class="bz-cyload__bar"><i></i></div>
+    <div class="bz-cyload__steps"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+  </div>
+
+  <div class="bz-stage" id="stage" aria-hidden="true"><canvas class="bz-stage__canvas"></canvas></div>
+  <div class="bz-veil" id="veil" aria-hidden="true"></div>
+  <svg class="bz-annot" id="annot" aria-hidden="true"></svg>
+  <div class="bz-labels" id="labels" aria-hidden="true"></div>
+  <div class="bz-pins" id="pins"></div>
+  <div class="bz-pincard" id="pincard" role="dialog" aria-modal="false" hidden>
+    <button class="bz-x" type="button" aria-label="Close">×</button>
+    <h3>Pin title</h3>
+    <p>Pin description</p>
+  </div>
+  <div class="bz-cyberfx" aria-hidden="true"></div>
+
+  <div class="bz-switches" data-slot="mode-switch">
+    <div class="bz-seg" role="group" aria-label="Example Type">
+      <button type="button" id="modeClassic" aria-pressed="true">CLASSIC</button>
+      <button type="button" id="modeCyber" aria-pressed="false">CYBER</button>
+    </div>
+  </div>
+  <nav class="bz-seg bz-lang" aria-label="Language" data-slot="lang-switch">
+    <a href="./index.html" aria-current="page">EN</a>
+    <a href="./ar.html" lang="ar">AR</a>
+  </nav>
+
+  <!-- Three gauges visible only in Cyber type -->
+  <div class="bz-hud bz-hud__panel" id="hudTele">
+    <h4>TELEMETRY</h4><i class="bz-hud__line"></i>
+    <div class="bz-hud__row"><span>SECTOR</span><b id="tSector">—</b></div>
+    <div class="bz-hud__row"><span>ALTITUDE</span><b id="tAlt">0 M</b></div>
+    <div class="bz-hud__row"><span>VELOCITY</span><b id="tVel">0.0 M/S</b></div>
+    <div class="bz-hud__row"><span>SESSION</span><b id="tTime">00:00</b></div>
+  </div>
+  <div class="bz-hud bz-hud__panel" id="hudCtrl">
+    <h4>CONTROLS</h4><i class="bz-hud__line"></i>
+    <div class="bz-hud__row"><span>SCROLL</span><b>ADVANCE</b></div>
+    <div class="bz-hud__row"><span>CLICK</span><b>HOTSPOTS</b></div>
+    <div class="bz-hud__row"><span>DRAG</span><b>ORBIT</b></div>
+  </div>
+  <div class="bz-hud bz-hudbar" id="hudBar"><span class="bz-on">SYS ONLINE</span><span id="bPos">X:0 Y:0 Z:0</span><span id="bTarget">TARGET: PLACE NAME · 00.0000°N 00.0000°E</span><span id="bFps">FPS 60</span><span class="bz-ms" id="bSpace">SPACE: EXTERIOR</span></div>
+
+  <main class="bz-main">
+    <!-- Hero: aerial photo of a building slowly zooms from 1.04 to 1.2× over 34s (back and forth) while a light beam sweeps every 9s -->
+    <header class="bz-hero" id="top" data-slot="hero-photo-title" aria-label="First" data-tone="dark">
+      <div class="bz-hero__media" data-label="Aerial photo · sail-shaped high-rise hotel on an island at sea at sunset · pink and purple sky · building on the right third · 16:9 landscape"></div>
+      <div class="bz-hero__shade"></div>
+      <div class="bz-hero__title">
+        <span class="bz-pre" lang="en" data-label="First line small caps English">Explore the city's</span>
+        <span class="bz-line" aria-hidden="true"><i></i><i class="--long"></i><i></i></span>
+        <h1 lang="en" data-label="Building English name — only the middle word small">Place <small>of</small> Name</h1>
+        <span class="bz-ar" lang="ko" data-label="Name in local-script calligraphy — original is Arabic calligraphy">Name brush calligraphy</span>
+      </div>
+      <div class="bz-hero__bar">
+        <button class="bz-pause" type="button" id="pauseHero" aria-label="Pause background motion" aria-pressed="false"><svg viewBox="0 0 12 12"><path d="M2 1h3v10H2zM7 1h3v10H7z"/></svg></button>
+        <div class="bz-credit"><span>Beach name</span><span>City, country</span></div>
+      </div>
+    </header>
+
+    <section class="bz-intro" id="intro" data-slot="intro-statement">
+      <p class="bz-narr">Your large-type intro goes here, two or three lines, of what this building is and where it stands. Scroll to step inside.</p>
+      <p class="bz-alt">Or <button class="bz-linkbtn" type="button" id="tourLink">Follow the guide<svg viewBox="0 0 12 12"><path d="M3 2l6 4-6 4z"/></svg></button></p>
+    </section>
+
+    <!-- Section: a text card passes in front of a 3D scene pinned to the screen. While the card center crosses the screen center (25% before and after it holds), the camera blends toward the next section’s position -->
+    <section class="bz-ch --center --dark" id="region" data-space="globe" data-slot="chapter-center">
+      <div class="bz-copy bz-card">
+        <h2 class="bz-stack"><span class="bz-the" lang="en">The</span><span class="bz-big" lang="en" data-label="Section title English caps">Region Name Here</span></h2>
+        <span class="bz-line" aria-hidden="true"><i></i><i class="--long"></i><i></i></span>
+        <p class="bz-lead">Introduce this area in three lines. Say how many plots of land were joined into one and where it is.</p>
+      </div>
+    </section>
+    <section class="bz-ch --center --dark" id="city" data-space="globe">
+      <div class="bz-copy bz-card"><p class="bz-lead">Here, write in three lines how the city grew. Briefly, from a small port to a big city.</p></div>
+    </section>
+    <section class="bz-ch --center --dark" id="coast" data-space="globe" data-move="zoom">
+      <div class="bz-copy bz-card"><p class="bz-lead">Closer. Here, describe in two lines the shore where the building stands. How far it is from the old city center.</p></div>
+    </section>
+    <section class="bz-ch --center --cream" id="overview" data-space="out">
+      <div class="bz-copy bz-card">
+        <h2 class="bz-stack"><span class="bz-the" lang="en">The</span><span class="bz-big" lang="en">Shape on the Sea</span></h2>
+        <span class="bz-line" aria-hidden="true"><i></i><i class="--long"></i><i></i></span>
+        <p class="bz-lead bz-soft">Introduce the building’s height and shape in two lines here. What it resembles and where it stands.</p>
+      </div>
+    </section>
+    <section class="bz-ch --left --dark" id="explore" data-space="out" data-slot="chapter-card">
+      <div class="bz-copy bz-card">
+        <svg class="bz-ar-icon" viewBox="0 0 210 110" aria-hidden="true"><path d="M30 92 H180 M70 90 V22 L74 8 M70 22 C96 30 120 58 128 90 M70 44 C90 50 104 68 108 90" /><circle cx="150" cy="40" r="16"/><path d="M142 40 h16 M150 32 v16"/></svg>
+        <h3 class="bz-sub" lang="en" data-label="Small title, English caps">You can also look around freely in 3D.</h3>
+        <span class="bz-tline" aria-hidden="true"><i class="--short"></i><i></i></span>
+        <p class="bz-note">Describe in two lines here how to explore in 3D. Rotate, move closer, and step inside.</p>
+        <button class="bz-btn-outline" type="button" id="enterExplore">Explore in 3D</button>
+      </div>
+    </section>
+    <section class="bz-ch --left --cream" id="design" data-space="out">
+      <div class="bz-copy bz-card">
+        <h2 class="bz-stack"><span class="bz-the" lang="en">The</span><span class="bz-big" lang="en">Unique Design</span></h2>
+        <span class="bz-tline" aria-hidden="true"><i class="--short"></i><i></i></span>
+        <p class="bz-lead bz-soft">Here, write in three lines who designed this form and with what idea. Include the height and roof height too.</p>
+        <div class="bz-note bz-soft"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 7v4M8 4.6v.4"/></svg><span>Your small one-line note on proportions and simplification here.</span></div>
+      </div>
+    </section>
+    <section class="bz-ch --left --cream" id="island" data-space="out">
+      <div class="bz-copy bz-card">
+        <h3 class="bz-sub" lang="en">An island for one building</h3>
+        <span class="bz-tline" aria-hidden="true"><i class="--short"></i><i></i></span>
+        <p class="bz-soft">Three lines on how the island was made. The time it took for sea to become land.</p>
+        <dl class="bz-facts"><div><dt>Seaside</dt><dd>000 m</dd></div><div><dt>Build Period</dt><dd>0 years</dd></div></dl>
+      </div>
+    </section>
+    <section class="bz-ch --left --cream" id="foundation" data-space="out" data-xray="1">
+      <div class="bz-copy bz-card">
+        <h3 class="bz-sub" lang="en">Standing on sand</h3>
+        <span class="bz-tline" aria-hidden="true"><i class="--short"></i><i></i></span>
+        <p class="bz-soft">Your three lines explaining the foundation under the water go here. Sand instead of rock, so what do the piles rely on to hold?</p>
+        <dl class="bz-facts"><div><dt>Stake</dt><dd>000</dd></div><div><dt>Depth</dt><dd>00 m</dd></div><div><dt>Support</dt><dd lang="en">Friction</dd></div></dl>
+        <div class="bz-note bz-soft"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 7v4M8 4.6v.4"/></svg><span>Your one-line notice here that this is a cropped image.</span></div>
+      </div>
+    </section>
+    <section class="bz-ch --left --photo" id="sail" data-space="out">
+      <div class="bz-copy bz-card">
+        <h3 class="bz-sub" lang="en">A wall made of fabric</h3>
+        <span class="bz-tline" aria-hidden="true"><i class="--short"></i><i></i></span>
+        <p>Your explanation goes here in three lines that the front is fabric, not glass. Mention the air gap between two layers and the lighting at night.</p>
+        <dl class="bz-facts"><div><dt>Thousand layers</dt><dd>0</dd></div><div><dt>Air layer</dt><dd>00 cm</dd></div><div><dt>Material</dt><dd lang="en">PTFE</dd></div></dl>
+      </div>
+    </section>
+    <section class="bz-ch --left --cream" id="helipad" data-space="out">
+      <div class="bz-copy bz-card">
+        <h3 class="bz-sub" lang="en">A landing pad in the sky</h3>
+        <span class="bz-tline" aria-hidden="true"><i class="--short"></i><i></i></span>
+        <p class="bz-soft">Your two-line description here of the round plate jutting out near the top. What landed on it.</p>
+        <dl class="bz-facts"><div><dt>Height</dt><dd>000 m</dd></div><div><dt>Diameter</dt><dd>00 m</dd></div></dl>
+      </div>
+    </section>
+    <section class="bz-ch --left --cream" id="arrive" data-space="out" data-move="zoom">
+      <div class="bz-copy bz-card">
+        <h3 class="bz-sub" lang="en">Arriving at the entrance</h3>
+        <span class="bz-tline" aria-hidden="true"><i class="--short"></i><i></i></span>
+        <p class="bz-soft">Your two lines go here describing the path across the bridge to the entrance. Now we step inside.</p>
+      </div>
+    </section>
+    <section class="bz-ch --left --photo" id="columns" data-space="atrium">
+      <div class="bz-copy bz-card">
+        <h3 class="bz-sub" lang="en">The gold columns</h3>
+        <span class="bz-tline" aria-hidden="true"><i class="--short"></i><i></i></span>
+        <p>Your three-line description of the golden pillars in the lobby goes here. What covers them and how many stand.</p>
+        <dl class="bz-facts"><div><dt>Gold foil width</dt><dd>0,000 m²</dd></div><div><dt>Purity</dt><dd>00 carats</dd></div></dl>
+      </div>
+    </section>
+    <section class="bz-ch --left --photo" id="atrium" data-space="atrium" data-move="walk">
+      <div class="bz-copy bz-card">
+        <figure class="bz-real" tabindex="0" role="button" aria-label="View photo larger: empty central space seen looking up from the lobby">
+          <div class="bz-real__img" data-label="Interior photo · gold columns and tiered railings seen looking up from the lobby · symmetric and vertical · 3:1 wide strip"></div>
+          <figcaption><span class="bz-real__tag" lang="en">Real photo</span><span class="bz-real__cr">One-line photo credit</span></figcaption>
+        </figure>
+        <h3 class="bz-sub" lang="en">Atrium height and design</h3>
+        <span class="bz-tline" aria-hidden="true"><i class="--short"></i><i></i></span>
+        <p>Your three lines here describing the empty central void rising endlessly upward. The pattern and color wrapped around each floor.</p>
+        <dl class="bz-facts"><div><dt>Height</dt><dd>000 m</dd></div><div><dt>Floor</dt><dd>00</dd></div></dl>
+      </div>
+    </section>
+    <section class="bz-ch --left --photo" id="aquarium" data-space="mahara">
+      <div class="bz-copy bz-card">
+        <h3 class="bz-sub" lang="en">Dining beside the aquarium</h3>
+        <span class="bz-tline" aria-hidden="true"><i class="--short"></i><i></i></span>
+        <p>Your description here of a restaurant ringed by a round aquarium, in three lines. The tank’s size and the fish inside.</p>
+        <dl class="bz-facts"><div><dt>Water</dt><dd>000,000 L</dd></div><div><dt>Bell</dt><dd>00</dd></div></dl>
+      </div>
+    </section>
+    <section class="bz-ch --left --photo" id="suite" data-space="suite">
+      <div class="bz-copy bz-card">
+        <h2 class="bz-stack"><span class="bz-the" lang="en">The</span><span class="bz-big" lang="en">Grand Suite</span></h2>
+        <span class="bz-tline" aria-hidden="true"><i class="--short"></i><i></i></span>
+        <p>Here, introduce the largest room in three lines. Which floor it is on, how large it is, and what it is decorated with.</p>
+        <dl class="bz-facts"><div><dt>Floor</dt><dd>00th</dd></div><div><dt>Area</dt><dd>000 m²</dd></div><div><dt>Bedroom</dt><dd>0</dd></div></dl>
+      </div>
+    </section>
+    <section class="bz-ch --left --photo" id="bedroom" data-space="suite" data-move="walk">
+      <div class="bz-copy bz-card">
+        <h3 class="bz-sub" lang="en">The turning bed</h3>
+        <span class="bz-tline" aria-hidden="true"><i class="--short"></i><i></i></span>
+        <p>Your two-line description goes here of the round bed in the middle of the room, the mirror on the ceiling, and the canopy.</p>
+      </div>
+    </section>
+    <section class="bz-ch --left --photo bz-finale" id="finale" data-space="out" data-move="turn" data-slot="fact-grid">
+      <div class="bz-copy bz-card">
+        <h3 class="bz-sub" lang="en">Over the gulf</h3>
+        <span class="bz-tline" aria-hidden="true"><i class="--short"></i><i></i></span>
+        <p>Your two lines here describing the sea seen outside the window, closing the story with the six numbers below.</p>
+        <div class="bz-factgrid">
+          <div class="bz-fact"><b>0000</b><p>Your one line on what happened this year here.</p></div>
+          <div class="bz-fact"><b>0★</b><p>One line about the grade here.</p></div>
+          <div class="bz-fact"><b>00,000 m²</b><p>Two lines of story about the area here.</p></div>
+          <div class="bz-fact"><b>0 : 0</b><p>Your ratio line here.</p></div>
+          <div class="bz-fact"><b>00,000</b><p>Your count line here.</p></div>
+          <div class="bz-fact"><b>00</b><p>Your number line here.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Moments: line-drawing cards swiped horizontally (snap to the center cell), two arrows and dots -->
+    <section class="bz-moments" id="moments" data-slot="moment-carousel">
+      <div class="bz-head">
+        <h2 class="bz-stack"><span class="bz-the" lang="en">The</span><span class="bz-big" lang="en">Rooftop Moments</span></h2>
+        <span class="bz-line" aria-hidden="true"><i></i><i class="--long"></i><i></i></span>
+        <p>Your one line here introducing what happened up on the top deck.</p>
+      </div>
+      <div class="bz-track" id="track">
+        <article class="bz-moment"><svg viewBox="0 0 320 180"><g><path d="M40 150 H280 M160 150 V60 M120 60 H200 M150 40 h20 M100 100 c20 -20 100 -20 120 0"/><circle cx="160" cy="60" r="6"/></g></svg><h3 lang="en">Moment one</h3><p>Your two lines here on the first moment. When, who.</p><button class="bz-btn-outline" type="button" data-moment>View details</button></article>
+        <article class="bz-moment"><svg viewBox="0 0 320 180"><g><path d="M30 150 H290 M90 150 l40 -70 l40 70 M150 80 h60 M210 80 l30 70"/><circle cx="210" cy="60" r="14"/></g></svg><h3 lang="en">Moment two</h3><p>Your second moment here, two lines.</p><button class="bz-btn-outline" type="button" data-moment>View details</button></article>
+        <article class="bz-moment"><svg viewBox="0 0 320 180"><g><path d="M40 150 H280 M70 130 c40 -60 140 -60 180 0 M100 110 l-20 -40 M220 110 l20 -40"/><circle cx="160" cy="95" r="10"/></g></svg><h3 lang="en">Moment three</h3><p>Your third moment here in two lines.</p><button class="bz-btn-outline" type="button" data-moment>View details</button></article>
+        <article class="bz-moment"><svg viewBox="0 0 320 180"><g><path d="M40 150 H280 M160 150 V50 M110 50 H210 M120 100 h80 M140 120 h40"/></g></svg><h3 lang="en">Moment four</h3><p>Your fourth moment here in two lines.</p><button class="bz-btn-outline" type="button" data-moment>View details</button></article>
+      </div>
+      <div class="bz-carnav">
+        <button class="bz-arrow" type="button" id="prev" aria-label="Previous"><svg viewBox="0 0 14 14"><path d="M9 2L4 7l5 5"/></svg></button>
+        <div class="bz-dots" id="dots"></div>
+        <button class="bz-arrow" type="button" id="next" aria-label="Next"><svg viewBox="0 0 14 14"><path d="M5 2l5 5-5 5"/></svg></button>
+      </div>
+    </section>
+
+    <section class="bz-maps" id="visit" data-slot="map-cards">
+      <div class="bz-head">
+        <h2 class="bz-stack"><span class="bz-big" lang="en">Find the Place</span><span class="bz-the" lang="en">on the map</span></h2>
+        <span class="bz-line" aria-hidden="true"><i></i><i class="--long"></i><i></i></span>
+        <p>Your one line here introducing three spots to find on the map.</p>
+      </div>
+      <div class="bz-cards">
+        <div class="bz-mcard"><div class="bz-ph" data-label="Aerial photo · island and buildings from above · daytime · landscape 16:9"></div><p>One line describing this spot here.</p><a class="bz-btn-outline" href="#visit">View on map</a></div>
+        <div class="bz-mcard"><div class="bz-ph" data-label="Beach photo · building over the sea beyond the sand · daytime · wide 16:9"></div><p>One line describing this spot here.</p><a class="bz-btn-outline" href="#visit">View on map</a></div>
+        <div class="bz-mcard"><div class="bz-ph" data-label="Front photo · building seen looking up from the bridge-end entrance · daytime · landscape 16:9"></div><p>One line describing this spot here.</p><a class="bz-btn-outline" href="#visit">View on map</a></div>
+      </div>
+    </section>
+
+    <section class="bz-credits" id="credits" data-slot="credits-refs">
+      <p class="bz-more">Your three more places to read here <a href="#credits">Link 1</a>, <a href="#credits">Link 2</a>, <a href="#credits">Link 3</a> Write it on one line like this.</p>
+      <div class="bz-wordmark"><span class="bz-ar" data-label="Name in local-script brush calligraphy">Name brush calligraphy</span><span class="bz-en" lang="en">PLACE NAME</span></div>
+      <p class="bz-small">Your photo credit and a note on what this page is, in two lines. <a href="#credits">Source 1</a> Department <a href="#credits">Source 2</a>.</p>
+      <details class="bz-refs" id="refs">
+        <summary>Reference materials<svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4"/></svg></summary>
+        <ol><li><a href="#refs">Resource name 1</a>, Source.</li><li><a href="#refs">Resource name 2</a>, Source.</li><li><a href="#refs">Resource name 3</a>, source, year.</li><li><a href="#refs">Resource name 4</a>, Source.</li></ol>
+      </details>
+    </section>
+
+    <section class="bz-endbar" data-slot="replay-bar">
+      <div class="bz-in">
+        <span class="bz-lbl">Revisit the story</span>
+        <button class="bz-btn-outline" type="button" id="replay">View from start</button>
+        <button class="bz-btn-outline" type="button">Explore in 3D</button>
+        <button class="bz-btn-outline" type="button">Download the model</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="bz-photobox" id="photoBox" role="dialog" aria-modal="true" aria-label="View photo larger"><button class="bz-x" type="button" aria-label="Close">×</button><figure><div class="bz-photobox__img" data-label="Large interior photo · landscape 16:9"></div><figcaption>Photo caption · Photo credit</figcaption></figure></div>
+  <div class="bz-tourbar" id="tourbar" hidden><button type="button" aria-label="Pause guide"><svg viewBox="0 0 12 12"><path d="M2 1h3v10H2zM7 1h3v10H7z"/></svg></button><span>Following the guide — Section name</span></div>
+  <dialog class="bz-dialog" id="moment"><button class="bz-x" type="button" aria-label="Close">×</button><p class="bz-yr">0000 · On the top panel</p><h3 lang="en">Moment title</h3><p>Your three-line story of this moment goes here. Who did what, and when.</p></dialog>
+
+  <footer class="bz-footer" data-slot="footer">
+    <div class="bz-in">
+      <nav aria-label="Bottom Menu"><a href="#top">Back to top</a><a href="#refs">Reference materials</a><a href="#visit">Visit us</a></nav>
+      <div class="bz-brandmark"><span lang="en">PLACE NAME</span><span class="bz-ar">Name brush calligraphy</span></div>
+      <p class="bz-disc">A one-line notice here: this page was made alone for learning, and is in fact drawn from the material above.</p>
+      <p class="bz-designer">Creator name</p>
+    </div>
+  </footer>
+
+  <ol class="bz-rail --on-dark" id="rail" aria-label="Section list" data-fx="chapter-rail-dots" data-fx-chapter-rail-dots="from: .bz-hero, .bz-ch"></ol>
+
+  <script src="../../_shared/vendor/gsap/gsap.min.js"></script>
+  <script src="../../_shared/vendor/gsap/ScrollTrigger.min.js"></script>
+  <script src="../_vendor/three@0.186.0/three.min.js"></script>
+  <script src="../_fx/fx-core.js"></script>
+  <script src="../_fx/chapter-rail-dots/fx.js"></script>
+  <script src="shared.js"></script>
+  <script src="../../_shared/wire.js"></script>
+</body>
+</html>

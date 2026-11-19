@@ -1,0 +1,67 @@
+/* Two-layer curtain button — on hover the first curtain (--lw-a) fills from below in .5s and .1s later the second (--lw-b) covers it.
+   On release the second layer drops first and the first follows .1s later. Text rolls up one line so the same text rises from below, and the arrow slides out while a new arrow comes in */
+[data-fx~="layer-wipe-button"] {
+  --lw-dur: 0.5s;
+  --lw-ease: var(--kf-ease-in-out, cubic-bezier(0.65, 0.05, 0.36, 1));
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+[data-fx~="layer-wipe-button"] > .fx-lw-a,
+[data-fx~="layer-wipe-button"] > .fx-lw-b {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  transform: translateY(100%);
+  transition: transform var(--lw-dur) var(--lw-ease);
+  pointer-events: none;
+}
+[data-fx~="layer-wipe-button"] > .fx-lw-a { background: var(--lw-a, var(--kf-accent)); transition-delay: 0.1s; }
+[data-fx~="layer-wipe-button"] > .fx-lw-b { background: var(--lw-b, var(--kf-ink)); transition-delay: 0s; }
+[data-fx~="layer-wipe-button"] [data-fx-part="label"] { position: relative; z-index: 1; display: block; overflow: clip; }
+[data-fx~="layer-wipe-button"] [data-fx-part="label"] > .fx-lw-t { display: block; transition: transform var(--lw-dur) var(--lw-ease); }
+[data-fx~="layer-wipe-button"] [data-fx-part="label"]::after {
+  content: attr(data-lw-text);
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  transform: translateY(100%);
+  transition: transform var(--lw-dur) var(--lw-ease);
+}
+[data-fx~="layer-wipe-button"] [data-fx-part="icon"] {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-left: auto;
+  border-radius: 50%;
+  overflow: hidden;
+  transition: background-color 0.7s var(--lw-ease), color 0.7s var(--lw-ease);
+}
+[data-fx~="layer-wipe-button"] [data-fx-part="icon"] > * {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transition: translate 0.7s var(--lw-ease);
+}
+[data-fx~="layer-wipe-button"] [data-fx-part="icon"] > .fx-lw-clone { translate: var(--lw-in, -150% 0); }
+@media (hover: hover) {
+  [data-fx~="layer-wipe-button"]:hover > .fx-lw-a { transform: translateY(0); transition-delay: 0s; }
+  [data-fx~="layer-wipe-button"]:hover > .fx-lw-b { transform: translateY(0); transition-delay: 0.1s; }
+  [data-fx~="layer-wipe-button"]:hover [data-fx-part="label"] > .fx-lw-t { transform: translateY(-100%); transition-duration: 0.4s; }
+  [data-fx~="layer-wipe-button"]:hover [data-fx-part="label"]::after { transform: translateY(0); transition-delay: 50ms; }
+  [data-fx~="layer-wipe-button"]:hover [data-fx-part="icon"] > :not(.fx-lw-clone) { translate: var(--lw-out, 150% 0); }
+  [data-fx~="layer-wipe-button"]:hover [data-fx-part="icon"] > .fx-lw-clone { translate: 0 0; transition-delay: 0.1s; }
+}
+[data-fx~="layer-wipe-button"][data-fx-layer-wipe-button*="look: plain"] > .fx-lw-a,
+[data-fx~="layer-wipe-button"][data-fx-layer-wipe-button*="look: plain"] > .fx-lw-b { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="layer-wipe-button"] > .fx-lw-a,
+  [data-fx~="layer-wipe-button"] > .fx-lw-b,
+  [data-fx~="layer-wipe-button"] [data-fx-part="label"] > .fx-lw-t,
+  [data-fx~="layer-wipe-button"] [data-fx-part="label"]::after,
+  [data-fx~="layer-wipe-button"] [data-fx-part="icon"] > * { transition: none; }
+}

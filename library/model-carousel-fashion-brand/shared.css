@@ -1,0 +1,145 @@
+/* Shared by all pages: white boxes floating in the corners (header, top-right bar, bottom-left bar), page info (small subtitle, wide uppercase title, info row), 
+   A veil that gets darker toward the page end, a giant manifesto, and a footer bar attached below. Original 1440 grid: 12 columns · gap 20 · outer 20 (phone 8 columns · gap 10). */
+:root {
+  --bc-gut: 20px;
+  --bc-col: calc((100vw - 11 * var(--bc-gut) - 2 * var(--bc-gut)) / 12);
+  --bc-bar: 28px;
+  --bc-gap: 10px;
+  --bc-gap-s: 8px;
+  --bc-r: var(--kf-radius-sm);
+  --bc-hair: .5px;
+  --bc-ease: cubic-bezier(.23, 1, .32, 1);
+  --site-divider: var(--kf-line);
+  --site-dim-max: .62;
+}
+@media (max-width: 740px) {
+  :root { --bc-gut: 10px; --bc-col: calc((100vw - 7 * var(--bc-gut) - 2 * var(--bc-gut)) / 8); --bc-bar: 33px; }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--kf-bg); color: var(--kf-ink); font: var(--kf-weight-body) 10px/1.1 var(--kf-font-sans); letter-spacing: .04em; text-transform: uppercase; -webkit-font-smoothing: antialiased; overflow-x: clip; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+h1, h2, h3, h4, h5, p, ul, figure { margin: 0; padding: 0; }
+ul { list-style: none; }
+:focus-visible { outline: 1px solid var(--kf-ink); outline-offset: 2px; }
+
+/* Type scale — original composition: heading 30 wide 700 uppercase 1 line · base 10 normal letter-spacing .04em · extended 10 wide · body 12 lowercase */
+.bc-heading { font: var(--kf-weight-display) 30px/1 var(--kf-font-display); font-stretch: 125%; letter-spacing: 0; text-transform: uppercase; }
+.bc-ext { font-stretch: 125%; letter-spacing: 0; }
+.bc-body { font-size: 12px; line-height: 1.2; letter-spacing: .02em; text-transform: none; }
+.bc-dim { color: var(--kf-dim); }
+@media (max-width: 740px) { .bc-heading { font-size: 20px; } }
+
+/* ── White cell button — original Button: gray tail (number) after the name, and hovering one in the same row pushes the others back to gray ── */
+/* On hover every button in that row turns gray at once, and only the hovered button’s text (child) stays black — instant, no transition (original measured at 0ms) */
+.bc-btn { display: inline-flex; align-items: center; white-space: nowrap; }
+.bc-suf { color: var(--kf-dim); }
+.bc-btn .bc-suf { margin-left: var(--bc-gap-s); }
+.bc-row:has(.bc-btn:hover) .bc-btn { color: var(--kf-dim); }
+.bc-row:has(.bc-btn:hover) .bc-btn:hover > * { color: var(--kf-ink); }
+
+/* ── Header cell (top left) ── */
+.bc-head { position: fixed; z-index: 2000; top: var(--bc-gut); left: var(--bc-gut); width: calc(var(--bc-col) * 3 + var(--bc-gut) * 3); }
+.bc-head__line { display: flex; align-items: center; gap: var(--bc-gap-s); height: var(--bc-bar); padding: var(--bc-gap) var(--bc-gap) 9px; background: var(--kf-surface); overflow: hidden; }
+.bc-head__top { height: 30px; align-items: flex-start; border-radius: var(--bc-r) var(--bc-r) 0 0; }
+.bc-head__menu { border-radius: 0 0 var(--bc-r) var(--bc-r); }
+.bc-logo { position: relative; display: block; height: 11px; color: var(--kf-ink); }
+.bc-logo b { display: block; font: 800 italic 15px/11px var(--kf-font-display); font-stretch: 125%; letter-spacing: -.01em; transform: skewX(-6deg); }
+/* Light band over the wordmark — like the original Header_shine it always cycles every .7s (doesn’t stop when the pointer leaves), and white light shows only while loading */
+.bc-logo::after { content: ""; position: absolute; inset: 0; background-image: linear-gradient(90deg, transparent, transparent); background-size: 50% 100%; background-repeat: no-repeat; pointer-events: none; animation: bc-shine .7s ease-in-out infinite reverse; }
+html.is-loading .bc-logo::after { background-image: linear-gradient(90deg, transparent 0%, var(--kf-surface) 50%, transparent 100%); }
+@keyframes bc-shine { from { background-position: -100% 0; } to { background-position: 200% 0; } }
+.bc-spacer { flex: 1; }
+.bc-menu { display: contents; }
+.bc-head__menuBtn { display: none; }
+
+/* ── Panel attached only to the body section — holds page info · corner bar, and is pushed up with it when the body ends (footer arrives) (original Root_sticky) ── */
+/* The panel keeps its own height (one screen), and shared.js pulls the first body that follows up by one screen — so the panel releases when the end of the body touches the bottom of the screen */
+.bc-pin { position: sticky; top: 0; height: 100vh; z-index: 300; pointer-events: none; }
+.bc-pin > * { pointer-events: auto; }
+.bc-pin > .bc-info { pointer-events: none; }
+
+/* ── Corner Bar ── */
+.bc-bar { position: absolute; z-index: 900; display: flex; height: var(--bc-bar); border-radius: var(--bc-r); background: var(--kf-surface); }
+.bc-bar__item { display: flex; align-items: center; justify-content: space-between; gap: var(--bc-gap); flex: 1; padding: 0 var(--bc-gap) 0 var(--bc-gap); white-space: nowrap; border-radius: var(--bc-r); }
+.bc-bar__item + .bc-bar__item, .bc-bar__tail { border-left: var(--bc-hair) solid var(--site-divider); }
+.bc-bar--tr { top: var(--bc-gut); right: var(--bc-gut); min-width: calc(var(--bc-col) * 2 + var(--bc-gut) * 2); }
+.bc-bar--bl { top: calc(100vh - var(--bc-gut) - var(--bc-bar)); left: var(--bc-gut); width: calc(var(--bc-col) * 3 + var(--bc-gut) * 3); }
+.bc-bar--bl:not(.bc-products) a.bc-bar__item:hover { background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); }
+.bc-bar--bl:not(.bc-products) a.bc-bar__item:hover .bc-suf { color: var(--kf-contrast-ink); }
+.bc-bar__tail { display: flex; align-items: center; gap: 2px; padding: 2px; }
+.bc-thumb { display: block; width: 24px; height: 24px; border-radius: 2px; background: var(--kf-bg); opacity: .4; overflow: hidden; }
+/* The current thumbnail is 1 with a border, the rest .4 — hover another and only that one goes to 1 while the current one steps back to .4 (original measured 0ms) */
+.bc-thumb.is-current { opacity: 1; outline: var(--bc-hair) solid var(--kf-ink); outline-offset: -.5px; }
+.bc-bar__tail:has(.bc-thumb:not(.is-current):hover) .bc-thumb { opacity: .4; }
+.bc-bar__tail:has(.bc-thumb:not(.is-current):hover) .bc-thumb:not(.is-current):hover { opacity: 1; }
+.bc-thumb i { display: block; width: 100%; height: 100%; }
+
+/* ── Page info (left, below header) ── */
+.bc-info { position: absolute; z-index: 300; top: 140px; left: var(--bc-gut); pointer-events: none; }
+.bc-info.is-light { color: var(--kf-contrast-ink); }
+.bc-info a, .bc-info button { pointer-events: auto; }
+.bc-info__sub { margin-bottom: var(--bc-gap-s); }
+.bc-info__title { margin-bottom: 40px; white-space: pre-line; }
+.bc-info__lines { display: flex; flex-direction: column; gap: var(--bc-gap); }
+.bc-line { display: flex; }
+.bc-line__k { width: calc(var(--bc-col) + var(--bc-gut)); flex: none; }
+.bc-line__v { font-stretch: 125%; letter-spacing: 0; }
+.bc-line__v.is-body { font-size: 12px; line-height: 1.2; letter-spacing: .02em; text-transform: none; font-stretch: 100%; }
+
+/* ── Darkening curtain — as the page end (footer) rises, the area above the body tints black (header, bars and footer stay on top) ── */
+.bc-dimmer { position: fixed; inset: 0; z-index: 80; background: var(--kf-ink); opacity: 0; pointer-events: none; }
+
+/* ── Footer: giant declaration + two bars attached below ── */
+.bc-foot { position: relative; z-index: 100; border-top: var(--bc-hair) solid var(--site-divider); background: var(--kf-bg); padding-bottom: var(--bc-gut); }
+.bc-mani { width: calc(var(--bc-col) * 4 + var(--bc-gut) * 3); margin: 100px auto; text-align: center; line-height: 1.1; }
+.bc-foot__bars { position: sticky; bottom: var(--bc-gut); display: flex; align-items: flex-end; justify-content: space-between; margin: var(--bc-gut) var(--bc-gut) 0; }
+.bc-foot__bar { display: flex; border-radius: var(--bc-r); background: var(--kf-surface); }
+.bc-foot__bar .bc-btn { padding: var(--bc-gap) var(--bc-gap) 9px; }
+.bc-foot__bar .bc-btn + .bc-btn { border-left: var(--bc-hair) solid var(--site-divider); }
+@media (max-width: 740px) {
+  .bc-head { width: calc(100vw - var(--bc-gut) * 2); }
+  .bc-head__top { height: 33px; padding-top: 11px; }
+  .bc-head__menu .bc-menu { display: none; }
+  .bc-head__menuBtn { display: inline-flex; }
+  .bc-bar--tr { top: calc(var(--bc-gut) + 66px); left: var(--bc-gut); right: auto; width: calc(100vw - var(--bc-gut) * 2); border-radius: 0 0 var(--bc-r) var(--bc-r); border-top: var(--bc-hair) solid var(--kf-bg); }
+  .bc-head__menu { border-radius: 0; }
+  .bc-bar--bl { width: calc(100vw - var(--bc-gut) * 2); }
+  .bc-info { top: auto; bottom: calc(var(--bc-gut) * 2 + var(--bc-bar)); }
+  .bc-line__k { width: calc(var(--bc-col) * 2 + var(--bc-gut) * 3); }
+  .bc-mani { width: calc(100vw - 40px); margin: 60px auto; }
+  .bc-foot__bars { flex-direction: column; align-items: stretch; }
+  .bc-foot__bar:first-child { border-radius: var(--bc-r) var(--bc-r) 0 0; border-bottom: var(--bc-hair) solid var(--kf-bg); }
+  .bc-foot__bar:last-child { border-radius: 0 0 var(--bc-r) var(--bc-r); overflow-x: auto; scrollbar-width: none; }
+}
+
+/* Cart — on click an empty cart row opens below the header cell in .3s, and a light veil (background color at 80%) covers the screen in .3s. Clicking the veil closes it */
+.bc-cart { display: grid; grid-template-rows: 0fr; background: var(--kf-surface); border-radius: 0 0 var(--bc-r) var(--bc-r); transition: grid-template-rows .3s cubic-bezier(.45, 0, .55, 1) .01s; }
+.bc-cart > div { overflow: hidden; }
+.bc-cart p { display: flex; justify-content: space-between; height: var(--bc-bar); padding: 11px var(--bc-gap) 0; border-top: var(--bc-hair) solid var(--kf-bg); }
+.bc-head.is-cart .bc-cart { grid-template-rows: 1fr; }
+.bc-head.is-cart .bc-head__menu { border-radius: 0; }
+.bc-head.is-cart .bc-cartBtn { color: var(--kf-dim); }
+.bc-veil { position: fixed; inset: 0; z-index: 1900; background: color-mix(in oklab, var(--kf-bg) 80%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); opacity: 0; visibility: hidden; transition: opacity .3s linear, visibility 0s .3s; }
+.bc-veil.is-on { opacity: 1; visibility: visible; transition: opacity .27s linear, visibility 0s; }
+
+/* Phone menu panel — rows open one by one below the header cell */
+.bc-drawer { display: grid; grid-template-rows: 0fr; background: var(--kf-surface); border-radius: 0 0 var(--bc-r) var(--bc-r); transition: grid-template-rows .3s var(--bc-ease); }
+.bc-drawer > div { overflow: hidden; }
+.bc-drawer a { display: flex; justify-content: space-between; height: var(--bc-bar); padding: 11px var(--bc-gap) 0; border-top: var(--bc-hair) solid var(--kf-bg); }
+.bc-head.is-menu .bc-drawer { grid-template-rows: 1fr; }
+.bc-head.is-menu .bc-head__menu { border-radius: 0; }
+.bc-head.is-menu .bc-head__menuBtn { color: var(--kf-dim); }
+
+/* Page transition — the new page body and page info rise clipped from the bottom (original --clip-progress, .7s quintOut). The old page is covered by a curtain (shared.js) */
+.bc-page { position: relative; z-index: 10; }
+html.is-entering .bc-page, html.is-entering .bc-info { animation: bc-enter .7s cubic-bezier(.23, 1, .32, 1) both; }
+html.is-entering body { background: var(--kf-ink); }
+@keyframes bc-enter { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  html.is-loading .bc-logo::after { animation: none; }
+  html.is-entering .bc-page, html.is-entering .bc-info { animation: none; }
+}

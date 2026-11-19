@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>height-fold — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .demo { max-width: 560px; margin: 0 auto; padding: 48px 20px; display: grid; gap: 12px; }
+  .q { border: 1px solid var(--kf-line); border-radius: var(--kf-radius-sm); background: var(--kf-surface); }
+  .q summary, .q button { display: flex; justify-content: space-between; width: 100%; padding: 16px; font: 700 15px/1.4 var(--kf-font-sans); background: none; border: 0; color: inherit; text-align: left; list-style: none; }
+  .q summary::-webkit-details-marker { display: none; }
+  .q summary::after, .q button::after { content: "+"; transition: rotate .3s ease-out; }
+  .q.is-opened summary::after, .q.is-opened button::after { rotate: 45deg; }
+  .q [data-fx-part="body"] > p { padding: 0 16px 16px; color: var(--kf-dim); }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>height-fold</b> — Press a question row. The answer opens in .4s and folds when pressed again.</p>
+<div class="demo">
+  <details class="q" data-fx="height-fold"><summary data-fx-part="head">Your question 1 here</summary><div data-fx-part="body"><p>Put a two-line answer here. Things that are open don’t close each other.</p></div></details>
+  <details class="q" data-fx="height-fold"><summary data-fx-part="head">Your question 2 here</summary><div data-fx-part="body"><p>Your one-line answer here.</p></div></details>
+  <div class="q" data-fx="height-fold"><button type="button" data-fx-part="head">a line that is not details</button><div data-fx-part="body"><p>Your collapsed text here.</p></div></div>
+</div>
+<script>
+// Late arrivals and removals — checks that fx-core attaches to an element added after 1s and detaches from an element removed after 2.5s
+(() => {
+  const src = document.querySelector('[data-fx~="height-fold"]');
+  if (!src) return;
+  const html = src.outerHTML.replace(/\sid="[^"]*"/g, "");
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = html; const el = t.content.firstElementChild; el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => src.after(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1s another identical one comes in (the late arrival), and after 2.5s one drops out (the detach).");
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

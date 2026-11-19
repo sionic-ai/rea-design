@@ -1,0 +1,353 @@
+/* Shared by all pages: floating glass nav (name · status button · Works count wheel · About) · cards (project · fan-shaped collection) · drawer · footer · page turn.
+   Sizes carry over the original clamp() tokens as they are. All colors are built from --kf-* in theme.css. */
+:root, [data-theme="light"] {
+  --sp: .25rem; --gm: calc(var(--sp) * 8); --gutter: 1.5rem;
+  --fs-hlg: clamp(1.25rem, 1.162rem + .3756vw, 1.5rem); --fs-in: clamp(.8125rem, .7905rem + .0939vw, .875rem); --fs-xs: .75rem; --fs-body: clamp(.875rem, .83rem + .19vw, 1rem);
+  --fluid-xl: clamp(3.5rem, 2.6197rem + 3.7559vw, 6rem);
+
+  /* The original’s bounce curve (linear() samples) — card expand, label slide, list push and number wheel all use it */
+  --ease-bounce: linear(0, .0083, .0311, .0653, .1085, .1582, .2126, .2699, .3287, .3878, .4461, .5029, .5576, .6095, .6585, .7042, .7464, .7852, .8205, .8524, .8809, .9063, .9286, .9481, .9649, .9793, .9914, 1.0015, 1.0098, 1.0164, 1.0216, 1.0255, 1.0283, 1.0302, 1.0312, 1.0315, 1.0313, 1.0306, 1.0296, 1.0282, 1.0267, 1.025, 1.0232, 1.0213, 1.0195, 1.0176, 1.0158, 1.0141, 1.0124, 1.0109, 1.0094, 1.0081, 1.0069, 1.0057, 1.0047, 1.0038, 1.003, 1.0023, 1.0017, 1.0011, 1.0007, 1.0003, 1, .9997, .9995, .9993, .9992, .9991, .9991, .999, .999, .999, .999, .9991, .9991, .9992, .9992, .9993, .9993, .9994, .9994, .9995, .9996, .9996, .9997, .9997, .9997, .9998, .9998, .9998, .9999, .9999, .9999, .9999, 1, 1, 1, 1, 1, 1, 1);
+  --ease-overshoot: cubic-bezier(.24, 1.3, .7, 1);
+  --ease-circ-out: cubic-bezier(.075, .82, .165, 1);
+  --ease-power2-out: cubic-bezier(.215, .61, .355, 1);
+  --ease-sine-out: cubic-bezier(.39, .575, .565, 1);
+  --d-fast: .15s; --d-base: .3s; --d-medium: .45s; --d-slow: .6s; --d-slower: .9s; --d-slowest: 1.2s;
+
+  /* Dark surfaces (nav glass · preview card) are made on the contrast stage regardless of mode — original #2a2a2a·#212121 70% glass, #232323→#3a3a39→#363636 card */
+  --site-night-a: color-mix(in oklab, color-mix(in oklab, var(--kf-contrast-ink) 13.5%, var(--kf-contrast-bg)) 70%, transparent);
+  --site-night-b: color-mix(in oklab, color-mix(in oklab, var(--kf-contrast-ink) 9%, var(--kf-contrast-bg)) 70%, transparent);
+  --site-night-12: color-mix(in oklab, var(--kf-contrast-ink) 12%, transparent);
+  --site-night-10: color-mix(in oklab, var(--kf-contrast-ink) 10%, transparent);
+  --site-night-pill: color-mix(in oklab, color-mix(in oklab, var(--kf-contrast-ink) 5.5%, var(--kf-contrast-bg)) 40%, transparent);
+  --site-tint-a: color-mix(in oklab, var(--kf-contrast-ink) 10%, var(--kf-contrast-bg));
+  --site-tint-b: color-mix(in oklab, var(--kf-contrast-ink) 21%, var(--kf-contrast-bg));
+  --site-tint-c: color-mix(in oklab, var(--kf-contrast-ink) 19%, var(--kf-contrast-bg));
+  --site-overlay: color-mix(in oklab, var(--kf-contrast-bg) 50%, transparent);
+  /* Original grey-150 (#e7e7e7) 30% glass · card gradient (white → grey-100) */
+  --site-glass: oklch(from var(--kf-raised) calc(l - .027) c h / .3);
+  --site-line-soft: oklch(from var(--kf-raised) calc(l - .027) c h);
+  --site-card-grad: linear-gradient(180deg, var(--kf-surface) 0%, var(--kf-raised) 56.52%, var(--kf-raised) 100%);
+  --site-ink-40: color-mix(in oklab, var(--kf-ink) 40%, transparent);
+  --site-shadow: color-mix(in oklab, var(--kf-ink-soft) 20%, transparent);
+  --site-shadow-idle: color-mix(in oklab, var(--kf-ink-soft) 0%, transparent);
+  /* Preview deck card background (original grey-600 → 300 → 200) */
+  --site-stack-1: oklch(from var(--kf-line) calc(l - .354) c h);
+  --site-stack-2: oklch(from var(--kf-line) calc(l - .117) c h);
+  --site-stack-3: var(--kf-line);
+}
+:root[data-theme="dark"] {
+  --site-glass: color-mix(in oklab, var(--kf-ink) 8%, transparent);
+  --site-line-soft: var(--kf-raised);
+  --site-card-grad: linear-gradient(180deg, var(--kf-surface) 0%, var(--kf-line) 56.52%, oklch(from var(--kf-line) calc(l - .016) c h) 100%);
+  --site-shadow: color-mix(in oklab, var(--kf-contrast-bg) 20%, transparent);
+  --wf-fill: var(--kf-raised); --wf-line: var(--kf-line); --wf-fill-ink: var(--kf-dim);
+  --site-stack-1: var(--kf-line);
+  --site-stack-2: oklch(from var(--kf-line) calc(l - .047) c h);
+  --site-stack-3: var(--kf-surface);
+}
+html { -webkit-text-size-adjust: 100%; }
+/* Original turns off all transitions the moment the mode switches — the background changes at once instead of fading slowly */
+html.is-theme-switching, html.is-theme-switching * { transition: none !important; }
+body { background: var(--kf-bg); color: var(--kf-ink); font-family: var(--kf-font-sans); font-weight: 500; font-size: var(--fs-body); line-height: 1.3; -webkit-font-smoothing: antialiased; }
+/* Original: when the document opens, the body fades in from transparent with .6s ease-out. The original is one document (SPA), so it doesn’t run again on navigation within the site —
+   The copy is a separate document per page, so turn it off on arrived pages (html.s-arrived, set by a one-line script in the head) */
+@media (prefers-reduced-motion: no-preference) { html:not(.s-arrived) body { animation: .6s ease-out s-body-in; } }
+@keyframes s-body-in { 0% { opacity: 0; } }
+.muted { color: var(--kf-dim); }
+.wrap-xl { padding-inline: var(--gm); }
+.wrap-sm { --col: clamp(27.5rem, 30.5vw, 35rem); width: min(100% - var(--gm) * 2, var(--col)); margin-inline: auto; }
+
+/* ---------- Nav: glass panel at top center (16px blur · dark gradient fading downward) ---------- */
+.s-head { position: sticky; top: 0; z-index: 50; display: flex; justify-content: center; padding: clamp(.75rem, .6rem + .6vw, 1.5rem) var(--gm); pointer-events: none; }
+.s-bar { position: relative; display: grid; row-gap: .75rem; width: min(100%, clamp(27.5rem, 30.5vw, 35rem)); padding: .75rem .75rem .375rem; border-radius: 1rem; color: var(--kf-contrast-ink); pointer-events: auto; isolation: isolate; }
+.s-bar::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: linear-gradient(180deg, var(--site-night-a), var(--site-night-b) 64.95%); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+.s-bar__head { position: relative; display: flex; justify-content: space-between; align-items: flex-start; column-gap: .75rem; padding-bottom: .5rem; }
+.s-bar__head::after { content: ""; position: absolute; left: 0; bottom: -.375rem; width: 100%; height: 1px; background: var(--kf-contrast-ink); opacity: .2; }
+.s-bar__main p { font-size: var(--fs-in); line-height: 1.3; }
+.s-bar__main p + p { color: var(--kf-dim); }
+.s-bar__nav { position: relative; }
+.s-bar__nav::before { content: ""; position: absolute; left: 50%; bottom: 0; width: 1px; height: calc(100% + .375rem); background: var(--kf-contrast-ink); opacity: .2; }
+.s-bar__nav ul { display: grid; grid-template-columns: 1fr 1fr; column-gap: 1rem; }
+.s-navbtn { position: relative; display: flex; align-items: center; justify-content: center; height: 2rem; border-radius: .5rem; font-size: var(--fs-in); color: var(--kf-contrast-ink); transition: background-color var(--d-medium) var(--ease-circ-out); }
+.s-navbtn.is-current { background: var(--site-night-12); }
+@media (hover: hover) { .s-navbtn:not(.is-current):hover { background: var(--site-night-pill); } }
+.s-navbtn__in { display: inline-grid; }
+.s-navbtn__in > * { grid-area: 1 / 1; transition: transform var(--d-slow) var(--ease-bounce); }
+.s-navbtn__in > .s-navbtn__cnt { opacity: 0; transition: opacity var(--d-medium) var(--ease-sine-out), transform var(--d-slow) var(--ease-bounce); }
+.s-navbtn.is-current .s-navbtn__label { transform: translateX(-50%); }
+.s-navbtn.is-current .s-navbtn__cnt, .s-navbtn:hover .s-navbtn__cnt { opacity: 1; transform: translate(50%, -5%); }
+@media (hover: hover) { .s-navbtn:not(.is-current):hover .s-navbtn__label { transform: translateX(-50%); } }
+
+/* Status button·footer copy (original slide-labels): when the state changes the new label rises from below and the old one exits upward (.6s bounce), and the width also changes to the new label’s width (.6s bounce, .06s later when shrinking).
+   On hover shows ‹Copy email address›, after one copy ‹Copy once more›, on click ‹Copied› */
+.s-status { display: inline-flex; align-items: center; column-gap: .25rem; margin: -.375rem 0 -.375rem 0; padding: .375rem .5rem; border: 1px solid var(--site-night-10); border-radius: .5rem; background: transparent; color: var(--kf-contrast-ink); font-size: var(--fs-in); cursor: pointer; transition: background-color var(--d-medium) var(--ease-circ-out); }
+.s-status.is-active { background: var(--site-night-pill); }
+.s-slide { position: relative; display: block; height: 1lh; overflow: hidden; }
+.s-slide.is-measured { width: var(--w); transition: width var(--d-slow) var(--ease-bounce); }
+.s-slide.is-shrinking { transition-delay: calc(var(--d-slow) * .1); overflow: visible clip; }
+.s-slide i { position: absolute; top: 0; right: 0; font-style: normal; white-space: nowrap; transform: translateY(100%); }
+.s-slide--start i { left: 0; right: auto; }
+.s-slide:not(.is-measured) i.is-current { position: relative; }
+.s-slide i.is-current { transform: none; }
+.s-slide i.is-leaving { transform: translateY(-100%); }
+.s-slide.is-animated i.is-current { animation: s-label-in var(--d-slow) var(--ease-bounce); }
+.s-slide.is-animated i.is-leaving { animation: s-label-out var(--d-slow) var(--ease-bounce); }
+@keyframes s-label-in { 0% { transform: translateY(100%); } to { transform: none; } }
+@keyframes s-label-out { 0% { transform: none; } to { transform: translateY(-100%); } }
+.s-status__ind { position: relative; top: .08em; display: grid; place-items: center; }
+.s-status__ind > * { grid-area: 1 / 1; transition: opacity var(--d-fast) var(--ease-power2-out), transform var(--d-medium) var(--ease-overshoot); }
+.s-status__dot { width: .57em; height: .57em; border-radius: 50%; background: var(--kf-accent); }
+.s-status__check { width: .8em; height: .8em; opacity: 0; transform: scale(.5); }
+.s-status[data-state="copied"] .s-status__dot { opacity: 0; transform: scale(.5); }
+.s-status[data-state="copied"] .s-status__check { opacity: 1; transform: none; }
+
+/* Number wheel: a 0~9 strip per digit rolled with GSAP (1.2s bounce curve · each digit .05s later) */
+.s-counter { position: relative; display: inline-flex; align-items: center; padding: .2em .8em; font-size: .625rem; color: var(--s-counter-ink, var(--kf-contrast-bg)); }
+.s-counter::before { content: ""; position: absolute; inset: 0; background: var(--s-counter-bg, var(--kf-contrast-ink)); clip-path: inset(0 round 2em); }
+.s-counter__wheels { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: .6em; height: 1.2em; line-height: 1.2em; overflow: hidden; -webkit-mask-image: linear-gradient(transparent 0%, var(--kf-ink) 25% 75%, transparent 100%); mask-image: linear-gradient(transparent 0%, var(--kf-ink) 25% 75%, transparent 100%); }
+.s-counter__wheel { position: relative; width: .6em; height: 1.2em; overflow: hidden; }
+.s-counter__strip { display: flex; flex-direction: column; }
+.s-counter__strip span { display: flex; justify-content: center; height: 1.2em; flex-shrink: 0; }
+
+/* Page transition (original view transition): old screen fades out in .25s → new screen appears in .35s after .25s. Nav and bar stay in place.
+   Bar: fills up to .9 over 8s while turning pages, and when it arrives goes fully to the end in .2s → clears to the right in .3s */
+@view-transition { navigation: auto; }
+.s-head { view-transition-name: header; }
+.s-progress { view-transition-name: nav-progress; position: fixed; top: 0; left: 0; right: 0; z-index: 101; height: 2px; pointer-events: none; }
+.s-progress i { display: block; width: 100%; height: 100%; background: var(--kf-accent); transform: scaleX(0); transform-origin: 0% 50%; visibility: hidden; }
+::view-transition-old(root) { animation: .25s ease-out both s-page-out; }
+::view-transition-new(root) { animation: .35s ease-out .25s both s-page-in; }
+::view-transition-group(header), ::view-transition-group(nav-progress), ::view-transition-new(header), ::view-transition-new(nav-progress) { animation: none; }
+::view-transition-old(header), ::view-transition-old(nav-progress) { display: none; }
+@keyframes s-page-out { to { opacity: 0; } }
+@keyframes s-page-in { 0% { opacity: 0; } }
+
+/* ---------- Drawer: work and collection links do not change the page, a panel rises from below (.6s expo.out). When stacked, the lower panel drops 2rem and scales to .94 ---------- */
+.s-drawer { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: transparent; overflow: clip; outline: none; color: var(--kf-ink); }
+.s-drawer::backdrop { display: none; }
+.s-drawer__backdrop { position: absolute; inset: 0; background: var(--site-overlay); opacity: 0; }
+.s-drawer__layer { position: absolute; inset: 0; display: flex; flex-direction: column; padding-top: var(--fluid-xl); transform-origin: 50% var(--fluid-xl); pointer-events: none; will-change: transform; }
+.s-drawer__frame { display: flex; flex: 1; min-height: 0; justify-content: center; }
+.s-drawer__sheet { position: relative; width: 100%; height: 100%; border-radius: 16px 16px 0 0; overflow: hidden; background: var(--kf-surface); color: var(--kf-ink); pointer-events: auto; }
+@media (min-width: 768px) { .s-drawer__sheet { max-width: calc(min(100%, clamp(86rem, 100vw - var(--gm) * 2, 96rem) + var(--gm) * 2) - var(--gm) * 2); } }
+.s-drawer__scroller { width: 100%; height: 100%; overflow-y: auto; overscroll-behavior: contain; outline: none; touch-action: pan-y; overflow-anchor: none; }
+.s-drawer__handle { position: sticky; top: 0; z-index: 3; width: 100%; margin-bottom: -3.5rem; cursor: grab; touch-action: none; }
+.s-drawer__handle:active { cursor: grabbing; }
+.s-drawer__handle div { display: flex; align-items: center; justify-content: center; height: 3.5rem; background: var(--kf-surface); }
+.s-drawer__handle span { width: 2.25rem; height: .25rem; border-radius: 9999px; background: var(--kf-dim); }
+.s-drawer__bar { position: sticky; top: .5rem; z-index: 3; display: flex; justify-content: flex-end; height: 0; padding-right: .5rem; pointer-events: none; }
+.s-drawer__body { padding-bottom: var(--gm); }
+.s-drawer__body .c-hero { padding-top: 3.5rem; }
+.s-drawer__dim { position: absolute; inset: 0; z-index: 10; background: var(--kf-contrast-bg); opacity: 0; pointer-events: none; }
+@media (pointer: coarse) {
+  .s-drawer__handle { margin-bottom: -3rem; }
+  .s-drawer__handle div { height: 3rem; }
+  .s-drawer__bar { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+}
+html.modal-open { overflow: hidden; }
+
+/* Round button (original .c-button -light -icon-only): base-color panel → lime panel on hover (.45s circ-out), the icon exits upward and the same icon rises from below (.6s bounce) */
+.s-btn { position: relative; display: inline-grid; place-items: center; width: 2.75rem; height: 2.75rem; padding: 0; overflow: hidden; border: 1px solid transparent; border-radius: 9999px; background: var(--kf-bg); color: var(--kf-ink); cursor: pointer; pointer-events: auto; transition: color var(--d-medium) var(--ease-circ-out), background-color var(--d-medium) var(--ease-circ-out); }
+.s-btn > svg { position: absolute; top: 50%; left: 50%; width: .75rem; height: .75rem; transform: translate(-50%, -50%); transition: transform var(--d-slow) var(--ease-bounce); }
+.s-btn > svg + svg { transform: translate(-50%, 1.375rem); }
+@media (hover: hover) {
+  .s-btn:hover { background: var(--kf-accent); color: var(--kf-on-accent); }
+  .s-btn:hover > svg:first-child { transform: translate(-50%, calc(-1.375rem - 100%)); }
+  .s-btn:hover > svg + svg { transform: translate(-50%, -50%); }
+}
+
+/* ---------- Cards: project (single cover) · collection (fanned, multiple). Height = Width × 1.34 ---------- */
+.s-card { position: relative; container-type: inline-size; aspect-ratio: 1 / 1.34; }
+.s-card__in { position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 1.5rem; height: 100%; padding: 1.25rem 1rem 1rem; border-radius: 1rem; overflow: hidden; background: var(--kf-surface); filter: drop-shadow(0 .5rem .5rem var(--site-shadow-idle)); transition: filter var(--d-medium) var(--ease-power2-out); }
+.s-card--col .s-card__in { background: var(--site-card-grad); }
+@media (hover: hover) { .s-card:hover .s-card__in { filter: drop-shadow(0 .5rem .5rem var(--site-shadow)); } }
+.s-card__head { position: relative; z-index: 2; display: flex; flex-direction: column; row-gap: .54em; max-width: 17.5rem; margin-inline: auto; text-align: center; text-wrap: balance; }
+.s-card--col .s-card__head { margin-inline: 0; text-align: left; }
+.s-card__client { font-size: clamp(.75rem, .4167rem + 1.6667cqi, .875rem); color: var(--kf-dim); }
+.s-card__title { font-size: clamp(1.25rem, .5833rem + 3.3333cqi, 1.5rem); line-height: 1.1; font-weight: 500; }
+.s-card__title a::after { content: ""; position: absolute; inset: 0; z-index: 3; border-radius: 1rem; }
+.s-card__media { position: relative; }
+.s-card__media .wf-img { aspect-ratio: 1; border: 0; clip-path: inset(0 round .625rem); transform-origin: bottom; transition: transform var(--d-slower) var(--ease-bounce), clip-path var(--d-slow) var(--ease-bounce); }
+@media (hover: hover) { .s-card:hover .s-card__media .wf-img { clip-path: inset(.25rem round .625rem); } }
+.s-card__hint { position: absolute; left: 50%; bottom: 0; z-index: 2; display: inline-flex; align-items: center; column-gap: .57em; padding: .6em 1.428em; border-radius: 2em; background: var(--kf-surface); font-size: var(--fs-in); white-space: nowrap; opacity: 0; transform: translate(-50%, 100%); transition: opacity var(--d-slow) var(--ease-power2-out), transform var(--d-slower) var(--ease-bounce); }
+@media (hover: hover) { .s-card:hover .s-card__hint { opacity: 1; transform: translate3d(-50%, calc(var(--sp) * -8 - .25rem), 0); transition: opacity var(--d-base) var(--ease-power2-out), transform var(--d-slower) var(--ease-bounce); } }
+/* Fan: n sheets stacked in the same cell are offset by x, y and rotation per i-th sheet. On hover the spacing doubles and rotation reverses (.9s bounce) */
+.s-card--col { --mw: calc(100cqi * 130 / 326); --gx: 10cqi; --gy: -5cqi; --rot: 5deg; --orot: -2deg; --oy: -4em; }
+@media (hover: hover) { .s-card--col:hover { --gx: 20cqi; --gy: -10cqi; --rot: -4deg; --orot: 1deg; } }
+.s-fan { display: grid; flex: 1; place-items: center; }
+.s-fan > .wf-img { grid-area: 1 / 1; width: var(--mw); aspect-ratio: 130 / 162; border: 0; clip-path: inset(0 round .625rem);
+  transform: translate3d(calc(var(--gx) * var(--i) - var(--gx) / 3 * var(--n)), calc(var(--gy) * var(--i) - var(--gy) / 3 * var(--n) + var(--oy)), 0) rotate(calc(var(--rot) * var(--i) - var(--rot) / 3 * var(--n) + var(--orot)));
+  transition: transform var(--d-slower) var(--ease-bounce); }
+.s-fan > .wf-img::after { font-size: 9px; max-width: 86%; }
+.s-card__foot { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: flex-end; font-size: var(--fs-xs); }
+.s-card__foot svg { width: .75rem; height: .75rem; }
+/* Video slot: fills the cell and loops. Placeholder label sits above the video */
+.wf-img > video, .s-video > video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.wf-img:has(> video)::after { z-index: 1; }
+
+/* Bottom preview deck (only on hover-capable screens): the card of the row being pointed at comes to the front, previously pointed cards step back up 13·24px and back 100·200, so two stay visible (.5s expo.out).
+   Card backgrounds go from dark gray at the front → light gray. The whole panel appears and disappears in .3s */
+.s-preview { position: fixed; left: 0; bottom: 0; z-index: 45; display: flex; justify-content: center; width: 100%; padding: clamp(1rem, .8239rem + .7512vw, 1.5rem) var(--gm); pointer-events: none; opacity: 0; }
+.s-preview__items { display: grid; width: min(100%, 27.5rem); perspective: 1750px; }
+.s-prev { grid-area: 1 / 1; display: grid; grid-template-columns: 6fr 8fr; gap: 1rem; padding: .5rem; border-radius: 1rem; color: var(--kf-contrast-ink); opacity: 0; visibility: hidden; }
+.s-prev__media { position: relative; display: grid; aspect-ratio: 175 / 115; }
+.s-prev__media .wf-img { position: absolute; inset: 0; border: 0; clip-path: inset(0 round .625rem); transform-origin: bottom; transition: transform var(--d-slower) var(--ease-bounce), clip-path var(--d-slow) var(--ease-bounce); --wf-fill: var(--site-tint-b); --wf-line: color-mix(in oklab, var(--kf-contrast-ink) 33%, var(--kf-contrast-bg)); --wf-fill-ink: color-mix(in oklab, var(--kf-contrast-ink) 65%, var(--kf-contrast-bg)); }
+/* Multi-piece sets (collections) overlap, each later piece 10% higher and .05 smaller */
+.s-prev__media[data-stacked] .wf-img { transform: translateY(calc(var(--i) * -10%)) scale(calc(.9 - var(--i) * .05)); z-index: calc(3 - var(--i)); }
+.s-prev__txt { display: flex; flex-direction: column; justify-content: space-between; padding: .5rem .5rem .5rem 0; font-size: var(--fs-in); }
+.s-prev__txt .muted { color: color-mix(in oklab, var(--kf-contrast-ink) 70%, transparent); font-size: var(--fs-xs); }
+@media (hover: none) { .s-preview { display: none; } }
+
+/* ---------- Footer: one white panel — name · title / collaboration card ---------- */
+/* Original c-footer: fluid-4xl above + panel offset by the inner padding grid-margin */
+.s-foot { margin: calc(var(--fl-4xl) + var(--gm)) var(--gm) var(--gm); padding: 1rem; border-radius: 1rem; background: var(--kf-surface); }
+.s-foot__in { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: var(--gutter); min-height: 12rem; }
+.s-foot__col { display: flex; flex-direction: column; justify-content: space-between; font-size: var(--fs-in); }
+.s-foot__icons { display: flex; gap: .75rem; }
+.s-foot__icons button { display: grid; place-items: center; width: 1.4rem; height: 1.4rem; padding: 0; border: 0; border-radius: .35rem; background: none; color: var(--kf-dim); cursor: pointer; transition: color var(--d-fast), background-color var(--d-fast); }
+.s-foot__icons button[aria-pressed="true"] { color: var(--kf-ink); background: var(--kf-raised); }
+.s-foot__icons svg { width: 1rem; height: 1rem; }
+.s-foot__cta { display: flex; flex-direction: column; justify-content: space-between; padding: .75rem; border: 1px solid var(--site-line-soft); border-radius: .75rem; }
+.s-foot__cta header { display: flex; justify-content: space-between; }
+.s-foot__cta .dot { width: .5em; height: .5em; border-radius: 50%; background: var(--kf-success); }
+.s-foot__copy { position: relative; display: inline-flex; align-self: flex-start; padding: 0; border: 0; background: none; font: inherit; line-height: 1.5; color: inherit; cursor: pointer; transition: opacity var(--d-fast) var(--ease-power2-out); }
+/* Body underline link: on hover a lime highlighter is laid underneath. Intro-text links that open preview cards get underline only (original wysiwyg) */
+.rich u a, .rich a { text-decoration: underline; text-underline-offset: .15em; transition: background-color var(--d-fast); }
+@media (hover: hover) { .rich a:not([data-preview-trigger]):hover { background-color: var(--kf-accent); } }
+/* Footer link (original link-underline): on hover it fades to .6 and a 1px underline draws in from the left, on leave it retracts to the right (.15s) */
+.s-foot__cta a { position: relative; transition: opacity var(--d-fast) var(--ease-power2-out); }
+.s-foot__cta a::before { content: ""; position: absolute; top: calc(100% + .1em); left: 0; width: 100%; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: 100% 100%; transition: transform var(--d-fast) var(--ease-power2-out); }
+@media (hover: hover) { .s-foot__copy:not([data-state="copied"]):hover, .s-foot__cta a:hover { opacity: .6; } }
+@media (hover: hover) { .s-foot__cta a:hover::before { transform: scaleX(1); transform-origin: 0 100%; } }
+.s-foot small { font-size: var(--fs-xs); color: var(--kf-dim); }
+
+@media (max-width: 699px) {
+  :root { --gm: calc(var(--sp) * 5); }
+  .s-bar { width: 100%; }
+  .s-foot__in { grid-template-columns: 1fr 1fr; }
+  .s-foot__cta { grid-column: 1 / -1; min-height: 9rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+  .s-fan > .wf-img, .s-card__media .wf-img, .s-btn > svg { transition: none; }
+  .s-slide.is-measured { transition: none; }
+  .s-slide i { opacity: 0; transform: none; transition: opacity var(--d-fast) var(--ease-power2-out); }
+  .s-slide i.is-current { opacity: 1; }
+  .s-slide i.is-current, .s-slide i.is-leaving { transform: none; }
+  .s-slide.is-animated i.is-current, .s-slide.is-animated i.is-leaving { animation: none; }
+}
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Give a positioning reference so the note (.wf-note) stays inside the section */
+.h-list, .a-intro, .a-block, .c-hero, .c-sec { position: relative; }
+
+/* ---------- Shared by Work and collection posts: original container (4/12 · 6/12 · 12/12 columns) · flow spacing · body text ---------- */
+:root {
+  --site-gutter: 1.5rem;
+  --site-sm: clamp(27.5rem, (100vw - var(--gm) * 2) * 4 / 12 - var(--site-gutter) * 2 / 3, 35rem);
+  --site-md: clamp(42.25rem, (100vw - var(--gm) * 2) / 2 - var(--site-gutter) / 2, 47.5rem);
+  --site-xl: clamp(86rem, 100vw - var(--gm) * 2, 96rem);
+  --fl-sm: clamp(1.5rem, 1.3239rem + .7512vw, 2rem); --fl-md: clamp(2rem, 1.6479rem + 1.5023vw, 3rem); --fl-xl: clamp(3.5rem, 2.6197rem + 3.7559vw, 6rem);
+  --fl-2xl: clamp(4.5rem, 3.2676rem + 5.2582vw, 8rem); --fl-3xl: clamp(8rem, 6.5915rem + 6.0094vw, 12rem); --fl-4xl: clamp(12rem, 10.5915rem + 6.0094vw, 16rem);
+  --fs-md: clamp(1rem, .956rem + .1878vw, 1.125rem); --fs-base: clamp(.9375rem, .9155rem + .0939vw, 1rem); --fs-hsm: clamp(1rem, .956rem + .1878vw, 1.125rem);
+  /* Backdrop · raised surface pair (they swap with each other in the original surface-swap) */
+  --site-bg: var(--kf-bg); --site-raised: var(--kf-surface);
+}
+@media (max-width: 699px) { :root { --site-gutter: .75rem; } }
+.s-swap { --site-bg: var(--kf-surface); --site-raised: var(--kf-bg); }
+.s-sm, .s-md { margin-inline: auto; padding-inline: var(--gm); }
+.s-sm { width: min(100%, var(--site-sm) + var(--gm) * 2); }
+.s-md { width: min(100%, var(--site-md) + var(--gm) * 2); }
+.s-prose { font-size: var(--fs-md); line-height: 1.45; }
+.s-prose p { margin-block: 1.25em; }
+.s-prose > :first-child { margin-top: 0; }
+.s-prose > :last-child { margin-bottom: 0; }
+
+/* One figure cell (original figure.wysiwyg): .5rem top, 1.25rem bottom, caption 36 chars wide at .75em. Inside a drag-to-scroll strip, figure row and caption row heights are matched across cells (subgrid) */
+.s-fig { display: grid; grid-row: span 2; grid-template-rows: subgrid; padding: .5rem 0 1.25rem; font-size: var(--fs-md); line-height: 1.45; }
+.s-fig figcaption { max-width: 36ch; margin-top: .857143em; font-size: .75em; }
+.s-shadow { border-radius: .5rem; overflow: hidden; box-shadow: 0 .5rem .5rem rgba(102, 102, 102, .1); }
+.s-fig .wf-img { aspect-ratio: var(--ratio, 16 / 9); border: 0; }
+/* Self-play video panel (original c-media-video -manual -framed -clipped): fills the ratio panel, with a round play/pause button 1rem from the bottom right */
+.s-vid { position: relative; aspect-ratio: var(--ratio, 16 / 9); }
+.s-vid > .wf-img { height: 100%; aspect-ratio: auto; }
+.s-vid .s-play { position: absolute; right: 1rem; bottom: 1rem; z-index: 2; }
+/* Pause icon while playing, play icon when paused (shared by all video plates) */
+.s-play .i-pause, .s-play.is-playing .i-play { display: none; }
+.s-play.is-playing .i-pause { display: inline; }
+
+/* Drag-to-swipe image strip (blossom-carousel as in the original): slot width = 6/12 column, the first cell starts aligned to the left of the 6/12 column and continues off the right edge of the screen.
+   24px gap between cells (6px on phone) · snaps to cell center (x mandatory). Mouse drags and flicks with inertia (library) */
+.s-cq { container-type: inline-size; overflow: hidden; }
+.s-carousel { display: grid !important; grid-auto-flow: column; grid-template-rows: auto auto; grid-auto-columns: min(100%, var(--site-md) + var(--gm) * 2);
+  column-gap: calc(var(--site-gutter) / 2); padding-inline: max(var(--gm), (100cqw - var(--site-md)) / 2); overflow-x: auto; scrollbar-width: none; scroll-snap-type: x mandatory; }
+.s-carousel::-webkit-scrollbar { display: none; }
+@media (min-width: 700px) { .s-carousel { column-gap: var(--site-gutter); } }
+.s-carousel__item { display: grid !important; grid-row: span 2; grid-template-rows: subgrid; scroll-snap-align: center; white-space: normal; }
+
+/* Text buttons (original .c-button -secondary·-light × -translate·-expand): panel color changes in .45s circ-out, label and icon swap places with a .6s bounce.
+   -translate: on hover the label slides 1.25em toward the icon and the hidden icon enters from the opposite side · -expand: only the round icon cell shows, then expands into a pill */
+.s-cbtn { --h: 2.5em; --off: 1.25em; --pad: 1.5em 1.25em; --bg: var(--kf-ink); --ink: var(--site-bg); --bg-on: var(--kf-accent); --ink-on: var(--kf-on-accent);
+  display: inline-flex; padding: 0; border: 0; border-radius: var(--h); background: none; font-size: var(--fs-base); color: var(--ink); cursor: pointer; }
+.s-cbtn--icon-left { --pad: 1.25em 1.5em; }
+.s-cbtn--sm { font-size: var(--fs-in); }
+.s-cbtn--light { --bg: var(--site-raised); --ink: var(--kf-ink); }
+.s-cbtn--expand { --x: .35em; --xi: .55em; }
+.s-cbtn__in { position: relative; display: flex; align-items: center; justify-content: center; gap: .5em; width: 100%; height: var(--h); min-width: var(--h); padding-inline: var(--pad);
+  border-radius: var(--h); overflow: hidden; background-color: var(--bg); color: var(--ink); line-height: 1.3; white-space: nowrap; pointer-events: none;
+  transition: color var(--d-medium) var(--ease-circ-out), background-color var(--d-medium) var(--ease-circ-out); }
+.s-cbtn__label, .s-cbtn__icon { display: inline-block; transition: transform var(--d-slow) var(--ease-bounce); }
+.s-cbtn__icon svg { display: block; width: 1em; height: 1em; }
+.s-cbtn:is(.s-cbtn--translate, .s-cbtn--expand):not(.s-cbtn--icon-left) .s-cbtn__icon--l { position: absolute; top: 50%; left: var(--off); transform: translate3d(calc(-100% - var(--off)), -50%, 0); }
+.s-cbtn--translate.s-cbtn--icon-left .s-cbtn__icon--r { position: absolute; top: 50%; right: var(--off); transform: translate3d(calc(100% + var(--off)), -50%, 0); }
+.s-cbtn--expand .s-cbtn__in { clip-path: inset(0 0 0 calc(100% - var(--h)) round var(--h));
+  transition: color var(--d-medium) var(--ease-circ-out), background-color var(--d-medium) var(--ease-circ-out), clip-path var(--d-slow) var(--ease-bounce); }
+.s-cbtn--expand .s-cbtn__label { transform: translate3d(var(--x), 0, 0); }
+.s-cbtn.s-cbtn--expand:not(.s-cbtn--icon-left) .s-cbtn__icon--l { transform: translate3d(calc(-100% - var(--off) + var(--x)), -50%, 0); }
+.s-cbtn--expand .s-cbtn__icon--r { transform: translate3d(var(--xi), 0, 0); }
+:is(.s-cbtn:focus-visible, [data-interactive]:focus-visible .s-cbtn) .s-cbtn__in { background-color: var(--bg-on); color: var(--ink-on); }
+:is(.s-cbtn--expand:focus-visible, [data-interactive]:focus-visible .s-cbtn--expand) .s-cbtn__in { clip-path: inset(0 round var(--h)); }
+:is(.s-cbtn:is(.s-cbtn--translate, .s-cbtn--expand):not(.s-cbtn--icon-left):focus-visible, [data-interactive]:focus-visible .s-cbtn:is(.s-cbtn--translate, .s-cbtn--expand)) .s-cbtn__label { transform: translate3d(var(--off), 0, 0); }
+:is(.s-cbtn:is(.s-cbtn--translate, .s-cbtn--expand):not(.s-cbtn--icon-left):focus-visible, [data-interactive]:focus-visible .s-cbtn:is(.s-cbtn--translate, .s-cbtn--expand)) .s-cbtn__icon--l { transform: translateY(-50%); }
+:is(.s-cbtn:is(.s-cbtn--translate, .s-cbtn--expand):not(.s-cbtn--icon-left):focus-visible, [data-interactive]:focus-visible .s-cbtn:is(.s-cbtn--translate, .s-cbtn--expand)) .s-cbtn__icon--r { transform: translate3d(calc(100% + var(--off)), 0, 0); }
+.s-cbtn--icon-left:focus-visible .s-cbtn__label { transform: translate3d(calc(var(--off) * -1), 0, 0); }
+.s-cbtn--icon-left:focus-visible .s-cbtn__icon--l { transform: translate3d(calc(-100% - var(--off)), 0, 0); }
+.s-cbtn--icon-left:focus-visible .s-cbtn__icon--r { transform: translateY(-50%); }
+@media (hover: hover) {
+  :is(.s-cbtn:hover, [data-interactive]:hover .s-cbtn) .s-cbtn__in { background-color: var(--bg-on); color: var(--ink-on); }
+  :is(.s-cbtn--expand:hover, [data-interactive]:hover .s-cbtn--expand) .s-cbtn__in { clip-path: inset(0 round var(--h)); }
+  :is(.s-cbtn:is(.s-cbtn--translate, .s-cbtn--expand):not(.s-cbtn--icon-left):hover, [data-interactive]:hover .s-cbtn:is(.s-cbtn--translate, .s-cbtn--expand)) .s-cbtn__label { transform: translate3d(var(--off), 0, 0); }
+  :is(.s-cbtn:is(.s-cbtn--translate, .s-cbtn--expand):not(.s-cbtn--icon-left):hover, [data-interactive]:hover .s-cbtn:is(.s-cbtn--translate, .s-cbtn--expand)) .s-cbtn__icon--l { transform: translateY(-50%); }
+  :is(.s-cbtn:is(.s-cbtn--translate, .s-cbtn--expand):not(.s-cbtn--icon-left):hover, [data-interactive]:hover .s-cbtn:is(.s-cbtn--translate, .s-cbtn--expand)) .s-cbtn__icon--r { transform: translate3d(calc(100% + var(--off)), 0, 0); }
+  .s-cbtn--icon-left:hover .s-cbtn__label { transform: translate3d(calc(var(--off) * -1), 0, 0); }
+  .s-cbtn--icon-left:hover .s-cbtn__icon--l { transform: translate3d(calc(-100% - var(--off)), 0, 0); }
+  .s-cbtn--icon-left:hover .s-cbtn__icon--r { transform: translateY(-50%); }
+}
+/* Small round button (original -icon-only -sm): font-size input · 2.5em panel · icon .75em */
+.s-btn--sm { width: 2.5em; height: 2.5em; font-size: var(--fs-in); background: var(--site-raised); }
+.s-btn--sm > svg { width: .75em; height: .75em; }
+.s-btn--sm > svg + svg { transform: translate(-50%, 1.25em); }
+@media (hover: hover) { .s-btn--sm:hover > svg:first-child { transform: translate(-50%, calc(-1.25em - 100%)); } }
+
+/* Small window (original team modal): the backdrop darkens in .2s and the panel pops out from .95 in .3s (cubic-bezier(.34,1.56,.64,1)). On close it reverses in .2s ease-in */
+.s-modal { position: fixed; inset: 0; width: 100%; height: 100%; max-width: 100%; max-height: 100%; margin: 0; padding: var(--fl-md) 0; border: 0; background: transparent; overflow-y: auto; color: var(--kf-ink); }
+.s-modal[open] { display: flex; }
+.s-modal[open]::backdrop { background: var(--site-overlay); animation: s-fade-in .2s ease-out; }
+.s-modal[open].is-closing::backdrop { animation: s-fade-out .2s ease-in forwards; }
+.s-modal__box { position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: var(--fl-md); width: 100%; max-width: 20rem; margin: auto; padding: .75rem;
+  aspect-ratio: 32 / 27; clip-path: inset(0 round .5rem); background: var(--site-bg); text-align: left; animation: s-zoom-in .3s cubic-bezier(.34, 1.56, .64, 1); }
+.s-modal.is-closing .s-modal__box { animation: s-zoom-out .2s ease-in forwards; }
+.s-modal__head { display: grid; grid-template-columns: 1fr 1fr; column-gap: var(--site-gutter); font-size: var(--fs-base); line-height: 1.4; }
+.s-modal__head h2 { font: inherit; }
+.s-modal__close { position: absolute; top: .5rem; right: .75rem; }
+.s-modal__list { display: grid; grid-template-columns: 1fr 1fr; gap: .25em var(--site-gutter); font-size: var(--fs-in); line-height: 1.3; }
+.s-modal__list dd { opacity: .7; }
+@keyframes s-zoom-in { 0% { transform: scale(.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes s-zoom-out { 0% { transform: scale(1); opacity: 1; } to { transform: scale(.95); opacity: 0; } }
+@keyframes s-fade-in { 0% { opacity: 0; } to { opacity: 1; } }
+@keyframes s-fade-out { 0% { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .s-cbtn__label, .s-cbtn__icon, .s-cbtn__in { transition: none; }
+  .s-modal__box, .s-modal.is-closing .s-modal__box, .s-modal[open]::backdrop, .s-modal[open].is-closing::backdrop { animation: none; }
+}
+.s-drawer__body .p-hero { padding-top: 3.5rem; }

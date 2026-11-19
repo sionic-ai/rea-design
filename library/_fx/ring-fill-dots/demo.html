@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ring-fill-dots — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .demo { padding: 40px 20px; display: grid; gap: 40px; justify-items: start; }
+  .frame { width: min(480px, 90vw); aspect-ratio: 390 / 264; background: linear-gradient(135deg, var(--kf-accent-soft), var(--kf-surface)); display: grid; place-items: center; font: 600 28px/1 var(--kf-font-display); }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>ring-fill-dots</b> — The ring around the current dot fills clockwise over 5s, and when full it moves to the next Section. Click a dot to go to that Section. <span style="color:var(--kf-dim)">(After 1s one more dot row comes in, and after 2.5s one is removed)</span></p>
+<main class="demo">
+  <div class="frame" id="frame">1</div>
+  <div data-fx="ring-fill-dots" id="dots"><button type="button" class="is-active" aria-label="1"></button><button type="button" aria-label="2"></button><button type="button" aria-label="3"></button></div>
+  <div data-fx="ring-fill-dots" style="--fx-size: 14px; --fx-width: 2px; --fx-dur: 3s; --fx-on: var(--kf-accent)" data-demo-remove><button type="button" class="is-active"></button><button type="button"></button></div>
+</main>
+<script src="../fx-core.js"></script>
+<script>
+const dots = [...document.querySelectorAll("#dots > button")], frame = document.querySelector("#frame");
+let now = 0, timer;
+const go = (i) => {
+  now = i % dots.length;
+  dots.forEach((d, k) => d.classList.toggle("is-active", k === now));
+  frame.textContent = now + 1;
+  clearTimeout(timer);
+  timer = setTimeout(() => go(now + 1), 5000);
+};
+dots.forEach((d, i) => d.addEventListener("click", () => go(i)));
+go(0);
+setTimeout(() => { const d = document.createElement("div"); d.dataset.fx = "ring-fill-dots"; d.innerHTML = '<button type="button" class="is-active"></button><button type="button"></button>'; document.querySelector(".demo")?.append(d); }, 1000);
+setTimeout(() => { document.querySelectorAll("[data-demo-remove]").forEach((n) => n.remove()); }, 2500);
+</script>
+</body>
+</html>

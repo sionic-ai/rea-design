@@ -1,0 +1,282 @@
+/* The original is based on an html font size of 10px, with .625vw at 1600 and up and 2.564vw at 1024 and below (10px on a 390 phone) — rem grows with the width */
+:root {
+  --ma-oc: oklch(from var(--kf-accent) calc(l + 0.2138) calc(c + 0.0004) calc(h + 47.66));
+  --ma-app: oklch(from var(--kf-accent) calc(l - 0.2706) calc(c - 0.0076) calc(h + 220.52));
+  --ma-back: cubic-bezier(0, 0.7, 0.32, 1.28);
+  --ma-ease: cubic-bezier(0.39, 0.58, 0.57, 1);
+  --ma-out: cubic-bezier(0.35, 0, 0.38, 1.06);
+  --ma-rule: color-mix(in oklab, var(--kf-on-accent) 35%, transparent);
+  --ma-wash: color-mix(in oklab, var(--kf-on-accent) 12%, transparent);
+  --ma-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ma-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ma-mute: color-mix(in oklab, var(--kf-ink) 18%, var(--kf-bg));
+}
+/* Split letters (original js-split .t) — color is tinted one letter at a time using transitions delayed per letter (--ma-d, .1s in total) */
+.ma-t { display: inline-block; }
+[data-ma-hover="color"] .ma-t { transition: color 0.4s var(--ma-expo) var(--ma-d, 0s); }
+html { font-size: 10px; }
+@media (min-width: 1600px) { html { font-size: 0.625vw; } }
+@media (max-width: 1024px) { html { font-size: 2.5641025641vw; } }
+body { font-family: var(--kf-font-sans); font-weight: var(--kf-weight-body); color: var(--kf-ink); background: var(--kf-bg); font-size: 1.6rem; line-height: 1.8; }
+/* The original hides the scrollbar, and when the drawer opens it uses overflow hidden + fixed position (scrollbar-gutter stable), so the fixed panel width shrinks from 1440 to 1425 */
+html::-webkit-scrollbar { display: none; }
+html.is-nav { overflow: hidden; scrollbar-gutter: stable; }
+.ma-en { font-family: var(--kf-font-en, var(--kf-font-display)); font-weight: 600; letter-spacing: 0; }
+.ma-jp { font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); }
+.ma-container { width: calc(100% - 9.6rem); max-width: 128rem; margin-inline: auto; }
+.ma-ph { display: block; width: 100%; height: 100%; border: 0; }
+.ma-sp { display: none; }
+
+/* ───────── Button (original button-el type-base) — white panel, orange text and orange border turn into an orange panel and white text in .5s on hover, and two copies of the text swap up and down,
+   Circle behind the arrow cell turns on from 0 → 1 in .5s with an overshoot curve ───────── */
+.ma-btn {
+  display: inline-flex; align-items: center; justify-content: space-between; gap: 1.6rem; min-width: 20rem; height: 5.6rem; padding: 0 1.2rem 0 2.8rem;
+  border: 1px solid var(--kf-accent); border-radius: var(--kf-radius-pill); background: var(--kf-bg); color: var(--kf-accent); font-weight: 700; font-size: 1.6rem; text-decoration: none;
+  transition: background-color 0.5s var(--ma-ease), color 0.5s var(--ma-ease);
+}
+.ma-btn:hover { background: var(--kf-accent); color: var(--kf-on-accent); }
+.ma-btn.is-white { border-color: var(--kf-bg); }
+.ma-btn.is-white:hover { background: var(--kf-accent); border-color: var(--kf-on-accent); }
+.ma-btn__labels { display: grid; overflow: hidden; line-height: 1.3; }
+.ma-btn__labels > span { grid-area: 1 / 1; transition: translate 0.5s var(--ma-back); }
+.ma-btn__labels > span:last-child { translate: 0 1.76em; }
+.ma-btn:hover .ma-btn__labels > span:first-child { translate: 0 -1.76em; }
+.ma-btn:hover .ma-btn__labels > span:last-child { translate: 0 0; }
+.ma-arrow { position: relative; z-index: 0; display: grid; place-items: center; flex: none; width: 3.2rem; height: 3.2rem; border-radius: 50%; overflow: hidden; background: var(--kf-accent); color: var(--kf-on-accent); }
+.ma-btn .ma-arrow { background: none; color: var(--kf-accent); transition: color 0.5s var(--ma-back); }
+.ma-btn .ma-arrow::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 50%; background: var(--kf-on-accent); scale: 0; transition: scale 0.3s var(--ma-ease); }
+.ma-btn:hover .ma-arrow::before { scale: 1; transition: scale 0.5s var(--ma-back); }
+.ma-arrow svg { width: 1rem; height: 1rem; grid-area: 1 / 1; transition: translate 0.5s var(--ma-ease); }
+.ma-arrow svg + svg { translate: -1.6rem 0; }
+a:not(.ma-btn):hover > .ma-arrow svg:first-child { translate: 1.6rem 0; }
+a:not(.ma-btn):hover > .ma-arrow svg + svg { translate: 0 0; }
+
+/* ───────── Header — logo top left · hanging menu tab in the center · two buttons top right. Over the orange panel the logo text is white ───────── */
+.ma-header { position: fixed; top: 2rem; left: 20px; z-index: 88; transition: translate 0.3s var(--ma-out); }
+.ma-logo { display: flex; align-items: center; gap: 0.8rem; width: 26.3rem; color: var(--kf-ink); text-decoration: none; transition: color 0.3s var(--ma-ease); }
+.ma-logo__mark { flex: none; width: 2.6rem; height: 2.4rem; color: var(--kf-accent); }
+.ma-logo__text { font-family: var(--kf-font-display); font-weight: 800; font-size: 1.6rem; letter-spacing: 0.02em; white-space: nowrap; }
+html.is-orange .ma-logo { color: var(--kf-on-accent); }
+html.is-orange .ma-logo__mark { color: var(--kf-on-accent); }
+html.is-hide .ma-header { translate: 0 calc(-100% - 2rem); transition: translate 0.3s cubic-bezier(0.55, -0.22, 0.66, 1); }
+
+.ma-fix { position: fixed; right: 15px; top: 2.3rem; z-index: 88; display: flex; gap: 0.9rem; transition: translate 0.3s var(--ma-out); }
+html.is-hide .ma-fix { translate: 0 calc(-100% - 2.3rem); transition: translate 0.3s cubic-bezier(0.55, -0.22, 0.66, 1); }
+.ma-pill { display: flex; align-items: center; gap: 0.8rem; height: 4rem; padding: 0 1.6rem 0 1.2rem; border-radius: 0.8rem; font-size: 1.4rem; font-weight: 700; text-decoration: none; line-height: 1; }
+.ma-pill.is-oc { background: var(--ma-oc); color: var(--kf-ink); }
+.ma-pill.is-app { background: var(--ma-app); color: var(--kf-on-accent); }
+.ma-pill__icon { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border-radius: 50%; }
+.ma-pill.is-oc .ma-pill__icon { background: var(--kf-ink); color: var(--ma-oc); }
+.ma-pill.is-app .ma-pill__icon { background: var(--kf-on-accent); color: var(--ma-app); }
+.ma-pill__icon svg { width: 1.2rem; height: 1.2rem; transition: scale 0.5s var(--ma-back); }
+.ma-pill:hover .ma-pill__icon svg { scale: 1.25; }
+.ma-pill__labels { display: grid; overflow: hidden; line-height: 1.2; }
+.ma-pill__labels > span { grid-area: 1 / 1; transition: translate 0.5s var(--ma-back); }
+.ma-pill__labels > span:last-child { translate: 0 1.4em; }
+.ma-pill:hover .ma-pill__labels > span:first-child { translate: 0 -1.4em; }
+.ma-pill:hover .ma-pill__labels > span:last-child { translate: 0 0; }
+
+/* Drawer — the orange panel hides with only .6rem left at the top, then drops in over .5s as its bottom corners round to 5rem (original drawerNav__inner).
+   The menu tab hangs from the bottom edge of the panel and moves with it, and the cover blurs the screen */
+.ma-overlay { position: fixed; inset: 0; z-index: 98; background: color-mix(in oklab, var(--kf-ink) 50%, transparent); opacity: 0; pointer-events: none; transition: opacity 0.4s var(--ma-ease); }
+html.is-nav .ma-overlay { opacity: 1; pointer-events: auto; }
+.ma-drawer { position: fixed; left: 0; top: 0; z-index: 99; width: 100%; height: 100dvh; pointer-events: none; transition: translate 0.3s var(--ma-out); }
+html.is-hide .ma-drawer { translate: 0 -10%; transition: translate 0.3s cubic-bezier(0.55, -0.22, 0.66, 1); }
+.ma-drawer__inner {
+  position: relative; padding: 9rem 4.8rem 4rem; background: var(--kf-accent); color: var(--kf-on-accent);
+  translate: 0 calc(-100% + 0.6rem); border-radius: 0;
+  transition: border-radius 0.6s ease, translate 0.5s cubic-bezier(0.47, -0.28, 0.6, 1), background-color 0.4s cubic-bezier(0.9, 0.41, 0.57, 1);
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3.2rem 4rem; align-content: start;
+}
+html.is-nav .ma-drawer__inner { translate: 0 0; border-radius: 0 0 5rem 5rem; pointer-events: auto; }
+/* On wide screens the inner cell is invisible and sits directly on the drawer panel grid */
+.ma-drawer__body { display: contents; }
+.ma-tab { position: absolute; left: 0; right: 0; bottom: -3.5rem; z-index: 2; width: 7rem; height: 7rem; margin-inline: auto; padding: 0; border: 0; background: none; cursor: pointer; color: var(--kf-accent); pointer-events: auto; clip-path: inset(-1rem round 0.8rem); }
+.ma-tab__shape { position: absolute; left: -0.5rem; bottom: 0; width: 8rem; height: 3.6rem; color: var(--kf-bg); transform-origin: 50% 0; transition: color 0.3s var(--ma-ease), scale 0.3s var(--ma-back); }
+.ma-tab:hover .ma-tab__shape { scale: 1 1.15; }
+html.is-nav .ma-tab__shape { color: var(--kf-bg); scale: 1; transition: color 0.5s cubic-bezier(0.9, 0.41, 0.57, 1), scale 0.3s var(--ma-back); }
+html.is-nav .ma-tab:hover { scale: 0.9; }
+.ma-tab__bar { position: absolute; inset: 0; margin: auto; width: 2.3rem; height: 0.9rem; translate: 0 2rem; border-top: 0.2rem solid var(--kf-accent); border-bottom: 0.2rem solid var(--kf-accent); transition: opacity 0.3s var(--ma-ease), scale 0.3s var(--ma-back), translate 0.3s var(--ma-back); }
+.ma-tab__cross { position: absolute; left: 0; right: 0; bottom: 1rem; margin: auto; width: 1.8rem; height: 1.8rem; color: var(--kf-accent); opacity: 0; scale: 0.3; transition: opacity 0.3s var(--ma-ease), scale 0.3s var(--ma-back); }
+/* On open the bars rise 1.4rem after a .05s delay and vanish, and the tab turns into a white circle (clip inset .5rem round) — original drawerButton */
+html.is-nav .ma-tab__bar { translate: 0 1.4rem; opacity: 0; scale: 0.3; }
+html.is-nav .ma-tab__cross { transition-delay: 0.04s; }
+.ma-tab { transition: background-color 0.5s cubic-bezier(0.9, 0.41, 0.57, 1), clip-path 0.4s var(--ma-ease); }
+html.is-nav .ma-tab { background: var(--kf-bg); clip-path: inset(0.5rem round 144rem); }
+html.is-nav .ma-tab__cross { opacity: 1; scale: 1; }
+.ma-drawer a { color: inherit; text-decoration: none; }
+.ma-drawer__cta { grid-column: 2 / 4; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; }
+.ma-drawer__cta a { display: flex; align-items: center; justify-content: center; gap: 0.9rem; height: 9.6rem; border-radius: 0.8rem; font-size: 1.8rem; font-weight: 700; }
+.ma-drawer__cta .is-oc { background: var(--ma-oc); color: var(--kf-ink); }
+.ma-drawer__cta .is-app { background: var(--ma-app); color: var(--kf-on-accent); }
+.ma-drawer__cta .is-pin { background: var(--kf-bg); color: var(--kf-accent); }
+.ma-drawer__main { grid-row: 1 / 3; }
+.ma-drawer__main li, .ma-drawer__visitor li { border-top: 1px solid var(--ma-rule); padding-block: 1rem; }
+.ma-drawer__main li:last-child, .ma-drawer__visitor li:last-child { border-bottom: 1px solid var(--ma-rule); }
+.ma-drawer__main a, .ma-drawer__main button { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0.6rem 0; border: 0; background: none; color: inherit; font: inherit; font-size: 1.8rem; font-weight: 700; cursor: pointer; text-align: left; }
+.ma-drawer__title { margin-bottom: 1.2rem; font-weight: 700; }
+.ma-drawer__visitor a { display: block; padding: 0.4rem 0; font-size: 1.5rem; font-weight: 700; }
+.ma-drawer__box { padding: 2.4rem; border-radius: var(--kf-radius-md); background: var(--ma-wash); font-size: 1.4rem; }
+
+/* Accordion — original acdn-content: height animates via grid-rows .2s ease-out, and the plus’s vertical bar turns another 90 degrees to lie flat */
+.ma-acdn { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.2s ease-out; }
+.ma-acdn > div { overflow: hidden; }
+.is-open > .ma-acdn { grid-template-rows: 1fr; }
+.ma-plus { position: relative; width: 1.6rem; height: 1.6rem; flex: none; }
+.ma-plus::before, .ma-plus::after { content: ""; position: absolute; inset: 0; margin: auto; width: 100%; height: 2px; background: currentColor; transition: rotate 0.5s var(--ma-back); }
+.ma-plus::after { rotate: 90deg; }
+.is-open > button .ma-plus::after { rotate: 180deg; transition: rotate 0.2s ease-out; }
+/* Original footer fold toggle — when opened the circle fills with a white background (.4s) and the bar turns orange */
+.ma-footer .ma-plus { border-radius: 50%; transition: background-color 0.5s ease-out; }
+.ma-footer .ma-plus::before, .ma-footer .ma-plus::after { width: 60%; }
+.ma-footer .is-open > button .ma-plus { background: var(--kf-on-accent); }
+.ma-footer .is-open > button .ma-plus::before, .ma-footer .is-open > button .ma-plus::after { background: var(--kf-accent); }
+
+/* Underline — on hover a 1px line is drawn from the left in .5s with an overshoot curve, and on release it exits to the right (original .uline) */
+.ma-line { background-image: linear-gradient(currentColor, currentColor); background-repeat: no-repeat; background-size: 0% 0.1rem; background-position: bottom right; transition: background-size 0.5s var(--ma-back); }
+a:hover .ma-line { background-size: 100% 0.1rem; background-position: bottom left; }
+
+/* ───────── Flowing English strip ───────── */
+.ma-flow { display: flex; gap: 5rem; overflow: hidden; white-space: nowrap; pointer-events: none; user-select: none; }
+.ma-flow > div { flex-shrink: 0; font-family: var(--kf-font-en, var(--kf-font-display)); font-weight: 600; line-height: 1; animation: ma-flow var(--ma-flow, 20s) linear infinite; }
+.ma-flow.is-paused > div { animation-play-state: paused; }
+@keyframes ma-flow { to { translate: calc((100% + 5rem) * -1) 0; } }
+
+/* ───────── Subpage header — rounded corners under an orange panel, giant outlined English text flows ───────── */
+/* Original c-title — min height 41.1rem · top 9rem · bottom 6.4rem · bottom corners 10rem, English text in pale orange, with 28.5rem English text behind it at .08 drifting over 30s */
+.ma-title { position: relative; display: grid; grid-template-rows: auto 1fr; row-gap: 3rem; min-height: 41.1rem; overflow: hidden; padding: 9rem 40px 6.4rem; border-radius: 0 0 10rem 10rem; background: var(--kf-accent); color: var(--kf-on-accent); }
+.ma-title hgroup { position: relative; z-index: 2; grid-row: 2; grid-column: 1; margin-block: auto; }
+.ma-title hgroup p { font-family: var(--kf-font-en, var(--kf-font-display)); font-weight: 600; font-size: clamp(1.5rem, 1.3714rem + 0.3297vw, 1.8rem); line-height: 1; color: color-mix(in oklab, var(--kf-on-accent) 72%, var(--kf-accent)); }
+.ma-title h1 { margin-top: 0.8rem; font-family: var(--kf-font-display); font-weight: 800; font-size: clamp(3.4rem, 2.7143rem + 1.7582vw, 5rem); line-height: 1.2; }
+.ma-title .ma-flow { grid-row: 2; grid-column: 1; z-index: 1; width: calc(100% + 80px); margin-left: -40px; gap: 0.25em; --ma-flow: 30s; align-items: center; }
+.ma-title .ma-flow > div { font-size: 28.5rem; font-weight: 700; line-height: 20rem; color: var(--kf-on-accent); opacity: 0.08; }
+.ma-crumb { position: relative; grid-row: 1; grid-column: 1; z-index: 2; display: flex; gap: 0.8rem; font-size: 1.2rem; }
+.ma-crumb li + li::before { content: "›"; margin-right: 0.8rem; }
+.ma-crumb a { color: inherit; }
+.ma-crumb li:last-child span { padding: 0.2rem 0.8rem; border-radius: 0.4rem; background: var(--kf-on-accent); color: var(--kf-accent); }
+
+.ma-subnav { width: calc(100% - 9.6rem); max-width: 128rem; margin: -2rem auto 0; position: relative; z-index: 3; padding: 2.4rem 3.2rem; border-radius: var(--kf-radius-md); background: var(--kf-surface); }
+.ma-subnav__title { margin-bottom: 1.2rem; padding-left: 1rem; border-left: 0.4rem solid var(--kf-accent); font-weight: 700; font-size: 1.4rem; }
+.ma-subnav ul { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.8rem; }
+.ma-subnav a { display: flex; align-items: center; min-height: 3.6rem; padding: 0.4rem 1rem; border-radius: 0.4rem; background: var(--kf-bg); color: var(--kf-ink); font-size: 1.2rem; text-decoration: none; transition: background-color 0.3s var(--ma-ease), color 0.3s var(--ma-ease); }
+.ma-subnav a:hover, .ma-subnav a[aria-current="page"] { background: var(--kf-accent); color: var(--kf-on-accent); }
+
+/* ───────── Shared bottom — open campus · school guide two panels · orange footer ───────── */
+.ma-cta { position: relative; z-index: 2; padding: 12rem 0 8rem; border-radius: 0 0 6rem 6rem; background: var(--kf-bg); }
+.ma-cta__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.4rem; }
+.ma-cta__card { position: relative; display: block; min-height: 52rem; padding: 4.8rem; overflow: hidden; border-radius: 6rem; background: var(--kf-surface); color: var(--kf-ink); text-decoration: none; }
+.ma-cta__lead { color: var(--kf-accent); font-weight: 700; font-size: 1.4rem; }
+.ma-cta__card h2 { display: flex; align-items: center; gap: 1.2rem; margin-bottom: 1.6rem; font-family: var(--kf-font-en, var(--kf-font-display)); font-weight: 700; font-size: 4.4rem; line-height: 1.2; }
+.ma-cta__card p { font-size: 1.4rem; }
+/* Original c-cta__link — the panel turns pale orange, the image scales 1.05 around the bottom right (.5s overshoot curve, .3s on return), the arrow circle scales 1.1666 */
+.ma-cta__card { transition: background-color 0.5s var(--ma-ease); }
+.ma-cta__card:hover { background: var(--kf-accent-soft); transition-delay: 0.05s; }
+.ma-cta__card:hover h2 .ma-t { color: var(--kf-accent); }
+.ma-cta__mat { position: absolute; right: 0; bottom: 0; width: 70%; aspect-ratio: 4 / 3; transition: scale 0.3s var(--ma-ease); transform-origin: right bottom; }
+.ma-cta__card:hover .ma-cta__mat { scale: 1.05; transition: scale 0.5s var(--ma-back) 0.05s; }
+.ma-cta__card h2 .ma-arrow { transition: scale 0.3s var(--ma-ease); }
+.ma-cta__card:hover h2 .ma-arrow { scale: 1.1666; transition: scale 0.5s var(--ma-back) 0.05s; }
+.ma-crumb .ma-line { background-size: 0% 0.1rem; }
+.ma-cta__card h2 .ma-arrow { background: var(--kf-accent); color: var(--kf-on-accent); }
+
+.ma-footer { position: relative; overflow-x: clip; margin-top: -6rem; padding: 12rem 4.8rem 3.2rem; background: var(--kf-accent); color: var(--kf-on-accent); }
+.ma-footer a { color: inherit; text-decoration: none; }
+.ma-footer__top { display: grid; grid-template-columns: 1fr 1fr 1fr 1.1fr; gap: 4rem; }
+.ma-footer__nav li { border-bottom: 1px solid var(--ma-rule); }
+.ma-footer__nav a, .ma-footer__nav button { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 1.4rem 0; border: 0; background: none; color: inherit; font: inherit; font-size: 1.4rem; font-weight: 700; cursor: pointer; text-align: left; }
+.ma-footer__nav .ma-acdn a { padding: 0.4rem 0 0.4rem 1em; font-weight: 500; font-size: 1.3rem; }
+.ma-circle { display: grid; place-items: center; width: 2rem; height: 2rem; border: 1px solid currentColor; border-radius: 50%; transition: background-color 0.3s var(--ma-ease), color 0.3s var(--ma-ease); }
+.ma-circle svg { width: 0.8rem; height: 0.8rem; transition: translate 0.5s var(--ma-back); }
+/* Original footer menu — the arrow circle turns white with an orange arrow (.3s), the arrow is pushed along an overshooting curve for .5s then returns · links inside the fold fade to .4 (.5s) */
+.ma-footer__nav a:hover .ma-circle { background: var(--kf-on-accent); color: var(--kf-accent); }
+.ma-footer__nav .ma-acdn a { transition: opacity 0.5s var(--ma-back); }
+.ma-footer__nav .ma-acdn a:hover { opacity: 0.4; }
+.ma-footer__school p { font-size: 1.3rem; }
+.ma-sns { display: flex; flex-wrap: wrap; gap: 0.8rem 1.6rem; margin-top: 1.6rem; font-size: 1.3rem; }
+.ma-sns a { display: flex; align-items: center; gap: 0.6rem; }
+.ma-sns i { width: 2.4rem; height: 2.4rem; border-radius: 50%; background: var(--kf-on-accent); }
+.ma-footer__contact { display: grid; grid-template-columns: 2fr 1fr; gap: 1.6rem; margin-top: 6rem; }
+.ma-footer__box { display: flex; align-items: center; justify-content: space-between; gap: 2rem; padding: 2.4rem 3.2rem; border-radius: var(--kf-radius-md); background: var(--kf-bg); color: var(--kf-ink); font-size: 1.3rem; }
+.ma-tel { color: var(--kf-accent); font-family: var(--kf-font-en, var(--kf-font-display)); font-weight: 700; font-size: 2.8rem; }
+.ma-footer__logo { display: flex; align-items: center; gap: 2.4rem; margin-top: 6rem; font-family: var(--kf-font-display); font-weight: 800; font-size: 8.4rem; line-height: 1; white-space: nowrap; }
+.ma-footer__logo svg { width: 9rem; height: 8.4rem; }
+.ma-footer__bottom { display: flex; justify-content: space-between; margin-top: 3.2rem; font-size: 1.1rem; }
+
+/* Cursor — white circle arrow (slider-arrow-cursor part) only over the hero slide board */
+.ma-stalker-host { cursor: none; }
+
+@media (max-width: 1024px) {
+  body { font-size: 1.4rem; }
+  .ma-sp { display: block; }
+  .ma-pc { display: none !important; }
+  .ma-container { width: calc(100% - 3.2rem); }
+  .ma-header { top: 1.6rem; left: 1.6rem; }
+  .ma-logo { width: 20rem; }
+  .ma-logo__text { font-size: 1.3rem; }
+  .ma-fix { top: auto; right: 0; left: 0; bottom: 0; translate: 0 100%; justify-content: flex-start; gap: 0.6rem; padding: 0.8rem 1.6rem; }
+  html.is-fix .ma-fix { translate: 0 0; }
+  html.is-hide .ma-fix { translate: 0 100%; }
+  .ma-pill { height: 3.6rem; font-size: 1.2rem; }
+  .ma-drawer { top: auto; bottom: 0; }
+  /* Phone — the tab hangs above the panel (−6rem), so making the panel itself the scroll container would clip the tab and make it unclickable. The inner column handles scrolling */
+  .ma-drawer__inner { position: absolute; inset: 0; overflow: visible; display: block; padding: 0; translate: 0 100%; transition: translate 0.6s cubic-bezier(0.35, 0, 0.38, 1.06); }
+  html.is-nav .ma-drawer__inner { translate: 0 0; border-radius: 0; transition: translate 0.6s cubic-bezier(0.55, -0.22, 0.66, 1); }
+  .ma-drawer__body { display: grid; grid-template-columns: 1fr; gap: 3.2rem 4rem; align-content: start; height: 100%; overflow: auto; padding: 4rem 2rem 10rem; }
+  .ma-tab { top: -6rem; bottom: auto; right: 1.2rem; left: auto; margin: 0; transition: top 0.6s var(--ma-out); }
+  html.is-nav .ma-tab { top: 1rem; }
+  .ma-tab__shape { bottom: auto; top: 1.6rem; rotate: 180deg; }
+  html.is-hide .ma-drawer { translate: 0 0; }
+  .ma-drawer__cta { grid-column: auto; }
+  .ma-drawer__cta a { height: 7.2rem; font-size: 1.3rem; flex-direction: column; gap: 0.4rem; }
+  .ma-drawer__main { grid-row: auto; }
+  .ma-title { min-height: 22.6rem; padding: 7.6rem 20px 4rem; border-radius: 0 0 5rem 5rem; }
+  .ma-crumb { display: none; }
+  .ma-title .ma-flow { width: calc(100% + 40px); margin-left: -20px; }
+  .ma-title .ma-flow > div { font-size: 15.4rem; line-height: 11.3rem; }
+  .ma-subnav { width: calc(100% - 3.2rem); padding: 1.6rem; }
+  .ma-subnav ul { grid-template-columns: repeat(2, 1fr); }
+  .ma-cta { padding: 6rem 0 4rem; border-radius: 0 0 3rem 3rem; }
+  .ma-cta__grid { grid-template-columns: 1fr; }
+  .ma-cta__card { min-height: 40rem; padding: 3.2rem 2.4rem; border-radius: 3rem; }
+  .ma-cta__card h2 { font-size: 3rem; }
+  .ma-footer { padding: 10rem 1.6rem 10rem; }
+  .ma-footer__top { grid-template-columns: 1fr; }
+  .ma-footer__contact { grid-template-columns: 1fr; }
+  .ma-footer__box { flex-direction: column; align-items: flex-start; }
+  /* Keep the school name on one line within the screen width — if it overflows, the phone shrinks the whole screen */
+  .ma-footer__logo { font-size: 2.2rem; gap: 1rem; }
+  .ma-footer__logo svg { width: 3.6rem; height: 3.4rem; }
+  .ma-footer__bottom { flex-direction: column; gap: 0.8rem; }
+  /* Original phone footer fold — each inner link row is about 41px (449px for one column) */
+  .ma-footer__nav .ma-acdn a { padding: 1.15rem 0 1.15rem 1em; }
+  /* Original sp drawer button keeps its bar and tab shape when opened (only the bar color changes), overlay fades in with 1s ease */
+  .ma-overlay { transition: opacity 1s ease; }
+  html.is-nav .ma-tab { background: none; clip-path: inset(-1rem round 0.8rem); }
+  html.is-nav .ma-tab__bar { translate: 0 2rem; opacity: 1; scale: 1; }
+  html.is-nav .ma-tab__cross { opacity: 0; scale: 0.3; }
+  .ma-tab:hover .ma-tab__shape, html.is-nav .ma-tab:hover { scale: 1; }
+  /* Raise the wireframe tool bar (list · annotations) on phones so it doesn’t cover the bottom-right menu tab */
+  .wf-ui { top: 14px; bottom: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ma-flow > div { animation: none; }
+  .ma-drawer__inner, .ma-acdn, .ma-header, .ma-fix { transition: none; }
+}
+
+/* Footer accordions on wide screens are always open (the original collapses only below 1024px) */
+@media (min-width: 1025px) {
+  .ma-footer__nav .ma-acdn { grid-template-rows: 1fr; }
+  .ma-footer__nav [data-acdn] > button { cursor: default; }
+  .ma-footer__nav [data-acdn] > button .ma-plus { display: none; }
+}
+/* Footer contact button (original contactNav .link) — color stays, only the text rolls up and swaps over .3s */
+.ma-btn.is-solid, .ma-btn.is-solid:hover { background: var(--kf-accent); border-color: var(--kf-accent); color: var(--kf-on-accent); }
+.ma-btn.is-solid.is-app, .ma-btn.is-solid.is-app:hover { background: var(--ma-app); border-color: var(--ma-app); }
+.ma-btn.is-solid .ma-btn__labels > span { transition: translate 0.3s var(--ma-ease); }
+/* Button with a slot (when not a touch device, shared.js adds is-slot) — text sets overlap in place and roll per character */
+.ma-btn.is-slot .ma-btn__labels { line-height: 1.76; }
+.ma-btn.is-slot .ma-btn__labels > span, .ma-btn.is-slot:hover .ma-btn__labels > span { translate: none; transition: none; white-space: nowrap; }
+.ma-drawer__box .ma-btn { margin-top: 1.6rem; }
+.ma-btn.is-solid .ma-arrow { color: var(--kf-on-accent); }
+.ma-btn.is-solid .ma-arrow::before { display: none; }
+.ma-btn.is-solid:hover .ma-arrow::before { scale: 0; }

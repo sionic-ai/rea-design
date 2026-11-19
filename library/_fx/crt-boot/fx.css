@@ -1,0 +1,42 @@
+/* CRT boot screen — lines light up in sequence and a command is typed out, then on power-on it flashes at brightness 3.2 and folds to .004 vertically and shuts off (brand BOOT) */
+[data-fx~="crt-boot"] { position: fixed; inset: 0; z-index: 90; overflow: hidden; background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); font-family: var(--kf-font-mono); cursor: pointer; transition: opacity .2s linear .12s; }
+[data-fx~="crt-boot"] [data-fx-part="screen"] { position: absolute; inset: 6vmin; transform-origin: 50%; transition: transform var(--fx-dur, .1s) cubic-bezier(.7, 0, .84, 0), filter var(--fx-dur, .1s) linear; animation: .18s ease-out both fx-crt-warm; }
+[data-fx~="crt-boot"] [data-fx-part="line"] { margin: 0; white-space: pre-wrap; opacity: .45; visibility: hidden; }
+[data-fx~="crt-boot"] [data-fx-part="line"].is-fx-on { visibility: visible; }
+[data-fx~="crt-boot"] [data-fx-part="cmd"] { margin: 0; font-size: clamp(32px, 7.7vmin, 148px); line-height: 1; white-space: pre; }
+[data-fx~="crt-boot"] [data-fx-part="cmd"]::after { content: ""; display: inline-block; width: .45em; height: .8em; margin-left: .06em; vertical-align: -.06em; background: currentColor; }
+[data-fx~="crt-boot"].is-fx-ready [data-fx-part="cmd"]::after { animation: .6897s step-end infinite fx-crt-blink; }
+[data-fx~="crt-boot"] [data-fx-part="go"] { opacity: 0; transition: opacity .4s ease-out; }
+[data-fx~="crt-boot"].is-fx-ready [data-fx-part="go"] { opacity: 1; animation: 1.3793s ease-in-out infinite fx-crt-pulse; }
+[data-fx~="crt-boot"].is-fx-key [data-fx-part="screen"] { animation: .18s ease-out both fx-crt-warm, 90ms ease-out fx-crt-key; }
+[data-fx~="crt-boot"].is-fx-off { opacity: 0; pointer-events: none; }
+[data-fx~="crt-boot"].is-fx-off [data-fx-part="screen"] { filter: brightness(3.2); transform: scale(.94, .004); }
+[data-fx~="crt-boot"]::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(color-mix(in srgb, var(--kf-contrast-bg) 34%, transparent) 0 1px, transparent 1px 3px); }
+@keyframes fx-crt-warm { 0% { filter: brightness(2.2) blur(1px); opacity: 0; } to { filter: none; opacity: 1; } }
+@keyframes fx-crt-key { 0% { filter: brightness(1.35); } to { filter: brightness(1); } }
+@keyframes fx-crt-blink { 50% { opacity: 0; } }
+@keyframes fx-crt-pulse { 0%, to { opacity: 1; } 50% { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="crt-boot"], [data-fx~="crt-boot"] [data-fx-part="screen"] { transition: none; animation: none; }
+  [data-fx~="crt-boot"] [data-fx-part="cmd"]::after, [data-fx~="crt-boot"] [data-fx-part="go"] { animation: none; }
+}
+/* look: beam — without folding, a line of light moves down 8 rows from top to bottom and wipes the screen (Name’s site). The progress bar fills as many as the lit rows */
+[data-fx-crt-boot*="look: beam"].is-fx-off { opacity: 0; transition: none; }
+[data-fx-crt-boot*="look: beam"].is-fx-off [data-fx-part="screen"] { filter: none; transform: none; }
+[data-fx~="crt-boot"] [data-fx-part="bar"] { display: block; width: 0; }
+[data-fx~="crt-boot"] .fx-crt-beam { position: absolute; top: 0; left: 0; right: 0; height: 3px; margin-top: -2px; background: var(--kf-ink); box-shadow: 0 0 0 1px var(--kf-accent), 0 -14px 28px 4px color-mix(in srgb, var(--kf-accent) 55%, transparent); pointer-events: none; }
+/* type — a block cursor (.55ch) attached to the end while characters are typed line by line. When ready, it blinks at a 1s tempo (original BIOS) */
+[data-fx~="crt-boot"] .fx-crt-caret { display: inline-block; width: .55ch; height: 1em; margin-left: 1px; vertical-align: baseline; translate: 0 1px; background: currentColor; }
+[data-fx~="crt-boot"].is-fx-ready .fx-crt-caret { animation: 1s step-end infinite fx-crt-blink; }
+/* look: fade — faint text on a background-color panel, when on, the screen vanishes in dur (.35s) power2.out and the panel follows .25s later over .5s */
+[data-fx-crt-boot*="look: fade"] { background: var(--kf-bg); color: color-mix(in srgb, var(--kf-ink) 50%, transparent); font-family: var(--kf-font-sans); }
+[data-fx-crt-boot*="look: fade"]::after { display: none; }
+[data-fx-crt-boot*="look: fade"] [data-fx-part="screen"] { animation: none; }
+[data-fx-crt-boot*="look: fade"] [data-fx-part="line"] { opacity: 1; }
+[data-fx-crt-boot*="look: fade"].is-fx-key [data-fx-part="screen"] { animation: none; }
+[data-fx-crt-boot*="look: fade"].is-fx-off { opacity: 0; transition: opacity .5s cubic-bezier(.33, 0, 0, 1) calc(var(--fx-dur, .35s) + .25s); }
+[data-fx-crt-boot*="look: fade"].is-fx-off [data-fx-part="screen"] { filter: none; transform: none; opacity: 0; transition: opacity var(--fx-dur, .35s) cubic-bezier(.25, .46, .45, .94); }
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="crt-boot"].is-fx-ready .fx-crt-caret { animation: none; }
+  [data-fx-crt-boot*="look: fade"].is-fx-off, [data-fx-crt-boot*="look: fade"].is-fx-off [data-fx-part="screen"] { transition: none; }
+}

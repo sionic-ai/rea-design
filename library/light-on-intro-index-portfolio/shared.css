@@ -1,0 +1,117 @@
+/* Shared across pages: full-screen video stage (dark top and bottom), square corner cursor, corner-bracket button, mono label size */
+
+/* The original black translucent darkness is made from the background color — in a light skin it becomes a light mist so the text (ink) stays readable */
+:root {
+  --site-scrim-85: color-mix(in oklab, var(--kf-bg) 85%, transparent);
+  --site-scrim-60: color-mix(in oklab, var(--kf-bg) 60%, transparent);
+  --site-ink-40: color-mix(in oklab, var(--kf-ink) 40%, transparent);
+  --site-ink-15: color-mix(in oklab, var(--kf-ink) 15%, transparent);
+}
+
+html { scrollbar-width: none; }
+html::-webkit-scrollbar { display: none; }
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  line-height: 1;
+  text-transform: uppercase;
+  user-select: none;
+  overflow: hidden;
+}
+button { background: none; border: 0; padding: 0; color: inherit; font: inherit; text-transform: inherit; cursor: pointer; }
+
+/* Font size follows screen width (1vw, lower limit at 768 and below, upper limit at 1920 and above) */
+.t-fs-10 { font-size: 1vw; }
+.t-fs-9 { font-size: 0.9vw; }
+.t-fs-75 { font-size: 0.75vw; }
+@media (max-width: 768px) {
+  .t-fs-10 { font-size: max(12px, 1vw); }
+  .t-fs-9 { font-size: max(11px, 0.9vw); }
+  .t-fs-75 { font-size: max(10px, 0.75vw); }
+}
+@media (min-width: 1920px) {
+  .t-fs-10 { font-size: min(16px, 1vw); }
+  .t-fs-9 { font-size: min(18px, 0.9vw); }
+  .t-fs-75 { font-size: min(16px, 0.75vw); }
+}
+
+/* ── Full-screen video stage: draws a placeholder video on the canvas and darkens the top and bottom 25% ── */
+.t-stage { position: fixed; inset: 0; z-index: 0; width: 100vw; height: 100vh; transition: opacity 0.2s ease; }
+.t-stage canvas { display: block; width: 100%; height: 100%; }
+/* Video slot (placeholder canvas ·<video>) covers the screen only when there’s no wrap (cover), otherwise it hides as a 1px original that the shader reads */
+.t-stage > canvas + canvas, .t-stage video { position: absolute; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.t-stage > .is-shown { width: 100% !important; height: 100% !important; opacity: 1 !important; object-fit: cover; }
+/* The intro video starts playing as the intro text collapses, and the cover lifts away over .8s */
+.t-stage__veil { position: absolute; inset: 0; z-index: 1; background: var(--kf-bg); pointer-events: none; transition: opacity 0.8s ease-out; }
+.t-stage__veil.is-off { opacity: 0; }
+.t-stage::before, .t-stage::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  height: 25%;
+  pointer-events: none;
+}
+.t-stage::before { top: 0; background: linear-gradient(to bottom, var(--site-scrim-85), var(--site-scrim-60), transparent); }
+.t-stage::after { bottom: 0; background: linear-gradient(to top, var(--site-scrim-85), var(--site-scrim-60), transparent); }
+
+/* ── Cursor: a 15px square with only four corners. Over pressable elements it grows to that box (project cells +8px), and on project cells it sticks and stays ── */
+.t-cursor { position: fixed; top: 0; left: 0; z-index: 99999; width: 15px; height: 15px; pointer-events: none; opacity: 0; }
+.t-cursor i { position: absolute; width: 8px; height: 8px; border: 0 solid var(--kf-ink); }
+.t-cursor i:nth-child(1) { top: 0; left: 0; border-width: 1px 0 0 1px; }
+.t-cursor i:nth-child(2) { top: 0; right: 0; border-width: 1px 1px 0 0; }
+.t-cursor i:nth-child(3) { bottom: 0; left: 0; border-width: 0 0 1px 1px; }
+.t-cursor i:nth-child(4) { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
+@media (pointer: coarse) { .t-cursor { display: none; } }
+@media (pointer: fine) { html, body, button, [role="button"] { cursor: none; } }
+/* Small-text buttons get 8px more hit area around them (original --hit-area) */
+@media (pointer: fine) { [data-cursor="hit"]::before { content: ""; position: absolute; inset: -8px; } }
+
+/* Corner brackets: four 8px angle brackets at the top, bottom, left and right corners */
+.t-brackets { position: relative; }
+.t-brackets::before {
+  content: "";
+  position: absolute;
+  inset: -1px -4px;
+  pointer-events: none;
+  opacity: var(--brackets-opacity, 1);
+  background:
+    linear-gradient(var(--kf-ink), var(--kf-ink)) top left / 8px 1px no-repeat,
+    linear-gradient(var(--kf-ink), var(--kf-ink)) top left / 1px 8px no-repeat,
+    linear-gradient(var(--kf-ink), var(--kf-ink)) top right / 8px 1px no-repeat,
+    linear-gradient(var(--kf-ink), var(--kf-ink)) top right / 1px 8px no-repeat,
+    linear-gradient(var(--kf-ink), var(--kf-ink)) bottom left / 8px 1px no-repeat,
+    linear-gradient(var(--kf-ink), var(--kf-ink)) bottom left / 1px 8px no-repeat,
+    linear-gradient(var(--kf-ink), var(--kf-ink)) bottom right / 8px 1px no-repeat,
+    linear-gradient(var(--kf-ink), var(--kf-ink)) bottom right / 1px 8px no-repeat;
+}
+
+/* Diamond number */
+.t-diamond { position: relative; display: flex; align-items: center; justify-content: center; }
+.t-diamond svg { width: auto; height: auto; max-height: 100%; }
+.t-diamond span { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+/* Project logo: centered 85vw (max 60vh) 3000:1939 board. Ripples with a flow map as the mouse passes (WebGL) */
+.t-logo {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 10;
+  width: 85vw;
+  max-width: 85vw;
+  max-height: 60vh;
+  aspect-ratio: 3000 / 1939;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.t-logo.is-on { opacity: 1; pointer-events: auto; }
+.t-logo canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+@media (max-width: 767px) { .t-logo { transform: translate(-50%, -50%) scale(1.15); } }
+
+.wf-note { color: var(--kf-accent-text); border-color: var(--kf-accent-text); background: var(--site-scrim-85); text-transform: none; z-index: 120; }
+.wf-ui { text-transform: none; }

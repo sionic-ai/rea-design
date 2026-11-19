@@ -1,0 +1,185 @@
+/* Stage: lay 6000×8000 map coordinates onto a single panel 100vw wide (800vw on phone), and JS moves and zooms the whole panel.
+   The video tile layer and the floor map layer move separately (map at 0.9x), giving a shallow parallax. */
+.hd-main { width: 100%; opacity: 0; }
+.hd-page { width: 100%; height: 100svh; overflow: hidden; }
+.hd-scroll {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  min-height: 100svh;
+  aspect-ratio: var(--site-map-w) / var(--site-map-h);
+  overflow: hidden;
+  transform-origin: left top;
+  pointer-events: none;
+  user-select: none;
+}
+[data-op-end=true] .hd-scroll { cursor: grab; pointer-events: auto; }
+[data-op-end=true] .hd-scroll:active { cursor: grabbing; }
+@media (max-width: 768px) { .hd-scroll { width: 800vw; } }
+
+.hd-list {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  transform-origin: left top;
+  will-change: transform;
+}
+.hd-item {
+  position: absolute;
+  top: calc(var(--y) / var(--site-map-h) * 100%);
+  left: calc(var(--x) / var(--site-map-w) * 100%);
+  width: 8%;
+  aspect-ratio: 3 / 2;
+}
+/* Only when sound mode is only, a white card with the title shows instead of the video */
+.hd-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--kf-line);
+  background: var(--kf-surface);
+}
+@media (max-width: 768px) { .hd-card { border-width: 2px; } }
+[data-sound=off] .hd-card, [data-sound=on] .hd-card { opacity: 0; }
+.hd-card__title {
+  margin-left: 0.5em;
+  padding: 0 0.2em;
+  font-family: var(--kf-font-serif, var(--kf-font-display));
+  font-size: 0.5vw;
+  font-weight: 500;
+  line-height: 1.75;
+  text-align: center;
+}
+.hd-card__title span { display: inline-block; }
+@media (max-width: 768px) { .hd-card__title { font-size: 4vw; } }
+@media not all and (max-width: 768px) { [data-text=l] .hd-card__title { font-size: 0.72vw; } }
+.hd-item__media { position: absolute; inset: 0; }
+.hd-item__media .wf-img { height: 100%; border: 0; }
+/* The panel grows 2.5x (phone .8x), so label·play triangle are kept small relative to the panel */
+.hd-item__media .wf-img::after { font-size: 0.3vw; padding: 0.3em 0.5em; white-space: normal; width: 84%; text-align: center; line-height: 1.35; }
+.hd-item__media .wf-video::before { top: calc(50% - 1.6vw); width: 0.7vw; height: 0.8vw; }
+@media (max-width: 768px) {
+  .hd-item__media .wf-img::after { font-size: 2.6vw; }
+  .hd-item__media .wf-video::before { top: calc(50% - 11vw); width: 5vw; height: 6vw; }
+}
+/* Video is drawn not by the DOM but by the three layer (.hd-gl) in the same spot — the original also <video> hides the element and draws on the canvas. The label stays as a slot description */
+.hd-item__media { visibility: hidden; }
+.hd-gl { position: fixed; top: 0; left: 0; z-index: 1; width: 100vw; height: 100svh; overflow: hidden; pointer-events: none; touch-action: none; user-select: none; }
+.hd-gl canvas { display: block; width: 100%; height: 100%; }
+[data-sound=only] .hd-gl { opacity: 0; }
+.hd-item__btn { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+
+.hd-map {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  touch-action: none;
+  will-change: transform;
+  transform-origin: left top;
+}
+/* Map art leaves 12% empty left and right and 16% below inside the panel and sticks to the bottom — small maps use the same frame */
+.hd-plan {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  aspect-ratio: var(--site-map-w) / var(--site-map-h);
+  padding: 0 12% 16%;
+}
+.hd-plan svg { display: block; width: 100%; height: auto; overflow: visible; }
+.hd-plan__floor { fill: var(--kf-raised); }
+.hd-plan__label {
+  fill: var(--kf-raised);
+  font-family: var(--kf-font-display);
+  font-weight: var(--kf-weight-display);
+  font-size: 300px;
+  letter-spacing: -0.02em;
+}
+.hd-plan__hatch line { stroke: var(--kf-line); }
+.hd-plan--mini .hd-plan__floor { fill: url(#hd-hatch); }
+
+/* ── Mini map: bottom right, a navy frame over a hatched map follows the currently visible range ── */
+.hd-minimap {
+  position: fixed;
+  right: 0.5rem;
+  bottom: 0;
+  z-index: 1;
+  pointer-events: none;
+  user-select: none;
+}
+@media not all and (hover: hover) and (pointer: fine) { .hd-minimap { right: 0; } }
+.hd-minimap__map { position: relative; display: flex; align-items: flex-end; width: 13.75rem; }
+@media (max-width: 768px) { .hd-minimap__map { width: 9.375rem; } }
+.hd-minimap__frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  border: 0 solid var(--kf-line);
+  transform-origin: left top;
+}
+.hd-zoom {
+  position: absolute;
+  right: 1.5rem;
+  bottom: 1.75rem;
+  z-index: 1;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 2px solid var(--kf-line);
+  border-radius: var(--kf-radius-sm);
+  background: var(--kf-bg);
+  pointer-events: auto;
+}
+@media not all and (hover: hover) and (pointer: fine) { .hd-zoom { display: none; } }
+.hd-zoom::before, .hd-zoom::after { content: ""; position: absolute; width: 0.375rem; height: 0.375rem; }
+.hd-zoom::before {
+  top: 0.3125rem;
+  right: 0.3125rem;
+  border-top: 2px solid var(--kf-line);
+  border-right: 2px solid var(--kf-line);
+  border-top-right-radius: 0.125rem;
+}
+.hd-zoom::after {
+  bottom: 0.3125rem;
+  left: 0.3125rem;
+  border-bottom: 2px solid var(--kf-line);
+  border-left: 2px solid var(--kf-line);
+  border-bottom-left-radius: 0.125rem;
+}
+.hd-zoom[data-zoom=out]::before { top: 0.25rem; right: 0.25rem; transform: rotate(180deg); }
+.hd-zoom[data-zoom=out]::after { bottom: 0.25rem; left: 0.25rem; transform: rotate(180deg); }
+
+/* ── Guide pill: below the logo, disappears once the map is first moved more than 100 ── */
+.hd-hint {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(50svh - 12.5rem);
+  z-index: var(--site-z-logo);
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  width: fit-content;
+  max-width: calc(100vw - var(--site-pad) * 2);
+  margin: 0 auto;
+  padding: 0.9375rem 1.75rem 0.9375rem 1.5rem;
+  border-radius: var(--kf-radius-sm);
+  background: var(--kf-contrast-bg);
+  color: var(--kf-contrast-ink);
+  pointer-events: none;
+  transition: opacity var(--site-t-fade), visibility var(--site-t-fade);
+}
+.hd-hint[aria-hidden=true] { opacity: 0; visibility: hidden; }
+@media (max-width: 768px) { .hd-hint { bottom: calc(50svh - 7.5rem); padding: 0.625rem 1.125rem 0.625rem 0.875rem; } }
+.hd-hint__icon { display: flex; width: 1.75rem; height: 1.75rem; flex: none; }
+@media (max-width: 768px) { .hd-hint__icon { width: 1.5rem; height: 1.5rem; } }
+.hd-hint__text { font-family: var(--kf-font-sans); font-size: 1.125rem; font-weight: 700; white-space: nowrap; }
+@media (max-width: 768px) { .hd-hint__text { font-size: 0.875rem; } }
+@media not all and (hover: hover) and (pointer: fine) { .hd-hint__pointer { display: none; } }
+@media (hover: hover) and (pointer: fine) { .hd-hint__touch { display: none; } }
+
+.hd-stage-note { top: 64px; }

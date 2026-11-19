@@ -1,0 +1,283 @@
+/* Shared by all pages: wavy gradient behind (WebGL) · header line (color changes) · phone menu · booking button · circle arrow · dotted line ·
+   Letter-by-letter rise · photo parallax · stay/meal/sauna bands · footer · page-turn curtain.
+   Original values: curves cubic-bezier(.47,.16,.24,1) · (.43,.05,.17,1) · (.26,.06,0,1) · (.52,.29,.18,1) · Lenis lerp .1 · barba curtain .5s ease-in-out */
+
+:root {
+  /* Colors not in the skin — made from --kf-* so the original values come out */
+  --site-ease: cubic-bezier(0.47, 0.16, 0.24, 1);
+  --site-ease-io: cubic-bezier(0.43, 0.05, 0.17, 1);
+  --site-ease-soft: cubic-bezier(0.26, 0.06, 0, 1);
+  --site-ease-in: cubic-bezier(0.18, 0.06, 0.23, 1);
+  --site-ease-wipe: cubic-bezier(0.52, 0.29, 0.18, 1);
+  --site-ease-fade: cubic-bezier(0.3, 0.26, 0.38, 1);
+  --site-water: var(--kf-accent-soft);
+  --site-earth: var(--kf-raised);
+  --site-brown-2: oklch(from var(--kf-ink) calc(l + 0.134) calc(c * 0.83) calc(h - 1));
+  --site-white: var(--kf-on-accent);
+  --site-white-12: color-mix(in oklab, var(--kf-on-accent) 12%, transparent);
+  --site-white-60: color-mix(in oklab, var(--kf-on-accent) 60%, transparent);
+  --site-line-on-earth: color-mix(in oklab, var(--kf-ink) 18%, transparent);
+  /* Four wave gradients (original 0x78A696·0x3D803C·0x1B6E3A·0x139097 converted to sRGB) — from forest green · water teal */
+  --site-grad-0: oklch(from var(--kf-accent) calc(l + 0.23) calc(c * 0.642) calc(h + 16.8));
+  --site-grad-1: oklch(from var(--kf-accent) calc(l + 0.082) calc(c * 1.428) calc(h - 10.9));
+  --site-grad-2: oklch(from var(--kf-accent) calc(l + 0.019) calc(c * 1.326) calc(h - 2.9));
+  --site-grad-3: oklch(from var(--kf-accent-soft) calc(l + 0.012) calc(c * 1.412) calc(h - 20.7));
+  --header-color: var(--site-white);
+  --header-color-duration: 0.6s;
+  --header-color-easing: var(--site-ease);
+}
+html[data-header="brown"] { --header-color: var(--kf-ink); }
+
+html { background: var(--kf-bg); }
+/* Leave the background empty — because the gradient behind (z-index −1) is painted below the body background */
+body {
+  background: transparent;
+  margin: 0;
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-size: 14px;
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+  min-height: 100svh;
+  word-break: keep-all;
+}
+body.is-locked { overflow: hidden; }
+img { display: block; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+.st-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* ── Photo slot: a caption describing the photo instead of a gray box ── */
+.st-ph { position: relative; width: 100%; height: 100%; overflow: hidden; background: color-mix(in oklab, var(--kf-accent) 35%, var(--kf-raised)); }
+.st-ph::after {
+  content: attr(data-label); position: absolute; left: 12px; bottom: 10px; right: 12px;
+  font: 11px/1.4 var(--kf-font-num); letter-spacing: 0.02em; color: var(--site-white-60);
+}
+.st-ph.is-dusk { background: color-mix(in oklab, var(--kf-ink) 70%, var(--kf-accent-soft)); }
+.st-ph.is-wood { background: color-mix(in oklab, var(--kf-raised) 70%, var(--kf-ink)); }
+.st-ph.is-water { background: color-mix(in oklab, var(--kf-accent-soft) 70%, var(--kf-accent)); }
+.st-ph.is-field { background: color-mix(in oklab, var(--kf-accent) 75%, var(--kf-raised)); }
+.st-ph.is-sky { background: color-mix(in oklab, var(--kf-accent-soft) 45%, var(--kf-bg)); }
+.st-ph video, .st-ph .st-ph__in { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* ── Wave gradient laid behind — visible above the home page · in the menu · in the footer ── */
+/* Picture before the shader draws its first frame — the intro type (center lime → green, teal water ring at .2 to 1 of screen width) at the same ratios */
+.st-gradient { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 50%, var(--site-grad-0) 0, var(--site-grad-1) 17.7vw, color-mix(in oklab, var(--site-grad-2) 50%, var(--site-grad-3)) 40vw, var(--site-grad-3) 60vw); }
+.st-gradient[data-mode="normal"], .st-gradient[data-mode="footer"] { background: radial-gradient(circle at 20% 100%, var(--site-grad-0) 0, var(--site-grad-1) 17.7vw, var(--site-grad-2) 50vw, var(--site-grad-3) 90vw); }
+.st-gradient canvas { display: block; width: 100%; height: 100%; animation: st-canvas-in 2.2s linear both; }
+@keyframes st-canvas-in { from { opacity: 0; } }
+
+/* ── Page transition curtain (original #page-transition-overlay — background color .5s ease-in-out) ── */
+.st-veil { position: fixed; inset: 0; z-index: 2000; background: var(--kf-bg); pointer-events: none; opacity: 0; transition: opacity 0.5s ease-in-out; }
+.st-veil.is-on { opacity: 1; }
+
+/* ── Circle arrow (original icon-circle-play — the arrow slides out to the right and a new one enters from the left) ── */
+.st-circle { position: relative; display: inline-flex; flex: none; width: 12px; height: 12px; border: 1px solid currentColor; border-radius: 50%; overflow: hidden; }
+.st-circle.is-m { width: 14px; height: 14px; }
+.st-circle.is-l { width: 20px; height: 20px; }
+.st-circle svg { position: absolute; left: 50%; top: 50%; width: 2.86px; height: 4px; transition: transform 0.5s var(--site-ease-io); }
+.st-circle.is-m svg { width: 3.45px; height: 4.8px; }
+.st-circle.is-l svg { width: 5.25px; height: 7.2px; }
+.st-circle.is-f { width: 19px; height: 19px; }
+.st-circle.is-f svg { width: 4.95px; height: 6.8px; }
+.st-circle .is-prev { transform: translate(calc(-300% + 0.5px), -50%); }
+.st-circle .is-now { transform: translate(calc(-50% + 0.5px), -50%); transition-delay: 0.1s; }
+.is-hl .st-circle .is-prev { transform: translate(-50%, -50%); transition-delay: 0.2s; }
+.is-hl .st-circle .is-now { transform: translate(300%, -50%); transition-delay: 0s; }
+[data-dir="down"] .st-circle { transform: rotate(90deg); }
+[data-dir="up"] .st-circle { transform: rotate(-90deg); }
+
+/* ── Dotted line (original dotted-vertical — 1px fill · 2px gap) ── */
+.st-dots-v { width: 1px; height: 100%; opacity: 0.6; background: repeating-linear-gradient(to bottom, currentColor 0 1px, transparent 1px 3px); }
+.st-dots-h { height: 1px; width: 100%; opacity: 0.6; background: repeating-linear-gradient(to right, currentColor 0 1px, transparent 1px 3px); }
+
+/* ── Scroll guide (a white line flows down over a dotted line every 2.5s) ── */
+.st-scroll-ind { position: relative; width: 1px; height: 50px; overflow: hidden; color: var(--site-white); transition: opacity 0.45s var(--site-ease-in), clip-path 0.3s var(--site-ease-in); clip-path: inset(0 0 0 0); }
+.st-scroll-ind[inert] { opacity: 0; clip-path: inset(0 0 100% 0); }
+.st-scroll-ind .st-dots-v { position: absolute; inset: 0; }
+.st-scroll-ind i { position: absolute; inset: 0; background: currentColor; animation: st-line-loop 2.5s var(--site-ease-wipe) infinite; }
+@keyframes st-line-loop { 0% { transform: translateY(-110%); } 40% { transform: translateY(0); } 70% { transform: translateY(0); } 100% { transform: translateY(100%); } }
+
+/* ── Headline ── */
+.st-header { position: fixed; left: 0; top: 0; z-index: 10; width: 100%; pointer-events: none; opacity: 0; transition: opacity 0.4s var(--site-ease-in); color: var(--header-color); }
+.st-header.is-on { opacity: 1; }
+.st-header__in { display: flex; width: 100%; align-items: flex-end; justify-content: space-between; padding: 10px; }
+.st-logo { pointer-events: auto; display: flex; align-items: center; width: 44px; height: 38px; margin-top: auto; color: var(--header-color); transition: color var(--header-color-duration) var(--header-color-easing); }
+.st-logo svg { width: 100%; height: 100%; }
+.st-header__side { display: flex; flex-direction: column; align-items: flex-end; }
+.st-lang { pointer-events: auto; display: none; margin-top: 5px; height: 7px; font: 10px/7px var(--kf-font-num); letter-spacing: 0.03em; transition: color var(--header-color-duration) var(--header-color-easing); }
+.st-lang a { transition: opacity 0.4s var(--site-ease-soft); }
+.st-lang a[aria-current="page"] { opacity: 0.5; pointer-events: none; }
+.st-lang a:hover { opacity: 0.5; }
+.st-header__row { display: flex; align-items: center; gap: 4px; transition: opacity 0.3s; }
+.st-nav { pointer-events: auto; display: none; transition: opacity 0.4s var(--site-ease-soft); }
+.st-nav__cols { display: flex; gap: 64px; }
+.st-nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.st-nav a { position: relative; display: flex; align-items: center; gap: 6px; font: 12px/20px var(--kf-font-sans); letter-spacing: 0.1em; transition: opacity 0.3s var(--site-ease-fade); }
+.st-nav a.is-hl { opacity: 0.6; }
+.st-nav a[aria-current="page"] { opacity: 0.6; }
+.st-nav a .st-dot { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: 0; transform: scale(0); transition: transform 0.4s var(--site-ease), opacity 0.4s; }
+.st-nav a[aria-current="page"] .st-dot { opacity: 1; transform: scale(1); }
+.st-header__btns { display: flex; align-items: center; gap: 4px; }
+@media (min-width: 768px) {
+  .st-header { padding: 9px 50px 0; }
+  .st-header__in { padding: 0; }
+  .st-logo { width: 64px; height: 52px; margin-bottom: 7px; }
+  .st-header__side { gap: 18px; }
+  .st-lang { display: block; }
+  .st-header__row { gap: 70px; }
+  .st-nav { display: block; }
+}
+
+/* Letter roll (original text-updown — the outgoing line slides up and tips over −90°, the new line rises from 90% below, .5s) */
+.st-roll { position: relative; display: block; overflow: hidden; }
+.st-roll__up, .st-roll__down { display: block; transform: translateZ(0); transition: transform 0.5s var(--site-ease); }
+.st-roll__down { position: absolute; left: 0; top: 0; transform: perspective(1000px) translate3d(0, 90%, 0); transform-origin: 0 0; }
+.is-hl > .st-roll .st-roll__up { transform: translate3d(0, -100%, 0) rotateX(-90deg); }
+.is-hl > .st-roll .st-roll__down { transform: translateZ(0); }
+.st-footer__sub .st-roll__down { transform: perspective(1000px) translate3d(0, 100%, 0); }
+
+/* ── Booking button (translucent plate .12 → .9, light following the hand, 3D tilt) — original data-size s: phone 42px·15px margin, wide screen 23px 20px / m: 65px ── */
+.st-reserve { position: relative; pointer-events: auto; display: inline-flex; align-items: center; height: 42px; padding: 15px; color: var(--header-color); overflow: hidden; transition: color 0.5s var(--site-ease-in); }
+.st-reserve__bg { position: absolute; inset: 0; background: var(--header-color); opacity: 0.12; transition: opacity 0.5s var(--site-ease-soft), background-color 0.5s var(--site-ease-soft); }
+.st-reserve .st-reserve__glow { z-index: 2; }
+.st-reserve__in { position: relative; z-index: 1; display: inline-grid; grid-template-columns: auto auto auto; align-items: center; gap: 8px; height: 12px; font: 13px/0 var(--kf-font-sans); letter-spacing: 0.08em; }
+.st-reserve__line { width: 1px; height: 12px; opacity: 0.6; background: repeating-linear-gradient(to bottom, currentColor 0 1px, transparent 1px 3px); }
+.st-reserve.is-hl .st-reserve__bg { opacity: 0.2; }
+html[data-header="brown"] .st-header .st-reserve.is-hl { color: var(--site-white); }
+html[data-header="brown"] .st-header .st-reserve.is-hl .st-reserve__bg { opacity: 0.9; }
+.st-reserve.is-m { height: 65px; padding: 23px 28px; color: var(--site-white); }
+.st-reserve.is-m .st-reserve__bg { background: var(--site-white); }
+.st-reserve.is-m .st-reserve__in { gap: 16px; font: 15px/0 var(--kf-font-display); }
+@media (min-width: 768px) { .st-reserve:not(.is-m) { height: auto; min-width: 125px; padding: 23px 20px; } }
+.st-reserve.is-m { min-width: 168px; }
+.st-reserve__in { width: 100%; grid-template-columns: 1fr auto auto; }
+
+/* ── Phone menu button (three lines) ── */
+.st-burger { position: relative; pointer-events: auto; width: 31px; height: 31px; color: var(--header-color); }
+.st-burger__bg { position: absolute; inset: 0; border-radius: 3px; background: currentColor; opacity: 0.12; }
+.st-burger__lines { position: absolute; left: 50%; top: 50%; width: 11px; height: 7px; transform: translate(-50%, -50%); }
+.st-burger__lines i { position: absolute; left: 0; width: 100%; height: 1px; background: currentColor; transition: transform 0.45s var(--site-ease-io), opacity 0.3s; }
+.st-burger__lines i:nth-child(1) { top: 0; }
+.st-burger__lines i:nth-child(2) { top: 3px; }
+.st-burger__lines i:nth-child(3) { top: 6px; }
+body.is-navi .st-burger { color: var(--site-white); }
+body.is-navi .st-burger__lines i:nth-child(1) { transform: translateY(3px) rotate(25deg); }
+body.is-navi .st-burger__lines i:nth-child(2) { opacity: 0; }
+body.is-navi .st-burger__lines i:nth-child(3) { transform: translateY(-3px) rotate(-25deg); }
+@media (min-width: 768px) { .st-burger { display: none; } }
+
+/* ── Phone menu panel — a wave gradient shows through, big serif menu, the wordmark rises one letter at a time ── */
+.st-navmodal { position: fixed; inset: 0; z-index: 9; display: flex; flex-direction: column; justify-content: center; color: var(--site-white); visibility: hidden; opacity: 0; transition: opacity 0.6s var(--site-ease), visibility 0s 0.6s; }
+body.is-navi .st-navmodal { visibility: visible; opacity: 1; transition: opacity 0.6s var(--site-ease); }
+.st-navmodal__in { position: relative; display: flex; flex-direction: column; gap: 46px; margin-left: 75px; }
+.st-navmodal ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.st-navmodal li { opacity: 0; transform: translateY(14px); transition: opacity 0.6s var(--site-ease-soft), transform 0.8s var(--site-ease); transition-delay: calc(var(--i) * 0.05s + 0.2s); }
+body.is-navi .st-navmodal li { opacity: 1; transform: none; }
+.st-navmodal a { font: 22px/1.3 var(--kf-font-display); letter-spacing: 0.1em; }
+.st-navmodal address { font: 12px/1.7 var(--kf-font-sans); font-style: normal; letter-spacing: 0.05em; opacity: 0.9; }
+.st-navmodal .st-wordmark { position: absolute; left: 10px; right: 10px; bottom: 12px; display: flex; font: 400 10vw/0.9 var(--kf-font-latin); white-space: nowrap; }
+@media (min-width: 768px) { .st-navmodal { display: none; } }
+
+/* ── Wordmark (wide text image — each letter rises from below) ── */
+.st-wordmark { display: block; width: 100%; color: var(--site-white); }
+.st-wordmark .wm-g { opacity: 0; }
+.st-wordmark .wm-g.is-on { transition: opacity 1s var(--site-ease-soft), transform 1.2s var(--site-ease); }
+.st-wordmark .wm-g.is-on .wm-in { transition: transform 0.7s var(--site-ease); }
+.st-wordmark .wm-g.is-instant, .st-wordmark .wm-g.is-instant .wm-in { transition-duration: 0s; }
+.st-wordmark .wm-p { transition: opacity 0.25s var(--site-ease-fade); }
+
+/* ── Char-by-char rise (original fade-txt — from outer 10% + inner 120%, .02s per char) ── */
+.st-ch { display: inline-block; opacity: 0; overflow: hidden; vertical-align: top; transform: translate3d(0, 10%, 0); }
+.st-ch > span { display: inline-block; transform: translate3d(0, 120%, 0); }
+.st-chline.is-in .st-ch { opacity: 1; transform: none; transition: opacity 0.5s calc(var(--i) * 0.02s) var(--site-ease-in), transform 2.3s calc(var(--i) * 0.02s) var(--site-ease); }
+.st-chline.is-in .st-ch > span { transform: none; transition: transform 0.8s calc(var(--i) * 0.02s) var(--site-ease); }
+.st-word { display: inline-block; white-space: nowrap; }
+
+/* ── Photo parallax (original parallax — brightness 2 → 1 on entry, the inner image drifts by offsetY% at 1.1x scale) ── */
+.st-para { position: relative; overflow: hidden; opacity: 0; filter: brightness(2); }
+.st-para.is-in { opacity: 1; filter: none; transition: opacity 0.7s var(--site-ease-fade), filter 1s ease; }
+.st-para > .st-para__c { position: absolute; inset: 0; transform: translate3d(0, calc(var(--oy, 10) * -1% + var(--p, 0) * var(--oy, 10) * 2%), 0) scale(var(--sc, 1.1)); }
+.st-para[data-mask="b"] .st-para__m { position: absolute; inset: 0; clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%); }
+.st-para[data-mask="b"].is-in .st-para__m { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); transition: clip-path 1.3s var(--site-ease-wipe); }
+
+/* ── Lodging · meals · sauna band (three cards over a chestnut-background photo + big booking button) ── */
+.st-banner { position: relative; width: 100%; color: var(--site-white); background: var(--kf-contrast-bg); overflow: hidden; }
+.st-banner__bg { position: absolute; inset: 0; }
+.st-banner__bg .st-ph { opacity: 0.5; }
+.st-banner__in { position: relative; padding: 100px 10px 60px; }
+.st-banner__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.st-banner__list a { position: relative; display: flex; align-items: flex-end; aspect-ratio: 370 / 240; overflow: hidden; }
+.st-banner__list .st-para { position: absolute; inset: 0; transition: transform 1s var(--site-ease-in), filter 1s var(--site-ease-fade); }
+.st-banner__list .st-para::after { content: ""; position: absolute; inset: 0; opacity: 0.4; background: linear-gradient(180deg, transparent, color-mix(in oklab, var(--kf-contrast-bg) 60%, transparent)); }
+@media (hover: hover) and (pointer: fine) { .st-banner__list a.is-hl .st-para { transform: scale(1.03); filter: brightness(1.1); } }
+.st-banner__txt { position: relative; z-index: 1; display: flex; width: 100%; align-items: flex-end; justify-content: space-between; padding: 20px; }
+.st-banner__txt h2 { margin: 0; font: 24px/1.3 var(--kf-font-display); letter-spacing: 0.1em; }
+.st-banner__txt p { margin: 4px 0 0; font: 12px/1.6 var(--kf-font-display); letter-spacing: 0.08em; }
+.st-banner__go { display: flex; align-items: center; gap: 25px; height: 20px; }
+.st-banner__go .st-dots-v { height: 19px; }
+.st-bigreserve { position: relative; display: block; margin-top: 20px; overflow: hidden; background: var(--site-brown-2); color: var(--site-white); border: 1px solid var(--kf-line); }
+.st-bigreserve::after { content: ""; position: absolute; inset: 0; background: var(--kf-accent); opacity: 0; transition: opacity 0.4s var(--site-ease); }
+.st-bigreserve.is-hl::after { opacity: 1; }
+.st-bigreserve.is-hl { border-color: transparent; }
+.st-bigreserve__in { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; padding: 45px 30px; }
+.st-bigreserve__in p { margin: 0; font: 20px/1.3 var(--kf-font-display); letter-spacing: 0.1em; }
+@media (min-width: 1024px) {
+  .st-banner__in { padding: 160px 100px 120px; }
+  .st-banner__list { flex-direction: row; gap: 20px; }
+  .st-banner__list li { flex: 1; }
+  .st-banner__txt { padding: 30px; }
+  .st-banner__txt h2 { font-size: 30px; }
+  .st-bigreserve__in { padding: 71px 50px; }
+  .st-bigreserve__in p { font-size: 24px; }
+}
+
+/* ── Footer — background left empty so the wave gradient (footer type) shows through ── */
+.st-footer { position: relative; color: var(--site-white); padding: 70px 0 25px; }
+.st-footer__top { display: flex; flex-direction: column; gap: 40px; max-width: 1160px; margin: 0 auto; padding: 0 20px; }
+.st-footer__logo { display: block; width: 140px; margin: 0 auto; }
+.st-footer__logo svg { width: 100%; height: auto; }
+.st-footer__menu { display: none; }
+.st-footer__menu ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.st-footer__menu a { display: inline-flex; font: 13px/1.5 var(--kf-font-display); letter-spacing: 0.1em; }
+.st-footer__line { height: 1px; margin: 70px -20px 0; background: var(--site-white-12); }
+.st-footer__mnav { list-style: none; margin: 0; padding: 0 20px; display: flex; flex-direction: column; gap: 12px; }
+.st-footer__mnav a { font: 20px/1.4 var(--kf-font-display); letter-spacing: 0.1em; }
+.st-footer__bottom { display: flex; flex-direction: column; gap: 40px; max-width: 1160px; margin: 60px auto 0; padding: 0 20px; }
+.st-footer__label { font: 11px/1.4 var(--kf-font-latin); letter-spacing: 0.08em; text-transform: uppercase; }
+.st-footer__sub { list-style: none; margin: 18px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 12px; letter-spacing: 0.08em; }
+.st-footer__copy { font: 30px/1.3 var(--kf-font-display); letter-spacing: 0.1em; margin: 0; }
+.st-footer__info { display: flex; justify-content: space-between; gap: 30px; margin-top: 24px; font-size: 11px; line-height: 1.7; }
+.st-footer__info address { font-style: normal; }
+.st-footer__right { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+.st-footer__sns { display: flex; gap: 14px; }
+.st-footer__sns svg { width: 14px; height: 14px; }
+.st-footer__sns a { display: block; transition: opacity 0.4s var(--site-ease-soft); }
+.st-footer__sns a.is-hl { opacity: 0.5; }
+.st-footer__top-btn { display: inline-flex; align-items: center; gap: 8px; font: 11px/1 var(--kf-font-latin); letter-spacing: 0.04em; overflow: hidden; }
+.st-footer__top-btn, .st-footer__sub a { transition: opacity 0.45s var(--site-ease-io); }
+.st-footer__top-btn.is-hl, .st-footer__sub a.is-hl { opacity: 0.6; }
+.st-footer__small { font: 10px/1.5 var(--kf-font-latin); opacity: 0.9; }
+@media (min-width: 768px) {
+  .st-footer { padding: 180px 40px 100px; }
+  .st-footer__top { flex-direction: row; align-items: center; padding: 0; }
+  .st-footer__logo { width: 247px; margin: 0; }
+  .st-footer__menu { display: flex; align-items: flex-start; gap: 60px; margin-left: auto; }
+  .st-footer__menu .st-nav__cols { gap: 32px; }
+  .st-footer__line, .st-footer__mnav { display: none; }
+  .st-footer__bottom { flex-direction: row; justify-content: space-between; align-items: flex-end; margin-top: 160px; padding: 0; }
+  .st-footer__copy { font-size: 48px; }
+  .st-footer__right-col { width: 420px; }
+}
+@media (min-width: 1024px) { .st-footer { padding-left: 100px; padding-right: 100px; } }
+
+.st-headline { margin: 0; font: 13px/1.4 var(--kf-font-display); letter-spacing: 0.15em; }
+.st-headline small { display: block; margin-top: 4px; font: 9px/1 var(--kf-font-latin); letter-spacing: 0.08em; opacity: 0.6; text-transform: uppercase; }
+.st-h2 { margin: 0; font: 20px/1.6 var(--kf-font-display); letter-spacing: 0.12em; }
+@media (min-width: 1024px) { .st-h2 { font-size: 24px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .st-ch, .st-ch > span, .st-para, .st-wordmark .wm-g { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }
+  .st-scroll-ind i { animation: none; }
+}

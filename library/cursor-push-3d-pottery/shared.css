@@ -1,0 +1,252 @@
+/* Original :root page margin and description text size formula as is — fluid unit at a 1280 base × 3 clamped to 16–24px */
+:root {
+  --site-fluid: clamp(4px, 0.3125vw, 8px);
+  --site-pad-inline: clamp(16px, calc(var(--site-fluid) * 3), 24px);
+  --site-pad-top: 70px;
+  --site-pad-bottom: clamp(16px, calc(var(--site-fluid) * 3), 24px);
+  --site-desc: clamp(14px, 1.2vw, 18px);
+  --site-title: clamp(32px, 3.5vw, 52px);
+  --site-unit: clamp(20px, 1.2vw, 32px);
+  --site-glass: color-mix(in oklab, var(--kf-ink) 10%, transparent);
+  --site-veil: oklch(from var(--kf-bg) calc(l * 0) c h / 0.7);
+  --site-bg-from: var(--kf-bg);
+  --site-bg-to: var(--kf-bg);
+}
+@media (orientation: landscape) and (max-height: 600px) {
+  :root { --site-fluid: 0.6vh; }
+}
+
+html {
+  height: 100%;
+  background: linear-gradient(180deg, var(--site-bg-from) 0, var(--site-bg-to) 100%), var(--site-bg-from);
+}
+body {
+  min-height: 100%;
+  background: transparent;
+  color: var(--kf-ink);
+  font-family: var(--kf-font-display);
+  overscroll-behavior-y: none;
+}
+
+/* Page transition — original layout_page: on leave it fades over .3s while rising 5px */
+.cg-page {
+  height: 100%;
+  transition: opacity 0.3s linear, transform 0.3s ease;
+}
+.cg-page.is-leaving {
+  opacity: 0;
+  transform: translateY(-5px);
+}
+
+/* Header — project name / series picker on the left, About on the right */
+.cg-top {
+  position: fixed;
+  z-index: 20;
+  top: 24px;
+  right: var(--site-pad-inline);
+  left: var(--site-pad-inline);
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  pointer-events: none;
+}
+.cg-top > * { pointer-events: auto; }
+.cg-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+.cg-crumbs > li {
+  display: inline-flex;
+  align-items: center;
+  color: var(--kf-accent);
+  font: 400 14px/1.14 var(--kf-font-sans);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.cg-crumbs > li:not(:first-child)::before {
+  margin-right: 16px;
+  content: "/";
+}
+.cg-pill {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 12px;
+  border: none;
+  border-radius: var(--kf-radius-pill);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  background-color: var(--site-glass);
+  color: var(--kf-ink);
+  cursor: pointer;
+  font: 400 14px/1.14 var(--kf-font-sans);
+  gap: 5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background-color 0.3s ease, color 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease;
+}
+/* The original chevron is a white image, so when the background turns white it is pressed to black with filter (.3s ease) — it doesn’t follow the text color */
+.cg-pill svg { width: 10px; height: 6px; stroke: var(--kf-ink); transition: filter 0.3s ease; }
+.cg-pill[aria-current="page"] svg,
+.cg-pill.is-active svg { filter: brightness(0); }
+@media (hover: hover) and (pointer: fine) {
+  .cg-pill:hover svg { filter: brightness(0); }
+}
+@media (hover: hover) and (pointer: fine) {
+  .cg-pill:hover {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-color: var(--kf-accent);
+    color: var(--kf-on-accent);
+  }
+}
+.cg-pill[aria-current="page"],
+.cg-pill.is-active {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background-color: var(--kf-accent);
+  color: var(--kf-on-accent);
+}
+a.cg-pill[aria-current="page"] { pointer-events: none; }
+.cg-pill__narrow { display: none; }
+@media (max-width: 899px) {
+  .cg-pill__wide { display: none; }
+  .cg-pill__narrow { display: inline; }
+}
+
+/* Loader — a 128×16 bordered box fills up, once full after .1s the veil vanishes in .9s and doubles in size over 1s */
+.cg-loader {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font: 400 16px/1.2 var(--kf-font-display);
+  gap: 8px;
+  transition: opacity 0.9s linear 0.1s, transform 1s ease-in-out 0.1s;
+}
+.cg-loader.is-loaded {
+  opacity: 0;
+  transform: scale(2);
+  pointer-events: none;
+}
+.cg-loader__track {
+  width: 128px;
+  height: 16px;
+  border: 1px solid var(--kf-ink);
+}
+.cg-loader__bar {
+  width: 0;
+  height: 100%;
+  background: var(--kf-ink);
+}
+
+/* Cursor — an 18px dot follows the mouse with .5s power3, and folds in over .6s on top of the header pill button */
+.cg-cursor {
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  display: none;
+  grid-template: 1fr / 1fr;
+  place-items: center;
+  pointer-events: none;
+  transform: translate(-50%, -50%) translate(50vw, 50vh);
+  will-change: transform;
+}
+@media (hover: hover) and (pointer: fine) {
+  .cg-cursor { display: grid; }
+}
+.cg-cursor > * { grid-area: 1 / 1; }
+.cg-cursor__dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--kf-accent);
+  clip-path: circle(0 at 50% 50%);
+  transition: clip-path 0.6s ease-in-out;
+}
+.cg-cursor.is-dot .cg-cursor__dot { clip-path: circle(100% at 50% 50%); }
+
+/* Series picker window — the backdrop is instantly black at 70% (the original backdrop animation points at a keyframe name that doesn’t exist, so it never runs), the list stands up in .4s from 20px below at .95x */
+.cg-dialog {
+  position: fixed;
+  z-index: 30;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--site-veil);
+  cursor: pointer;
+  overflow-y: auto;
+}
+.cg-dialog[hidden] { display: none; }
+.cg-dialog__box {
+  padding: 20px;
+  cursor: auto;
+  animation: cg-box 0.4s cubic-bezier(0.24, 0.34, 0.27, 0.86);
+}
+@keyframes cg-box {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: none; }
+}
+.cg-dialog__list {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 33px;
+}
+.cg-dialog__item { text-align: center; isolation: isolate; }
+@media (hover: hover) and (pointer: fine) {
+  .cg-dialog__list > li { transition: opacity 0.3s ease; }
+  .cg-dialog__list:hover > li { opacity: 0.3; }
+  .cg-dialog__list > li:hover { opacity: 1; }
+}
+.cg-dialog__link {
+  --dot: 22px;
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  color: var(--kf-ink);
+  gap: 30px;
+}
+.cg-dialog__link[aria-current="page"] { color: var(--kf-accent); }
+.cg-dialog__link[aria-current="page"]::before {
+  position: absolute;
+  top: 50%;
+  left: calc(-28px - var(--dot));
+  width: var(--dot);
+  height: var(--dot);
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+  transform: translateY(-50%);
+}
+.cg-dialog__en,
+.cg-dialog__ja {
+  font-size: clamp(36px, 8vw, 52px);
+  line-height: 1;
+}
+.cg-dialog__en {
+  font-family: var(--kf-font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+}
+.cg-dialog__ja {
+  font-family: var(--kf-font-serif, var(--kf-font-display));
+  font-weight: 300;
+  text-align: right;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cg-page, .cg-loader, .cg-pill, .cg-cursor * { transition: none; }
+  .cg-dialog__box { animation: none; }
+}

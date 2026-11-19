@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>arc-grid-draw — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo { padding: 40px 20px; display: grid; gap: 40px; }
+  .band { position: relative; height: 420px; background: var(--kf-contrast-bg); }
+  .band > div { position: absolute; inset: 0; }
+  .band p { position: absolute; left: 40px; bottom: 32px; color: var(--kf-contrast-ink); font: 400 40px/1 var(--kf-font-display); }
+  .curtain { position: relative; height: 360px; border: 1px solid var(--kf-line); }
+  .curtain > div { position: absolute; inset: 0; background: var(--kf-bg); }
+  .curtain button { position: absolute; right: 12px; bottom: 12px; z-index: 2; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>arc-grid-draw</b> — Scroll to view the panels. On the ink-colored panel ring patterns are drawn, and on the panel below a thick quarter arc is drawn and erased (Replay button).</p>
+<section class="demo">
+  <div class="band"><div data-fx="arc-grid-draw" data-fx-arc-grid-draw="n: 12; width: 20; accent: 2" style="--fx-arc: color-mix(in oklab, var(--kf-contrast-bg) 80%, var(--kf-ink)); --fx-arc-accent: var(--kf-dim)"></div><p>Your title here</p></div>
+  <div class="curtain"><div data-fx="arc-grid-draw" data-fx-arc-grid-draw="n: 5; width: 64; look: random; stagger: 0; erase: on"></div><button type="button">View again</button></div>
+</section>
+<script>
+// Late arrivals and removals — checks that fx-core attaches to an element added after 1s and detaches from an element removed after 2.5s
+(() => {
+  const src = document.querySelector(".band");
+  const html = src.outerHTML;
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = html; const el = t.content.firstElementChild; el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => document.querySelector(".demo").append(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  const cur = document.querySelector(".curtain > div");
+  cur.addEventListener("arc-grid-draw:done", () => (cur.style.background = "transparent"));
+  document.querySelector(".curtain button").addEventListener("click", () => {
+    const fresh = cur.cloneNode(false);
+    fresh.style.background = "";
+    fresh.addEventListener("arc-grid-draw:done", () => (fresh.style.background = "transparent"));
+    document.querySelector(".curtain > div").replaceWith(fresh);
+  });
+  document.querySelector(".demo-hint").append(" · After 1s, one more panel comes in (the late one), and after 2.5s one drops out (the removal).");
+})();
+</script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

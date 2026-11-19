@@ -1,0 +1,182 @@
+/* Shared by all pages: paper background · text rules, loader (the paper splits up and down along a center line), vermilion dot·ring cursor, scroll progress bar, contact footer. */
+
+/* What the standard --kf-* can’t cover — kept here so it survives swapping the whole theme.css, and colors are all made from --kf-* (original values when in the original skin) */
+:root {
+  --site-max: 1280px;
+  /* Principles panel word roll curve — motion, not skin */
+  --site-ease-roll: cubic-bezier(0.76, 0, 0.24, 1);
+  /* Paper grain: same as the original fractalNoise 0.85 · 3 octaves, 16% on light panels and 6% on dark ones. The soft round glow at the panel center comes from the skin color */
+  --site-grain-paper: radial-gradient(circle at 50% 50%, var(--kf-raised), color-mix(in srgb, var(--kf-ink) 0.4%, transparent)),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 150 150' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.16'/%3E%3C/svg%3E");
+  --site-grain-ink: radial-gradient(circle, color-mix(in srgb, var(--kf-contrast-ink) 5%, transparent), color-mix(in srgb, var(--kf-contrast-bg) 2%, transparent)),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 150 150' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.06'/%3E%3C/svg%3E");
+  /* Ink lines and veil (original rgba(42,41,38,.8/.55)), row hover surface (rgba(217,215,205,.6)) */
+  --site-ink-8: color-mix(in srgb, var(--kf-ink) 80%, transparent);
+  --site-ink-55: color-mix(in srgb, var(--kf-ink) 55%, transparent);
+  --site-raised-6: color-mix(in srgb, var(--kf-raised) 60%, transparent);
+  /* Paper-color text · lines on an ink panel (the stage opposite the background) — original rgba(229,227,220,.7/.4/.2/.1) */
+  --site-on-ink-7: color-mix(in srgb, var(--kf-contrast-ink) 70%, transparent);
+  --site-on-ink-4: color-mix(in srgb, var(--kf-contrast-ink) 40%, transparent);
+  --site-on-ink-2: color-mix(in srgb, var(--kf-contrast-ink) 20%, transparent);
+  --site-on-ink-1: color-mix(in srgb, var(--kf-contrast-ink) 10%, transparent);
+}
+
+html {
+  background: var(--kf-bg);
+  scrollbar-width: thin;
+  scrollbar-color: var(--kf-accent) transparent;
+}
+html.is-loading { overflow: hidden; scrollbar-gutter: stable; }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-stopped { overflow: clip; }
+
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font: var(--kf-weight-body) 15px/1.6 var(--kf-font-sans);
+  text-rendering: optimizeLegibility;
+}
+::selection { background: var(--kf-accent); color: var(--kf-on-accent); }
+
+.dd-paper { background-color: var(--kf-bg); background-image: var(--site-grain-paper); }
+.dd-ink { background-color: var(--kf-contrast-bg); background-image: var(--site-grain-ink); color: var(--kf-contrast-ink); }
+
+.dd-wrap { width: 100%; max-width: var(--site-max); margin-inline: auto; }
+.dd-ver { color: var(--kf-accent); }
+.dd-dim { color: var(--kf-dim); }
+.dd-caption {
+  font: 400 10px/1.6 var(--kf-font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--kf-dim);
+}
+.dd-label {
+  font: 400 12px/1.6 var(--kf-font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--kf-accent);
+}
+.dd-sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* Cells made by text splitting (data-split) */
+.dd-chars-word { display: inline-block; white-space: nowrap; }
+.dd-char, .dd-word { display: inline-block; will-change: transform; }
+
+[data-magnetic], [data-tilt] { will-change: transform; }
+
+@media (min-width: 768px) { .dd-only-touch { display: none; } }
+@media (max-width: 767px) { .dd-only-fine { display: none; } }
+
+/* ── Loader: two sheets of paper top and bottom, a hairline in the middle is the progress bar, a vermilion dot grows and flies to the hero sun spot ── */
+.dd-loader { position: fixed; inset: 0; z-index: 10000; overflow: hidden; color: var(--kf-ink); animation: dd-ld-failsafe 1ms linear 9s forwards; }
+.dd-loader__panel { position: absolute; inset: 0; }
+.dd-loader__panel--top { clip-path: inset(0 0 calc(50% - 1px)); }
+.dd-loader__panel--bottom { clip-path: inset(50% 0 0); }
+.dd-loader__hair { position: absolute; left: 0; top: 50%; width: 100%; height: 1px; background: var(--kf-ink); transform-origin: 0 50%; transform: scaleX(0); }
+.dd-loader__disc { position: absolute; left: 50%; top: 50%; border-radius: 50%; background: var(--kf-accent); transform: scale(0); will-change: transform; }
+.dd-loader__meta { position: absolute; left: 24px; bottom: 24px; opacity: 0; }
+.dd-loader__count-mask { position: absolute; right: 20px; bottom: 12px; overflow: hidden; padding: 0.05em 0; }
+.dd-loader__count {
+  display: block;
+  text-align: right;
+  font: var(--kf-weight-display) clamp(5rem, 14vw, 12rem)/0.85 var(--kf-font-display);
+  letter-spacing: -0.025em;
+  opacity: 0;
+}
+html.is-loading [data-hero-disc] { opacity: 0; }
+@keyframes dd-ld-failsafe { to { opacity: 0; visibility: hidden; } }
+@media (min-width: 640px) { .dd-loader__count-mask { right: 40px; } }
+@media (prefers-reduced-motion: reduce) { .dd-loader { display: none; } }
+
+/* ── Scroll progress line ── */
+.dd-progress {
+  position: fixed; left: 0; top: 0; z-index: 9998;
+  width: 100%; height: 3px;
+  background: var(--kf-accent);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+@media (prefers-reduced-motion: reduce) { .dd-progress { display: none; } }
+
+/* ── Cursor: an 8px vermilion dot (.12s) and a 34px ring (.45s) follow separately ── */
+.dd-cur { position: fixed; left: 0; top: 0; z-index: 9999; border-radius: 50%; pointer-events: none; will-change: transform; }
+.dd-cur--dot { width: 8px; height: 8px; margin: -4px 0 0 -4px; background: var(--kf-accent); }
+.dd-cur--ring { width: 34px; height: 34px; margin: -17px 0 0 -17px; border: 1px solid var(--kf-accent); opacity: 0.55; }
+.dd-cur--ring.is-hover { opacity: 1; }
+@media (hover: hover) and (pointer: fine) {
+  html.has-cursor, html.has-cursor a, html.has-cursor button { cursor: none; }
+}
+@media (pointer: coarse) { .dd-cur { display: none; } }
+
+/* ── Footer: contact ── */
+.dd-foot { position: relative; background: var(--kf-raised); padding: 64px 16px 48px; }
+.dd-foot__in { padding-top: 64px; }
+.dd-foot__grid { display: grid; grid-template-columns: 1fr; gap: 48px; }
+.dd-foot__title {
+  margin-top: 8px;
+  font: var(--kf-weight-display) clamp(1.75rem, 8vw, 2.25rem)/1.1 var(--kf-font-display);
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+}
+.dd-foot__lede { margin-top: 24px; max-width: 32rem; font-size: 14px; }
+.dd-foot__cta-wrap { margin-top: 32px; }
+.dd-cta {
+  display: inline-flex; align-items: center; gap: 16px;
+  padding: 16px 24px;
+  border: 2px solid var(--kf-ink);
+  background: var(--kf-ink);
+  color: var(--kf-bg);
+  font: 700 14px/1.4 var(--kf-font-mono);
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dd-cta:hover { border-color: var(--kf-accent); background: var(--kf-accent); }
+.dd-cta__badge { display: inline-block; padding: 2px 8px; border-radius: 4px; background: var(--site-on-ink-2); font-size: 10px; }
+.dd-foot__side { display: flex; flex-direction: column; justify-content: space-between; }
+.dd-foot__channels { display: grid; gap: 16px; }
+.dd-foot__h { font: 700 12px/1.6 var(--kf-font-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--kf-dim); }
+.dd-foot__links { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font: 400 12px/1.6 var(--kf-font-mono); letter-spacing: 0.1em; text-transform: uppercase; }
+.dd-chan {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px;
+  border: 1px solid var(--kf-ink);
+  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dd-chan:hover { border-color: var(--kf-accent); background: var(--kf-accent); color: var(--kf-bg); }
+.dd-chan [data-arrow], .dd-top [data-to-top] { display: inline-block; }
+.dd-foot__loc {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 48px; padding-top: 24px;
+  border-top: 1px solid var(--kf-line);
+  font: 400 12px/1.6 var(--kf-font-mono); letter-spacing: 0.1em; text-transform: uppercase;
+}
+.dd-foot__loc span { display: block; }
+.dd-top {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--kf-ink);
+  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dd-top:hover { background: var(--kf-ink); color: var(--kf-bg); }
+.dd-foot__bar {
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 16px;
+  margin-top: 64px; padding-top: 24px;
+  border-top: 1px solid var(--kf-ink);
+  font: 400 10px/1.6 var(--kf-font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--kf-dim);
+}
+.dd-foot__copy { display: flex; align-items: center; gap: 12px; }
+.dd-foot__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--kf-accent); }
+
+@media (min-width: 640px) {
+  .dd-foot { padding-inline: 32px; }
+  .dd-foot__title { font-size: 3.75rem; line-height: 1; }
+  .dd-foot__lede { font-size: 16px; }
+  .dd-foot__bar { flex-direction: row; }
+}
+@media (min-width: 1024px) {
+  .dd-foot { padding-top: 96px; }
+  .dd-foot__grid { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  .dd-foot__main { grid-column: span 7; }
+  .dd-foot__side { grid-column: span 5; }
+}

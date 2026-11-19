@@ -1,0 +1,241 @@
+/* Original values: outer margin 24 (phone 16) · header 96 (phone 140) · pill menu 308×48 · two curves (exit .17,.84,.44,1 / enter and leave .77,0,.18,1, both .46s) */
+:root {
+  --site-ease-out: cubic-bezier(0.17, 0.84, 0.44, 1);
+  --site-ease-io: cubic-bezier(0.77, 0, 0.18, 1);
+  --site-ease-page: cubic-bezier(0.74, 0, 0.07, 1);
+  --site-dur: 0.46s;
+  --site-side: 24px;
+  --site-head: 96px;
+  --site-grey: var(--kf-raised);
+  --site-ring: oklch(from var(--kf-accent) calc(l * 0.8645) calc(c * 1.9072) calc(h + 22.928));
+  --site-viewed: color-mix(in oklab, var(--kf-ink) 55%, var(--kf-bg));
+  /* About section: blue card · clock hands · staircase illustration */
+  --site-card: oklch(from var(--kf-accent) calc(l * 0.6862) calc(c * 1.359) calc(h + 248.093));
+  --site-hand: oklch(from var(--kf-accent) calc(l * 0.78) calc(c * 1.7) calc(h + 268));
+  --site-hand-s: oklch(from var(--kf-accent) calc(l * 1.1093) calc(c * 1.5858) calc(h + 96.605));
+  --site-step-a: oklch(from var(--kf-accent) calc(l * 0.72) calc(c * 1.2) calc(h + 150));
+}
+@media (max-width: 680px) {
+  :root { --site-side: 16px; }
+}
+
+html { scroll-behavior: auto; }
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-size: 14px;
+  line-height: 1.21;
+  letter-spacing: -0.01em;
+  word-break: keep-all;
+}
+::selection { background: var(--kf-ink); color: var(--kf-bg); }
+button { border: 0; background: none; padding: 0; cursor: pointer; }
+
+/* Artwork photo slot — the original fits an illustration edge to edge into a rounded 10px panel */
+.wf-img { border: 0; background-color: var(--site-grey); }
+.wf-img::after { background: var(--kf-bg); color: var(--kf-dim); white-space: normal; text-align: center; max-width: 86%; line-height: 1.35; }
+.dt-serif { font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); }
+
+/* ── Roll text: two lines stacked, raised one step to swap in (link · close · see more) ── */
+.dt-roll { display: inline-block; height: 1.21em; overflow: hidden; vertical-align: top; }
+.dt-roll > span { display: block; transition: transform 0.3s var(--site-ease-out), opacity 0.3s var(--site-ease-out); }
+.dt-roll > span:nth-child(2) { opacity: 0; }
+@media (min-width: 1025px) {
+  a:hover > .dt-roll > span, button:hover > .dt-roll > span, .dt-roll:hover > span { transform: translate3d(0, -100%, 0); }
+  a:hover > .dt-roll > span:nth-child(1), button:hover > .dt-roll > span:nth-child(1), .dt-roll:hover > span:nth-child(1) { opacity: 0; }
+  a:hover > .dt-roll > span:nth-child(2), button:hover > .dt-roll > span:nth-child(2), .dt-roll:hover > span:nth-child(2) { opacity: 1; }
+}
+.dt-more { margin-top: 12px; color: var(--kf-dim); height: 16px; }
+
+.dt-chip {
+  display: inline-block; background: var(--site-grey); border-radius: var(--kf-radius-sm);
+  padding: 5px 8px 4px; margin-bottom: 18px; font-size: 14px; font-weight: 400;
+}
+
+/* ── Close button: ”Close” text roll + X in a 32px gray circle (the circle shrinks to .9) ── */
+.dt-close { display: flex; align-items: center; justify-content: flex-end; }
+.dt-close .dt-roll { margin-right: 10px; height: 17px; }
+.dt-close .dt-roll > span { transition-duration: var(--site-dur); }
+.dt-close__x { position: relative; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+.dt-close__x::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--site-grey);
+  transition: transform var(--site-dur) var(--site-ease-out); z-index: 1;
+}
+.dt-close__x i { position: absolute; width: 14px; height: 1px; background: var(--kf-ink); z-index: 2; }
+.dt-close__x i:first-child { transform: rotate(45deg); }
+.dt-close__x i:last-child { transform: rotate(-45deg); }
+@media (min-width: 1025px) { .dt-close:hover .dt-close__x::after { transform: scale(0.9); } }
+
+/* ── Circular arrow buttons (slide prev/next) ── */
+.dt-arrow {
+  position: absolute; top: calc(50% - 16px); width: 32px; height: 32px; z-index: 10;
+  display: flex; align-items: center; justify-content: center;
+}
+.dt-arrow.is-prev { left: 10px; }
+.dt-arrow.is-next { right: 10px; }
+.dt-arrow svg { position: relative; width: 6px; height: 12px; z-index: 2; }
+.dt-arrow.is-next svg { transform: rotate(180deg); }
+.dt-arrow::after {
+  content: ""; position: absolute; inset: 0; background: var(--site-grey); border-radius: 50%; opacity: 0.3; z-index: 1;
+  transition: transform var(--site-dur) var(--site-ease-io);
+}
+@media (min-width: 1025px) { .dt-arrow:hover::after { transform: scale(1.2); } }
+@media (max-width: 768px) { .dt-arrow { display: none; } }
+.dt-arrow[hidden] { display: none; }
+
+/* ── Header: hides after scrolling down past 60px, comes back when scrolling up ── */
+.dt-head {
+  position: fixed; top: 0; left: 0; width: 100%; height: var(--site-head); padding: 0 var(--site-side);
+  display: flex; align-items: center; justify-content: space-between; overflow: hidden; z-index: 123;
+  transition: transform var(--site-dur) var(--site-ease-out);
+}
+.dt-head.is-hidden { transform: translate3d(0, -100%, 0); }
+.dt-head.is-instant, .dt-head.is-instant * { transition: none !important; }
+.dt-logo { display: flex; align-items: center; }
+.dt-logo__mark { width: 32.14px; height: 40px; margin-right: 12px; }
+.dt-logo__mark svg { width: 32.14px !important; height: 40px !important; transform: none !important; }
+.dt-logo > span:last-child { font-weight: 500; white-space: nowrap; }
+
+.dt-tags {
+  position: absolute; left: 50%; height: 100%; display: flex; align-items: center; justify-content: center;
+  transform: translateX(-50%); opacity: 0; pointer-events: none; transition: all 0.5s ease;
+}
+.dt-tags.is-on { opacity: 1; pointer-events: all; }
+.dt-tags li { margin: 0 8px; visibility: hidden; }
+.dt-tag {
+  position: relative; height: 32px; padding: 8px 16px 12px; border-radius: var(--kf-radius-pill);
+  background: var(--site-grey); overflow: hidden; transition: background-color 1s var(--site-ease-out);
+}
+.dt-tag span { position: relative; display: inline-block; transform: translateY(-1px); }
+.dt-tag.is-current { background: var(--dt-tag, var(--kf-accent)); }
+/* A different chip color per tag — the original paints each tag with a color picked in the CMS (content). Values must be sRGB so they mix in sRGB like the original and change in 1s */
+.dt-tag.t1 { --dt-tag: #4082ef; } /* Not skin: color the CMS assigned to the tag 「Line art」 (content) */
+.dt-tag.t2 { --dt-tag: #ff8803; } /* Not skin: color the CMS assigned to the tag 「Bold」 (content) */
+.dt-tag.t3 { --dt-tag: #68a362; } /* Not skin: color the CMS assigned to the tag 「Abstract」 (content) */
+.dt-tag.t4 { --dt-tag: #eb5c55; } /* Not skin: color the CMS assigned to the tag 「Cover」 (content) */
+@media (min-width: 1025px) { .dt-tag:hover { background: var(--dt-tag, var(--kf-accent)); } }
+
+.dt-head__right { position: relative; height: 100%; width: 300px; overflow: hidden; }
+.dt-head__panel {
+  height: 100%; display: flex; align-items: center; justify-content: flex-end;
+  transition: all 1s var(--site-ease-io) 0.4s;
+}
+.dt-head__panel:nth-child(2) { opacity: 0; }
+.dt-head.is-close .dt-head__panel { transform: translate3d(0, -100%, 0); }
+.dt-head.is-close .dt-head__panel:nth-child(1) { opacity: 0; }
+.dt-head.is-close .dt-head__panel:nth-child(2) { opacity: 1; }
+
+.dt-switch {
+  position: relative; width: 246px; height: 48px; border-radius: var(--kf-radius-pill); background: var(--site-grey);
+  display: flex; align-items: center; justify-content: center;
+}
+.dt-switch a { position: relative; flex: 0 0 50%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 3; font-weight: 500; }
+.dt-switch svg { width: 14px; height: 14px; margin-right: 8px; }
+.dt-switch__handle {
+  position: absolute; left: 2px; width: 120px; height: 44px; border-radius: var(--kf-radius-pill); background: var(--kf-bg);
+  transition: transform var(--site-dur) var(--site-ease-io); z-index: 2;
+}
+.dt-head[data-at="list"] .dt-switch__handle { transform: translate3d(122px, 0, 0); }
+
+@media (max-width: 680px) {
+  :root { --site-head: 140px; }
+  .dt-head { align-items: flex-start; }
+  .dt-logo { height: 86px; }
+  .dt-head__right { height: 86px; width: 120px; }
+  .dt-tags {
+    width: 100%; top: 80px; left: 0; height: 38px; padding-left: 16px; justify-content: flex-start;
+    transform: none; overflow-x: auto; scrollbar-width: none; z-index: 2;
+  }
+  .dt-tags::-webkit-scrollbar { display: none; }
+  .dt-tags li { margin: 0 16px 0 0; }
+  .dt-switch { height: 18px; border-radius: 0; width: 80px; background: none; overflow: hidden; }
+  .dt-switch a { position: absolute; top: 0; right: 0; transition: transform var(--site-dur) var(--site-ease-out) 0.22s; }
+  .dt-switch__handle { display: none; }
+  .dt-head[data-at="home"] .dt-switch a:nth-child(1) { transform: translate3d(0, 100%, 0); }
+  .dt-head[data-at="list"] .dt-switch a:nth-child(2) { transform: translate3d(0, -100%, 0); }
+}
+
+/* ── Bottom-center pill menu + two contact panels ── */
+.dt-nav {
+  position: fixed; bottom: 30px; left: 50%; width: 308px; height: 48px; border-radius: var(--kf-radius-pill);
+  background: var(--site-grey); display: flex; align-items: center; justify-content: center;
+  transform: translate3d(-50%, 0, 0); box-shadow: var(--kf-shadow-soft); z-index: 123;
+}
+.dt-nav__link { position: relative; width: 100px; height: 44px; display: flex; align-items: center; justify-content: center; font-weight: 500; z-index: 3; }
+.dt-nav__handle {
+  position: absolute; left: 2px; width: 100px; height: 44px; border-radius: var(--kf-radius-pill); background: var(--kf-bg);
+  transition: transform var(--site-dur) var(--site-ease-io); z-index: 2;
+}
+.dt-nav[data-at="about"] .dt-nav__handle { transform: translate3d(100px, 0, 0); }
+.dt-nav.is-contact .dt-nav__handle { transform: translate3d(204px, 0, 0); }
+.dt-contact { position: absolute; top: -4px; right: 0; z-index: 3; pointer-events: none; transform: translate3d(0, -100%, 0); }
+.dt-contact__card {
+  width: 187px; border-radius: var(--kf-radius-lg); margin-top: 4px; padding: 22px 10px 22px 22px; background: var(--site-grey);
+  opacity: 0; transform: translate3d(0, 8px, 0); transition: all var(--site-dur) var(--site-ease-io);
+}
+.dt-contact__card:nth-child(1) { transition-delay: 0.2s; }
+.dt-contact__card:nth-child(2) { transition-delay: 0.1s; }
+.dt-nav.is-contact .dt-contact { pointer-events: all; }
+.dt-nav.is-contact .dt-contact__card { opacity: 1; transform: translate3d(0, 0, 0); }
+.dt-contact__card h4 { font-size: 14px; font-weight: 400; }
+.dt-contact__card ul { display: flex; flex-wrap: wrap; }
+.dt-contact__card a {
+  font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); font-size: 24px; line-height: 1.17;
+  margin-right: 10px; transition: opacity var(--site-dur) var(--site-ease-out);
+}
+@media (min-width: 1025px) { .dt-contact__card a:hover { opacity: 0.5; } }
+
+/* ── Page turn: the new section slides in from the right (inner from -24%), and the old section is pushed only halfway and darkens to .2 — 1.2s ── */
+.dt-stage { position: relative; }
+.dt-stage.is-moving { height: 100vh; overflow: hidden; background: var(--kf-contrast-bg); }
+.dt-main { background: var(--kf-bg); }
+.dt-main.is-enter {
+  position: absolute; bottom: 0; left: 0; width: 100%; height: 100vh; overflow: hidden; z-index: 122;
+  animation: dt-enter 1.2s var(--site-ease-page) both;
+}
+.dt-main.is-enter > .dt-main__inner { animation: dt-enter-inner 1.2s var(--site-ease-page) both; }
+.dt-main.is-exit { animation: dt-exit 1.2s var(--site-ease-page) both; z-index: 3; }
+@keyframes dt-enter { from { transform: translate3d(100%, 0, 0); } to { transform: translate3d(0, 0, 0); } }
+@keyframes dt-enter-inner { from { transform: translate3d(-24%, 0, 0); } to { transform: translate3d(0, 0, 0); } }
+@keyframes dt-exit {
+  from { transform: translate3d(0, var(--dt-y, 0px), 0); opacity: 1; }
+  to { transform: translate3d(-50%, var(--dt-y, 0px), 0); opacity: 0.2; }
+}
+
+/* Masonry stack (first page · list): below the header 96 (gap 12 between cells, 20 under cards), the bottom 100 is room for the pill menu */
+.dt-feed { width: 100%; min-height: 100vh; padding: var(--site-head) var(--site-side) 100px; background: var(--kf-bg); }
+@media (max-width: 680px) { .dt-feed { padding-top: 86px; } }
+.dt-grid { display: flex; margin-left: -12px; }
+.dt-col { flex: 1 1 0; min-width: 0; padding-left: 12px; }
+.dt-grid:not(.is-laid) { display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 12px; margin-left: 0; }
+
+/* Open mark at the top right of work cards (shared by first-page cards and list tiles) — appears in .46s on hover */
+.dt-card__open {
+  position: absolute; top: 10px; right: 10px; width: 20px; height: 20px; z-index: 4;
+  display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--site-dur) var(--site-ease-io);
+}
+.dt-card__open svg { position: relative; width: 8px; height: 8px; z-index: 2; }
+.dt-card__open::after { content: ""; position: absolute; inset: 0; border-radius: var(--kf-radius-sm); background: var(--site-grey); opacity: 0.3; }
+
+
+/* Large photo veil (shared by story, list and detail): the white veil fades in slowly while the panel inside grows from .92 */
+.dt-modal {
+  position: fixed; inset: 0; height: 100vh; background: var(--kf-bg); z-index: 1234;
+  opacity: 0; pointer-events: none; transition: opacity var(--site-dur) var(--site-ease-io);
+}
+.dt-modal.is-on { opacity: 1; pointer-events: all; }
+.dt-modal__close { position: absolute; top: 20px; right: 20px; z-index: 3; }
+.dt-modal__stage {
+  position: absolute; inset: 0; opacity: 0; transform: scale(0.92); z-index: 2;
+  transition: all var(--site-dur) var(--site-ease-io) 0s;
+}
+.dt-modal.is-on .dt-modal__stage { opacity: 1; transform: scale(1); transition-delay: 0.36s; }
+.dt-modal .dt-arrow { width: 40px; height: 40px; opacity: 0; transition: all var(--site-dur) var(--site-ease-io) 0s; }
+.dt-modal.is-on .dt-arrow { opacity: 1; transition-delay: 0.52s; }
+.dt-modal .dt-arrow::after { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dt-main.is-enter, .dt-main.is-enter > .dt-main__inner, .dt-main.is-exit { animation: none; }
+  .dt-head, .dt-head__panel, .dt-nav__handle, .dt-contact__card, .dt-switch__handle, .dt-modal, .dt-modal__stage, .dt-roll > span { transition: none; }
+}

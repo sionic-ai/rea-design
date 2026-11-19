@@ -1,0 +1,230 @@
+/* Frame shared by all pages: 24-column grid values, 0.5px ink line, header (Routes · wordmark) · footer CTA, line drawing and text sequence that turn on when visible. 
+   The original runs most motion with CSS keyframes — the moment .rc-in is added, it plays on the delay schedule (adding it when the element is visible is done in shared.js). */
+:root {
+  --rc-margins: 16px;
+  --rc-header-margin: 50svh;
+  --rc-vspace: 384px;
+  --rc-line: 0.5px;
+  --rc-e1: cubic-bezier(0.5, 0.5, 0, 0.95);
+  --rc-e2: cubic-bezier(0.45, 0.25, 0, 0.95);
+  --rc-dur: 0.5s;
+  --rc-letter-base: 0.5s;
+  --rc-letter-spread: 0.5s;
+  --rc-x-dur: 0.75s;
+  --rc-x-delay: 0.25s;
+  --rc-y-dur: 0.5s;
+  --rc-y-delay: 1s;
+  --rc-content-delay: 0.5s;
+  --rc-cascade: 75ms;
+  --rc-slide-y: 8px;
+  --rc-heading: clamp(36px, 4vw, 70px);
+  /* Wavy band passing through the red sentence in the hero — original orange·magenta·crimson made from the accent color */
+  --site-wave-a: oklch(from var(--kf-accent) calc(l * 1.233) calc(c * 0.79) calc(h + 29.25));
+  --site-wave-b: oklch(from var(--kf-accent) calc(l * 0.924) calc(c * 0.958) calc(h - 27.91));
+  --site-wave-c: oklch(from var(--kf-accent) calc(l * 0.888) calc(c * 0.949) calc(h + 0.44));
+  /* The four colors of the About hero shader (pink → light coral → apricot → orange) — about.js reads them */
+  --site-glow-a: oklch(from var(--kf-accent) calc(l * 1.416) calc(c * 0.273) calc(h - 18.56));
+  --site-glow-b: oklch(from var(--kf-accent) calc(l * 1.266) calc(c * 0.549) calc(h - 10.81));
+  --site-glow-c: oklch(from var(--kf-accent) calc(l * 1.225) calc(c * 0.708) calc(h + 15.06));
+  --site-glow-d: oklch(from var(--kf-accent) calc(l * 1.134) calc(c * 0.897) calc(h + 9.34));
+}
+@media (max-width: 1728px) { :root { --rc-vspace: 256px; } }
+@media (max-width: 850px) { :root { --rc-margins: 8px; --rc-vspace: 192px; } }
+
+html, body { background: var(--kf-bg); }
+body {
+  color: var(--kf-ink);
+  font: var(--kf-weight-body) 14px/120% var(--kf-font-mono);
+  font-kerning: normal;
+  -webkit-font-smoothing: antialiased;
+}
+body * { line-height: 120%; }
+::selection { background: var(--kf-accent); color: var(--kf-raised); }
+button, a { cursor: pointer; background: none; border: 0; padding: 0; font-weight: inherit; -webkit-tap-highlight-color: transparent; user-select: none; }
+button { font: inherit; }
+
+.t-l { font: var(--kf-weight-display) var(--rc-heading)/100% var(--kf-font-display); letter-spacing: -0.025em; }
+.t-l * { line-height: inherit; letter-spacing: inherit; }
+.t-m { font: var(--kf-weight-display) 28px/120% var(--kf-font-display); }
+.t-b { font: 700 14px/120% var(--kf-font-sans); }
+@media (max-width: 850px) { .t-l, .t-l > * { letter-spacing: -0.005em; } }
+
+.rc-box { background: var(--kf-raised); padding: 8px; }
+.rc-tag { background: var(--kf-raised); display: flex; align-items: center; height: 26px; padding: 8px; }
+.rc-tag > * { line-height: 90%; }
+
+/* Photo slot — original lays a blurred preview while downloading, then turns the photo on at .35s */
+.rc-asset { position: relative; display: flex; width: 100%; overflow: clip; }
+.rc-asset > .wf-img { border: 0; animation: rc-fade 0.35s var(--rc-e1) both; }
+.wf-r-4x5 { aspect-ratio: 4 / 5; }
+
+/* ── Header: sits at screen center (50svh) at first, then sticks to the top on scroll. The Routes cell width (n of 24 columns) differs per page, growing and shrinking in .4s on transition */
+.rc-head {
+  --nav-cols: 6;
+  --label-h: 12.6px;
+  --routes-gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--rc-margins);
+  width: 100%;
+  padding: var(--rc-margins);
+  margin-top: calc(var(--rc-header-margin) - var(--rc-margins) - var(--label-h) - var(--routes-gap));
+  transition: width 0.4s var(--rc-e2), margin-top 0.4s var(--rc-e2), padding-bottom 0.4s var(--rc-e2);
+  pointer-events: none;
+}
+.rc-head a, .rc-head p { pointer-events: auto; }
+.rc-head.is-flush { position: fixed; margin-top: 0; padding-bottom: 0; }
+.rc-head__nav, .rc-head__logo {
+  flex-shrink: 0;
+  width: calc((100% - 23 * var(--rc-margins)) / 24 * var(--span) + (var(--span) - 1) * var(--rc-margins));
+  transition: width 0.4s var(--rc-e2);
+}
+.rc-head__nav { --span: var(--nav-cols); display: flex; flex-direction: column; }
+.rc-head__logo { --span: calc(24 - var(--nav-cols)); }
+.rc-head__nav > p, .rc-head__logo > a { padding: 0 8px; line-height: 90%; }
+.rc-head__logo > a { display: block; position: relative; width: fit-content; transition: color 0.2s var(--rc-e1); }
+.rc-head__logo sup { position: absolute; top: -3px; font-size: 8px; }
+.rc-head__short { display: none; }
+.rc-routes, .rc-head__line {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: var(--routes-gap);
+  padding: 8px;
+  border-top: var(--rc-line) solid var(--kf-line);
+  border-left: var(--rc-line) solid var(--kf-line);
+}
+.rc-head__line { height: 16px; padding: 0; border-right: var(--rc-line) solid var(--kf-line); }
+.rc-link { width: fit-content; transition: color 0.2s var(--rc-e1); }
+.rc-link[aria-current="page"] { color: var(--kf-accent); }
+@media (hover: hover) { .rc-head__logo > a:hover, .rc-link:hover { color: var(--kf-accent); } }
+/* At the very bottom (remaining length ≤ margin), Socials and Colophon turn on below Routes in .2s */
+.rc-head__foot {
+  position: absolute;
+  top: 128px;
+  display: flex;
+  flex-direction: column;
+  gap: 64px;
+  width: calc(100% - var(--rc-margins) * 2);
+  padding-top: 48px;
+  border-left: var(--rc-line) solid var(--kf-line);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s var(--rc-e1), visibility 0.2s var(--rc-e1);
+}
+.rc-head__foot.is-on { opacity: 1; visibility: visible; }
+.rc-head__foot.is-on * { pointer-events: auto; }
+.rc-head__foot .rc-routes { border-left: 0; }
+@media (max-width: 850px) {
+  .rc-head { top: 4px; }
+  .rc-routes, .rc-head__line { margin-top: 12px; }
+  .rc-head__nav, .rc-head__logo { width: calc((100% - var(--rc-margins)) / 2); }
+  .rc-head__foot { top: 116px; width: calc(100% - var(--rc-margins) * 2); }
+  .rc-head__foot > .rc-head__nav { width: 100%; }
+}
+@media (max-width: 650px) {
+  .rc-head__full { display: none; }
+  .rc-head__short { display: block; }
+  .rc-routes { gap: 2px; }
+}
+
+/* ── Body */
+.rc-main { display: flex; flex-direction: column; gap: var(--rc-vspace); opacity: 0; animation: rc-fade 0.5s var(--rc-e1) 0.15s forwards; }
+.rc-hero { position: absolute; top: var(--rc-margins); left: var(--rc-margins); display: flex; width: calc(100% - 2 * var(--rc-margins)); min-height: calc(var(--rc-header-margin) - var(--rc-margins)); }
+/* Red lead sentence: a 200% width band (red→orange→magenta→crimson→red) is laid inside the letters and sweeps once from right to left out of view over 1.5s */
+@property --rc-wave { syntax: "<number>"; inherits: false; initial-value: 0; }
+.rc-wave {
+  --rc-wave: 0;
+  color: transparent;
+  background-image:
+    linear-gradient(90deg, var(--kf-accent) 0%, var(--site-wave-a) 10%, var(--site-wave-b) 25%, var(--site-wave-c) 55%, var(--kf-accent) 65%, var(--kf-accent) 100%),
+    linear-gradient(var(--kf-accent), var(--kf-accent));
+  background-repeat: no-repeat;
+  background-size: 200% 100%, 100% 100%;
+  background-position: calc(200% - var(--rc-wave) * 300%) 50%, 0 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  animation: rc-wave 1.5s cubic-bezier(0, 0.6, 0.5, 1) 0.25s both;
+}
+@keyframes rc-wave { from { --rc-wave: 0; } to { --rc-wave: 1; } }
+
+/* ── Things that turn on when visible — delay swapped per section via variable */
+.rc-word { display: inline-block; white-space: nowrap; line-height: inherit; }
+.rc-ch { display: inline-block; white-space: pre; opacity: 0; transform: translateY(var(--rc-slide-y)); line-height: inherit; letter-spacing: inherit; }
+.rc-in .rc-ch, .rc-ch.rc-in {
+  animation: rc-slide var(--rc-dur) var(--rc-e1) forwards, rc-fade var(--rc-dur) var(--rc-e2) forwards;
+  animation-delay: calc(var(--rc-letter-base) + var(--k) * var(--rc-letter-spread) / var(--n));
+}
+.rc-ch { --k: var(--i); }
+[data-dir="rtl"] .rc-ch { --k: var(--j); }
+
+/* Title underline: the horizontal line (::before) and vertical tick (::after) are drawn separately — which side it grows from depends on the section */
+.rc-hline { position: relative; width: 100%; height: 32px; flex-shrink: 0; }
+.rc-hline::before, .rc-hline::after { content: ""; position: absolute; top: 0; left: 0; background: var(--kf-line); }
+.rc-hline::before { width: 100%; height: var(--rc-line); transform: scaleX(0); transform-origin: var(--x-from, 0); }
+.rc-hline::after { width: var(--rc-line); height: 100%; transform: scaleY(0); transform-origin: var(--y-from, top); }
+.rc-hline.is-ends::after { width: 100%; background: linear-gradient(var(--kf-line), var(--kf-line)) 0 0 / var(--rc-line) 100% no-repeat, linear-gradient(var(--kf-line), var(--kf-line)) 100% 0 / var(--rc-line) 100% no-repeat; }
+.rc-in .rc-hline::before { animation: rc-draw-x var(--rc-x-dur) var(--rc-e1) var(--rc-x-delay) forwards; }
+.rc-in .rc-hline::after { animation: rc-draw-y var(--rc-y-dur) var(--rc-e1) var(--rc-y-delay) forwards; }
+/* Cell where a vertical ink line is drawn top to bottom (case info, list rows) */
+.rc-vline { position: relative; border-left: var(--rc-line) solid transparent; }
+.rc-vline::before { content: ""; position: absolute; top: 0; left: calc(-1 * var(--rc-line)); width: var(--rc-line); height: 100%; background: var(--kf-line); transform: scaleY(0); transform-origin: top; }
+
+@keyframes rc-draw-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes rc-draw-y { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes rc-slide { from { transform: translateY(var(--rc-slide-y)); } to { transform: translateY(0); } }
+@keyframes rc-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rc-bg { from { background-color: transparent; } to { background-color: var(--kf-raised); } }
+
+/* ── Footer: an empty panel of screen height plus half a unit, with a red CTA panel at the bottom. Three borders inside the panel spread inward at 1.5s intervals over 3s and fade out */
+.rc-foot { display: flex; align-items: flex-end; height: calc(100svh + var(--rc-vspace) / 2); padding: var(--rc-margins); }
+.rc-foot > a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 50%;
+  background: var(--kf-accent);
+  color: var(--kf-on-accent);
+  text-align: center;
+  transition: background-color 0.2s var(--rc-e1);
+}
+.rc-foot > a > p { transition: color 0.2s var(--rc-e1); }
+.rc-pulse {
+  position: absolute;
+  inset: 0;
+  border: var(--rc-line) solid var(--kf-on-accent);
+  opacity: 0;
+  pointer-events: none;
+  animation: rc-pulse 3s var(--rc-e2) infinite;
+  transition: border-color 0.2s var(--rc-e1);
+}
+.rc-pulse:nth-child(2) { animation-delay: 1.5s; }
+.rc-pulse:nth-child(3) { animation-delay: 3s; }
+@keyframes rc-pulse {
+  0% { opacity: 0; inset: 0; }
+  50% { opacity: 1; inset: 0; }
+  100% { opacity: 0; inset: calc(var(--rc-margins) * 1.5); }
+}
+@media (hover: hover) {
+  .rc-foot > a:hover { background-color: var(--kf-raised); }
+  .rc-foot > a:hover > p { color: var(--kf-accent); }
+  .rc-foot > a:hover > .rc-pulse { border-color: var(--kf-accent); }
+}
+@media (max-width: 850px) { .rc-foot > a { height: 33%; } }
+@media (max-height: 1100px) { .rc-foot > a { height: 33%; } }
+@media (max-height: 800px) { .rc-foot > a { height: 20%; } }
+@media (max-width: 650px) and (max-height: 750px) { .rc-foot > a { height: 25%; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001s !important; animation-delay: 0s !important; transition-duration: 0.001s !important; }
+  .rc-pulse { animation: none; }
+}

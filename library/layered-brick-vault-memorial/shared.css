@@ -1,0 +1,197 @@
+/* Shared by all pages: background · text rhythm, thin dividers, line · word reveal, dot link, phone menu drawer, footer, page transition curtain */
+
+/* Needed beyond the standard --kf-* — kept here so they survive swapping theme.css, and colors are built from --kf-* so they change along with the skin (# in comments are values from the original skin) */
+:root {
+  --site-white: oklch(from var(--kf-ink) calc(l * 1.0572) 0 h); /* #fff — timeline light line · hand */
+  --site-line-soft: color-mix(in oklab, var(--site-white) 20%, transparent);
+  /* Sand and sky tones are rotated from the accent hue — near-neutral colors like the text color (#f1ece8) make Chrome read h as 0 in relative color,
+     (h + 10.69 turned into pink 10.69°) the hue angle can’t be borrowed */
+  --site-sand: oklch(from var(--kf-accent) calc(l * 1.6344) calc(c * 0.1906) calc(h + 18.6)); /* #eadfd2 — Hero name text */
+  /* Shade and text over photos · video — photos get black shade and white text regardless of skin, so brightness is pinned to 0 · 1 */
+  --site-photo-shade: oklch(from var(--kf-bg) 0 0 h); /* #000 */
+  --site-photo-ink: oklch(from var(--kf-bg) 1 0 h); /* #fff */
+  /* Photo slot background — mixes a bit of text color into the background so it stays close to the background even on light skins (#181817 on the original skin, nearly the same as the original slot #1b1715) */
+  --site-photo-fill: color-mix(in srgb, var(--kf-ink) 10%, var(--kf-bg));
+  /* Brick texture (footer name · hero art) — the brick brown is the accent color, so it is derived from that */
+  --site-brick-mortar: oklch(from var(--kf-accent) calc(l * 0.5539) calc(c * 0.5864) calc(h - 6.83)); /* #4a2410 */
+  --site-brick-1: oklch(from var(--kf-accent) calc(l * 1.0743) calc(c * 1.0748) calc(h - 5.37)); /* #b8673a */
+  --site-brick-2: oklch(from var(--kf-accent) calc(l * 0.927) calc(c * 0.9997) calc(h - 5.74)); /* #9a5128 */
+  --site-brick-3: oklch(from var(--kf-accent) calc(l * 1.1763) calc(c * 1.0774) calc(h - 0.64)); /* #c97a45 */
+  --site-brick-4: oklch(from var(--kf-accent) calc(l * 0.9894) calc(c * 1.0433) calc(h - 5.21)); /* #a75a2e */
+  --site-brick-glint: oklch(from var(--kf-accent) calc(l * 1.3176) calc(c * 0.9048) calc(h + 3.31)); /* #d99868 */
+  --site-brick-burn: oklch(from var(--kf-accent) calc(l * 0.7166) calc(c * 0.8144) calc(h - 8)); /* #6e3518 */
+  --site-brick-light: oklch(from var(--kf-accent) calc(l * 1.6049) calc(c * 0.6708) calc(h + 11.13)); /* #ffd2a8 */
+  --site-brick-dark: oklch(from var(--kf-accent) calc(l * 0.3217) calc(c * 0.2669) calc(h - 6.43)); /* #1c0d06 ceiling shade */
+  /* Sky beyond the skylight — the text color (warm white) with hue reversed, a bluish white */
+  --site-sky: oklch(from var(--kf-accent) calc(l * 1.702) calc(c * 0.0683) calc(h + 188.13)); /* #e9eef2 */
+  --site-sky-deep: oklch(from var(--kf-accent) calc(l * 1.3453) calc(c * 0.2649) calc(h + 189.7)); /* #9eb0bf */
+  /* Paper stage of work detail — the original paints the detail page opposite to the first page: brick-colored text on a sand-toned background (the background is #eadfd2, same as the hero name letters) */
+  --site-paper: var(--site-sand); /* #eadfd2 */
+  --site-paper-ink: var(--kf-accent); /* #a55f2d */
+  --site-paper-photo: color-mix(in oklab, var(--kf-accent) 55%, var(--site-photo-shade)); /* Photo slot on paper — deep brick color */
+  --site-chip: var(--site-white); /* #fff — Floating work-list pill */
+  /* Original CSS curves and spacing as is: magic is also registered with the same curve on the GSAP side */
+  --site-ease-magic: cubic-bezier(0.33, 0, 0, 1);
+  --site-ease-quart: cubic-bezier(0.41, 0.35, 0.2, 1);
+  --site-ease-base: cubic-bezier(0.46, 0.03, 0.12, 1);
+  /* Default curve used by the original Tailwind’s curve-less transitions (transition-opacity etc.) */
+  --site-ease-tw: cubic-bezier(0.4, 0, 0.2, 1);
+  --site-gutter: 1rem;
+  --site-grid-gap: 1.25rem;
+}
+html { background: var(--kf-bg); }
+/* Like the original, the root font size grows with screen width — 15px on phones, from 640px up to 17.55px at 1440, from 1580px up to 22px. Every size set in rem follows this */
+html { font-size: 15px; }
+@media (min-width: 640px) { html { font-size: clamp(15px, 12.9574px + 0.3191vw, 18px); } }
+@media (min-width: 1580px) { html { font-size: clamp(18px, 1.1765vw - 0.5882px, 22px); } }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: clip; }
+
+body {
+  margin: 0;
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+p, h1, h2, h3 { margin: 0; font-weight: inherit; }
+img { display: block; }
+
+.e-px { padding-inline: var(--site-gutter); }
+.e-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--site-grid-gap); }
+.e-trim { text-box: trim-both cap alphabetic; }
+.e-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* Font size steps: original tailwind steps as they are (48·112·30·17·18) */
+.e-t-lead { font-size: 1.75rem; line-height: 1; letter-spacing: -0.04em; }
+.e-t-title { font-size: 3rem; line-height: 1; letter-spacing: -0.05em; }
+.e-t-big { font-size: 1.875rem; line-height: 1; letter-spacing: -0.04em; }
+.e-t-small { font-size: 1.0625rem; line-height: 1.05; letter-spacing: -0.02em; }
+.e-t-label { font-size: 1rem; }
+@media (min-width: 768px) {
+  .e-t-lead, .e-t-big { font-size: 3rem; }
+  .e-t-title { font-size: 7rem; }
+}
+
+/* Thin divider: draws from the left over 1.4s when it enters the view */
+.e-divider { height: 1px; width: 100%; background: currentColor; }
+.e-divider.is-reveal { transform: scaleX(0); transform-origin: 0 50%; transition: transform 1.4s var(--kf-ease-out-expo); }
+.e-divider.is-reveal.is-inview { transform: scaleX(1); }
+
+/* Line reveal: each line from 1em below at 50ms intervals, 1.4s magic */
+:where(html.js) .e-lines { opacity: 0; }
+.e-lines.is-inview { opacity: 1; }
+.e-lines .line { translate: 0 1em; opacity: 0; transition: translate 1.4s var(--site-ease-magic), opacity 1.4s var(--site-ease-magic); }
+.e-lines.is-inview .line { translate: 0 0; opacity: 1; transition-delay: calc(var(--line) * 50ms); }
+
+/* Word reveal: each word rises from 130% below at 75ms intervals, 1.6s expo */
+:where(html.js) .e-words { opacity: 0; }
+.e-words.is-inview { opacity: 1; }
+.e-words .word { display: inline-block; transform: translateY(130%); transition: transform 1.6s var(--kf-ease-out-expo); transition-delay: calc(75ms * var(--word)); }
+.e-words.is-inview .word { transform: translateY(0); }
+
+/* Text reveal: same type as the words, each letter from 130% below at 75ms intervals, 1.6s expo (original reveal-chars) */
+:where(html.js) .e-chars { opacity: 0; }
+.e-chars.is-inview { opacity: 1; }
+.e-chars .char { transform: translateY(130%); transition: transform 1.6s var(--kf-ease-out-expo); transition-delay: calc(75ms * var(--char)); }
+.e-chars.is-inview .char { transform: translateY(0); }
+
+/* Fades in gradually on entry (small labels · photo credits) */
+:where(html.js) .e-fade { opacity: 0; transition: opacity 0.6s var(--site-ease-tw); }
+.e-fade.is-inview { opacity: 1; }
+/* Photo credit is fast at .3s like the original (label is .6s) */
+:where(html.js) .e-credit.e-fade { transition-duration: 0.3s; }
+
+/* Photo reveal: a clip opens top to bottom while it settles from 1.1 to 1 (1.2s quart, 0.2s apart when there are several) */
+.e-reveal-img { position: relative; overflow: hidden; background: var(--kf-raised); }
+.e-reveal-img > .wf-img { opacity: 0; }
+.e-reveal-img.is-inview > .wf-img { opacity: 1; animation: e-reveal-clip 1.2s var(--site-ease-quart) both; animation-delay: calc(var(--i, 0) * 0.2s); }
+@keyframes e-reveal-clip {
+  0% { clip-path: inset(0 0 100%); transform: scale(1.1) translateY(-5%); }
+  to { clip-path: inset(0 0 0%); transform: scale(1); }
+}
+.e-credit { position: absolute; right: 0.5rem; bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: var(--kf-ink-soft); filter: drop-shadow(0 25px 25px #000); }
+@media (min-width: 768px) { .e-credit { right: 1rem; bottom: 1rem; } }
+
+/* Three-photo row (Home intro photos · detail record photos): phone is 80% width horizontal swipe, desktop four columns each. 
+   The phone row is a BlossomCarousel like the original (native scroll + mouse-drag inertia) — the row shape keeps the original classes (scroll-pl-4 pl-4 *:mr-4 *:w-[80%] *:shrink-0 *:snap-start) as they are */
+.e-gallery__strip { margin-top: 1.25rem; }
+.e-gallery__mob { margin-inline: calc(var(--site-gutter) * -1); }
+.e-gallery__scroller { padding-left: var(--site-gutter); scroll-padding-left: var(--site-gutter); }
+.e-gallery__scroller > * { flex-shrink: 0; width: 80%; margin: 0 1rem 0 0; scroll-snap-align: start; position: relative; }
+.e-gallery__grid { display: none; }
+.e-gallery__cell { margin: 0; grid-column: span 4; }
+.e-gallery__ph { aspect-ratio: 912 / 1200; }
+@media (min-width: 768px) {
+  .e-gallery__mob { display: none; }
+  .e-gallery__grid { display: grid; }
+}
+
+/* Photo slot: on a black background, darken the gray box */
+.wf-img { --wf-fill: var(--site-photo-fill); --wf-line: color-mix(in srgb, var(--kf-ink) 12%, transparent); color: var(--kf-ink-soft); }
+.wf-img::after { background: color-mix(in srgb, var(--kf-bg) 60%, transparent); color: var(--kf-ink); }
+
+/* Dot link: the leading dot (0.625em) grows and pushes the text 1.125em. The current page always has the dot on */
+.e-dot { display: inline-flex; align-items: center; gap: 0.5em; }
+.e-dot::before {
+  content: ""; display: block; flex-shrink: 0; width: 0.625em; height: 0.625em; border-radius: 50%;
+  background: transparent; scale: 0;
+  /* The transition-property in the original css has lengths and curves written into it, which is invalid and discarded, so in practice the dot grows and fills with the Tailwind default (all .15s (.4,0,.2,1)) — keeping that behavior as is */
+  transition: all 0.15s var(--site-ease-tw);
+}
+.e-dot:hover::before, .e-dot.is-current::before { scale: 1; background: currentColor; }
+.e-dot.is-push > span { display: inline-block; translate: -1.125em 0; transition: translate 0.3s var(--site-ease-magic); }
+.e-dot.is-push:hover > span, .e-dot.is-current > span { translate: 0 0; }
+/* Menu cell hidden on phone — must come after the dot link (inline-flex) to win */
+.e-hide-phone { display: none; }
+@media (min-width: 768px) { .e-hide-phone { display: inline-flex; } }
+
+/* Phone menu drawer: a polygon descends from top to bottom to cover the screen */
+.e-menu {
+  position: fixed; inset: 0 0 auto; z-index: 60; height: 100dvh; padding: 1rem;
+  background: var(--kf-bg); color: var(--kf-ink); visibility: hidden; pointer-events: auto;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%);
+}
+.e-menu__rule { display: block; height: 1px; background: var(--kf-ink); }
+.e-menu__inner { display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+.e-menu__top { display: flex; align-items: center; justify-content: space-between; padding-top: 0.75rem; font-size: 1.125rem; font-weight: 500; }
+.e-menu__links { list-style: none; margin: 0; padding: 0; font-size: 3.75rem; line-height: 1; }
+.e-menu__links li { overflow: hidden; }
+.e-menu__links a { display: block; border-top: 1px solid var(--kf-ink); padding: 1rem 0 1.25rem; }
+.e-menu__foot { display: flex; flex-direction: column; gap: 1rem; font-size: 1.125rem; padding-bottom: 1.5rem; }
+.e-menu__foot div { display: flex; justify-content: space-between; align-items: center; }
+@media (min-width: 768px) { .e-menu { display: none; } }
+
+/* Footer: one screen tall, a closing sentence on top, and a giant name filled with brick texture below */
+.e-footer { height: 100dvh; overflow: hidden; }
+.e-footer__in { display: flex; flex-direction: column; justify-content: space-between; gap: 4rem; height: 100%; padding-block: 1.5rem; box-sizing: border-box; }
+.e-footer__quote { font-size: 1.875rem; line-height: 1; letter-spacing: -0.025em; }
+.e-footer__bottom { display: flex; flex-direction: column; gap: 1rem; }
+.e-footer__row { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; font-size: 0.875rem; line-height: 1.05; letter-spacing: -0.025em; }
+.e-footer__made { display: flex; flex-direction: column; gap: 1.5rem; }
+.e-footer__made a { transition: opacity 0.3s; }
+.e-footer__made a:hover { opacity: 0.6; }
+.e-footer__links { display: flex; flex-direction: column; align-items: flex-end; gap: 1.5rem; text-align: right; }
+.e-footer__mark { display: block; width: 100%; height: auto; }
+.e-footer__mark.is-phone { display: none; }
+@media (min-width: 768px) {
+  .e-footer { height: 100vh; }
+  .e-footer__quote { font-size: 3rem; max-width: 66%; }
+  .e-footer__row { align-items: center; font-size: 1.0625rem; }
+  .e-footer__made { flex-direction: row; gap: 0.375rem; }
+  .e-footer__links { flex-direction: row; align-items: center; }
+}
+@media (max-width: 767px) {
+  .e-footer__mark.is-desk { display: none; }
+  .e-footer__mark.is-phone { display: block; }
+}
+
+/* Page transition: the screen darkens to 0.7, and a curtain carrying the next page’s lead photo covers it from bottom to top */
+.e-veil { position: fixed; inset: 0; z-index: 70; background: var(--site-photo-shade); opacity: 0; pointer-events: none; }
+.e-curtain { position: fixed; inset: 0 0 auto; z-index: 80; height: 100lvh; background: var(--kf-bg); clip-path: inset(0% 0% 100% 0%); pointer-events: none; }
+.e-curtain .wf-img { position: absolute; inset: 0; height: 100%; opacity: 0; }

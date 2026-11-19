@@ -1,0 +1,104 @@
+/* Outer look of the whole site — 7-column grid (first 3 · second 2 · rest 1), header bar, menu hover (pill-swap-hover part), contact panel, loader (file-tick-loader part),
+   Blurred video behind the screen (trail-unblur-gl part) · film grain · page curtain. Large text is serif uppercase at .8 line height, small text is sans-serif at .8 line height */
+:root {
+  --site-gap: clamp(14px, 1.5vw, 32px);
+  --site-f-height: max(20svw, 275px);
+  --site-faint: color-mix(in oklab, var(--kf-ink) 30%, transparent);
+  --site-faint-line: color-mix(in oklab, var(--kf-ink) 20%, transparent);
+  --site-paper-line: color-mix(in oklab, var(--kf-bg) 30%, transparent);
+}
+/* Background on html only — if painted on body, on long-text pages the body panel covers the z-index:-1 blurred video panel */
+html { background: var(--kf-bg); }
+body.gb { background: transparent; color: var(--kf-ink); -webkit-font-smoothing: antialiased; }
+body.gb { font-family: var(--kf-font-sans); font-weight: var(--kf-weight-body); }
+.gb ::selection { background: var(--kf-ink); color: var(--kf-bg); }
+.gb a { color: inherit; }
+.gb button { background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer; }
+.gb :focus-visible { outline: 1px solid var(--kf-ink); outline-offset: 4px; }
+
+/* Font size — title 40~72px, subtitle 16~20px, base 12.8~15.2px, all with line height .8 and letter-spacing -1% */
+.gb-t-serif { font-family: var(--kf-font-display); font-weight: 400; }
+.gb-t-sans { font-family: var(--kf-font-sans); font-weight: 500; }
+.gb-t-heading { font-size: clamp(40px, 2.07vw + 32.24px, 72px); line-height: .8; letter-spacing: -.01em; text-rendering: optimizeLegibility; text-wrap: pretty; }
+.gb-t-sub { font-size: clamp(16px, .26vw + 15.03px, 20px); line-height: .8; letter-spacing: -.01em; text-wrap: pretty; }
+.gb-t-base { font-size: clamp(12.8px, .16vw + 12.22px, 15.2px); line-height: .8; letter-spacing: -.01em; text-wrap: pretty; }
+.gb-t-base:lang(ko), .gb-t-base :lang(ko) { line-height: 1.15; }
+.gb-t-heading:lang(ko) { line-height: 1.05; }
+.gb .st-line { display: block; overflow: clip; padding-block: .06em; margin-block: -.06em; }
+.gb .st-word { display: inline-block; }
+
+/* 7-column grid — 3 columns below 1280 */
+.gb-grid { display: grid; gap: var(--site-gap); padding: var(--site-gap); grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.gb-grid > :where(.gb-cell:first-child) { grid-column: span 3; }
+.gb-grid > :where(.gb-cell:nth-child(2)) { grid-column: span 2; }
+.gb-grid > :where(.gb-cell:nth-child(n+3)) { grid-column: span 1; }
+@media (min-width: 1280px) { .gb-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); } }
+.gb-title { position: absolute; top: 50%; left: 0; width: 100%; height: 3em; max-width: 26.25rem; transform: translateY(-50%); display: flex; flex-direction: column; justify-content: center; text-transform: uppercase; }
+/* Shown after the font arrives and the text is split — so the unsplit single block never shows through */
+html:not(.gb-on) .gb-header, html:not(.gb-on) main { visibility: hidden; }
+.gb-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Header row — name · title over a curtain fading downward, four menu cells */
+.gb-header { position: fixed; top: 0; left: 0; right: 0; z-index: 99; padding-bottom: 64px; }
+.gb-header__bg { position: absolute; inset: 0; z-index: -1; pointer-events: none; -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); -webkit-mask-image: linear-gradient(var(--kf-ink) 40%, transparent); mask-image: linear-gradient(var(--kf-ink) 40%, transparent); }
+.gb-header__id { display: flex; align-items: flex-end; text-decoration: none; }
+.gb-header__id > span { display: block; }
+.gb-header__name { margin-bottom: .25em; }
+.gb-header__nav { display: grid; gap: var(--site-gap); grid-column: span 4; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.gb-header__link { height: fit-content; margin-top: auto; overflow: hidden; }
+.gb-header__link:first-child { grid-column: span 2; }
+@media (pointer: fine) { .gb-header__link { margin-bottom: -5px; padding-block: 5px; } }
+@media (max-width: 1279px) {
+  .gb-header.gb-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .gb-header .gb-header__id { grid-column: span 2; }
+  .gb-header__nav, .gb-header__link:first-child { grid-column: span 1; }
+}
+@media (max-width: 639px) {
+  .gb-header__id { align-items: flex-start; }
+  .gb-header__nav { grid-template-columns: 1fr; }
+}
+
+/* Menu and link type — wraps only the text box with overflow hidden. The flipped panel is the pill-swap-hover part */
+.gb-action { display: block; width: fit-content; position: relative; overflow: hidden; text-decoration: none; color: var(--kf-ink); }
+.gb-action.is-dark { color: var(--kf-bg); }
+@media (pointer: coarse) { .gb-action { margin-block: -16px; padding-block: 16px; } }
+
+/* Contact panel — white panel drops from above, the header row is pushed down by the same amount */
+.gb-modal { position: fixed; top: 0; left: 0; right: 0; z-index: 100; visibility: hidden; background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); }
+.gb-modal__sec { display: flex; flex-direction: column; }
+.gb-modal__sec--head { padding-bottom: var(--site-gap); }
+.gb-modal__title { text-transform: uppercase; margin-bottom: .2em; }
+.gb-modal__links { display: flex; flex-direction: column; max-width: 32rem; }
+.gb-modal__link { width: 100%; overflow: hidden; }
+.gb-modal__line { width: 100%; height: 1px; background: var(--site-paper-line); }
+.gb-modal__name { margin-block: .3em; }
+.gb-modal__text { max-width: 15.5rem; }
+@media (min-width: 1280px) { .gb-modal__links { max-width: none; } }
+@media (max-width: 1279px) { .gb-modal__sec:nth-child(3) { display: none; } .gb-modal__text { margin-top: auto; } }
+.gb-veil { position: fixed; inset: 0; z-index: 98; background: var(--kf-bg); visibility: hidden; pointer-events: none; }
+
+/* Back and front screen panels */
+.gb-bg { position: fixed; inset: 0; z-index: -1; }
+.gb-bg canvas, .gb-noise canvas { display: block; width: 100%; height: 100%; }
+.gb-noise { position: fixed; inset: 0; z-index: 200; pointer-events: none; mix-blend-mode: overlay; }
+@media (hover: none) and (pointer: coarse) { .gb-noise { mix-blend-mode: normal; } }
+
+/* Loader — 1px bar, percent tag, name of the file being loaded. Motion is the file-tick-loader part */
+.gb-loader { position: fixed; inset: 0; z-index: 101; display: flex; flex-direction: column; justify-content: center; gap: var(--site-gap); padding-block: var(--site-gap); background: var(--kf-bg); }
+.gb-loader__row { height: 100%; padding-block: 0; }
+.gb-loader__title { display: flex; align-items: flex-end; }
+.gb-loader__loading { grid-column: span 4; display: flex; align-items: center; }
+.gb-loader__list { grid-column: span 2; height: fit-content; overflow: hidden; color: var(--site-faint); }
+.gb-loader__info { color: var(--site-faint); }
+@media (max-width: 1279px) { .gb-loader__row:nth-child(2) { height: var(--site-f-height); } }
+@media (max-width: 1023px) { .gb-loader__row .gb-cell:first-child { display: none; } .gb-loader__row:nth-child(2) { height: calc(var(--site-f-height) / 1.5); } }
+
+/* Placeholder video — the panel behind the screen reads this spot and draws it. Without the panel this cell shows */
+.gb-video { position: relative; overflow: hidden; background: color-mix(in oklab, var(--kf-ink) 8%, var(--kf-bg)); }
+.gb-video .wf-img { position: absolute; inset: 0; height: 100%; border: 0; }
+/* The canvas in the cell is a placeholder video, so only the label stays and the gray X panel is cleared */
+[data-fx~="lens-media-gl"] .wf-img { background: none; border: 0; position: absolute; inset: 0; height: 100%; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gb-noise { display: none; }
+}

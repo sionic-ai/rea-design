@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>panorama-look — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo { height: 70svh; margin: 24px 20px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-md); }
+  .demo-pin { padding: 4px 10px; border: 1px solid currentColor; border-radius: var(--kf-radius-pill); background: var(--kf-surface); font: 500 12px/1.2 var(--kf-font-mono); }
+  .demo-row { display: flex; gap: 12px; padding: 0 20px 40px; }
+  .demo-row button { padding: 8px 14px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-pill); background: var(--kf-surface); cursor: pointer; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>panorama-look</b> — Drag the panel to look around, and change the field of view with the wheel. 1.2s after you let go it spins by itself. Dust falls toward the light beam.</p>
+<section class="demo" data-fx="panorama-look" data-fx-panorama-look="lon: 270; lat: 6">
+  <span data-fx-part="pin" data-lon="281.6" data-lat="11" class="demo-pin">Light Direction</span>
+  <span data-fx-part="pin" data-lon="90" data-lat="0" class="demo-pin">Opposite side</span>
+</section>
+<div class="demo-row">
+  <button type="button" data-go="near">Move toward the light (fx:look)</button>
+  <button type="button" data-go="back">Step Back</button>
+</div>
+<script>
+(() => {
+  const demo = document.querySelector(".demo");
+  document.querySelector('[data-go="near"]').addEventListener("click", () => demo.dispatchEvent(new CustomEvent("fx:look", { detail: { lon: 281.6, lat: 8, fov: 28, rate: 1.6, hold: true } })));
+  document.querySelector('[data-go="back"]').addEventListener("click", () => demo.dispatchEvent(new CustomEvent("fx:look", { detail: { fov: 75, rate: 4 } })));
+  const make = (tag) => { const s = document.createElement("section"); s.className = "demo"; s.dataset.fx = "panorama-look"; s.dataset.demo = tag; s.setAttribute("data-fx-panorama-look", "wheel: off; dust: 80"); return s; };
+  const gone = make("gone");
+  document.querySelector(".demo-row").after(gone);
+  setTimeout(() => document.body.append(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1s, one more panel comes in (the late one), and after 2.5s one drops out (the removal).");
+})();
+</script>
+<script src="three-global.js"></script>
+<script src="../../_vendor/three@0.184.0/build/three.cjs"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

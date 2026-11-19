@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>drag-frame-spin — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo { padding: 48px 20px; display: grid; justify-items: center; gap: 16px; }
+  .demo-spin { width: min(420px, 90vw); aspect-ratio: 11 / 12; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-md); }
+  .demo-btn { height: 40px; padding: 0 16px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-sm); background: var(--kf-surface); color: var(--kf-ink); cursor: pointer; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>drag-frame-spin</b> — Drag the plate sideways. Dragging 80% of the screen width makes one full turn. Press Face front to return to the nearest front.</p>
+<section class="demo">
+  <div class="demo-spin" data-fx="drag-frame-spin" data-fx-drag-frame-spin="frames: 120"><canvas data-fx-part="canvas" width="440" height="480"></canvas></div>
+  <button class="demo-btn" type="button">Head-on</button>
+</section>
+<script>
+// Draws a box spinning on fx:frame instead of a frame picture (only the front face in the accent color)
+(() => {
+  document.addEventListener("fx:frame", (e) => {
+    const c = e.target.querySelector("canvas"); if (!c) return;
+    const g = c.getContext("2d"), a = e.detail.progress * Math.PI * 2, cs = getComputedStyle(document.documentElement);
+    g.clearRect(0, 0, 440, 480);
+    const w = Math.cos(a) * 140, d = Math.sin(a) * 60;
+    g.fillStyle = Math.cos(a) > 0 ? cs.getPropertyValue("--kf-accent") : cs.getPropertyValue("--kf-dim");
+    g.fillRect(220 - Math.abs(w), 120, Math.abs(w) * 2, 240);
+    g.fillStyle = cs.getPropertyValue("--kf-line");
+    g.fillRect(220 + w - (d > 0 ? 0 : -d) , 120, Math.abs(d), 240);
+  }, true);
+  document.querySelector(".demo-btn").addEventListener("click", () => document.querySelectorAll('[data-fx~="drag-frame-spin"]').forEach((el) => el.dispatchEvent(new Event("fx:reset"))));
+  const src = document.querySelector('[data-fx~="drag-frame-spin"]');
+  const html = src.outerHTML;
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = html; const el = t.content.firstElementChild; el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => document.querySelector(".demo").append(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1s another identical one comes in (the late arrival), and after 2.5s one drops out (the detach).");
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

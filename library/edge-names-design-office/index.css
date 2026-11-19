@@ -1,0 +1,167 @@
+/* ── Hero scenes ── */
+body[data-page="home"] {
+  --mv-frame-ratio: calc(730 / 900 / 1.5);
+}
+.home-mv { position: relative; height: 100svh; overflow: clip; isolation: isolate; background: var(--kf-bg); }
+.mv-scene { position: absolute; inset: 0; overflow: hidden; visibility: hidden; opacity: 0; pointer-events: none; background: var(--kf-bg); }
+.mv-scene.is-active { z-index: 2; visibility: visible; opacity: 1; pointer-events: auto; }
+
+.mv-scene--logo { display: grid; place-items: center; }
+.mv-logo { height: 100svh; width: auto; max-width: 90vw; transform: translateX(3.5rem); overflow: visible; }
+.mv-logo path { fill: none; stroke: currentColor; stroke-width: 140; stroke-linecap: round; stroke-linejoin: round; }
+.ph__burst { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.mv-gl { position: absolute; inset: 0; z-index: 3; width: 100%; height: 100%; pointer-events: none; }
+/* Once the photo layer is up, the DOM photo slot just holds its space invisibly — in browsers without the layer, the DOM draws it as is */
+.home-mv.is-gl .mq__cell .wf-img, .home-mv.is-gl .sp__item > *, .home-mv.is-gl .ph__item > .wf-img { visibility: hidden; }
+
+/* Work band: four diagonal (-30°, 150vw) rows and two horizontal rows. Original speed is 2 grid cells per second (3 on phone) */
+.mq { position: absolute; display: flex; flex-direction: column; --gap: clamp(3rem, calc(var(--u) * 2.0833), 8rem); }
+.mq__lane { display: flex; align-items: center; flex: none; min-width: 0; overflow: hidden; }
+.mq__track { display: flex; flex: none; width: max-content; height: 100%; animation: mq-x var(--mq-dur, 40s) linear infinite; }
+.mq__lane.is-reverse .mq__track { animation-direction: reverse; }
+.mv-scene:not(.is-active) .mq__track, .mv-scene:not(.is-active) .lf__track, .is-motion-paused .mq__track, .is-motion-paused .lf__track { animation-play-state: paused; }
+.mq__group { display: flex; flex: none; align-items: center; gap: var(--gap); height: 100%; padding-right: var(--gap); }
+.mq__cell { flex: none; height: var(--size, 60%); }
+.mq__cell--xxs { --size: 40%; }
+.mq__cell--s { --size: 85%; }
+.mq__cell--m { --size: 100%; }
+.mq__cell .wf-img { width: auto; height: 100%; }
+@keyframes mq-x { to { transform: translateX(-50%); } }
+.mq--diagonal {
+  --gap: calc(var(--u) * 2.0833);
+  top: 50%; left: 50%; width: 150vw; gap: var(--gap); justify-content: center;
+  transform: translate(-50%, -50%) rotate(-30deg);
+}
+.mq--diagonal .mq__lane { height: calc(var(--u) * 10.4167); }
+.mq--horizontal { --gap: clamp(4rem, calc(var(--u) * 2.7778), 10rem); inset: 0; justify-content: space-between; }
+.mq--horizontal .mq__lane { height: 42.222svh; }
+
+/* Symbol field: five rows, cell max(14rem, 15.556svh), each row loops once every 15 seconds */
+.lf { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: max(6rem, 6.667svh); --gx: clamp(3rem, 4.167vw, 6rem); --item: max(14rem, 15.556svh); }
+.lf__lane { display: flex; flex: none; }
+.lf__track { display: flex; flex: none; width: max-content; animation: mq-x 15s linear infinite; }
+.lf__lane.is-reverse .lf__track { animation-direction: reverse; }
+.lf__group { display: flex; flex: none; gap: var(--gx); padding-right: var(--gx); }
+.lf__item { position: relative; display: block; flex: none; width: var(--item); aspect-ratio: 1; color: var(--c); }
+.lf__mark { position: absolute; inset: 0; margin: auto; background: currentColor; opacity: 0; transform: scale(0); }
+.lf__mark--plain { width: 78.6%; height: 97.2%; -webkit-mask: var(--amp) center / contain no-repeat; mask: var(--amp) center / contain no-repeat; }
+.lf__mark--circle { width: 100%; height: 100%; -webkit-mask: var(--amp-circle) center / contain no-repeat; mask: var(--amp-circle) center / contain no-repeat; }
+.lf__mark.is-primary { opacity: 1; transform: scale(1); }
+.lf.is-switching .lf__mark.is-primary { animation: lf-in .6s var(--site-ease-out-cubic) forwards; }
+.lf.is-switching .lf__mark:not(.is-primary) { animation: lf-out .4s var(--site-ease-out-cubic) forwards; }
+@keyframes lf-in { 0% { opacity: 0; transform: scale(0); } 30% { transform: scale(1.4); } 60% { transform: scale(1); } 80% { transform: scale(1.05); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes lf-out { 0% { opacity: 1; transform: scale(1); } 80% { opacity: 0; } 100% { opacity: 0; transform: scale(0); } }
+
+.sp { position: absolute; inset: 0; }
+.sp__item { position: absolute; top: 0; left: 0; display: block; will-change: transform; }
+.sp__item .wf-img { display: block; width: 100%; height: 100%; }
+.sp__item .wf-img::after { font-size: 10px; }
+.sp__item--logo { color: var(--c); }
+.sp__item--logo .amp { width: 100%; height: 100%; }
+.mq__cell .wf-img { backface-visibility: visible; }
+
+.ph__item { position: absolute; top: 0; left: 0; width: calc(var(--u) * 16.8056); aspect-ratio: 1; border-radius: 50%; overflow: hidden; will-change: transform; }
+.ph__item .wf-img { display: block; height: 100%; border-radius: 50%; }
+
+.mv-indicator { position: absolute; z-index: 5; left: 3rem; bottom: 3rem; width: 3.2rem; height: 3.2rem; padding: 0; border: 0; background: none; color: var(--kf-ink); cursor: pointer; }
+.mv-indicator svg { width: 100%; height: 100%; }
+.mv-indicator circle { fill: none; stroke: currentColor; stroke-width: 28; stroke-dasharray: 1; stroke-dashoffset: 1; transform: rotate(-90deg); transform-origin: 50%; }
+
+@media (width < 768px) {
+  .home-mv { height: auto; max-height: 100svh; aspect-ratio: var(--mv-frame-ratio); }
+  .mv-logo { width: 100%; height: auto; max-height: 100%; max-width: none; transform: none; }
+  .mq--diagonal { width: 250vw; }
+  .mq--diagonal .mq__lane { height: calc(var(--u) * 13.8667); }
+  .mq--horizontal { --gap: clamp(4rem, calc(var(--u) * 4.16), 6rem); }
+  .mq--horizontal .mq__lane { height: 42.222%; }
+  .lf { --gx: 3rem; }
+  .ph__item { width: calc(var(--u) * 13.8667); }
+  .mv-indicator { left: 0.8rem; bottom: 0.8rem; width: 4rem; height: 4rem; }
+}
+
+/* ── Pinned big title stage (shared by brand, work, journal) ── */
+.home-brand, .home-feed { position: relative; display: flex; flex-direction: column; align-items: center; overflow: clip; }
+.home-brand { padding-top: 24rem; color: var(--kf-contrast-ink); background: var(--kf-contrast-bg); }
+.home-feed { padding-top: 24rem; color: var(--kf-ink); background: var(--kf-bg); }
+.title-stage { position: sticky; top: 0; z-index: 0; flex: none; width: 100%; height: 100svh; overflow: clip; pointer-events: none; user-select: none; }
+.title-ticker { position: absolute; top: calc(50% - 1.7rem); left: calc(var(--u) * -14); transform: translateY(-50%); opacity: var(--title-o, 1); transition: opacity .18s ease-out; }
+.title-ticker__track { display: flex; width: max-content; animation: mq-x var(--dur, 36s) linear infinite; }
+.title-ticker__group { display: flex; flex: none; align-items: flex-start; gap: clamp(3rem, 4.167vw, 6rem); padding-right: clamp(3rem, 4.167vw, 6rem); }
+.title-item { display: flex; flex: none; align-items: flex-end; gap: clamp(0.5rem, 0.694vw, 1rem); }
+.title-item > span { padding-right: clamp(3rem, 4.167vw, 6rem); font-size: clamp(18.5rem, 25.694vw, 37rem); white-space: nowrap; }
+.title-item > .amp { flex: none; width: clamp(10.9rem, 15.139vw, 21.8rem); height: clamp(13.45rem, 18.681vw, 26.9rem); animation: amp-bounce 4s linear infinite; }
+/* The symbol turns half a turn every 4s, shrinks to 0, bounces to 1.23x, then settles — points taken from the original keyframes */
+@keyframes amp-bounce {
+  0% { transform: rotate(0) scale(1); }
+  4% { transform: rotate(35deg) scale(.58); }
+  8% { transform: rotate(124deg) scale(.03); }
+  10% { transform: rotate(180deg) scale(0); }
+  12% { transform: rotate(248deg) scale(.26); }
+  14% { transform: rotate(382deg) scale(1.14); }
+  16% { transform: rotate(395deg) scale(1.23); }
+  18% { transform: rotate(355deg) scale(.97); }
+  20% { transform: rotate(349deg) scale(.93); }
+  22% { transform: rotate(361deg) scale(1.005); }
+  24% { transform: rotate(363deg) scale(1.02); }
+  28% { transform: rotate(359deg) scale(.993); }
+  36%, 100% { transform: rotate(360deg) scale(1); }
+}
+.title-fade { position: relative; z-index: 1; flex: none; width: 100%; height: 66.667svh; pointer-events: none; }
+.title-cover { position: sticky; top: 0; z-index: 1; flex: none; width: 100%; height: 100svh; pointer-events: none; }
+.home-brand .title-fade { height: calc(100svh * 2 / 3); }
+
+.brand-intro { position: relative; z-index: 2; width: var(--content-default); padding-bottom: calc(100svh * 2 / 3); display: flex; flex-direction: column; align-items: center; gap: 7.2rem; text-align: center; font-weight: 700; }
+.brand-intro__slogan { width: 100%; font-size: clamp(4rem, 5.556vw, 8rem); letter-spacing: 0.05em; line-height: 1.4; }
+.dot-pair--media i { width: 0.7rem; }
+.dot-pair--media .wf-img { display: block; height: 100%; border: 0; background: var(--kf-contrast-ink); }
+.dot-pair--media .wf-img::after { display: none; }
+.brand-intro__desc { width: 100%; font-size: clamp(1.8rem, 1.667vw, 2.4rem); letter-spacing: 0.05em; line-height: 2.2; }
+.brand-intro__desc .line-reveal { display: inline-block; white-space: nowrap; }
+
+.brand-articles { position: relative; z-index: 2; width: var(--content-default); display: flex; flex-direction: column; gap: 24rem; padding-bottom: 32rem; }
+.brand-row { display: flex; width: 100%; }
+.brand-row:nth-child(2n) { justify-content: flex-end; }
+.brand-card { position: relative; width: calc(var(--u) * 20); display: flex; flex-direction: column; align-items: flex-start; gap: 3.6rem; }
+.brand-card > .wf-img { aspect-ratio: 1; --wf-fill: var(--site-ph-fill); --wf-line: var(--site-ph-line); --wf-fill-ink: var(--site-ph-ink); }
+.brand-card__content, .brand-card__identity, .brand-card__heading { display: flex; flex-direction: column; align-items: flex-start; width: 100%; min-width: 0; }
+.brand-card__content { gap: 3.2rem; }
+.brand-card__identity { gap: 2rem; }
+.brand-card__catch { font-size: 2.4rem; font-weight: 700; line-height: 1.8; }
+.brand-card__heading { gap: 1.6rem; }
+.brand-card__title { font-size: clamp(4rem, 2.8rem + 2.5vw, 6.4rem); text-wrap: balance; }
+.brand-card__title a::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+.brand-card__company { font-size: 1.6rem; font-weight: 700; line-height: 1.8; }
+.brand-card__cats { display: flex; flex-wrap: wrap; gap: 1.2rem; font-size: 1.6rem; font-weight: 700; line-height: 1.8; opacity: 0.5; }
+
+.home-work { position: relative; z-index: 2; width: var(--content-wide); display: grid; grid-template-columns: repeat(3, calc(var(--u) * 10)); justify-content: space-between; align-items: start; row-gap: 6rem; padding-bottom: 8rem; }
+.home-journal { position: relative; z-index: 2; width: var(--content-wide); display: flex; flex-direction: column; gap: 5.8rem; padding-bottom: 40rem; }
+
+@media (width < 768px) {
+  .home-brand, .home-feed { padding-top: 12rem; }
+  .home-brand .title-fade { height: 50svh; }
+  .title-ticker { top: calc(50% - 0.775rem); left: calc(var(--u) * -20); }
+  .title-ticker__group { gap: 3rem; padding-right: 3rem; }
+  .title-item { gap: 0.5rem; }
+  .title-item > span { padding-right: 3rem; font-size: clamp(16rem, 49.333vw, 18.5rem); }
+  .title-item > .amp { width: clamp(9.44rem, 29.067vw, 10.9rem); height: clamp(11.64rem, 35.867vw, 13.45rem); }
+  .brand-intro { width: min(31.5rem, var(--content-default)); gap: 5.2rem; padding-bottom: 50svh; }
+  .brand-intro__slogan { font-size: 4rem; }
+  .brand-intro__desc { font-size: 1.8rem; }
+  .brand-intro__desc .line-reveal { white-space: normal; }
+  .brand-articles { width: var(--content-wide); gap: 12rem; }
+  .brand-card { gap: 2rem; }
+  .brand-card__content { gap: 2rem; }
+  .brand-card__identity { gap: 1.4rem; }
+  .brand-card__catch { font-size: 2rem; }
+  .brand-card__heading { gap: 1.2rem; }
+  .brand-card__title { line-height: 0.9; }
+  .brand-card__cats { gap: 1rem 0.7rem; font-size: 1.2rem; }
+  .home-work { grid-template-columns: repeat(2, calc(var(--u) * 11)); row-gap: 4rem; }
+  .home-journal { gap: 4rem; padding-bottom: 20rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mq__track, .lf__track, .title-ticker__track, .title-item > .amp { animation: none; }
+  .mv-logo__ink { stroke-dashoffset: 0; }
+  .mv-logo__ink:not(.mv-logo__ink--k) { display: none; }
+}

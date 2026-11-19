@@ -1,0 +1,40 @@
+/* Photo link hover — the background fills with the stage color, the photo fades and scales up, the center label text opens from the left sliding in 1em, and an underline is drawn.
+   Attached to the link (a) itself or anywhere inside a link, it spins as a link hover. Label text is --fx-label (quoted string), underline length is --fx-line. Photo is [data-fx-part=media] (first child if none) */
+[data-fx~="view-label-hover"] { display: block; position: relative; overflow: hidden; background-color: transparent; transition: background-color .3s; }
+[data-fx~="view-label-hover"]::before {
+  content: var(--fx-label, "VIEW DETAILS");
+  position: absolute; left: 50%; top: 50%; z-index: 2;
+  color: var(--kf-contrast-ink); font-size: var(--fx-size, 12px); letter-spacing: .03em; line-height: 1; white-space: nowrap;
+  clip-path: inset(0 100% 0 0); transform: translate(calc(-50% - 1em), -50%);
+  transition: clip-path var(--fx-label-dur, .2s), transform var(--fx-label-dur, .2s); pointer-events: none;
+}
+[data-fx~="view-label-hover"]::after {
+  content: ""; position: absolute; left: 50%; top: calc(50% + .65em); z-index: 2;
+  width: var(--fx-line, 5.5em); height: 1px; background: var(--kf-contrast-ink); font-size: var(--fx-size, 12px);
+  transform-origin: left center; transform: translate(-50%, -50%) scale(0); transition: transform var(--fx-label-dur, .2s); pointer-events: none;
+}
+[data-fx-view-label-hover*="look: read"]::before { content: var(--fx-label, "READ MORE"); }
+[data-fx-view-label-hover*="look: read"]::after { width: var(--fx-line, 4.5em); }
+[data-fx~="view-label-hover"] > [data-fx-part="media"],
+[data-fx~="view-label-hover"]:not(:has(> [data-fx-part="media"])) > :first-child { opacity: 1; transform: scale(1); transition: all 1s; }
+@media (hover: hover) {
+  [data-fx~="view-label-hover"]:hover, a:hover [data-fx~="view-label-hover"] { background-color: var(--kf-contrast-bg); }
+  [data-fx~="view-label-hover"]:hover::before, a:hover [data-fx~="view-label-hover"]::before { clip-path: inset(0 0 0 0); transform: translate(-50%, -50%); }
+  [data-fx~="view-label-hover"]:hover::after, a:hover [data-fx~="view-label-hover"]::after { transform: translate(-50%, -50%) scaleX(1); }
+  [data-fx~="view-label-hover"]:hover > [data-fx-part="media"],
+  [data-fx~="view-label-hover"]:hover:not(:has(> [data-fx-part="media"])) > :first-child,
+  a:hover [data-fx~="view-label-hover"] > [data-fx-part="media"] {
+    opacity: var(--fx-dim, .7); transform: scale(var(--fx-scale, 1.05));
+    transition: transform var(--fx-dur, .5s) var(--fx-ease, cubic-bezier(.14, 0, 0, 1)), opacity var(--fx-dur, .5s);
+  }
+  [data-fx~="view-label-hover"]:active > [data-fx-part="media"] { transform: scale(1.03); transition: transform .1s ease; }
+}
+/* Touch devices — stage color and .98 scale only while pressed */
+@media (hover: none) {
+  [data-fx~="view-label-hover"]:active { background-color: var(--kf-contrast-bg); transform: scale(.98); transition: transform .15s, background-color .15s; }
+  [data-fx~="view-label-hover"]:active > [data-fx-part="media"] { opacity: .85; transition: opacity .15s; }
+}
+[data-fx~="view-label-hover"]:focus-visible { outline: 2px solid var(--kf-accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="view-label-hover"], [data-fx~="view-label-hover"]::before, [data-fx~="view-label-hover"]::after, [data-fx~="view-label-hover"] > * { transition: none !important; }
+}

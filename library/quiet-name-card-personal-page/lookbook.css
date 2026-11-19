@@ -1,0 +1,52 @@
+/* Workspace — photos (3:2, phone 1:1) line up in a 672px column with 32px gaps. Hovering a photo shows a bottom-right button, pressing it places a white dot where the object is */
+.ll-shot { position: relative; margin: 32px 0; }
+.ll-shot__frame { position: relative; aspect-ratio: 1 / 1; width: 100%; overflow: hidden; border-radius: 4px; }
+@media (min-width: 640px) { .ll-shot__frame { aspect-ratio: 3 / 2; } }
+.ll-shot__frame .wf-img { position: absolute; inset: 0; height: 100%; border: 0; }
+
+.ll-shot__explorer { position: absolute; z-index: 10; display: none; width: 100%; height: 100%; }
+@media (min-width: 640px) { .ll-shot__explorer { display: block; } }
+/* Button — white 20% border · white 15% background, lights up in .1s when hovering the photo, .95x on press */
+.ll-shot__toggle {
+  position: absolute; right: 16px; bottom: 16px; z-index: 10; display: flex; padding: 8px;
+  border: 1px solid color-mix(in oklab, var(--kf-on-accent) 20%, transparent); border-radius: 50%;
+  background: color-mix(in oklab, var(--kf-on-accent) 15%, transparent); color: var(--kf-on-accent);
+  opacity: 0; cursor: pointer; transition: all 0.1s var(--site-tw);
+}
+.ll-shot__toggle svg { width: 16px; height: 16px; }
+.ll-shot__explorer:hover .ll-shot__toggle, .ll-shot__toggle:focus-visible { opacity: 1; }
+.ll-shot__toggle:hover, .ll-shot__toggle[aria-pressed="true"] { background: color-mix(in oklab, var(--kf-on-accent) 25%, transparent); }
+.ll-shot__toggle[aria-pressed="true"] { opacity: 1; }
+.ll-shot__toggle:active { transform: scale(0.95); }
+
+/* Object dot — on open, each pops in at 75ms stagger from .75 to 1 scale over .5s with a bouncy curve and floats a ping. On hover the ping stops and the label lifts 4px in .15s */
+.ll-shot__dots { display: none; }
+.ll-shot.is-open .ll-shot__dots { display: block; }
+.ll-dot { position: absolute; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; opacity: 0; transform: scale(0); }
+.ll-shot.is-open .ll-dot { animation: ll-scale-fade 0.5s var(--site-bounce) var(--d, 0ms) forwards; opacity: 0; transform: scale(0.75); }
+.ll-dot:hover { z-index: 100; }
+@keyframes ll-scale-fade { to { opacity: 1; transform: scale(1); } }
+.ll-dot__pin { position: relative; display: block; width: 16px; height: 16px; border-radius: 50%; background: var(--kf-on-accent); transform-origin: center; transition: transform 0.15s var(--site-tw); }
+.ll-dot__pin::after { content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 100%; border-radius: 50%; background: var(--kf-on-accent); animation: ll-ping 1s cubic-bezier(0, 0, 0.2, 1) infinite; transition: opacity 0.15s var(--site-tw); }
+.ll-dot:hover .ll-dot__pin::after, .ll-dot:focus .ll-dot__pin::after, .ll-dot:focus-within .ll-dot__pin::after { opacity: 0; }
+@keyframes ll-ping { 75%, 100% { opacity: 0; transform: scale(2); } }
+.ll-dot__tip {
+  position: absolute; left: 50%; bottom: 24px; z-index: 50; display: flex; align-items: center; gap: 12px; width: max-content;
+  padding: 8px 12px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-md);
+  background: var(--site-depth); color: var(--kf-ink); box-shadow: var(--kf-shadow-soft);
+  font-size: 14px; line-height: 20px; text-align: left;
+  opacity: 0; pointer-events: none; transform: translate(-50%, 4px); transition: all 0.15s ease-out;
+}
+.ll-dot__tip::before { content: ""; position: absolute; top: 32px; left: 0; display: none; width: 100%; height: 100%; }
+.ll-dot.has-link .ll-dot__tip { padding: 4px 4px 4px 12px; }
+.ll-dot:hover .ll-dot__tip, .ll-dot:focus .ll-dot__tip, .ll-dot:has(:focus-within) .ll-dot__tip { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.ll-dot:hover .ll-dot__tip::before { display: block; }
+.ll-dot__t { cursor: text; }
+.ll-dot__shop { padding: 4px 10px; border-radius: 4px; background: var(--kf-raised); color: var(--kf-ink); font-weight: 500; transition: background-color 0.15s var(--site-tw); }
+.ll-dot__shop:hover { background: color-mix(in oklab, var(--kf-ink) 18%, var(--kf-raised)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ll-shot.is-open .ll-dot { animation: none; opacity: 1; transform: none; }
+  .ll-dot__pin::after { animation: none; }
+  .ll-shot__toggle, .ll-dot__tip { transition: none; }
+}

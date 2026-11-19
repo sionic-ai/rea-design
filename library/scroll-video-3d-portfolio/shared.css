@@ -1,0 +1,148 @@
+/* Colors not in the skin are derived from accent · background · text — the sky blue (original light panel #a9dcef) is the opposite hue of pollen orange, 
+   Firefly yellow and bee amber are the same orange turned toward yellow. The 3D stage and firefly canvas read these values to paint. */
+:root {
+  --site-ease-press: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --site-ease-jelly: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --site-sky: oklch(from var(--kf-accent) 0.86 0.062 calc(h + 175));
+  --site-fly-core: oklch(from var(--kf-accent) 0.96 0.09 calc(h + 53));
+  --site-fly-halo: oklch(from var(--kf-accent) 0.81 0.16 calc(h + 58));
+  --site-warm: color-mix(in oklab, var(--kf-ink) 82%, var(--kf-accent));
+  --site-glass: color-mix(in oklab, var(--kf-ink) 92%, var(--site-sky));
+  --site-glass-deep: color-mix(in oklab, var(--kf-ink) 80%, oklch(from var(--site-sky) l c calc(h + 70)));
+  --site-petal: color-mix(in oklab, var(--kf-ink) 96%, var(--site-sky));
+  --site-petal-heart: color-mix(in oklab, var(--kf-ink) 70%, var(--kf-accent));
+  --site-stamen: oklch(from var(--kf-accent) calc(l + 0.16) c calc(h + 28));
+  --site-stem: color-mix(in oklab, var(--kf-accent) 32%, var(--kf-bg));
+  --site-bee: color-mix(in oklab, var(--kf-accent) 28%, var(--kf-bg));
+  --site-bee-band: oklch(from var(--kf-accent) calc(l + 0.1) c calc(h + 22));
+  --site-wing: color-mix(in oklab, var(--kf-ink) 90%, var(--site-sky));
+  --site-bubble: color-mix(in oklab, var(--kf-ink) 90%, oklch(from var(--site-sky) l c calc(h + 70)));
+  --site-shadow: color-mix(in srgb, var(--kf-bg) 60%, transparent);
+  --site-shadow-soft: color-mix(in srgb, var(--kf-bg) 50%, transparent);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { background: var(--kf-bg); }
+body {
+  margin: 0;
+  overflow-x: hidden;
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  -webkit-font-smoothing: antialiased;
+}
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+::selection { background: var(--kf-accent); color: var(--kf-on-accent); }
+:focus-visible { outline: 2px solid var(--kf-accent); outline-offset: 3px; border-radius: 2px; }
+a, button { color: inherit; transition: color 0.15s var(--site-ease-press), opacity 0.15s var(--site-ease-press); }
+
+.rw-display {
+  font-family: var(--kf-font-display);
+  font-weight: var(--kf-weight-display);
+  letter-spacing: -0.028em;
+  text-transform: lowercase;
+  line-height: 0.86;
+}
+/* Slot for the original ‹salt› fallback text — high-contrast italic */
+.rw-mix {
+  font-family: var(--kf-font-swash, var(--kf-font-display));
+  font-style: italic;
+  font-weight: 400;
+}
+.rw-meta {
+  font-family: var(--kf-font-sans);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--kf-dim);
+  font-size: 0.6875rem;
+}
+
+.rw-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+.rw-skip {
+  position: absolute; left: -9999px; top: 1rem; z-index: 80;
+  padding: 0.5rem 1rem; border-radius: var(--kf-radius-sm);
+  background: var(--kf-ink); color: var(--kf-bg); text-decoration: none;
+}
+.rw-skip:focus { left: 1rem; }
+
+/* Loader */
+.rw-loader { position: fixed; inset: 0; z-index: 70; background: var(--kf-bg); }
+.rw-loader__flies { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.rw-loader__inner {
+  position: relative; z-index: 1; height: 100%;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 0 1.5rem 2.5rem;
+}
+.rw-loader__mark { margin: 0; font-size: clamp(3rem, 13vw, 12rem); line-height: 0.84; }
+.rw-loader__row { margin-top: 1.5rem; display: flex; align-items: baseline; justify-content: space-between; gap: 1.5rem; }
+.rw-loader__pct { font-variant-numeric: tabular-nums; }
+@media (min-width: 768px) { .rw-loader__inner { padding: 0 2.5rem 2.5rem; } }
+
+/* 3D Stage */
+.rw-stage { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
+.rw-film { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.rw-stage__gl { display: block; width: 100%; height: 100%; }
+.rw-dim { position: fixed; inset: 0; z-index: 30; pointer-events: none; background-color: var(--kf-bg); opacity: 0; }
+
+/* Heart cursor + hearts that float up when you pet the bee */
+@media (pointer: fine) {
+  html.rw-has-mark, html.rw-has-mark * { cursor: none; }
+  html.rw-has-mark input, html.rw-has-mark textarea, html.rw-has-mark [contenteditable] { cursor: auto; }
+}
+.rw-mark, .rw-drops { position: fixed; inset: 0; z-index: 50; pointer-events: none; }
+.rw-heart {
+  position: absolute; left: 0; top: 0; width: 16px; height: 16px;
+  will-change: transform; transition: transform 0.16s var(--site-ease-press);
+  transform: translate3d(-100px, -100px, 0);
+}
+.rw-heart svg, .rw-drop svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.rw-heart path {
+  fill: transparent; stroke: var(--kf-ink); stroke-width: 1.6px;
+  transition: fill 0.16s var(--site-ease-press), stroke 0.16s var(--site-ease-press);
+  filter: drop-shadow(0 1px 2px var(--site-shadow));
+}
+.rw-heart.is-hot path { fill: var(--kf-accent); stroke: var(--kf-accent); }
+html:not(.rw-has-mark) .rw-heart { display: none; }
+.rw-drop { position: absolute; left: 0; top: 0; width: 12px; height: 12px; opacity: 0; will-change: transform, opacity; }
+.rw-drop path { fill: var(--kf-accent); filter: drop-shadow(0 1px 2px var(--site-shadow-soft)); }
+
+/* Floating button */
+.rw-cta {
+  position: fixed; right: 1.5rem; bottom: 1.5rem; z-index: 60;
+  font-family: var(--kf-font-sans); font-size: 0.6875rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--kf-ink); text-decoration: none;
+  padding: 0.8rem 1.15rem; border-radius: var(--kf-radius-pill);
+  background: color-mix(in srgb, var(--kf-bg) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--kf-ink) 22%, transparent);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  transition: border-color 0.18s var(--site-ease-press), background-color 0.18s var(--site-ease-press), color 0.18s var(--site-ease-press);
+}
+.rw-cta:hover { border-color: var(--kf-accent); color: var(--kf-accent); }
+@media (min-width: 768px) { .rw-cta { right: 2rem; bottom: 2rem; } }
+
+.rw-glass-defs { position: absolute; pointer-events: none; }
+
+/* Film grain */
+.rw-grain {
+  position: fixed; inset: -20%; z-index: 60; pointer-events: none; opacity: 0.14; will-change: transform;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0.12'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: rw-grain 5.6s steps(6) infinite;
+}
+@keyframes rw-grain {
+  0% { transform: translate(0); }
+  20% { transform: translate(-3%, 2%); }
+  40% { transform: translate(2%, -3%); }
+  60% { transform: translate(-2%, -2%); }
+  80% { transform: translate(3%, 1%); }
+  to { transform: translate(0); }
+}
+
+.rw-fine { display: none; }
+@media (pointer: fine) { .rw-fine { display: inline; } }
+@media (prefers-reduced-motion: reduce) {
+  .rw-fine { display: none; }
+  .rw-grain { animation: none; }
+  *, *::before, *::after { transition-duration: 0.001ms !important; animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+}

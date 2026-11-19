@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>engrave-scan-gl — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); margin: 0; }
+  .demo-hint { position: sticky; top: 0; z-index: 2; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  figure { width: min(720px, 90vw); aspect-ratio: 2 / 1; margin: 40px auto; }
+  figure canvas[data-fx-part] { width: 100%; height: 100%; display: block; }
+  .demo-pad { height: 90vh; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>engrave-scan-gl</b> — The first picture appears as soon as it opens, pictures below form as you scroll, with horizontal woodcut lines returning to place line by line. (One more picture comes in after 1s and one leaves after 2.5s)</p>
+<figure data-fx="engrave-scan-gl" data-fx-engrave-scan-gl="on: load; dur: 1.6"><canvas data-fx-part="image" width="720" height="360"></canvas></figure>
+<div class="demo-pad"></div>
+<figure data-fx="engrave-scan-gl"><canvas data-fx-part="image" width="720" height="360"></canvas></figure>
+<figure data-fx="engrave-scan-gl" data-fx-engrave-scan-gl="dust: .3" data-demo-remove><canvas data-fx-part="image" width="720" height="360"></canvas></figure>
+<div class="demo-pad" data-demo-late-host></div>
+<figure data-fx="engrave-scan-gl"></figure>
+<script>
+/* Demo visual: three shaded spheres (canvas, no image files) */
+function paint(c) {
+  const x = c.getContext("2d");
+  [[200, 180, 140], [420, 200, 110], [580, 170, 80]].forEach(([cx, cy, r]) => {
+    const g = x.createRadialGradient(cx - r * 0.4, cy - r * 0.4, r * 0.1, cx, cy, r);
+    g.addColorStop(0, "white"); g.addColorStop(1, "black");
+    x.fillStyle = g; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill();
+  });
+}
+document.querySelectorAll("canvas[data-fx-part]").forEach(paint);
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../../../_shared/vendor/gsap/ScrollTrigger.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+gsap.registerPlugin(ScrollTrigger);
+setTimeout(() => {
+  const f = document.createElement("figure");
+  f.dataset.fx = "engrave-scan-gl";
+  const c = document.createElement("canvas"); c.width = 720; c.height = 360; c.dataset.fxPart = "image"; paint(c);
+  f.append(c);
+  document.querySelector("[data-demo-late-host]").append(f);
+}, 1000);
+setTimeout(() => document.querySelector("[data-demo-remove]")?.remove(), 2500);
+</script>
+</body>
+</html>

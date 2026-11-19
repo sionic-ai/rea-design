@@ -1,0 +1,246 @@
+/* Shared by several pages and sections: background, marquee, glass ladder (scroll ticks), unfolding dialog (waitlist · video · feature list), logo burst curtain */
+:root {
+  /* The original’s secondary fill — made by rotating the hue from the accent color (brick pink). Swap the skin and it turns too */
+  /* White glow on the glass border — raises only the brightness all the way from the skin’s background color */
+  --site-white: oklch(from var(--kf-bg) 1 0 h);
+  --site-blurple: oklch(from var(--kf-accent) calc(l * .87) calc(c * 1.45) calc(h + 252));
+  --site-sage: oklch(from var(--kf-accent) calc(l * 1.22) calc(c * .6) calc(h + 112));
+  --site-ochre: oklch(from var(--kf-accent) calc(l * 1.03) calc(c * .98) calc(h + 52));
+  --site-rose: oklch(from var(--kf-accent) calc(l * 1.13) calc(c * .55) calc(h - 2));
+  --site-go: oklch(from var(--kf-accent) calc(l * 1.08) calc(c * 1.45) calc(h + 122));
+  --site-deep-raised: color-mix(in oklab, var(--kf-raised) 82%, var(--kf-ink-soft));
+  --site-chip-arrow: color-mix(in oklab, var(--kf-raised) 70%, var(--kf-ink-soft) 30%);
+  --site-ui-ink: color-mix(in oklab, var(--kf-ink) 70%, var(--kf-contrast-bg));
+  --site-scrim: color-mix(in srgb, var(--kf-contrast-bg) 62%, transparent);
+  --site-scrim-deep: color-mix(in srgb, var(--kf-contrast-bg) 78%, transparent);
+  --site-glass: color-mix(in srgb, var(--kf-bg) 32%, transparent);
+  --site-glass-card: color-mix(in srgb, var(--kf-bg) 62%, transparent);
+  --site-ease: cubic-bezier(.22, 1, .36, 1);
+  --m-h1: 32px; --m-h1-lh: 1.1; --m-h2: 24px; --m-h2-lh: 1.2; --m-h3: 20px; --m-h3-lh: 1.2;
+  --m-body: 16px; --m-body-lh: 1.4; --m-gap: 16px;
+}
+
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-stopped { overflow: clip; }
+.lenis.lenis-smooth iframe { pointer-events: none; }
+
+body { margin: 0; background: var(--kf-bg); }
+.vb-page {
+  position: relative; display: flex; flex-direction: column; align-items: stretch; width: 100%;
+  background: var(--kf-bg); color: var(--kf-ink); font-family: var(--kf-font-sans);
+  line-height: normal; overflow-x: clip; container-type: inline-size;
+}
+.vb-page h1, .vb-page h2, .vb-page h3, .vb-page p { margin: 0; }
+.vb-page button { font: inherit; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Photo slot — instead of a subject, a fill of the same tone plus a label. data-label says what goes in the slot */
+.vb-photo { position: relative; overflow: hidden; }
+.vb-photo::after {
+  content: attr(data-label); position: absolute; left: 12px; bottom: 10px; max-width: calc(100% - 24px);
+  font: 500 11px/1.3 var(--kf-font-ui); color: var(--kf-contrast-ink); opacity: .55; pointer-events: none;
+}
+.vb-photo--dusk {
+  background:
+    radial-gradient(120% 60% at 30% 102%, color-mix(in oklab, var(--kf-ink-soft) 70%, var(--kf-accent)) 0 34%, transparent 35%),
+    radial-gradient(140% 50% at 85% 100%, color-mix(in oklab, var(--kf-ink-soft) 55%, var(--kf-accent)) 0 38%, transparent 39%),
+    radial-gradient(90% 40% at 60% 64%, color-mix(in oklab, var(--kf-accent) 45%, var(--kf-raised)) 0 30%, transparent 60%),
+    linear-gradient(180deg, color-mix(in oklab, var(--kf-dim) 75%, var(--kf-ink)) 0%, color-mix(in oklab, var(--kf-accent) 55%, var(--kf-raised)) 46%, color-mix(in oklab, var(--kf-accent) 70%, var(--kf-ink-soft)) 70%, color-mix(in oklab, var(--kf-ink-soft) 80%, var(--kf-ink)) 100%);
+}
+.vb-photo--night {
+  background:
+    radial-gradient(140% 55% at 50% 108%, color-mix(in oklab, var(--site-blurple) 30%, var(--kf-contrast-bg)) 0 40%, transparent 41%),
+    radial-gradient(80% 30% at 50% 58%, color-mix(in oklab, var(--site-blurple) 55%, var(--kf-accent)) 0 18%, transparent 60%),
+    linear-gradient(180deg, var(--kf-contrast-bg) 0%, color-mix(in oklab, var(--site-blurple) 35%, var(--kf-contrast-bg)) 55%, color-mix(in oklab, var(--site-blurple) 55%, var(--kf-ink)) 72%, color-mix(in oklab, var(--site-blurple) 20%, var(--kf-contrast-bg)) 100%);
+}
+
+/* Marquee — one row is repeated several times and shared.js pushes it at 42px per second + the scroll speed */
+.vb-marquee { display: block; overflow: hidden; white-space: nowrap; }
+.vb-marquee__track { display: flex; width: max-content; will-change: transform; }
+.vb-marquee__item { flex-shrink: 0; padding-right: .28em; }
+
+/* Glass ladder — floats at the left of the pinned section, showing scroll progress as a needle · tick wave */
+.vb-ladder {
+  position: absolute; top: 50%; left: clamp(16px, 2.6cqw, 50px); z-index: 2; transform: translateY(-50%);
+  box-sizing: border-box; width: 22px; height: 184px; padding: 12px 5px;
+  display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px;
+  border-radius: 6px; background: var(--site-glass); backdrop-filter: blur(135.914px); -webkit-backdrop-filter: blur(135.914px);
+  box-shadow: 0 0 6px #00000026;
+}
+.vb-ladder__hairline { position: absolute; inset: 0; border-radius: 6px; outline: 1px solid color-mix(in srgb, var(--kf-contrast-ink) 10%, transparent); outline-offset: -1px; mix-blend-mode: plus-lighter; pointer-events: none; }
+.vb-ladder__track { position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; flex: auto; align-self: stretch; }
+.vb-ladder__rung { display: block; width: 12px; height: 1px; border-radius: 1px; background: var(--kf-contrast-ink); transform-origin: 50%; }
+.vb-ladder__group { position: relative; flex-shrink: 0; width: 12px; height: 24px; }
+.vb-ladder__group .vb-ladder__rung { position: absolute; left: 0; opacity: .3; }
+.vb-ladder__needle { position: absolute; top: 0; left: -1px; width: 14px; height: 2px; border-radius: 1px; background: var(--kf-accent); }
+@media (pointer: coarse) { .vb-ladder { backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px); } }
+/* As in the original, with a CSS scroll timeline — the needle and tick wave are bound to the section’s view-timeline (contain range). In browsers that can’t use it, shared.js paints them instead */
+[data-ladder-section] { view-timeline-name: var(--ladder-timeline); view-timeline-axis: block; }
+@supports (animation-timeline: view()) {
+  .vb-ladder__needle { animation: vb-ladder-track linear both; animation-timeline: var(--ladder-timeline); animation-range: contain; }
+  .vb-ladder__rung { animation: vb-ladder-wave ease-in-out both; animation-timeline: var(--ladder-timeline); animation-range: contain calc(var(--i) * 5% - 15%) contain calc(var(--i) * 5% + 15%); }
+}
+@keyframes vb-ladder-track { from { transform: translateY(0); } to { transform: translateY(164px); } }
+@keyframes vb-ladder-wave { 0% { transform: scaleX(1); } 50% { transform: scaleX(.45); } 100% { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { .vb-ladder__needle, .vb-ladder__rung { animation: none; } }
+
+/* Expanding dialog — grows over 460ms from the size and corners of the pressed spot (card · button) */
+.vb-scrim {
+  position: fixed; inset: 0; z-index: 1000; opacity: 0; background: var(--site-scrim);
+  backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); transition: opacity var(--morph, 460ms) ease;
+}
+.vb-scrim[data-state="open"] { opacity: 1; }
+.vb-scrim--video { background: var(--site-scrim-deep); }
+.vb-morph {
+  --panel-w: min(440px, calc(100vw - 40px)); --panel-h: calc(100dvh - 100px);
+  position: fixed; z-index: 1001; overflow: hidden;
+  top: var(--from-top); right: var(--from-right); width: var(--from-w); height: var(--from-h);
+  border-radius: var(--from-radius, 10px); background: var(--kf-bg);
+  transition-property: top, right, width, height, border-radius; transition-duration: var(--morph, 460ms);
+  transition-timing-function: var(--site-ease); box-shadow: var(--kf-shadow-lift);
+}
+.vb-morph[data-state="open"] { top: 50px; right: var(--from-right, 50px); width: var(--panel-w); height: var(--panel-h); border-radius: 16px; }
+.vb-morph--center[data-state="open"] { top: max(16px, calc((100dvh - var(--panel-h)) / 2)); right: max(16px, calc((100vw - var(--panel-w)) / 2)); }
+.vb-morph__content {
+  position: absolute; top: 0; right: 0; box-sizing: border-box; width: var(--panel-w); height: var(--panel-h);
+  display: flex; flex-direction: column; padding: 26px 32px 30px; opacity: 0; transition: opacity .26s;
+}
+.vb-morph[data-state="open"] .vb-morph__content { opacity: 1; transition-delay: calc(var(--morph, 460ms) * .5); }
+.vb-morph__top { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+.vb-morph__eyebrow { font: 600 12px/1.16 var(--kf-font-sans); letter-spacing: .48px; text-transform: uppercase; color: var(--kf-ink); opacity: .45; white-space: nowrap; }
+.vb-morph__close {
+  display: flex; justify-content: center; align-items: center; width: 32px; height: 32px; margin-right: -6px; padding: 0;
+  border: 0; border-radius: 8px; background: transparent; color: var(--kf-ink); opacity: .5; cursor: pointer; transition: opacity .15s, background .15s;
+}
+.vb-morph__close:hover { opacity: 1; background: color-mix(in srgb, var(--kf-ink) 7%, transparent); }
+.vb-morph__middle { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 14px; }
+.vb-morph__step { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; width: 100%; animation: vb-step-in .34s var(--site-ease) backwards; }
+@keyframes vb-step-in { from { opacity: 0; transform: translateY(8px); } }
+.vb-morph__title { font: 600 34px/1.04 var(--kf-font-display); letter-spacing: -.02em; color: var(--kf-accent); }
+.vb-morph__body { font: 400 16px/1.4 var(--kf-font-sans); color: var(--kf-ink); opacity: .8; }
+.vb-morph__form { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 10px; }
+.vb-morph__input {
+  box-sizing: border-box; width: 100%; height: 52px; padding: 0 16px; border: 0; border-radius: 8px; outline: none;
+  font: 500 16px var(--kf-font-sans); color: var(--kf-ink); background: color-mix(in srgb, var(--kf-ink) 4%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--kf-ink) 16%, transparent); transition: box-shadow .15s, background .15s;
+}
+.vb-morph__input::placeholder { color: var(--kf-ink); opacity: .35; }
+.vb-morph__input:focus-visible { box-shadow: inset 0 0 0 2px var(--kf-accent); }
+.vb-morph__submit {
+  display: flex; justify-content: center; align-items: center; width: 100%; height: 52px; padding: 0 16px; border: 0; border-radius: 8px;
+  font: 600 15px var(--kf-font-sans); color: var(--kf-on-accent); background: var(--kf-accent); cursor: pointer;
+  box-shadow: inset 0 1px #ffffff47; transition: filter .15s;
+}
+.vb-morph__submit:hover { filter: brightness(1.06); }
+.vb-morph__note { font: 400 12px/1.3 var(--kf-font-sans); color: var(--kf-ink); opacity: .5; }
+.vb-morph__perks { display: flex; flex-direction: column; gap: 14px; flex-shrink: 0; margin: 0 0 22px; padding: 0; list-style: none; }
+.vb-morph__perk { display: flex; align-items: baseline; gap: 14px; }
+.vb-morph__perk b { width: 52px; flex-shrink: 0; font: 700 22px/1 var(--kf-font-display); color: var(--kf-accent); }
+.vb-morph__perk span { font: 500 13px/1.3 var(--kf-font-sans); color: var(--kf-ink); opacity: .75; }
+.vb-morph__foot { display: flex; align-items: center; gap: 12px; flex-shrink: 0; padding-top: 18px; border-top: 1px solid color-mix(in srgb, var(--kf-ink) 10%, transparent); font: 600 12px var(--kf-font-sans); letter-spacing: .48px; text-transform: uppercase; color: var(--kf-ink); opacity: .6; }
+.vb-morph__list { display: flex; flex-direction: column; gap: 10px; width: 100%; margin: 6px 0 0; padding: 0; list-style: none; }
+.vb-morph__list li { display: flex; gap: 12px; align-items: baseline; font: 500 15px/1.35 var(--kf-font-sans); color: var(--kf-ink); }
+.vb-morph__list li::before { content: ""; flex-shrink: 0; width: 8px; height: 8px; border-radius: 50%; background: var(--kf-accent); transform: translateY(-1px); }
+
+/* Feature list panel — doesn’t grow like the original but slides in from outside on the right (panel width + 104px) in 460ms cubic-bezier(.22,1,.36,1) */
+.vb-sheet {
+  --panel-inset: 20px; --sheet-w: min(972px, calc(100vw - var(--panel-inset) * 2)); --sheet-h: calc(100dvh - var(--panel-inset) * 2); --content-top: 65px;
+  top: var(--panel-inset); right: var(--panel-inset); width: var(--sheet-w); height: var(--sheet-h); border-radius: 28px;
+  translate: calc(100% + var(--panel-inset) + 84px) 0; transition: translate var(--morph, 460ms) cubic-bezier(.22, 1, .36, 1);
+}
+.vb-sheet[data-state="open"] { top: var(--panel-inset); right: var(--panel-inset); width: var(--sheet-w); height: var(--sheet-h); border-radius: 28px; translate: 0; }
+.vb-sheet__content { position: absolute; inset: 0; box-sizing: border-box; display: grid; grid-template-columns: minmax(220px, 320px) minmax(0, 1fr); column-gap: clamp(32px, 7vw, 96px); padding-left: clamp(24px, 4.5vw, 58px); }
+.vb-sheet__close { position: absolute; top: 20px; right: 20px; }
+.vb-sheet__index { align-self: start; box-sizing: border-box; max-height: calc(var(--sheet-h) - var(--content-top) - 24px); margin-top: var(--content-top); padding: 4px; overflow-y: auto; scrollbar-width: none; border: 1px solid color-mix(in srgb, var(--site-white) 20%, transparent); border-radius: 8px; background: color-mix(in srgb, var(--kf-bg) 60%, transparent); }
+.vb-sheet__head { position: relative; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 7px 8px; border: 1px solid transparent; border-bottom-color: color-mix(in srgb, var(--kf-contrast-bg) 6%, transparent); border-radius: 0; background: none; color: var(--site-ui-ink); font: 500 13px/1.2 var(--kf-font-sans); cursor: pointer; }
+.vb-sheet__group[data-active] .vb-sheet__head { padding-block: 8px; border-color: color-mix(in srgb, var(--site-white) 20%, transparent); border-radius: 6px; color: var(--kf-accent); font-weight: 600; box-shadow: 0 2px 6px #0000001a; }
+.vb-sheet__group:not([data-active]) .vb-sheet__head:hover { color: var(--kf-ink); background: color-mix(in srgb, var(--kf-ink) 4%, transparent); }
+.vb-sheet__name, .vb-sheet__meta { position: relative; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.vb-sheet__count { font: 400 9px var(--kf-font-ui); opacity: .5; }
+.vb-sheet__caret { transform: rotate(-90deg); transition: transform .3s cubic-bezier(.22, 1, .36, 1); }
+.vb-sheet__group[data-active] .vb-sheet__caret { transform: none; }
+.vb-sheet__sections { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .34s cubic-bezier(.22, 1, .36, 1); }
+.vb-sheet__group[data-active] .vb-sheet__sections { grid-template-rows: 1fr; }
+.vb-sheet__inner { min-height: 0; overflow: hidden; }
+.vb-sheet__section { box-sizing: border-box; display: block; width: 100%; padding: 9px 8px 9px 22px; border: 0; border-bottom: 1px solid color-mix(in srgb, var(--kf-contrast-bg) 6%, transparent); background: none; color: var(--site-ui-ink); font: 400 13px/1.2 var(--kf-font-sans); text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.vb-sheet__section:hover { background: color-mix(in srgb, var(--kf-ink) 4%, transparent); }
+.vb-sheet__section[aria-current] { color: var(--kf-accent); }
+.vb-sheet__scroller { --bleed: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 70px; min-width: 0; height: var(--sheet-h); margin-left: calc(var(--bleed) * -1); padding: var(--content-top) clamp(24px, 6vw, 80px) 140px var(--bleed); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; outline: none; }
+.vb-sheet__copy { display: flex; flex-direction: column; gap: 45px; }
+.vb-sheet__intro { display: flex; flex-direction: column; gap: 5px; padding-bottom: 16px; border-bottom: 1px solid color-mix(in srgb, var(--kf-ink-soft) 20%, transparent); }
+.vb-sheet__intro-name { font: 600 13px/1.15 var(--kf-font-sans); color: var(--kf-accent); }
+.vb-sheet__intro-line { font: 400 14px/1.15 var(--kf-font-sans); color: var(--kf-ink-soft); }
+.vb-sheet__feature { display: flex; flex-direction: column; gap: 8px; }
+.vb-sheet__feature h3 { font: 700 20px/1.275 var(--kf-font-display); color: var(--kf-ink-soft); }
+.vb-sheet__feature p { max-width: 381px; font: 400 14px/1.275 var(--kf-font-sans); color: var(--kf-ink-soft); transition: color .3s; }
+.vb-sheet__feature[data-active] p { color: var(--kf-ink); }
+@media (max-width: 1024px) {
+  .vb-sheet__content { grid-template-columns: 1fr; grid-template-rows: auto 1fr; padding: 0 20px; }
+  .vb-sheet__index { display: flex; gap: 4px; max-height: none; margin: 60px 0 0; overflow: auto hidden; }
+  .vb-sheet__group { flex-shrink: 0; }
+  .vb-sheet__sections { display: none; }
+  .vb-sheet__scroller { height: auto; min-height: 0; margin-left: 0; padding: 32px 0 120px; }
+  .vb-sheet__feature p { max-width: none; font-size: 15px; line-height: 1.35; }
+}
+
+/* Video dialog — grows to 16:9 in the center of the screen */
+.vb-morph--video {
+  --video-w: min(1120px, calc(100vw - 40px), calc((100dvh - 80px) * 16 / 9)); --video-h: calc(var(--video-w) * 9 / 16);
+  overflow: visible; background: transparent; box-shadow: none; border-radius: var(--from-radius, 4px);
+}
+.vb-morph--video[data-state="open"] { top: calc((100% - var(--video-h)) / 2); right: calc((100% - var(--video-w)) / 2); width: var(--video-w); height: var(--video-h); border-radius: 12px; }
+.vb-morph__frame { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; box-shadow: var(--kf-shadow-lift); }
+.vb-morph__frame .vb-photo { position: absolute; inset: 0; }
+.vb-morph__play { position: absolute; inset: 0; margin: auto; width: 74px; height: 74px; border-radius: 50%; background: color-mix(in srgb, var(--kf-contrast-ink) 22%, transparent); }
+.vb-morph__play::after { content: ""; position: absolute; inset: 0; margin: auto; width: 0; height: 0; transform: translateX(3px); border-top: 12px solid transparent; border-bottom: 12px solid transparent; border-left: 19px solid var(--kf-contrast-ink); }
+.vb-morph__vclose {
+  position: absolute; right: 0; bottom: calc(100% + 6px); display: flex; justify-content: center; align-items: center; width: 32px; height: 32px; padding: 0;
+  border: 0; border-radius: 8px; color: var(--kf-contrast-ink); background: color-mix(in srgb, var(--kf-contrast-ink) 12%, transparent);
+  opacity: 0; cursor: pointer; transition: opacity .2s, background .15s;
+}
+.vb-morph--video[data-state="open"] .vb-morph__vclose { opacity: .85; transition-delay: calc(var(--morph, 460ms) * .6), 0s; }
+.vb-morph__vclose:hover { background: color-mix(in srgb, var(--kf-contrast-ink) 22%, transparent); }
+
+/* Logo burst — a black curtain covers for 4 seconds, then tile pieces burst out on the canvas */
+.vb-burst {
+  position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; opacity: 0; background: var(--kf-contrast-bg);
+  animation: vb-veil var(--burst-duration, 4s) linear forwards;
+}
+.vb-burst--hold { pointer-events: auto; animation-name: vb-veil-hold; }
+.vb-burst--hold[data-phase="leaving"] { animation: vb-veil-out var(--outro-out, .7s) linear forwards; }
+@keyframes vb-veil { 0% { opacity: 0; } 6% { opacity: 1; } 93% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes vb-veil-hold { 0% { opacity: 0; } 6%, 100% { opacity: 1; } }
+@keyframes vb-veil-out { from { opacity: 1; } to { opacity: 0; } }
+.vb-burst canvas { display: block; width: 100%; height: 100%; }
+.vb-burst__ghost { position: fixed; z-index: 1; animation: vb-ghost var(--burst-duration, 4s) linear forwards; }
+.vb-burst__ghost--early { animation-name: vb-ghost-early; }
+@keyframes vb-ghost { 0%, 50% { opacity: 1; transform: scale(1); } 66%, 100% { opacity: 0; transform: scale(1.28); } }
+@keyframes vb-ghost-early { 0%, 18% { opacity: 1; transform: scale(1); } 34%, 100% { opacity: 0; transform: scale(1.1); } }
+.vb-burst__outro {
+  position: fixed; inset: 0; z-index: 2; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 14px; padding: 24px;
+  text-align: center; opacity: 0; animation: vb-outro-in var(--outro-in, .6s) cubic-bezier(.2, .7, .3, 1) var(--outro-delay, 3.72s) forwards;
+}
+.vb-burst--hold[data-phase="leaving"] .vb-burst__outro { animation: vb-outro-out calc(var(--outro-out, .7s) * .55) linear forwards; }
+@keyframes vb-outro-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes vb-outro-out { from { opacity: 1; } to { opacity: 0; } }
+.vb-burst__title { font: 900 clamp(40px, 7vw, 88px)/.9024 var(--kf-font-display); letter-spacing: -.02em; text-transform: uppercase; color: var(--kf-contrast-ink); }
+.vb-burst__note { max-width: 34ch; font: 400 clamp(14px, 1.6vw, 18px)/1.4 var(--kf-font-sans); color: var(--kf-contrast-ink); opacity: .7; }
+
+/* Shared button — the original’s Brand purple button and brick button */
+.vb-btn-blurple {
+  box-sizing: border-box; display: flex; justify-content: center; align-items: center; gap: 10px; border-radius: 6px; text-decoration: none;
+  background: var(--site-blurple); box-shadow: inset 0 1px #fff6; transition: filter .15s; cursor: pointer;
+}
+.vb-btn-blurple:hover { filter: brightness(1.06); }
+.vb-btn-blurple:active { filter: brightness(.96); }
+.vb-btn-blurple:focus-visible { outline: 2px solid var(--kf-bg); outline-offset: 3px; }
+.vb-btn-blurple__label { font: 600 14px/1 var(--kf-font-sans); color: var(--kf-contrast-ink); white-space: nowrap; }
+.vb-badge { flex-shrink: 0; width: 27px; height: 21px; }
+
+@media (max-width: 1024px) {
+  .vb-morph:not(.vb-morph--video) { --panel-w: min(440px, calc(100vw - 32px)); --panel-h: min(640px, calc(100dvh - 32px)); }
+  .vb-morph:not(.vb-morph--video)[data-state="open"] { top: max(16px, calc((100dvh - var(--panel-h)) / 2)); right: max(16px, calc((100vw - var(--panel-w)) / 2)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vb-scrim, .vb-morph, .vb-morph__vclose { transition-duration: .01ms; transition-delay: 0s; }
+}

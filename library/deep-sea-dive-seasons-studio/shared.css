@@ -1,0 +1,270 @@
+/* Site-wide pieces — background stage, loading entrance, header row, depth scale, pill button, panel background, hidden panel.
+   The original does not scroll the document: sections overlap on a screen-fixed canvas, and wheel, push and arrow keys move between stops. */
+:root {
+  /* Seasonal accent colors — the original blends --accent between these five at each stop (prologue water blue · spring pink · summer orange · autumn maple · winter ice) */
+  --site-season-0: oklch(from var(--kf-accent) 0.858 0.065 calc(h - 144.4));
+  --site-season-1: var(--kf-accent);
+  --site-season-2: oklch(from var(--kf-accent) 0.834 0.125 calc(h + 69));
+  --site-season-3: oklch(from var(--kf-accent) 0.763 0.145 calc(h + 40.6));
+  --site-season-4: oklch(from var(--kf-accent) 0.887 0.078 calc(h - 135.9));
+  /* Per-season water tint and two colors of floating things (petals · fireflies · maple leaves · snow) — read by the world (world.js) */
+  --site-tint-0: oklch(from var(--kf-accent) 0.963 0.018 calc(h - 139.5));
+  --site-tint-1: oklch(from var(--kf-accent) 0.971 0.017 calc(h - 8.4));
+  --site-tint-2: oklch(from var(--kf-accent) 0.927 0.035 calc(h - 84.7));
+  --site-tint-3: oklch(from var(--kf-accent) 0.926 0.049 calc(h + 64.2));
+  --site-tint-4: oklch(from var(--kf-accent) 0.94 0.031 calc(h - 112.8));
+  --site-drift-0a: var(--kf-ink);
+  --site-drift-0b: oklch(from var(--kf-accent) 0.922 0.054 calc(h - 136));
+  --site-drift-1a: oklch(from var(--kf-accent) 0.941 0.033 calc(h - 1.6));
+  --site-drift-1b: var(--kf-accent);
+  --site-drift-2a: oklch(from var(--kf-accent) 0.95 0.153 calc(h + 124.7));
+  --site-drift-2b: oklch(from var(--kf-accent) 0.977 0.091 calc(h + 116));
+  --site-drift-3a: oklch(from var(--kf-accent) 0.593 0.193 calc(h + 33.4));
+  --site-drift-3b: oklch(from var(--kf-accent) 0.776 0.148 calc(h + 71.5));
+  --site-drift-4a: var(--kf-ink);
+  --site-drift-4b: oklch(from var(--kf-accent) 0.929 0.05 calc(h - 137.4));
+  /* Colors of the four blend pairs (flame, snow, maple, cherry blossom) */
+  --site-mix-0: oklch(from var(--kf-accent) 0.854 0.113 calc(h + 72));
+  --site-mix-1: oklch(from var(--kf-accent) 0.911 0.053 calc(h - 127));
+  --site-mix-2: oklch(from var(--kf-accent) 0.782 0.135 calc(h + 46));
+  --site-mix-3: oklch(from var(--kf-accent) 0.846 0.095 calc(h - 2.4));
+
+  --site-mist: color-mix(in oklab, var(--kf-ink) 62%, transparent);
+  --site-faint: color-mix(in oklab, var(--kf-ink) 20%, transparent);
+  --site-ink-92: var(--kf-ink-soft);
+  --site-ink-82: color-mix(in oklab, var(--kf-ink) 82%, transparent);
+  --site-ink-78: color-mix(in oklab, var(--kf-ink) 78%, transparent);
+  --site-ink-50: color-mix(in oklab, var(--kf-ink) 50%, transparent);
+  --site-ink-36: color-mix(in oklab, var(--kf-ink) 36%, transparent);
+  --site-ink-28: color-mix(in oklab, var(--kf-ink) 28%, transparent);
+  --site-ink-12: color-mix(in oklab, var(--kf-ink) 12%, transparent);
+  --site-ink-10: color-mix(in oklab, var(--kf-ink) 10%, transparent);
+  --site-shade: color-mix(in oklab, var(--kf-bg) 90%, transparent);
+  --site-shade-70: color-mix(in oklab, var(--kf-bg) 70%, transparent);
+  --site-pool: color-mix(in oklab, var(--kf-bg) 62%, transparent);
+  --site-glass: color-mix(in oklab, var(--kf-bg) 40%, transparent);
+  --site-chip: color-mix(in oklab, var(--kf-bg) 35%, transparent);
+  --site-deep: color-mix(in oklab, var(--kf-surface) 8%, var(--kf-bg));
+  --site-error: color-mix(in oklab, var(--kf-danger) 70%, var(--kf-ink));
+
+  --margin: clamp(22px, 3.6vw, 60px);
+  --lane: 112px;
+  --top: clamp(92px, 14vh, 140px);
+  --bottom: clamp(32px, 6.5vh, 68px);
+  --accent: var(--site-season-0);
+  color-scheme: dark;
+}
+
+html, body { overscroll-behavior: none; height: 100%; margin: 0; overflow: hidden; }
+html {
+  color: var(--kf-ink);
+  background: var(--kf-bg);
+  font-family: var(--kf-font-sans);
+  word-break: keep-all;
+  line-break: strict;
+  -webkit-font-smoothing: antialiased;
+}
+body { touch-action: none; min-width: 320px; color: var(--kf-ink); background: var(--kf-bg); font-family: var(--kf-font-sans); }
+::selection { color: var(--kf-bg); background: var(--accent); }
+:focus-visible { outline: 1px solid var(--accent); outline-offset: 5px; }
+p, h1, h2, h3 { margin: 0; font-weight: inherit; }
+
+.jb-defs { position: absolute; width: 0; height: 0; }
+.jb-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.jb-skip {
+  position: fixed; z-index: 200; top: 12px; left: 50%;
+  padding: 10px 16px; color: var(--kf-bg); background: var(--kf-ink); font-size: 13px;
+  transform: translate(-50%, -180%); transition: transform 0.24s;
+}
+.jb-skip:focus-visible { transform: translate(-50%); }
+.jb-stage { position: fixed; inset: 0; z-index: 0; display: block; width: 100%; height: 100%; }
+
+/* ── Type ───────────────────────────── */
+.jb-label {
+  display: flex; align-items: baseline; gap: 12px; margin-bottom: 22px;
+  color: var(--site-mist); font: 500 11.5px/1 var(--kf-font-sans); letter-spacing: 0.14em;
+  --line: 1;
+}
+.jb-label__season { color: var(--accent); font: 600 13px/1 var(--kf-font-mincho, var(--kf-font-display)); letter-spacing: 0; }
+.jb-label__season::after {
+  content: ""; display: inline-block; width: 22px; height: 1px; margin: 0 0 3px 12px; vertical-align: middle;
+  background: var(--site-faint); transform: scaleX(var(--line)); transform-origin: 0;
+}
+.jb-tagline { font: 400 clamp(54px, 7.2vw, 138px)/0.94 var(--kf-font-display); letter-spacing: -0.018em; }
+.jb-lede {
+  max-width: 30em;
+  font: 600 clamp(17px, 1.35vw, 21px)/1.95 var(--kf-font-mincho, var(--kf-font-display)); letter-spacing: 0.07em;
+  text-shadow: 0 0 20px var(--site-shade), 0 1px 3px var(--site-shade-70);
+}
+.jb-body {
+  max-width: 30em; color: var(--site-ink-92);
+  font: 500 14.5px/2.05 var(--kf-font-sans); letter-spacing: 0.05em;
+  text-shadow: 0 0 18px var(--site-shade), 0 1px 3px var(--site-shade-70);
+}
+.jb-body--hero { max-width: 30em; margin-top: 26px; }
+.jb-note { margin-top: 18px; color: var(--site-ink-78); font-size: 12.5px; letter-spacing: 0.1em; text-shadow: 0 0 14px var(--site-shade); }
+
+/* Text inside a section shifts differently at each depth — --drift is the distance from the station (station-dive writes it) */
+[data-depth] { transform: translate3d(0, calc(var(--drift, 0) * var(--d, 1) * -64px), 0); will-change: transform; }
+[data-depth="0.6"] { --d: 0.6; }
+[data-depth="0.8"] { --d: 0.8; }
+[data-depth="1"] { --d: 1; }
+[data-depth="1.2"] { --d: 1.2; }
+[data-depth="1.3"] { --d: 1.3; }
+[data-depth="1.4"] { --d: 1.4; }
+[data-depth="1.5"] { --d: 1.5; }
+
+/* ── Pill button ── */
+.jb-pill {
+  appearance: none; display: inline-flex; align-items: center; gap: 10px; padding: 12px 22px;
+  color: var(--kf-ink); background: none; border: 1px solid var(--site-ink-36); border-radius: var(--kf-radius-pill);
+  font: 500 12px/1 var(--kf-font-sans); letter-spacing: 0.12em; white-space: nowrap; cursor: pointer;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+}
+.jb-pill:hover { border-color: var(--kf-ink); }
+.jb-pill--solid { color: var(--kf-bg); background: var(--kf-ink); border-color: var(--kf-ink); }
+.jb-pill--solid:hover { background: var(--accent); border-color: var(--accent); }
+.jb-pill:disabled { opacity: 0.45; cursor: progress; }
+
+/* ── Loading entrance ───────────────────────────── */
+.jb-loader {
+  position: fixed; inset: 0; z-index: 100; overflow: hidden;
+  background: linear-gradient(var(--kf-raised) 0%, var(--kf-surface) 45%, var(--site-deep) 100%);
+  transition: opacity 0.7s 0.15s, visibility 0s linear 0.9s;
+}
+.jb-loader[data-done] { opacity: 0; visibility: hidden; pointer-events: none; }
+.jb-loader__name { position: absolute; top: 24px; left: var(--margin); font: 700 14px/1 var(--kf-font-mincho, var(--kf-font-display)); letter-spacing: 0.14em; white-space: pre; }
+.jb-loader__motif { position: absolute; inset: 0; width: 100%; height: 100%; }
+.jb-loader__count { position: absolute; transition: opacity 0.7s, transform 1.2s var(--kf-ease-out); }
+.jb-loader[data-ready] .jb-loader__count { opacity: 0.18; }
+.jb-loader[data-done] .jb-loader__count { opacity: 0; transform: translateY(12px); }
+.jb-loader__rule { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--site-ink-10); }
+.jb-loader__rule i { position: absolute; inset: 0; background: var(--kf-ink); transform: scaleX(0); transform-origin: 0; }
+.jb-loader[data-done] .jb-loader__rule { opacity: 0; transition: opacity 0.6s; }
+.jb-loader__stats {
+  position: absolute; right: var(--margin); bottom: var(--bottom); display: grid; gap: 10px; margin: 0;
+  color: var(--site-mist); font: 500 11px/1 var(--kf-font-sans); letter-spacing: 0.12em; font-variant-numeric: tabular-nums;
+  transition: opacity 0.7s;
+}
+.jb-loader__stats div { display: flex; justify-content: flex-end; gap: 18px; }
+.jb-loader__stats dt { color: var(--site-faint); }
+.jb-loader__stats dd { min-width: 11em; margin: 0; color: var(--kf-ink); text-align: right; }
+.jb-loader[data-done] .jb-loader__stats { opacity: 0; transform: translateY(12px); }
+.jb-loader__enter {
+  position: absolute; top: 50%; left: 50%; display: grid; justify-items: center;
+  opacity: 0; visibility: hidden; transform: translate(-50%, calc(8px - 50%));
+  transition: opacity 0.7s 0.15s, transform 0.9s var(--kf-ease-out) 0.15s, visibility 0s linear 0.9s;
+}
+.jb-loader[data-ready] .jb-loader__enter {
+  opacity: 1; visibility: visible; transform: translate(-50%, -50%);
+  transition: opacity 0.7s 0.15s, transform 0.9s var(--kf-ease-out) 0.15s, visibility;
+}
+.jb-loader[data-done] .jb-loader__enter { opacity: 0; }
+.jb-loader__choices { display: flex; gap: 10px; }
+
+/* ── Header row ───────────────────────────── */
+.jb-masthead {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 30;
+  display: flex; align-items: center; gap: clamp(18px, 3vw, 40px); padding: 24px var(--margin);
+  pointer-events: none; transition: opacity 0.9s;
+}
+.jb-masthead > * { pointer-events: auto; }
+body.is-loading .jb-masthead, body.is-loading .jb-hud { opacity: 0; }
+.jb-masthead__name { margin-right: auto; padding: 6px 0; font: 700 14px/1 var(--kf-font-mincho, var(--kf-font-display)); letter-spacing: 0.14em; white-space: pre; }
+.jb-masthead__nav { display: flex; gap: clamp(16px, 2.2vw, 30px); }
+.jb-masthead__nav a, .jb-toggle {
+  position: relative; padding: 6px 0; color: var(--site-mist);
+  font: 500 12px/1 var(--kf-font-sans); letter-spacing: 0.1em; transition: color 0.2s;
+}
+.jb-masthead__nav a:hover, .jb-masthead__nav a[aria-current] { color: var(--kf-ink); }
+.jb-masthead__nav a::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
+  background: var(--accent); transform: scaleX(0); transform-origin: 0; transition: transform 0.5s var(--kf-ease-out);
+}
+.jb-masthead__nav a[aria-current]::after { transform: scaleX(1); }
+.jb-toggle { display: flex; align-items: center; gap: 10px; background: none; border: 0; cursor: pointer; }
+.jb-toggle--motion[aria-pressed="false"] { color: var(--accent); }
+.jb-toggle:hover, .jb-toggle[aria-pressed="true"] { color: var(--kf-ink); }
+.jb-toggle__bars { display: flex; align-items: flex-end; gap: 2px; height: 10px; }
+.jb-toggle__bars i { width: 1.5px; height: 100%; background: currentColor; transform: scaleY(0.2); transform-origin: bottom; }
+
+/* ── Depth scale ───────────────────────────── */
+.jb-hud {
+  --progress: 0;
+  position: fixed; top: 50%; right: var(--margin); z-index: 25;
+  display: grid; justify-items: center; gap: 14px; pointer-events: none;
+  transform: translateY(-50%); transition: opacity 0.9s;
+}
+.jb-hud p { margin: 0; }
+.jb-hud__seasons { display: grid; gap: 12px; margin: 0; padding: 0; justify-items: center; }
+.jb-hud__seasons li { color: var(--site-faint); font: 600 13px/1 var(--kf-font-mincho, var(--kf-font-display)); transition: color 0.5s; writing-mode: vertical-rl; }
+.jb-hud__seasons li[aria-current] { color: var(--accent); }
+.jb-hud__rail { position: relative; width: 1px; height: clamp(56px, 11vh, 110px); background: var(--site-faint); }
+.jb-hud__rail i { position: absolute; inset: 0; background: var(--kf-ink); transform: scaleY(var(--progress)); transform-origin: top; }
+.jb-hud__depth { color: var(--site-mist); font: 500 10px/1 var(--kf-font-sans); letter-spacing: 0.08em; font-variant-numeric: tabular-nums; }
+
+/* ── Section (panel) ───────────────────────────── */
+.jb-panels { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
+.jb-panel {
+  position: absolute; inset: 0;
+  padding: var(--top) calc(var(--margin) + var(--lane)) var(--bottom) var(--margin);
+  visibility: hidden; opacity: 0; pointer-events: none;
+}
+.jb-panel a, .jb-panel button, .jb-panel form, .jb-panel input, .jb-panel textarea, .jb-panel .jb-service { pointer-events: auto; }
+.jb-panel::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(var(--pool, 55% 60% at 18% 82%), var(--site-pool), transparent 72%);
+}
+
+/* Curtain that briefly covers the screen when jumping far between works */
+.jb-cut-veil { position: fixed; inset: 0; z-index: 20; background: var(--kf-bg); opacity: 0; pointer-events: none; }
+
+/* ── Hidden section (after sending) — a circle opens from the pressed spot ───────────────────────────── */
+.jb-secret {
+  --x: 50%; --y: 70%;
+  position: fixed; inset: 0; z-index: 90; display: block; color: var(--kf-ink);
+  background: radial-gradient(120% 90% at 50% 120%, color-mix(in oklab, var(--kf-surface) 70%, var(--kf-bg)) 0%, var(--site-deep) 55%, var(--kf-bg) 100%);
+  clip-path: circle(0% at var(--x) var(--y));
+  transition: clip-path 1.4s var(--kf-ease-in-out);
+}
+.jb-secret[hidden] { display: none; }
+.jb-secret[data-open] { clip-path: circle(150% at var(--x) var(--y)); }
+.jb-secret__canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.jb-secret__body {
+  position: absolute; top: 50%; left: var(--margin); display: grid; justify-items: start; gap: 18px; max-width: 30em;
+  opacity: 0; transform: translateY(-50%); transition: opacity 0.8s 0.9s;
+}
+.jb-secret[data-open] .jb-secret__body { opacity: 1; }
+.jb-secret__title { margin: 0; font: 400 clamp(40px, 5vw, 84px)/1.05 var(--kf-font-display); outline: none; }
+.jb-secret__meta { position: absolute; right: var(--margin); bottom: var(--bottom); margin: 0; color: var(--site-mist); font: 500 11px/1 var(--kf-font-sans); letter-spacing: 0.16em; }
+
+@media (width <= 760px), (aspect-ratio <= 9/10) {
+  :root { --top: 80px; --bottom: max(24px, env(safe-area-inset-bottom)); --lane: 0px; }
+  .jb-masthead { padding-top: max(18px, env(safe-area-inset-top)); gap: 12px; }
+  .jb-masthead__name { font-size: 11px; letter-spacing: 0.1em; }
+  .jb-masthead__nav { gap: 12px; }
+  .jb-masthead__nav a { font-size: 10.5px; letter-spacing: 0.06em; }
+  .jb-toggle { position: fixed; left: var(--margin); bottom: var(--bottom); }
+  .jb-toggle__label { font-size: 10.5px; }
+  .jb-toggle--motion { left: calc(var(--margin) + 92px); }
+  .jb-hud { top: auto; bottom: var(--bottom); grid-auto-flow: column; align-items: center; gap: 12px; transform: none; }
+  .jb-hud__seasons { grid-auto-flow: column; gap: 10px; }
+  .jb-hud__seasons li { font-size: 12px; writing-mode: horizontal-tb; }
+  .jb-hud__rail, .jb-hud__depth { display: none; }
+  .jb-panel {
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: var(--top) var(--margin) calc(var(--bottom) + 40px);
+    background: linear-gradient(transparent 32%, color-mix(in oklab, var(--kf-bg) 50%, transparent) 55%, color-mix(in oklab, var(--kf-bg) 88%, transparent) 100%);
+  }
+  .jb-tagline { font-size: clamp(44px, 13.5vw, 72px); }
+  .jb-lede { font-size: 15.5px; }
+  .jb-body { font-size: 13.5px; line-height: 2; }
+  .jb-loader__stats { left: var(--margin); right: var(--margin); }
+  .jb-loader__stats div { justify-content: space-between; }
+  .jb-secret__body { top: auto; right: var(--margin); bottom: calc(var(--bottom) + 24px); transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-depth] { transform: none; }
+  .jb-secret, .jb-secret__body { transition: none; }
+}

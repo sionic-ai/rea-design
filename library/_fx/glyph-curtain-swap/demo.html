@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>glyph-curtain-swap — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 2; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .screen { display: grid; place-items: center; height: 70vh; font: var(--kf-weight-display) 64px/1 var(--kf-font-display); }
+  .screen[hidden] { display: none; }
+  .bar { display: flex; gap: 12px; padding: 20px; }
+  .bar button, .bar a { font: inherit; padding: 6px 14px; border: 1px solid var(--kf-line); background: var(--kf-surface); border-radius: var(--kf-radius-pill); cursor: pointer; color: inherit; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>glyph-curtain-swap</b> — Press ”Next section” and a text curtain covers with a smudge, then peels away to another section. Links move on by reloading the document. <span style="color:var(--kf-dim)">(After 1s one more curtain is added, and after 2.5s one drops out)</span></p>
+<div class="bar"><button type="button" id="next">Next section</button><a href="demo.html?again">Reopen the same document (pass the link)</a></div>
+<section class="screen" data-screen>Screen One</section>
+<section class="screen" data-screen hidden>Screen Two</section>
+<div id="curtain" data-fx="glyph-curtain-swap" data-fx-glyph-curtain-swap="links: on"></div>
+<div data-demo-remove data-fx="glyph-curtain-swap"></div>
+<template data-demo-late><div data-fx="glyph-curtain-swap" data-fx-glyph-curtain-swap="dur: 400"></div></template>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+const screens = [...document.querySelectorAll("[data-screen]")];
+let at = 0;
+document.getElementById("next").addEventListener("click", () => {
+  const c = document.getElementById("curtain");
+  c.dispatchEvent(new CustomEvent("fx:cover", { detail: { done: () => {
+    screens[at].hidden = true; at = (at + 1) % screens.length; screens[at].hidden = false;
+    c.dispatchEvent(new CustomEvent("fx:reveal"));
+  } } }));
+});
+setTimeout(() => document.querySelectorAll("template[data-demo-late]").forEach((t) => t.replaceWith(t.content.cloneNode(true))), 1000);
+setTimeout(() => document.querySelectorAll("[data-demo-remove]").forEach((n) => n.remove()), 2500);
+</script>
+</body>
+</html>

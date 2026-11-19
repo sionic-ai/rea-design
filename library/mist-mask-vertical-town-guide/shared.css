@@ -1,0 +1,366 @@
+/* Spans multiple pages: loader (fog curtain) · logo · menu button · drawer · vertical text · card · button · cloud · title · news strip · transit · route · footer.
+   In the original, 1rem at 1440 = Tie the html font size to the screen width so it comes to 10px and measure every dimension in rem — the same approach. */
+:root {
+  --site-paper: var(--kf-bg);
+  --site-beige: var(--kf-surface);
+  --site-cloud: var(--kf-raised);
+  --site-cloud-pale: color-mix(in oklab, var(--kf-raised) 60%, var(--kf-bg));
+  --site-cloud-white: color-mix(in oklab, var(--kf-on-accent) 70%, transparent);
+  --site-cloud-faint: color-mix(in oklab, var(--kf-on-accent) 35%, transparent);
+  --site-on-photo: oklch(from var(--kf-bg) 0.99 0.004 h);
+  --site-photo: color-mix(in oklab, var(--kf-contrast-bg) 82%, var(--kf-ink));
+  --site-photo-ink: color-mix(in oklab, var(--site-on-photo) 55%, transparent);
+  --site-shade: color-mix(in oklab, var(--kf-ink) 20%, transparent);
+  --site-shade-deep: color-mix(in oklab, var(--kf-ink) 30%, transparent);
+  --site-hilite: color-mix(in oklab, var(--kf-on-accent) 80%, transparent);
+  --site-ease: cubic-bezier(0.3, 0.015, 0.12, 1);
+  /* Fog and wave masks (alpha-only images) — kept as a data URI so the mask isn’t blocked even on file:// */
+  --site-mask-fog: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160' preserveAspectRatio='none'%3E%3Cdefs%3E%3Cfilter id='b' x='-20%' y='-20%' width='140%' height='140%'%3E%3CfeGaussianBlur stdDeviation='7'/%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url(%23b)'%3E%3Cpath d='m-20-20H180V170H150C146 140 140 118 142 92 128 84 112 78 104 64 96 50 86 46 70 50 52 54 40 40 26 38 12 36 2 34-20 40Z'/%3E%3C/g%3E%3C/svg%3E");
+  --site-mask-wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 250 625' preserveAspectRatio='none'%3E%3Cdefs%3E%3Cfilter id='b' x='-20%' y='-5%' width='140%' height='110%'%3E%3CfeGaussianBlur stdDeviation='9'/%3E%3C/filter%3E%3C/defs%3E%3Cpath filter='url(%23b)' d='m-30-30H150C175 20 160 60 120 85 105 110 150 135 140 165 128 190 150 205 170 228 150 250 120 265 160 300 185 330 150 355 130 380 120 410 160 430 165 460 150 490 120 505 145 540 160 570 150 600 155 655H-30Z'/%3E%3C/svg%3E");
+  --site-mask-wave-r: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 250 625' preserveAspectRatio='none'%3E%3Cdefs%3E%3Cfilter id='b' x='-20%' y='-5%' width='140%' height='110%'%3E%3CfeGaussianBlur stdDeviation='9'/%3E%3C/filter%3E%3C/defs%3E%3Cpath filter='url(%23b)' transform='matrix(-1 0 0 1 250 0)' d='m-30-30H150C175 20 160 60 120 85 105 110 150 135 140 165 128 190 150 205 170 228 150 250 120 265 160 300 185 330 150 355 130 380 120 410 160 430 165 460 150 490 120 505 145 540 160 570 150 600 155 655H-30Z'/%3E%3C/svg%3E");
+  --site-mask-vert: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 300' preserveAspectRatio='none'%3E%3Cdefs%3E%3Cfilter id='b' x='-5%' y='-20%' width='110%' height='140%'%3E%3CfeGaussianBlur stdDeviation='8'/%3E%3C/filter%3E%3C/defs%3E%3Cpath filter='url(%23b)' d='m-30-30H530V150C500 165 470 140 440 150 410 162 395 185 360 172 330 160 310 140 280 150 250 162 240 190 205 178 170 165 160 140 125 150 95 160 80 182 50 170 25 160 10 150-30 160Z'/%3E%3C/svg%3E");
+  --cols: 18;
+  --gap: 4rem;
+  --space: 2rem;
+}
+@media (max-width: 1023px) {
+  :root { --cols: 6; --gap: 2rem; --space: 1.5rem; }
+}
+
+html { font-size: min(clamp(0.625rem, 0.0625rem + 0.625vw, 0.6875rem), 0.6944vw); }
+@media (min-width: 1600px) { html { font-size: min(0.6875vw, 12.5px); } }
+@media (max-width: 1023px) { html { font-size: 2.6667vw; } }
+html[data-state="navOpen"] { overflow: hidden; }
+
+body {
+  background: var(--site-paper);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-size: 1.6rem;
+  font-weight: 500;
+  line-height: 1.7;
+  overscroll-behavior: none;
+}
+main { overflow-x: clip; }
+.ky-latin { font-family: var(--kf-font-latin, var(--kf-font-display)); }
+.ky-vert { writing-mode: vertical-rl; }
+
+/* Photo slot is a dusky misty color instead of gray — so the white vertical text reads like the original */
+.ky-photo { --wf-fill: var(--site-photo); --wf-line: color-mix(in oklab, var(--site-on-photo) 18%, transparent); --wf-fill-ink: var(--site-photo-ink); border: 0; }
+.wf-img { border: 0; }
+.wf-img::after { white-space: normal; max-width: 86%; text-align: center; line-height: 1.5; }
+.wf-img.ky-fill { position: absolute; inset: 0; height: 100%; }
+
+/* Paper noise — the original’s beige surface is a noise photo laid down, so only that feel is made anew */
+.ky-noise { position: relative; background-color: var(--site-beige); isolation: isolate; }
+.ky-noise::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: url("noise.svg") repeat; background-size: 240px; opacity: 0.22; mix-blend-mode: multiply;
+}
+
+.ky-grid {
+  display: grid; grid-template-columns: repeat(var(--cols), 1fr);
+  column-gap: var(--gap); padding-inline: var(--space);
+}
+.ky-grid > * { grid-column: var(--col, 1 / -1); grid-row: var(--row, auto); }
+
+/* ── Cloud (thin haze) — shared.js draws it into data-cloud ── */
+.ky-cloud { position: absolute; pointer-events: none; color: var(--site-cloud); }
+.ky-cloud svg { display: block; width: 100%; height: auto; overflow: visible; }
+.ky-cloud.is-pale { color: var(--site-cloud-pale); }
+.ky-cloud.is-white { color: var(--site-cloud-white); }
+.ky-draw { position: absolute; pointer-events: none; color: color-mix(in oklab, var(--kf-ink) 35%, transparent); }
+.ky-draw svg { display: block; width: 100%; height: auto; overflow: visible; }
+.ky-draw path { fill: none; stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; }
+
+/* ── Loader · page transition: the fog curtain lifts with a mask (original 1s, mask 300% 450%, 100% 0% → 50% 70%) ── */
+.ky-splash {
+  position: fixed; inset: 0; height: 100dvh; z-index: 99999; display: grid; place-items: center; overflow: hidden;
+  -webkit-mask: var(--site-mask-fog) no-repeat 100% 0% / 300% 450%;
+  mask: var(--site-mask-fog) no-repeat 100% 0% / 300% 450%;
+  transition: mask-position 1s var(--site-ease), -webkit-mask-position 1s var(--site-ease);
+}
+.ky-splash.isTransitionOut { -webkit-mask-position: 50% 70%; mask-position: 50% 70%; pointer-events: none; }
+.ky-splash.isTransitionIn { -webkit-mask-position: 100% 0%; mask-position: 100% 0%; scale: -1; pointer-events: all; }
+.ky-splash__lottie { position: absolute; inset: 0; margin: auto; }
+@media (max-width: 1023px) { .ky-splash__lottie { scale: 2.5; } }
+
+/* ── Logo: stamp shape plus vertical group name. Stays in the original top-right spot and scrolls away with the page ── */
+.ky-header { position: absolute; top: 5.4rem; right: 4.2rem; width: 13rem; z-index: 10; }
+.ky-logo { display: flex; align-items: flex-start; gap: 0.8rem; color: var(--kf-ink); }
+.ky-logo.is-light { color: var(--site-on-photo); }
+.ky-logo small { writing-mode: vertical-rl; font-size: 0.9rem; line-height: 1.2; letter-spacing: 0.1em; }
+.ky-logo svg { width: 9.6rem; flex: none; }
+.ky-stamp path, .ky-stamp circle { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.ky-stamp text { fill: currentColor; font: 700 15px/1 var(--kf-font-display); letter-spacing: 0.08em; }
+@media (max-width: 1023px) {
+  .ky-header { top: 2rem; right: 1.5rem; width: 10rem; }
+  .ky-logo svg { width: 7.4rem; }
+}
+
+/* ── Menu button: three dots + Menu/Close text swap, difference blend so it stays visible on any background ── */
+.ky-menubtn {
+  position: fixed; top: 5rem; left: 3rem; z-index: 99; width: 7rem; height: 3.6rem;
+  display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 0; background: none; cursor: pointer;
+  color: var(--site-on-photo); mix-blend-mode: difference;
+}
+.ky-menubtn .dots { height: 1.4rem; display: flex; flex-direction: column; justify-content: space-between; }
+.ky-menubtn .dot { width: 0.2rem; aspect-ratio: 1; border-radius: 50%; background: currentColor; }
+.ky-menubtn .text { display: grid; grid-template-areas: "t"; overflow: hidden; font-size: 1.6rem; line-height: 1.2; }
+.ky-menubtn .text span { grid-area: t; white-space: nowrap; transition: translate 0.3s var(--site-ease); }
+.ky-menubtn .close { translate: 0 100%; }
+[data-state="navOpen"] .ky-menubtn .open { translate: 0 -100%; }
+[data-state="navOpen"] .ky-menubtn .close { translate: 0 0; }
+@media (max-width: 1023px) { .ky-menubtn { top: auto; left: auto; right: 1.5rem; bottom: 2rem; } }
+
+/* ── Drawer: on PC the left 37.5rem slides out in 0.5s, on phone a vertical wave mask covers from the top in 1s ── */
+.ky-drawer-overlay { position: fixed; inset: 0; z-index: 77; background: var(--kf-ink); opacity: 0; pointer-events: none; transition: opacity 0.5s var(--site-ease); }
+[data-state="navOpen"] .ky-drawer-overlay { opacity: 0.3; pointer-events: all; }
+.ky-drawer {
+  position: fixed; z-index: 88; top: 0; left: 0; width: 37.5rem; height: 100dvh; overflow: hidden auto;
+  padding: 9rem 1.5rem 4rem; translate: -100% 0; transition: translate 0.5s var(--site-ease);
+  display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto 1fr auto; gap: 3rem 2rem;
+}
+[data-state="navOpen"] .ky-drawer { translate: 0 0; }
+.ky-drawer__logo { grid-column: 2; grid-row: 1; width: 11rem; margin-top: -6rem; }
+.ky-drawer__nav { grid-column: 1; grid-row: 1; display: flex; flex-direction: row-reverse; justify-content: flex-start; align-self: start; gap: 0.2rem; }
+.ky-drawer__nav a { writing-mode: vertical-rl; font-size: 1.4rem; line-height: 1; padding: 1rem 0.5rem; }
+.ky-drawer__news { grid-column: 1 / -1; grid-row: 2; align-self: center; border-top: 1px solid var(--kf-line); padding-top: 1.6rem; }
+.ky-drawer__news dt { font: 500 1.5rem/1.3 var(--kf-font-latin, var(--kf-font-display)); margin-bottom: 0.8rem; }
+.ky-drawer__news a { display: grid; grid-template-columns: 8rem 1fr; gap: 1rem; font-size: 1.2rem; padding-block: 0.6rem; }
+.ky-drawer__news time { font-family: var(--kf-font-latin, var(--kf-font-display)); color: var(--kf-dim); }
+.ky-drawer__copy { grid-column: 1; grid-row: 3; display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 1.2rem; height: 17rem; font-size: 1.8rem; line-height: 1.2; }
+.ky-drawer__copy span { writing-mode: vertical-rl; letter-spacing: 0.16em; }
+.ky-drawer__copy span:nth-child(2) { margin-top: 2.4rem; }
+.ky-drawer__copy span:nth-child(3) { margin-top: 4.8rem; }
+.ky-drawer .ky-cloud { z-index: -1; }
+@media (max-width: 1023px) {
+  .ky-drawer {
+    inset: 0; width: auto; translate: none; pointer-events: none; padding: 2rem 1.5rem 9rem;
+    -webkit-mask: var(--site-mask-vert) no-repeat 15% 100% / 500% 300%;
+    mask: var(--site-mask-vert) no-repeat 15% 100% / 500% 300%;
+    transition: mask-position 1s var(--site-ease), -webkit-mask-position 1s var(--site-ease);
+  }
+  [data-state="navOpen"] .ky-drawer { translate: none; -webkit-mask-position: 30% 0%; mask-position: 30% 0%; pointer-events: all; }
+  .ky-drawer { padding-top: 7rem; }
+  .ky-drawer__logo { width: 9rem; margin-top: -4rem; }
+}
+
+/* ── Underline: horizontal links erase from right to left then redraw from the left, vertical links go top to bottom (0.2s) ── */
+.ky-line {
+  background-image: linear-gradient(currentColor, currentColor); background-repeat: no-repeat;
+  background-size: 0% 1px; background-position: bottom right; transition: background-size 0.2s var(--site-ease);
+}
+a:hover .ky-line, a.ky-line:hover { background-size: 100% 1px; background-position: bottom left; }
+.ky-vline {
+  background-image: linear-gradient(currentColor, currentColor); background-repeat: no-repeat;
+  background-size: 1px 0%; background-position: bottom right; transition: background-size 0.2s var(--site-ease);
+}
+a:hover .ky-vline, a.ky-vline:hover { background-size: 1px 100%; background-position: top right; }
+
+/* ── Button: vertical pill (4.5 × 12.5rem) and horizontal pill. The original hover fills the background and flips the text (0.3s) ── */
+.ky-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.8rem;
+  border: 1px solid currentColor; border-radius: 1rem; color: var(--kf-ink); background: transparent;
+  font-size: 1.5rem; line-height: 1.1; letter-spacing: 0.02em;
+  transition: background-color 0.3s var(--site-ease), color 0.3s var(--site-ease), border-color 0.3s var(--site-ease);
+}
+.ky-btn.is-vert { width: 4.5rem; height: 12.5rem; writing-mode: vertical-rl; }
+.ky-btn.is-hrzn { width: 14.5rem; height: 4.1rem; }
+@media (max-width: 1023px) { .ky-btn.is-vert { width: 4rem; height: 10rem; } .ky-btn.is-hrzn { width: 12.7rem; height: 3.4rem; } }
+.ky-btn.is-light { color: var(--site-on-photo); }
+.ky-btn::after { content: ""; width: 0.6rem; height: 0.6rem; border: solid currentColor; border-width: 1px 1px 0 0; rotate: 45deg; }
+.ky-btn.is-vert::after { rotate: 135deg; }
+@media (hover: hover) and (min-width: 1024px) {
+  .ky-btn:hover { background-color: var(--site-hilite); }
+  .ky-btn.is-light:hover { color: var(--kf-ink); border-color: var(--site-hilite); }
+  /* Default button on paper (original primary) flips to a dark panel with white text */
+  .ky-btn.is-dark:hover { background-color: var(--kf-ink); color: var(--site-on-photo); }
+}
+
+/* ── Card: the photo is revealed by a vertical wave mask (1.2s) and the text follows at 0.4s. A vertical tag pill sits on the photo ── */
+.ky-post { position: relative; padding-top: 1rem; }
+.ky-post__link { display: block; position: relative; }
+.ky-post__eye { overflow: hidden; position: relative; }
+.ky-post__eye .wf-img { height: 100%; }
+@media (min-width: 1024px) {
+  .ky-post__eye .wf-img {
+    opacity: 0;
+    -webkit-mask: var(--site-mask-vert) no-repeat 15% 100% / 400% 300%;
+    mask: var(--site-mask-vert) no-repeat 15% 100% / 400% 300%;
+    transition: opacity 0.7s var(--site-ease), mask-position 1.2s var(--site-ease), -webkit-mask-position 1.2s var(--site-ease);
+  }
+  .ky-post.isActive .ky-post__eye .wf-img { opacity: 1; -webkit-mask-position: 30% 0%; mask-position: 30% 0%; }
+  .ky-post__meta { opacity: 0; transition: opacity 0.4s var(--site-ease); }
+  .ky-post.isActive .ky-post__meta { opacity: 1; }
+}
+.ky-post__tags { position: absolute; left: 1rem; top: 0; z-index: 1; display: flex; gap: 1rem; }
+.ky-post__tag {
+  writing-mode: vertical-rl; width: 2.7rem; padding: 1rem 0.6rem; border-radius: 1.5rem;
+  font-size: 1.2rem; line-height: 1.1; letter-spacing: 0.02em; color: var(--kf-dim);
+  position: relative; isolation: isolate; overflow: hidden; background: var(--site-paper);
+}
+/* The original tag is a pill laid with a nearly white paper-grain image — no border, just faint noise */
+.ky-post__tag::after { content: ""; position: absolute; inset: 0; z-index: -1; background: url("noise.svg") repeat; background-size: 240px; opacity: 0.08; mix-blend-mode: multiply; }
+.ky-post__title { margin-top: 1rem; font-size: 1.6rem; line-height: 1.5; font-weight: 700; letter-spacing: 0.02em; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.ky-post__sub { margin-top: 0.4rem; font-size: 1rem; line-height: 1.3; color: var(--kf-dim); }
+.ky-post__date { display: flex; gap: 1.4rem; align-items: baseline; margin-top: 1.2rem; font-size: 1.2rem; }
+.ky-post__date time { font-family: var(--kf-font-latin, var(--kf-font-display)); font-size: 1.3rem; color: var(--kf-dim); }
+.ky-post__date span { font-family: var(--kf-font-latin, var(--kf-font-display)); color: var(--kf-accent-text); }
+.ky-post.is-onphoto, .ky-post.is-onphoto .ky-post__sub, .ky-post.is-onphoto time { color: var(--site-on-photo); }
+
+/* Four-card row: even columns are offset down by 6.7rem */
+.ky-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8rem 6rem; }
+.ky-cards > .ky-post:nth-child(even) { margin-top: 6.7rem; }
+.ky-cards .ky-post__eye { aspect-ratio: 1; }
+@media (max-width: 1023px) {
+  .ky-cards { grid-template-columns: repeat(2, 1fr); gap: 1rem var(--gap); }
+  .ky-cards > .ky-post:nth-child(even) { margin-top: 4rem; }
+  .ky-cards .ky-post__title { font-size: 1.3rem; }
+}
+
+/* ── Subpage header: vertical title in the center + English label, two clouds behind (parallax -10%) ── */
+.ky-title { position: relative; display: flex; flex-direction: row-reverse; justify-content: center; gap: 3rem; padding-top: 14rem; min-height: 46rem; }
+.ky-title h1 { writing-mode: vertical-rl; font-size: 4rem; line-height: 1.1; letter-spacing: 0.1em; font-weight: 500; }
+.ky-title p { writing-mode: vertical-rl; color: var(--kf-dim); font: 500 2rem/1 var(--kf-font-latin, var(--kf-font-display)); letter-spacing: 0.1em; margin-top: 1rem; }
+.ky-title .ky-cloud { z-index: -1; }
+@media (max-width: 1023px) { .ky-title { padding-top: 11rem; min-height: 38rem; } .ky-title h1 { font-size: 3rem; } .ky-title p { font-size: 1.5rem; } }
+
+/* ── Breadcrumb (vertical at bottom left, difference) — original m-breadcrumb ── */
+.ky-crumb {
+  position: sticky; left: 4.7rem; bottom: 0; z-index: 77; width: fit-content; height: 0; overflow: visible;
+  color: var(--site-on-photo); mix-blend-mode: difference;
+}
+.ky-crumb ol { position: absolute; bottom: 2rem; left: 0; display: flex; flex-direction: row; align-items: center; gap: 0.8rem; writing-mode: vertical-rl; white-space: nowrap; font-size: 1.2rem; letter-spacing: 0.08em; }
+.ky-crumb li { display: flex; flex-direction: row; align-items: center; gap: 0.8rem; }
+.ky-crumb li + li::before { content: ""; display: block; width: 1px; height: 1.6rem; background: currentColor; }
+@media (max-width: 1023px) { .ky-crumb { left: 1.5rem; } .ky-crumb ol { font-size: 1rem; } }
+
+/* ── News strip: vertical heading over a dark photo + three cards (8rem gap) + horizontal button. Photo at 1.15x for parallax ── */
+.ky-info { position: relative; z-index: 1; padding: 11.2rem 0 8.5rem; overflow: hidden; color: var(--site-on-photo); }
+.ky-info__bg { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
+.ky-info__bg .wf-img { position: absolute; inset: 0; height: 100%; }
+/* Parallax photo: original parallaxBg — scaled 1.15x with the bottom as axis, and moves down by the spare height (0.15x) while passing */
+[data-plx-bg] > .wf-img { scale: 1.15; transform-origin: bottom; will-change: transform; }
+.ky-info__bg::before { content: ""; position: absolute; inset: 0; z-index: 1; background: var(--site-shade); }
+.ky-info__head { --col: 2 / span 2; --row: 1; display: flex; flex-direction: row-reverse; justify-content: center; gap: 1.5rem; }
+.ky-info__head h2 { writing-mode: vertical-rl; font-size: 3rem; line-height: 1.1; letter-spacing: 0.1em; font-weight: 500; }
+.ky-info__head p { writing-mode: vertical-rl; font: 500 1.6rem/1 var(--kf-font-latin, var(--kf-font-display)); letter-spacing: 0.1em; }
+.ky-info__post { --col: 5 / span 10; --row: 1; }
+.ky-info__list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8rem; }
+.ky-info__list .ky-post__eye { aspect-ratio: 11 / 9; }
+.ky-info .ky-btn { margin: 6rem auto 0; display: flex; }
+.ky-info.is-paper { color: var(--kf-ink); }
+@media (max-width: 1023px) {
+  .ky-info__head { --col: 1 / span 1; }
+  .ky-info__post { --col: 2 / -1; }
+  .ky-info__list { grid-template-columns: 1fr 1fr; gap: 3rem 2rem; }
+  .ky-info__list > :nth-child(3) { display: none; }
+}
+
+/* ── Access: each branch has a vertical arrow line + a hand-drawn route map on the right (the map changes when a branch reaches screen center) ── */
+.ky-access__head { display: flex; flex-direction: row-reverse; justify-content: center; gap: 1.5rem; }
+.ky-access__head h2 { writing-mode: vertical-rl; font-size: 4rem; line-height: 1.1; letter-spacing: 0.1em; font-weight: 500; }
+.ky-access__head p { writing-mode: vertical-rl; font: 500 2rem/1 var(--kf-font-latin, var(--kf-font-display)); letter-spacing: 0.1em; color: var(--kf-dim); }
+.ky-access__lead { margin-top: 6rem; text-align: center; font-size: 1.4rem; line-height: 2.2; }
+.ky-access { margin-top: 10rem; }
+.ky-access__routes { --col: 2 / span 6; }
+.ky-access__map { --col: 8 / span 10; }
+.ky-route + .ky-route { margin-top: 14rem; }
+.ky-route h3 { font-size: 2rem; font-weight: 500; padding-bottom: 2rem; border-bottom: 1px solid var(--kf-line); width: 60%; }
+.ky-route__way { margin-top: 3rem; padding-bottom: 3rem; border-bottom: 1px solid var(--kf-line); font-size: 1.3rem; line-height: 1.6; }
+.ky-route__way p { margin-block: 0.4rem; }
+.ky-route__way .arw { display: inline-block; width: 2rem; color: var(--kf-ink-soft); }
+.ky-route__way .tag { display: inline-block; margin-top: 0.6rem; padding: 0.2rem 0.6rem; background: var(--kf-ink); color: var(--site-paper); font-size: 1.2rem; }
+.ky-map { position: sticky; top: 10vh; }
+.ky-map svg { width: 100%; height: auto; display: block; }
+.ky-map .rail { fill: none; stroke: var(--kf-ink-soft); stroke-width: 1.4; stroke-dasharray: 4 4; }
+.ky-map .road { fill: none; stroke: color-mix(in oklab, var(--kf-accent) 60%, var(--site-paper)); stroke-width: 6; stroke-linejoin: round; stroke-linecap: round; }
+.ky-map .node rect { fill: var(--site-paper); stroke: var(--kf-line); }
+.ky-map .node text { fill: var(--kf-ink); font: 500 10px/1 var(--kf-font-sans); }
+.ky-map .town { fill: var(--kf-accent); }
+.ky-map .town-label rect { fill: var(--kf-ink); }
+.ky-map .town-label text { fill: var(--site-paper); font: 500 11px/1 var(--kf-font-sans); }
+.ky-map [data-map-layer] { transition: opacity 0.5s var(--site-ease); }
+.ky-map[data-current-map="car"] [data-map-layer="train"], .ky-map[data-current-map="train"] [data-map-layer="car"] { opacity: 0; }
+@media (max-width: 1023px) {
+  .ky-access__routes, .ky-access__map { --col: 1 / -1; }
+  .ky-access__map { --row: 1; margin-bottom: 4rem; }
+  .ky-map { position: static; }
+  .ky-route h3 { width: 100%; }
+  .ky-access__lead { text-align: left; font-size: 1.3rem; }
+}
+
+/* ── Footer: vertical copy over the photo (split text) → beige panel (contact · vertical sitemap · logo · banner strip) ── */
+.ky-footer { overflow: hidden; }
+.ky-footer__copy { position: relative; height: min(55.5556vw, max(100vh, 80rem)); }
+.ky-footer__bg { position: absolute; inset: 0; overflow: hidden; }
+.ky-footer__bg > .wf-img { position: absolute; inset: 0; height: 100%; }
+.ky-footer__copy p {
+  position: absolute; inset: 0; z-index: 2; margin: auto; display: flex; flex-direction: row-reverse; justify-content: center;
+  column-gap: 1.8056vw; height: 20.8333vw; font-size: 2.3611vw; line-height: 1.2; color: var(--site-on-photo);
+}
+.ky-footer__copy p > span { display: block; writing-mode: vertical-rl; letter-spacing: 0.16em; }
+.ky-footer__copy p > span:first-child { margin-bottom: auto; }
+.ky-footer__copy p > span:nth-child(2) { margin-top: auto; margin-bottom: auto; }
+.ky-footer__copy p > span:last-child { margin-top: auto; margin-bottom: -0.5lh; }
+.ky-footer__copy p > span > span { display: inline-block; }
+/* Four clouds — original l-footer__copy-mat spot (1440-based px using the smaller of vw·svh) */
+.ky-footer__mat { position: absolute; z-index: 2; width: var(--w); top: var(--t); left: var(--l, auto); right: var(--r, auto); pointer-events: none; }
+.ky-footer__mat > .ky-cloud { position: relative; display: block; width: 100%; }
+.ky-footer__mat.is-mat-01 { --w: min(33.75vw, 60.75rem); --t: min(28.6111vw, 45.7778svh); --l: min(-4.0972vw, -6.5556svh); }
+.ky-footer__mat.is-mat-02 { --w: min(24.375vw, 43.875rem); --t: min(24.375vw, 39svh); --r: min(-8.4028vw, -13.4444svh); }
+.ky-footer__mat.is-mat-03 { --w: min(36.4583vw, 65.625rem); --t: min(42.1528vw, 67.4444svh); --r: min(-1.5278vw, -2.4444svh); }
+.ky-footer__mat.is-mat-04 { --w: min(38.6806vw, 69.625rem); --t: min(44.7222vw, 71.5556svh); --r: min(-8.4028vw, -13.4444svh); }
+.ky-footer__inner { position: relative; padding-top: 2rem; padding-bottom: 3rem; row-gap: 0; }
+.ky-footer__cta { --col: 2 / span 3; --row: 1; margin-left: calc(var(--gap) * -1); }
+.ky-footer__cta dt { margin-top: 6rem; font-size: 1.2rem; line-height: 1.3; }
+.ky-footer__cta dt::before { content: "·"; }
+.ky-footer__cta dt + dd { margin: 0.4rem 0 0; }
+.ky-footer__tel { display: inline-block; padding-top: 0.25em; font-size: 2rem; line-height: 1; }
+.ky-footer__cap { display: block; margin-top: 0.4rem; font-size: 0.9rem; color: var(--kf-dim); }
+.ky-footer__contact a {
+  display: flex; align-items: center; justify-content: center; width: 19.6rem; height: 3.3rem; margin-top: 0.8rem;
+  border: 1px solid var(--kf-ink); border-radius: 0.4rem; font-size: 1.6rem; transition: color 0.3s var(--site-ease), background-color 0.3s var(--site-ease);
+}
+.ky-footer__contact a:hover { background: var(--kf-ink); color: var(--site-paper); }
+.ky-footer__company { margin-top: 6rem; font-size: 0.9rem; line-height: 1.6; }
+.ky-footer__copyright { margin-top: 1.1rem; font-size: 0.9rem; color: var(--kf-dim); }
+.ky-footer__sitemap { --col: span 3 / -5; --row: 1; margin-top: 6rem; display: flex; flex-direction: row-reverse; gap: 0.2rem; }
+.ky-footer__sitemap a { writing-mode: vertical-rl; font-size: 1.4rem; line-height: 1; padding: 1rem 0.5rem; }
+.ky-footer__sitemap .is-sub a { font-size: 1.2rem; color: var(--kf-ink-soft); }
+.ky-footer__sitemap ul { display: flex; flex-direction: row-reverse; }
+.ky-footer__sitemap ul + ul { margin-right: 2rem; }
+.ky-footer__logo { --col: span 2 / -2; --row: 1; margin-top: 6rem; }
+.ky-footer__sns { --col: span 3 / -1; --row: 2; display: flex; justify-content: flex-end; gap: 1.6rem; align-self: end; margin-top: 4rem; }
+.ky-footer__sns a { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; transition: opacity 0.3s var(--site-ease); }
+.ky-footer__sns a:hover { opacity: 0.5; }
+.ky-footer__sns svg { width: 1.4rem; height: 1.4rem; fill: currentColor; }
+/* Banner band: original Swiper (fBbr) — 122rem frame, each slide 60rem (1200:206) · 2rem on the right, continuing visibly outside the frame */
+.ky-footer__bnr { --row: 3; width: 122rem; margin-inline: auto; margin-top: 2rem; }
+.ky-footer__bnr .swiper { overflow: inherit !important; }
+.ky-footer__bnr .swiper-slide { width: auto; max-width: 60rem; margin-right: 2rem; }
+.ky-footer__bnr .wf-img { width: 60rem; max-width: 100%; aspect-ratio: 1200 / 206; }
+.ky-footer .ky-draw { z-index: -1; }
+.ky-footer .ky-cloud { z-index: -1; }
+@media (max-width: 1023px) {
+  .ky-footer__copy { height: 60rem; }
+  .ky-footer__copy p { height: 40rem; font-size: 2.4rem; column-gap: 1.6rem; }
+  .ky-footer__cta { --col: 1 / span 4; --row: 2; margin-left: 0; }
+  .ky-footer__sitemap { --col: 1 / span 4; --row: 1; justify-content: flex-start; }
+  .ky-footer__logo { --col: 5 / -1; --row: 1; }
+  .ky-footer__sns { --col: 5 / -1; --row: 2; }
+  .ky-footer__bnr { width: auto; margin-top: 4rem; }
+  .ky-footer__bnr .swiper-slide { max-width: 30rem; margin-right: 1rem; }
+  .ky-footer__bnr .wf-img { width: 30rem; }
+  .ky-footer__mat.is-mat-01 { --w: 28rem; --t: 8.6rem; --l: -4.7rem; }
+  .ky-footer__mat.is-mat-02 { display: none; }
+  .ky-footer__mat.is-mat-03 { --w: 30.3rem; --t: 43.1rem; --l: 15.4rem; --r: auto; }
+  .ky-footer__mat.is-mat-04 { --w: 32.1rem; --t: 46rem; --l: 19.2rem; --r: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ky-splash { display: none; }
+  .ky-post__eye .wf-img { opacity: 1 !important; -webkit-mask: none !important; mask: none !important; }
+  .ky-post__meta { opacity: 1 !important; }
+}

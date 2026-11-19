@@ -1,0 +1,375 @@
+/* Frame shared by several pages — header row (white/green following the scene color) · online store button spinning as a cube · phone menu panel · subpage header · numbered section title ·
+   ON/OFF scene list · product stage promo · four page link cells · green footer · page transition (body, footer and canvas vanish and reappear over .5s). Values are 1440 original px. */
+
+html { -webkit-font-smoothing: antialiased; }
+body {
+  --wf-bg: var(--kf-surface);
+  --wf-fill: oklch(from var(--kf-raised) calc(l * 0.9623) calc(c * 0.7782) calc(h - 7.87));
+  --wf-line: oklch(from var(--kf-raised) calc(l * 0.8953) calc(c * 1.3641) calc(h - 9.67));
+  --wf-fill-ink: oklch(from var(--kf-ink-soft) calc(l * 1.1239) calc(c * 0.6048) calc(h - 9.41));
+  background: var(--kf-surface);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-size: 14px;
+  line-height: 2;
+  letter-spacing: 0.04em;
+}
+.en { font-family: var(--kf-font-display); letter-spacing: 0; }
+.pc-only { display: block; }
+.sp-only { display: none; }
+@media (max-width: 767px) {
+  .pc-only { display: none !important; }
+  .sp-only { display: block; }
+}
+main, .o-footer, #webgl { transition: opacity 0.5s var(--kf-ease-out); }
+body.on-transition main, body.on-transition .o-footer { opacity: 0; }
+body.on-transition #webgl { opacity: 0; transition-duration: 0.2s; }
+.wf-img { border: 0; }
+
+/* ── Headline ── */
+.o-header {
+  --hc: var(--kf-accent);
+  --nc: var(--kf-ink);
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 100;
+  pointer-events: none;
+}
+.o-header[data-color="white"] { --hc: var(--kf-on-accent); --nc: var(--kf-on-accent); }
+.o-header__in { position: relative; display: flex; justify-content: space-between; align-items: flex-end; height: 61px; padding: 0 10px 0 34px; }
+.o-logo {
+  pointer-events: auto;
+  align-self: center;
+  margin-top: 8px;
+  color: var(--hc);
+  font: 600 30px/1 var(--kf-font-display);
+  letter-spacing: -0.02em;
+  transition: color 0.5s var(--kf-ease-out);
+}
+.o-nav { position: absolute; left: 50%; top: 36px; transform: translateX(-50%); }
+.o-nav ul { display: flex; gap: 30px; }
+.o-nav a {
+  pointer-events: auto;
+  color: var(--nc);
+  font: 400 15px/1.2 var(--kf-font-display);
+  white-space: nowrap;
+  transition: color 0.5s var(--kf-ease-out), opacity 0.3s var(--kf-ease-out);
+}
+.o-nav a:hover { opacity: 0.5; }
+.o-nav a.is-current { opacity: 0.5; }
+.o-header[data-color="green"] .o-store:hover { filter: brightness(1.1); }
+.o-store { transition: filter 1s var(--kf-ease-out); }
+.o-store { pointer-events: auto; position: relative; width: 175px; height: 51px; align-self: flex-start; margin-top: 10px; perspective: 1000px; }
+.o-menu-btn { display: none; }
+
+/* Cube button: a box with front (green) and back (dark green) faces attached rolls 180° on the x axis on hover so the back stands up (motion is in shared.js) */
+.o-cube, .o-cube__depth, .o-cube__in { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; }
+.o-cube__face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 10px 6px;
+  background: var(--kf-accent);
+  color: var(--kf-on-accent);
+  font: 400 15px/1.2 var(--kf-font-display);
+  backface-visibility: hidden;
+}
+.o-cube__face.is-top { background: var(--kf-contrast-bg); }
+.o-header[data-color="white"] .o-cube__face.is-front { background: var(--kf-surface); color: var(--kf-accent); }
+.o-header[data-color="white"] .o-cube__face.is-front::after { border-color: var(--kf-accent); box-shadow: -3px 3px 0 -1.5px var(--kf-on-accent), -3px 3px 0 0 var(--kf-accent); }
+.o-cube__face::after {
+  content: "";
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid var(--kf-on-accent);
+  box-shadow: -3px 3px 0 -1.5px var(--kf-accent), -3px 3px 0 0 var(--kf-on-accent);
+}
+.o-cube__face.is-top::after { box-shadow: -3px 3px 0 -1.5px var(--kf-contrast-bg), -3px 3px 0 0 var(--kf-on-accent); }
+
+/* Phone menu sheet: white card dropping from the Menu button position · green links in the center · × at the bottom */
+.o-drawer {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 101;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  width: 240px;
+  padding: 14px 20px 18px;
+  background: var(--kf-surface);
+  color: var(--kf-accent);
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: opacity 0.3s var(--kf-ease-out), transform 0.3s var(--kf-ease-out), visibility 0.3s;
+}
+.o-drawer.is-open { opacity: 1; visibility: visible; transform: none; }
+.o-drawer__label { font: 400 12px/1 var(--kf-font-display); }
+.o-drawer ul { display: grid; gap: 12px; margin: 40px 0 14px; font: 400 26px/1.15 var(--kf-font-display); }
+.o-drawer a.is-current { opacity: 0.35; }
+.o-drawer .o-drawer__store { display: inline-flex; align-items: center; gap: 6px; font: 400 26px/1.2 var(--kf-font-display); }
+.o-drawer .o-drawer__store::after { content: ""; width: 8px; height: 8px; border: 1.5px solid currentColor; }
+.o-drawer__close { position: relative; width: 24px; height: 24px; margin-top: 26px; border: 0; background: none; cursor: pointer; }
+.o-drawer__close::before, .o-drawer__close::after { content: ""; position: absolute; left: 6px; top: 11px; width: 12px; height: 1.5px; background: var(--kf-accent); transform: rotate(45deg); }
+.o-drawer__close::after { transform: rotate(-45deg); }
+
+@media (max-width: 767px) {
+  .o-header__in { height: 45px; padding: 0 10px 0 16px; }
+  .o-logo { font-size: 22px; margin-top: 0; }
+  .o-nav, .o-store { display: none; }
+  .o-menu-btn {
+    pointer-events: auto;
+    display: flex;
+    align-items: flex-end;
+    width: 108px;
+    height: 45px;
+    margin-top: 10px;
+    padding: 0 10px 6px;
+    border: 0;
+    background: var(--kf-accent);
+    color: var(--kf-on-accent);
+    font: 400 13px/1 var(--kf-font-display);
+    cursor: pointer;
+  }
+  .o-drawer { display: flex; }
+  .o-header[data-color="white"] .o-menu-btn { background: var(--kf-surface); color: var(--kf-accent); }
+}
+
+/* ── Sub-page header: numbered index at top right + very large ‹/ Title› at bottom left + arrow under the circle ── */
+.o-kv { position: relative; height: 730px; padding: 0 34px; overflow: hidden; }
+.o-kv[data-hero="white"] { background: var(--kf-surface); color: var(--kf-accent); }
+.o-kv[data-hero="green"] { background: var(--kf-accent); color: var(--kf-on-accent); }
+.o-kv__index { position: absolute; top: 160px; right: 10px; width: 700px; }
+/* Table-of-contents rows are cubes too (original linkCube) — the front face is the background as is, the back face uses inverted colors. On interaction it rolls 180° and the back face stands up (shared.js) */
+.o-kv__index a { position: relative; display: block; height: 61px; border-top: 1px solid currentColor; perspective: 1000px; }
+.o-kv__index .o-cube__face { display: grid; grid-template-columns: 233px 1fr auto; align-items: start; padding: 0 25px 0 0; background: none; color: inherit; font: inherit; }
+.o-kv__index .o-cube__face::after { display: none; }
+.o-kv[data-hero="white"] .o-kv__index .o-cube__face { background: var(--kf-surface); }
+.o-kv[data-hero="green"] .o-kv__index .o-cube__face { background: var(--kf-accent); }
+.o-kv[data-hero="white"] .o-kv__index .o-cube__face.is-top { background: var(--kf-accent); color: var(--kf-on-accent); }
+.o-kv[data-hero="green"] .o-kv__index .o-cube__face.is-top { background: var(--kf-surface); color: var(--kf-accent); }
+.o-kv__index small { padding-top: 12px; font: 400 13px/1 var(--kf-font-display); }
+.o-kv__index b { font: 400 36px/1.55 var(--kf-font-display); }
+.o-kv__index em { padding-top: 10px; font-style: normal; font-size: 13px; line-height: 1.4; font-weight: 500; }
+.o-kv h1 {
+  position: absolute;
+  left: 34px;
+  bottom: 40px;
+  display: flex;
+  gap: 0.36em;
+  font: 400 160px/0.98 var(--kf-font-display);
+  letter-spacing: -0.02em;
+}
+.o-kv h1 span:last-child { display: block; }
+.o-kv h1 .t-wrap { display: inline-block; font-style: normal; transform: translate3d(0, 10%, 0); opacity: 0; }
+.o-kv h1 .t-wrap > i { display: inline-block; font-style: normal; transform: perspective(1000px) translate3d(0, 50%, 0) rotateX(0); }
+.o-kv.is-on h1 .t-wrap { transform: translateZ(0); opacity: 1; transition: transform 1.1s calc(var(--index) * 0.04s) cubic-bezier(0.43, 0.05, 0.17, 1), opacity 0.7s calc(var(--index) * 0.04s + 0.3s) var(--kf-ease-out); }
+.o-kv.is-on h1 .t-wrap > i { transform: translateZ(0); transition: transform 0.7s calc(var(--index) * 0.04s) cubic-bezier(0.43, 0.05, 0.17, 1); }
+.o-kv__index .o-cube { opacity: 0; }
+.o-kv__index .o-cube__face.is-top:not(.is-seen) { opacity: 0; }
+.o-kv__index .o-cube.is-shown { opacity: 1; }
+.o-kv .o-circle-btn { opacity: 0; }
+.o-kv .o-circle-btn.is-on { opacity: 1; transition: opacity 0.5s var(--kf-ease-out); }
+@media (prefers-reduced-motion: reduce) { .o-kv h1 .t-wrap, .o-kv h1 .t-wrap > i { opacity: 1; transform: none; } }
+/* Circle arrow — hovering over a pale base circle draws the circle border over 1s Power4.inOut, and releasing retracts it over the same length (original iconCircleArrow, motion in shared.js) */
+.o-circle-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  position: absolute;
+  right: 119px;
+  bottom: 41px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+}
+.o-circle-btn svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: currentColor; stroke-width: 0.75; transform: rotate(-90deg); pointer-events: none; }
+.o-circle-btn__base { opacity: 0.3; }
+.o-circle-btn__line { stroke-dasharray: 94.25px 94.25px; stroke-dashoffset: 94.25px; }
+.o-circle-btn::after { content: ""; width: 6px; height: 6px; margin-top: -3px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: rotate(45deg); }
+.o-kv__band { position: absolute; left: 0; right: 0; bottom: 0; height: 170px; }
+.o-kv__num { position: absolute; left: 34px; bottom: 6px; color: var(--kf-on-accent); font: 400 18px/1 var(--kf-font-display); }
+
+/* ── Numbered section title: ‹002› + ‹/ Title› in dark text fading lighter to the right + a thin line below ── */
+.o-sec-title { padding: 0 34px; }
+.o-sec-title small { display: block; margin-bottom: 30px; font: 400 13px/1 var(--kf-font-display); }
+.o-sec-title h2 {
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--kf-line);
+  font: 400 60px/1.2 var(--kf-font-display);
+  letter-spacing: -0.01em;
+  background: linear-gradient(90deg, var(--kf-ink) 0%, var(--kf-ink) 35%, oklch(from var(--kf-raised) calc(l * 0.8775) calc(c * 0.4228) calc(h - 12.6)) 75%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.o-sec-title.is-light h2 { background-image: linear-gradient(90deg, var(--kf-on-accent) 0%, var(--kf-on-accent) 35%, color-mix(in srgb, var(--kf-on-accent) 35%, transparent) 80%); border-color: color-mix(in srgb, var(--kf-on-accent) 30%, transparent); }
+
+/* Two-column body: bold lead on the left, small body on the right */
+.o-two { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; padding: 0 34px; }
+.o-two__lead small { display: block; margin-bottom: 4px; font-size: 12px; }
+.o-two__lead p { font-size: 18px; line-height: 1.8; font-weight: 500; }
+.o-two__body { font-size: 13px; line-height: 2; max-width: 440px; }
+
+/* ── ON/OFF scene list: rows of large gray words, only the current word green + ”For /” ── */
+.o-scene { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 0 34px; }
+.o-scene__photo { position: sticky; top: 260px; align-self: start; width: 250px; aspect-ratio: 5 / 7; margin-top: 120px; }
+.o-scene__list { padding: 120px 0 140px 110px; }
+.o-scene__group + .o-scene__group { margin-top: 80px; }
+.o-scene__group > small { display: block; margin: 0 0 10px 94px; color: var(--kf-accent); font: 400 15px/1 var(--kf-font-display); }
+.o-scene__group li { position: relative; display: flex; align-items: baseline; gap: 8px; padding-left: 94px; color: oklch(from var(--kf-raised) calc(l * 0.8645) calc(c * 0.4243) calc(h - 12.6)); transition: color 0.5s var(--kf-ease-out); }
+.o-scene__group li b { font: 400 30px/1.4 var(--kf-font-display); }
+.o-scene__group li span { font-size: 11px; }
+.o-scene__group li::before {
+  content: "For /";
+  position: absolute;
+  left: 30px;
+  font: 400 30px/1.4 var(--kf-font-display);
+  opacity: 0;
+  transition: opacity 0.5s var(--kf-ease-out);
+}
+.o-scene__group li.is-on { color: var(--kf-accent); }
+.o-scene__group li.is-on::before { opacity: 1; }
+
+/* ── Product stage promo ── */
+.o-promo { position: relative; height: 900px; overflow: hidden; background: oklch(from var(--kf-ink-soft) calc(l * 1.7973) calc(c * 0.7443) calc(h + 3.24)); color: var(--kf-on-accent); text-align: center; }
+.o-promo > .wf-img { position: absolute; inset: 0; height: 100%; --wf-fill: oklch(from var(--kf-ink-soft) calc(l * 1.6795) calc(c * 0.9433) calc(h + 2.17)); --wf-line: oklch(from var(--kf-ink-soft) calc(l * 1.5644) calc(c * 1.0195) calc(h + 1.73)); --wf-fill-ink: oklch(from var(--kf-ink-soft) calc(l * 0.8674) calc(c * 0.9255) calc(h + 0.96)); }
+.o-promo__in { position: relative; display: flex; flex-direction: column; align-items: center; padding-top: 110px; }
+.o-promo__mark { font: 600 110px/1 var(--kf-font-display); letter-spacing: -0.03em; }
+.o-promo__pack { width: 200px; aspect-ratio: 4 / 5; margin: 30px 0 40px; }
+.o-promo__copy { font-size: 22px; line-height: 1.8; font-weight: 500; }
+.o-promo__copy + p { margin-top: 16px; font-size: 14px; }
+.o-promo__price { margin-top: 10px; font-size: 13px; }
+.o-promo__btns { position: absolute; right: 34px; bottom: 34px; display: flex; gap: 2px; }
+/* The product stage’s two buttons are also cubes (original buttonCube) — green panel (data-color=green) so on hover, brightness goes to 1.1 over 1s */
+.o-promo__btns a { position: relative; display: block; width: 175px; height: 51px; perspective: 1000px; text-align: left; transition: filter 1s var(--kf-ease-out); }
+.o-promo__btns a:hover { filter: brightness(1.1); }
+
+/* ── Page links, 4 cells ── */
+.o-links { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 6px 6px 60px; background: var(--kf-ink-soft); }
+.o-links a { display: flex; flex-direction: column; min-height: 330px; padding: 20px; background: var(--kf-surface); transition: filter 1s var(--kf-ease-out); }
+.o-links a:hover { filter: brightness(1.1); }
+.o-links .wf-img { width: 50%; aspect-ratio: 3 / 4; margin: 0 auto 30px; }
+.o-links b { margin-top: auto; font: 400 20px/1.2 var(--kf-font-display); }
+/* Card title is a magnet cube (original page link) — white face in front, green on the back */
+.o-links__cube { position: relative; display: block; height: 1.5em; perspective: 1000px; }
+.o-links .o-cube__face { align-items: center; padding: 0; background: var(--kf-surface); color: var(--kf-ink); font: inherit; }
+.o-links .o-cube__face.is-top { padding-left: 6px; background: var(--kf-accent); color: var(--kf-on-accent); }
+.o-links .o-cube__face::after { display: none; }
+.o-links span { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 11px; line-height: 1.6; }
+.o-links span::after { content: "→"; font-family: var(--kf-font-display); font-size: 18px; }
+
+/* ── Green Footer ── */
+.o-footer { position: relative; z-index: 2; background: var(--kf-accent); color: var(--kf-on-accent); padding: 34px 34px 24px; }
+.o-footer__top { display: grid; grid-template-columns: 1fr 200px 330px; }
+.o-footer__company { font: 600 22px/1 var(--kf-font-display); letter-spacing: 0.02em; }
+.o-footer__company::before { content: ""; display: inline-block; width: 16px; height: 22px; margin-right: 8px; border-radius: 50% 50% 50% 0; background: var(--kf-surface); vertical-align: -3px; }
+.o-footer__nav { display: grid; gap: 2px; font: 400 13px/1.6 var(--kf-font-display); }
+.o-footer__nav a, .o-footer__sub a { transition: opacity 0.3s var(--kf-ease-out); }
+.o-footer__nav a:hover, .o-footer__sub a:hover { opacity: 0.5; }
+/* Footer Online store is also the same cube as the header row (original linkCube) — on a green background so the front face is a white panel */
+.o-footer__store { position: relative; align-self: start; width: 175px; height: 51px; perspective: 1000px; }
+.o-footer .o-cube__face.is-front { background: var(--kf-surface); color: var(--kf-accent); }
+.o-footer .o-cube__face.is-front::after { border-color: var(--kf-accent); box-shadow: -3px 3px 0 -1.5px var(--kf-on-accent), -3px 3px 0 0 var(--kf-accent); }
+.o-footer__company { transition: opacity 0.3s var(--kf-ease-out); }
+.o-footer__company:hover { opacity: 0.5; }
+.o-footer__mark { margin: 120px 0 40px -10px; font: 600 min(23vw, 340px)/0.8 var(--kf-font-display); letter-spacing: -0.04em; white-space: nowrap; }
+.o-footer__bottom { display: flex; justify-content: space-between; align-items: center; font-size: 10px; }
+.o-footer__sub { display: flex; gap: 28px; }
+.o-footer__sub a::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border: 1px solid var(--kf-on-accent); vertical-align: -1px; }
+
+@media (max-width: 767px) {
+  body { font-size: 13px; }
+  .o-kv { height: 640px; padding: 0 16px; }
+  .o-kv__index { top: 90px; left: 16px; right: 16px; width: auto; }
+  .o-kv__index a { height: 48px; }
+  .o-kv__index .o-cube__face { grid-template-columns: 50px 1fr auto; padding-right: 0; }
+  .o-kv__index b { font-size: 24px; }
+  .o-kv__index em { font-size: 10px; }
+  .o-kv h1 { left: auto; right: 16px; bottom: 30px; font-size: 44px; }
+  .o-kv__band { height: 110px; }
+  .o-circle-btn { right: auto; left: 16px; bottom: 30px; width: 34px; height: 34px; }
+  .o-sec-title { padding: 0 16px; }
+  .o-sec-title h2 { font-size: 36px; padding-bottom: 18px; }
+  .o-two { grid-template-columns: 1fr; gap: 24px; padding: 0 16px; }
+  .o-two__lead p { font-size: 16px; }
+  .o-scene { grid-template-columns: 1fr; padding: 0 16px; }
+  .o-scene__photo { position: relative; top: 0; width: 60%; margin: 40px 0 0; }
+  .o-scene__list { padding: 40px 0 80px; }
+  .o-scene__group > small { margin-left: 60px; }
+  .o-scene__group li { padding-left: 60px; flex-wrap: wrap; }
+  .o-scene__group li::before { left: 0; font-size: 22px; }
+  .o-scene__group li b { font-size: 22px; }
+  .o-promo { height: 760px; }
+  .o-promo__mark { font-size: 64px; }
+  .o-promo__copy { font-size: 17px; padding: 0 16px; }
+  .o-promo__btns { left: 16px; right: 16px; bottom: 16px; }
+  .o-promo__btns a { flex: 1; width: auto; }
+  .o-promo__btns .o-cube__face { font-size: 13px; }
+  .o-links { grid-template-columns: 1fr 1fr; }
+  .o-links a { min-height: 240px; padding: 14px; }
+  .o-links b { font-size: 16px; }
+  .o-footer { padding: 30px 16px 20px; }
+  .o-footer__top { grid-template-columns: 1fr; gap: 30px; }
+  .o-footer__mark { margin: 60px 0 30px -4px; font-size: 25vw; }
+  .o-footer__bottom { flex-direction: column-reverse; align-items: flex-start; gap: 20px; }
+  .o-footer__sub { flex-direction: column; gap: 10px; }
+}
+
+/* ── Rotating number box: stays pinned to the screen, faces flip with rotateY as you scroll, and the side text changes on each face ── */
+.o-panel { position: relative; }
+.o-panel__sticky { position: sticky; top: 0; height: 100vh; display: grid; grid-template-columns: 1fr 1fr; align-items: center; padding: 0 34px; perspective: 1800px; }
+.o-panel__box { position: relative; width: 560px; height: 620px; transform-style: preserve-3d; }
+.o-panel__face { position: absolute; inset: 0; display: grid; place-items: center; padding: 60px; background: oklch(from var(--kf-raised) calc(l * 0.9696) calc(c * 0.6786) calc(h - 4.86)); backface-visibility: hidden; }
+.o-panel__face .wf-img { width: 100%; height: 100%; }
+.o-panel__face small, .o-panel__total { position: absolute; bottom: 14px; font: 400 30px/1 var(--kf-font-display); }
+.o-panel__face small { left: 14px; }
+.o-panel__total { right: 34px; bottom: calc(50% - 296px); }
+.o-panel__texts { position: relative; height: 260px; }
+.o-panel__text { position: absolute; left: 0; bottom: 0; max-width: 420px; opacity: 0; transition: opacity 0.5s var(--kf-ease-out); }
+.o-panel__text.is-on { opacity: 1; }
+.o-panel__text b { display: block; margin-bottom: 18px; font-size: 18px; line-height: 1.8; font-weight: 500; }
+.o-panel__text p { font-size: 12px; line-height: 2; }
+
+/* ── Q&A accordion ── */
+.o-qa { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; padding: 0 34px; }
+.o-qa__side small { display: block; margin-bottom: 30px; font-size: 12px; }
+.o-qa__side .wf-img { width: 150px; aspect-ratio: 3 / 4; }
+.o-qa dl { margin: 0; }
+.o-qa dt { position: relative; padding: 18px 40px 18px 0; border-bottom: 1px solid var(--kf-line); font-size: 13px; font-weight: 500; cursor: pointer; }
+.o-qa dt::before, .o-qa dt::after { content: ""; position: absolute; right: 8px; top: 50%; width: 11px; height: 1px; background: currentColor; transition: transform 0.5s var(--kf-ease-in-out); }
+.o-qa dt::after { transform: rotate(90deg); }
+.o-qa dt.is-open::after { transform: rotate(90deg) scaleX(0); }
+.o-qa dd { height: 0; margin: 0; overflow: hidden; font-size: 12px; line-height: 2; transition: height 0.5s cubic-bezier(0.43, 0.05, 0.17, 1); }
+.o-qa dd p { padding: 18px 0 26px; color: oklch(from var(--kf-ink-soft) calc(l * 0.9716) 0 h); }
+
+@media (max-width: 767px) {
+  /* Phone: as in the original it does not rotate — number → text → image stack vertically */
+  .o-panel { height: auto !important; padding: 40px 0; }
+  .o-panel__sticky { position: relative; height: auto; display: flex; flex-direction: column; align-items: stretch; gap: 18px; padding: 0 16px; perspective: none; }
+  .o-panel__box, .o-panel__texts { display: contents; }
+  .o-panel__face { position: relative; inset: auto; display: block; height: 62vw; padding: 20px 20px 44px; transform: none !important; backface-visibility: visible; }
+  .o-panel__face > :not(small) { width: 100%; height: 100%; }
+  .o-panel__face small { bottom: 14px; font-size: 20px; }
+  .o-panel__text { position: relative; bottom: auto; opacity: 1 !important; max-width: none; }
+  .o-panel__face:nth-child(1) { order: 1; } .o-panel__text:nth-child(1) { order: 2; }
+  .o-panel__face:nth-child(2) { order: 3; } .o-panel__text:nth-child(2) { order: 4; }
+  .o-panel__face:nth-child(3) { order: 5; } .o-panel__text:nth-child(3) { order: 6; }
+  .o-panel__face:nth-child(4) { order: 7; } .o-panel__text:nth-child(4) { order: 8; }
+  .o-panel__total { display: none; }
+  .o-qa { grid-template-columns: 1fr; gap: 20px; padding: 0 16px; }
+}
+
+/* The wireframe toolbar (list · annotation) overlaps the phone’s bottom sheet button — on phones only it moves up out of the button’s way */
+@media (max-width: 767px) {
+  .wf-ui { bottom: 64px; }
+}

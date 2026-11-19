@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>grid-ripple-bg — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  main { position: relative; z-index: 1; }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .demo-row { display: flex; gap: 8px; padding: 16px 20px; }
+  .demo-row button { padding: 8px 14px; border: 1px solid var(--kf-ink); border-radius: 999px; background: var(--kf-bg); color: var(--kf-ink); font: 600 13px var(--kf-font-sans); cursor: pointer; }
+  .demo-photo { width: min(60vw, 640px); aspect-ratio: 463 / 320; margin: 10vh auto; clip-path: polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%); }
+  .demo-spacer { height: 80vh; }
+</style>
+</head>
+<body>
+<div data-fx="grid-ripple-bg" data-fx-grid-ripple-bg="front: .demo-photo; remember: demo"></div>
+<main>
+  <p class="demo-hint"><b>grid-ripple-bg</b> — On opening, the grid ripples once from the center. Try ripple and zoom with the buttons. A bright front grid overlaps above the center photo.</p>
+  <div class="demo-row">
+    <button type="button" data-do="pulse">Ripple .8s</button>
+    <button type="button" data-do="zoom2">Double cell (2s)</button>
+    <button type="button" data-do="zoom1">Default cell (2s)</button>
+  </div>
+  <div class="demo-photo wf-img" data-label="Landscape photo · where the front grid overlaps"></div>
+  <div class="demo-spacer"></div>
+</main>
+<script>
+(() => {
+  const send = (detail) => document.dispatchEvent(new CustomEvent("fx:grid-ripple-bg", { detail }));
+  document.querySelector('[data-do="pulse"]').onclick = () => send({ pulse: true });
+  document.querySelector('[data-do="zoom2"]').onclick = () => send({ zoom: 2, pulse: true });
+  document.querySelector('[data-do="zoom1"]').onclick = () => send({ zoom: 1, pulse: true });
+  // Late arrivals and removals — after 1 second one more identical background comes in, and after 2.5 seconds one drops out
+  const src = document.querySelector('[data-fx~="grid-ripple-bg"]');
+  const make = () => { const d = document.createElement("div"); d.setAttribute("data-fx", "grid-ripple-bg"); d.setAttribute("data-fx-grid-ripple-bg", "letters: none; cols: 3"); d.style.opacity = ".6"; return d; };
+  const gone = make();
+  src.after(gone);
+  setTimeout(() => src.after(make()), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1 second one more large cell background comes in (the late arrival), and after 2.5 seconds one is removed (detached).");
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="three-global.js"></script>
+<script src="../../_vendor/three@0.184.0/build/three.cjs"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+/* Work: word wall + work cards passing in a staggered way */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.love { display: grid; grid-template-columns: minmax(0, 1fr); overflow-x: clip; }
+.love__fold { grid-area: 1 / 1; align-self: start; position: relative; z-index: 1; height: 100svh; }
+.love__pin { grid-area: 1 / 1; align-self: start; position: relative; height: 100svh; overflow: hidden; }
+.love__wall { position: absolute; inset: calc(var(--ticker-h) + var(--nav-h) - 10px) 0 0; display: flex; flex-direction: column; gap: .02em; font: 700 calc(clamp(36px, calc(6.095vw + 12.23px), 100px) * var(--vp-scale, 1))/.92 var(--kf-font-sans); letter-spacing: -.03em; text-transform: uppercase; white-space: nowrap; color: var(--kf-ink); }
+.love__row { display: block; margin-left: calc(var(--o) * -1em); }
+.love__row b { font-weight: 700; color: var(--kf-accent); }
+.love__wall .pr-w { display: inline-block; }
+.love__wall:not([data-done]) .pr-w:not(.pr-on) { visibility: hidden; }
+.love__wall .pr-stomp { transform-origin: 50% 100%; transform: scale(1.15); }
+/* Card flow — original values: leave 100svh empty at first and 50svh below, card min(620px · vp, 47cqi, 100svh − 2 · header), each next card overlaps by 1/3 and alternates left and right.
+   Appears in .7s when it reaches 75% of the screen, moves from (∓20, 32)px to its place in .9s, and the ∓1.5° tilt relaxes in 1.15s (curve .22,1,.36,1). It reverses when leaving. */
+.love__cards { grid-area: 1 / 1; position: relative; z-index: 1; pointer-events: none; display: grid; grid-template-columns: 1fr; margin: 0; padding: 100svh var(--pad-x) 50svh; list-style: none; container-type: inline-size; --card: 84cqi; }
+@media (min-width: 810px) { .love__cards { --card: min(calc(620px * var(--vp-scale, 1)), 47cqi, calc(100svh - 2 * var(--nav-h))); } }
+.love__card { position: relative; pointer-events: auto; width: var(--card); rotate: -1.5deg; transition: rotate 1.15s var(--kf-ease-out); }
+.love__card:nth-child(2n) { justify-self: end; rotate: 1.5deg; }
+.love__card + .love__card { margin-top: calc(var(--card) / -3); }
+.love__card:has(.love__link.in) { rotate: none; }
+.love__link { position: relative; display: block; overflow: clip; opacity: 0; transform: translate(calc(-20px * var(--vp-scale, 1)), calc(32px * var(--vp-scale, 1))); transition: opacity .7s var(--kf-ease-out), transform .9s var(--kf-ease-out); }
+.love__card:nth-child(2n) .love__link { transform: translate(calc(20px * var(--vp-scale, 1)), calc(32px * var(--vp-scale, 1))); }
+.love__card .love__link.in { opacity: 1; transform: none; }
+.love__img { display: block; width: 100%; height: auto; aspect-ratio: 1; transition: transform .6s var(--kf-ease-out); }
+.love__link:hover .love__img { transform: scale(1.03); }
+@media (prefers-reduced-motion: reduce) { .love__card, .love__card:nth-child(2n) { rotate: none; transition: none; } .love__link, .love__card:nth-child(2n) .love__link { opacity: 1; transform: none; transition: none; } .love__img { transition: none; } }
+.love__cap { position: absolute; left: 8%; top: 9%; z-index: 2; color: var(--kf-on-accent); font: 400 clamp(11px, 1vw, 15px)/1.3 var(--kf-font-typewriter, var(--kf-font-mono)); }
+.love__cap.is-tape { top: auto; bottom: 10%; padding: 4px 6px; background: var(--kf-bg); color: var(--kf-ink); }

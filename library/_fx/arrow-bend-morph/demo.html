@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>arrow-bend-morph — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .demo { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 48px 20px; }
+  .demo-scroll { display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 18px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-pill); background: var(--kf-surface); color: var(--kf-ink); font: 500 13px/1 var(--kf-font-mono); letter-spacing: .08em; cursor: pointer; }
+  .demo-scroll svg { width: 18px; height: 18px; }
+  .demo-btn { height: 40px; padding: 0 16px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-sm); background: var(--kf-surface); color: var(--kf-ink); cursor: pointer; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>arrow-bend-morph</b> — Click the button to change its type. The arrow bends and straightens, switching ↓ → ↑.</p>
+<section class="demo" id="row">
+  <span class="demo-scroll" data-fx="arrow-bend-morph" id="a"><svg viewBox="0 0 300 300" aria-hidden="true"><path data-fx-part="head"/><path data-fx-part="body"/></svg>SCROLL</span>
+  <span class="demo-scroll" data-fx="arrow-bend-morph" data-fx-arrow-bend-morph="shape: normal; dur: .8; bend: 2" id="b"><svg viewBox="0 0 300 300" aria-hidden="true"><path data-fx-part="head"/><path data-fx-part="body"/></svg>SLOW</span>
+  <span class="demo-scroll" data-fx="arrow-bend-morph" id="gone"><svg viewBox="0 0 300 300" aria-hidden="true"><path data-fx-part="head"/><path data-fx-part="body"/></svg>Removed after 2.5s</span>
+  <button class="demo-btn" type="button" data-to="down">Below</button>
+  <button class="demo-btn" type="button" data-to="normal">Right</button>
+  <button class="demo-btn" type="button" data-to="up">Above</button>
+</section>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+  document.querySelectorAll("[data-to]").forEach((b) => b.addEventListener("click", () => {
+    document.getElementById("a").dataset.shape = b.dataset.to;
+    document.getElementById("b").dispatchEvent(new CustomEvent("fx:shape", { detail: b.dataset.to }));
+  }));
+  setTimeout(() => {
+    const el = document.createElement("span");
+    el.className = "demo-scroll"; el.dataset.fx = "arrow-bend-morph"; el.dataset.shape = "up";
+    el.innerHTML = '<svg viewBox="0 0 300 300" aria-hidden="true"><path data-fx-part="head"/><path data-fx-part="body"/></svg>LATE';
+    document.getElementById("row").prepend(el);
+    document.querySelector(".demo-hint").append(" · One more comes in after 1s, and one drops out after 2.5s.");
+  }, 1000);
+  setTimeout(() => document.getElementById("gone").remove(), 2500);
+  let i = 0;
+  setInterval(() => { const s = ["normal", "up", "down"][i++ % 3]; const a = document.getElementById("a"); if (a) a.dataset.shape = s; }, 1500);
+</script>
+</body>
+</html>

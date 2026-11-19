@@ -1,0 +1,229 @@
+/* Spanning several panels and pages: snap shell, buttons, menu drawer, square cursor, film grain, wordmark */
+
+/* Site-specific values made from the skin — they survive swapping theme.css and change along with the skin.
+   The three green levels of the dot art are the accent color pushed toward the background, and the ink glow is the accent with raised lightness and reduced saturation (original #b8f5cf).
+   The bright last panel is a stage painted opposite to the background (--kf-contrast-*) and the grays inside it are made by mixing those two colors. */
+:root {
+  --site-accent-dim: color-mix(in srgb, var(--kf-accent) 46%, var(--kf-bg));
+  --site-accent-faint: color-mix(in srgb, var(--kf-accent) 21%, var(--kf-bg));
+  --site-accent-glow: oklch(from var(--kf-accent) calc(l * 1.194) calc(c * 0.573) h);
+  --site-glyph-dim: color-mix(in srgb, var(--kf-ink) 34%, var(--kf-bg));
+  --site-glyph-faint: color-mix(in srgb, var(--kf-ink) 22%, var(--kf-bg));
+  --site-panel: color-mix(in srgb, var(--kf-ink) 4%, var(--kf-bg));
+  --site-panel-line: color-mix(in srgb, var(--kf-ink) 14%, var(--kf-bg));
+  --site-paper: var(--kf-contrast-bg);
+  --site-paper-ink: var(--kf-contrast-ink);
+  --site-paper-dim: color-mix(in srgb, var(--kf-contrast-ink) 65%, var(--kf-contrast-bg));
+  --site-paper-mid: color-mix(in srgb, var(--kf-contrast-ink) 57%, var(--kf-contrast-bg));
+  --site-paper-faint: color-mix(in srgb, var(--kf-contrast-ink) 29%, var(--kf-contrast-bg));
+  --site-paper-line: color-mix(in srgb, var(--kf-contrast-ink) 18%, var(--kf-contrast-bg));
+  --site-paper-fill: color-mix(in srgb, var(--kf-contrast-ink) 7%, var(--kf-contrast-bg));
+  --site-paper-rule: color-mix(in srgb, var(--kf-contrast-ink) 16%, var(--kf-contrast-bg));
+  --site-bar-y: 38px;
+  --site-bar-x: 28px;
+  --site-menu-inset: 25px;
+  --site-grain: 0.05;
+}
+@media (max-width: 860px) {
+  :root { --site-bar-y: 26px; --site-bar-x: 20px; }
+}
+@media (max-width: 560px) {
+  :root { --site-menu-inset: 14px; }
+}
+
+html, body { height: 100%; }
+body {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+}
+
+/* Snap that flips one screen at a time: the document does not scroll, only the track moves in y */
+.ac-sections { height: 100%; overflow: hidden; }
+.ac-track { height: 100%; will-change: transform; }
+.ac-panel { position: relative; height: 100%; overflow: hidden; }
+[data-scroll] { scrollbar-width: none; }
+[data-scroll]::-webkit-scrollbar { width: 0; height: 0; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
+/* Dot art stage */
+.ac-sim { position: absolute; inset: 0; overflow: hidden; z-index: 1; }
+.ac-sim canvas { display: block; width: 100%; height: 100%; }
+/* When a photo is inserted the canvas stamps it as dots — the original picture is not shown */
+.ac-src { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+/* Film grain: noise re-scattered at 14fps, with screen on dark panels and multiply on light panels */
+.ac-grain {
+  position: absolute; inset: 0; z-index: 4; pointer-events: none;
+  mix-blend-mode: screen; opacity: var(--site-grain);
+}
+.ac-grain canvas { display: block; width: 100%; height: 100%; }
+.ac-light .ac-grain { mix-blend-mode: multiply; }
+
+/* Square cursor: follows the mouse with a lag of .35s power3.out */
+@media (pointer: fine) {
+  body, body a, body button, body label, body input, body textarea { cursor: none; }
+}
+#ac-cursor {
+  position: fixed; top: 0; left: 0; z-index: 12;
+  width: 12px; height: 12px; margin: -6px 0 0 -6px;
+  background: var(--kf-accent);
+  pointer-events: none; opacity: 0;
+  transition: opacity 0.25s ease;
+  will-change: transform;
+}
+
+/* Button: solid green / green outline */
+.ac-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 44px; padding: 0 24px;
+  font-family: var(--kf-font-mono); font-size: 15px; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap;
+  border: 1px solid transparent; border-radius: var(--kf-radius-sm);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.ac-btn:focus-visible { outline: 1px solid var(--kf-accent); outline-offset: 3px; }
+.ac-btn--solid { background: var(--kf-accent); color: var(--kf-on-accent); border-color: var(--kf-accent); }
+.ac-btn--solid:hover { background: transparent; color: var(--kf-accent); }
+.ac-btn--ghost { background: transparent; color: var(--kf-accent); border-color: color-mix(in srgb, var(--kf-accent) 45%, transparent); }
+.ac-btn--ghost:hover { border-color: var(--kf-accent); background: color-mix(in srgb, var(--kf-accent) 10%, transparent); }
+
+/* Language switch: pressing it unfolds the other language cells sideways */
+.ac-lang { padding: 0; gap: 0; overflow: hidden; }
+.ac-lang__opt {
+  --pad: 18px;
+  flex: none; height: 100%; max-width: 0; padding: 0; overflow: hidden; opacity: 0;
+  background: none; border: 0; color: inherit; font: inherit; letter-spacing: inherit; text-transform: inherit;
+  transition:
+    max-width 0.5s var(--kf-ease-in-out),
+    padding 0.5s var(--kf-ease-in-out),
+    opacity 0.3s ease,
+    background 0.2s ease;
+}
+.ac-lang__opt[aria-pressed="true"], .ac-lang.is-open .ac-lang__opt { max-width: 80px; padding: 0 var(--pad); opacity: 1; }
+.ac-lang.is-open .ac-lang__opt[aria-pressed="true"] { background: color-mix(in srgb, var(--kf-accent) 16%, transparent); }
+.ac-lang.is-open .ac-lang__opt[aria-pressed="false"]:hover { background: color-mix(in srgb, var(--kf-accent) 10%, transparent); }
+
+/* Wordmark */
+.ac-logo {
+  display: inline-flex; align-items: flex-start;
+  color: inherit;
+  font-family: var(--kf-font-display); font-size: clamp(44px, 7.5vw, 104px); font-weight: 500;
+  line-height: 0.78; letter-spacing: -0.045em;
+}
+.ac-logo sup {
+  font-size: 0.16em; line-height: 1; font-weight: 500; letter-spacing: 0;
+  margin-top: 0.35em; margin-left: 0.12em;
+}
+.ac-dots { display: inline-block; width: 1.2em; text-align: left; }
+
+/* Menu button: visible only on the first panel, and when open it moves in by the drawer’s inner padding */
+.ac-menu-toggle {
+  position: fixed; top: 0; left: 0; z-index: 11;
+  display: flex; align-items: center;
+  padding: var(--site-bar-y) var(--site-bar-x);
+  transition: transform 0.5s var(--kf-ease-in-out), opacity 0.3s ease;
+}
+body:not(.at-hero):not(.menu-open) .ac-menu-toggle { opacity: 0; pointer-events: none; }
+.menu-open .ac-menu-toggle { transform: translate(var(--site-menu-inset), var(--site-menu-inset)); }
+.ac-menu-btn {
+  --icon: 26px;
+  display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0;
+  background: none; border: 0;
+  font-family: var(--kf-font-mono); font-size: 15px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--kf-accent); opacity: 0.85;
+  transition: opacity 0.2s ease, color 0.3s ease;
+}
+.ac-menu-btn:hover, .ac-menu-btn:focus-visible { opacity: 1; }
+.ac-menu-btn:focus-visible { outline: 1px solid currentColor; outline-offset: 5px; }
+.on-light:not(.menu-open) .ac-menu-btn { color: var(--site-paper-ink); }
+.ac-menu-btn__swap { display: block; overflow: hidden; height: 1.1em; line-height: 1.1; }
+.ac-menu-btn__stack { display: block; transition: transform 0.5s var(--kf-ease-in-out); }
+.ac-menu-btn__stack span { display: block; height: 1.1em; white-space: nowrap; }
+.menu-open .ac-menu-btn__stack { transform: translateY(-1.1em); }
+.ac-menu-btn__icon { display: block; overflow: hidden; width: var(--icon); height: var(--icon); flex: none; }
+.ac-menu-btn__icons { display: block; transition: transform 0.5s var(--kf-ease-in-out); }
+.ac-menu-btn__icon svg { display: block; width: var(--icon); height: var(--icon); fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.menu-open .ac-menu-btn__icons { transform: translateY(calc(var(--icon) * -1)); }
+
+/* Menu drawer: a panel floating 25px inside the screen, links enter from the left and contacts from the right, staggered */
+.ac-menu {
+  position: fixed; inset: var(--site-menu-inset); z-index: 9;
+  display: flex; overflow: auto;
+  background: var(--kf-surface); color: var(--kf-ink);
+  opacity: 0; visibility: hidden; transform: scale(1.015);
+  transition: opacity 0.4s ease, transform 0.5s var(--kf-ease-in-out), visibility 0s linear 0.5s;
+}
+.ac-menu.is-open {
+  opacity: 1; visibility: visible; transform: none;
+  transition: opacity 0.3s ease, transform 0.5s var(--kf-ease-in-out), visibility 0s;
+}
+.ac-menu.is-closing { transform: scale(0.97); }
+.ac-menu__grid {
+  flex: 1; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  align-content: center; gap: 64px; padding: 112px var(--site-bar-x) 40px;
+}
+.ac-menu__nav {
+  --marker: clamp(12px, 1.8vw, 23px); --marker-gap: 22px;
+  position: relative; display: flex; flex-direction: column; gap: 2px;
+}
+.ac-menu__marker {
+  position: absolute; top: 0; left: 0; width: var(--marker); height: var(--marker);
+  background: var(--kf-accent); opacity: 0; pointer-events: none; will-change: transform;
+}
+.ac-menu__link {
+  display: flex; align-items: center; width: fit-content;
+  color: var(--kf-ink);
+  font-family: var(--kf-font-display); font-size: clamp(38px, 5.6vw, 72px); font-weight: 400;
+  line-height: 1.12; letter-spacing: -0.03em;
+}
+.ac-menu__link.is-active { color: var(--kf-accent); }
+.ac-menu__link:focus-visible { outline: 1px solid var(--kf-accent); outline-offset: 6px; }
+.ac-menu__word { transition: transform 0.5s var(--kf-ease-out); }
+.ac-menu__link.is-marked .ac-menu__word { transform: translateX(calc(var(--marker) + var(--marker-gap))); }
+.ac-menu__meta {
+  display: flex; flex-direction: column; gap: 34px; align-self: center; max-width: 38ch;
+  font-family: var(--kf-font-mono); font-size: 13px; line-height: 1.65;
+}
+.ac-menu__block { display: flex; flex-direction: column; gap: 2px; }
+.ac-menu__kicker { margin-bottom: 10px; font-size: 11px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--kf-dim); }
+.ac-menu__meta a { width: fit-content; color: var(--kf-ink); transition: color 0.2s ease; }
+.ac-menu__meta a:hover, .ac-menu__meta a:focus-visible { color: var(--kf-accent); }
+.ac-menu__link, .ac-menu__block { opacity: 0; transition: color 0.25s ease, opacity 0.4s ease, transform 0.55s var(--kf-ease-in-out); }
+.ac-menu__link { transform: translateX(-30px); }
+.ac-menu__block { transform: translateX(30px); }
+.ac-menu.is-open .ac-menu__link, .ac-menu.is-open .ac-menu__block { opacity: 1; transform: none; }
+.ac-menu.is-open .ac-menu__link:nth-of-type(1) { transition-delay: 0.1s; }
+.ac-menu.is-open .ac-menu__link:nth-of-type(2) { transition-delay: 0.16s; }
+.ac-menu.is-open .ac-menu__link:nth-of-type(3) { transition-delay: 0.22s; }
+.ac-menu.is-open .ac-menu__link:nth-of-type(4) { transition-delay: 0.28s; }
+.ac-menu.is-open .ac-menu__block:nth-child(1) { transition-delay: 0.16s; }
+.ac-menu.is-open .ac-menu__block:nth-child(2) { transition-delay: 0.22s; }
+.ac-menu.is-open .ac-menu__link:hover, .ac-menu.is-open .ac-menu__link:focus-visible { transition-delay: 0s; }
+.ac-menu.is-closing .ac-menu__link { opacity: 0; transform: translateX(30px); }
+.ac-menu.is-closing .ac-menu__block { opacity: 0; transform: translateX(-30px); }
+
+@media (max-width: 860px) {
+  .ac-btn { height: 38px; padding: 0 18px; font-size: 13px; }
+  .ac-lang { padding: 0; }
+  .ac-lang__opt { --pad: 14px; }
+  .ac-menu-btn { height: 38px; }
+  .ac-menu__grid { grid-template-columns: minmax(0, 1fr); align-content: start; gap: 40px; padding: 84px var(--site-bar-x) 32px; }
+  .ac-menu__meta { font-size: 12px; gap: 26px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ac-lang__opt, .ac-menu__word, .ac-menu-btn__stack, .ac-menu-btn__icons { transition: none; }
+  .ac-menu { transition: opacity 0.01s linear, visibility 0s; }
+  .ac-menu__link, .ac-menu__block { transform: none; transition: opacity 0.2s ease; }
+}
+
+/* so the list · annotation buttons of wire.js show above the menu panel even on screens with no document scroll */
+.wf-ui { z-index: 20; }

@@ -1,0 +1,144 @@
+/* Brand story — full-screen sections that rise one per wheel tick (1.2s power2.out). Each section has a white wing band across its bottom, and when turning, the band sweeps up faster than the section, washing the screen white */
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+:root { --section-height: calc(100svh - var(--site-head)); }
+
+.j-scroll { position: fixed; top: var(--site-head); left: 0; z-index: 100; display: flex; flex-direction: column; width: 100%; will-change: transform; }
+.j-sec { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: var(--section-height); color: var(--kf-on-accent); }
+.j-sec:nth-child(1) { z-index: 1000; }
+.j-sec:nth-child(2) { z-index: 900; }
+.j-sec:nth-child(3) { z-index: 800; }
+.j-sec:nth-child(4) { z-index: 700; }
+.j-sec:nth-child(5) { z-index: 600; }
+.j-sec:nth-child(6) { z-index: 500; }
+.j-sec:nth-child(7) { z-index: 400; }
+.j-sec--movie { z-index: 380 !important; background: var(--kf-surface); }
+.j-sec--hope-start { z-index: 300 !important; overflow: hidden; background: linear-gradient(180deg, var(--kf-surface) 0, var(--kf-surface) 40px, transparent 40px); }
+.j-sec--hope { z-index: 100 !important; clip-path: inset(-100vh 0 0 0); }
+.j-sec__bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+
+/* ── White wing band: only 22.3vw below the section is visible, the rest overlaps the next section. A horizontal mask opens from the left (6% feathered edge) ── */
+.j-band {
+  position: absolute; top: calc(100% - 22.3vw); left: 50%; z-index: 1;
+  width: 105vw; aspect-ratio: 1436 / 1856; transform: translate(-50%, 0); will-change: transform; overflow: hidden; pointer-events: none;
+  --maskEdgeAlpha: 0.22;
+  -webkit-mask-image: linear-gradient(90deg, rgb(0 0 0 / 1) 0%, rgb(0 0 0 / 1) 46%, rgb(0 0 0 / var(--maskEdgeAlpha)) 52%, rgb(0 0 0 / 0) 58%, rgb(0 0 0 / 0) 100%); /* Not skin: mask only uses alpha */
+  mask-image: linear-gradient(90deg, rgb(0 0 0 / 1) 0%, rgb(0 0 0 / 1) 46%, rgb(0 0 0 / var(--maskEdgeAlpha)) 52%, rgb(0 0 0 / 0) 58%, rgb(0 0 0 / 0) 100%); /* Not skin: mask only uses alpha */
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-size: 300% 100%; mask-size: 300% 100%;
+  -webkit-mask-position: 0% 0%; mask-position: 0% 0%;
+}
+.j-band svg { display: block; width: 100%; height: 100%; }
+.j-band stop { stop-color: var(--kf-surface); }
+
+/* ── First section ── */
+.j-sec--fv .j-sec__bg { opacity: 0; visibility: hidden; }
+.j-sec--fv .js-fv-img { inset: -1% auto auto -1%; width: 101%; height: 101%; }
+.j-fv__plane { position: absolute; top: 220px; left: calc(50% + min(450px, 32vw)); z-index: 2; width: 230px; opacity: 0; visibility: hidden; }
+.j-f-plane { fill: var(--kf-surface); opacity: 0.9; }
+.j-fv__text { position: absolute; top: 50%; left: calc(50% - min(416px, 29vw)); z-index: 2; width: min(448px, 31vw); opacity: 0; visibility: hidden; color: var(--kf-ink-soft); font-weight: 400; line-height: 1; }
+.j-fv__text small { display: block; margin-bottom: 18px; font: 500 14px/1 var(--kf-font-display); letter-spacing: 0.3em; }
+.j-fv__text span { display: block; font: italic 300 clamp(48px, 8.3vw, 120px)/0.98 var(--kf-font-display); letter-spacing: -0.01em; white-space: nowrap; }
+.j-sec--fv .j-band { opacity: 0; }
+
+/* ── Video button: 10px blur, 144px circle (hover 1.05x in .4s) ── */
+.j-mtrig, .j-fvtrig { position: fixed; inset: 0; z-index: 3000; pointer-events: none; opacity: 0; visibility: hidden; }
+.j-fvtrig { position: absolute; }
+.j-mbtn { position: absolute; bottom: 83px; left: 2.2vw; width: 144px; aspect-ratio: 1; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--kf-surface); pointer-events: auto; cursor: pointer; }
+.j-mbtn::before { content: ""; position: absolute; inset: 0; z-index: 0; border-radius: 50%; background: var(--site-veil); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transform: translateZ(0); transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.j-mbtn:hover::before { transform: translateZ(0) scale(1.05); }
+.j-mbtn__in { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 6px; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.j-mbtn:hover .j-mbtn__in { transform: scale(1.05); }
+.j-mbtn svg { width: 40px; height: 40px; }
+.j-mbtn b { font: 300 28px/1 var(--kf-font-display); letter-spacing: 0.02em; }
+
+/* ── Progress Bar ── */
+.j-pager { position: fixed; top: 75%; right: 32px; z-index: 10000; display: flex; align-items: center; gap: 32px; height: auto; opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(-50%) rotate(90deg); transform-origin: right top; }
+.j-pager__text { color: var(--kf-surface); font: 300 18px/1 var(--kf-font-sans); letter-spacing: 0.2em; transition: color 0.3s ease; }
+.j-pager__bar { position: relative; width: 39.1vh; height: 1px; background: var(--kf-surface); transition: background-color 0.3s ease; }
+.j-pager__bar i { position: absolute; top: 0; left: 0; width: calc(100% / 11); height: 1px; background: var(--kf-accent); transition: all 0.4s ease; }
+body.is-light-pager .j-pager__text { color: var(--kf-dim); }
+body.is-light-pager .j-pager__bar { background: var(--kf-dim); }
+body.is-bottom .j-pager { visibility: hidden !important; opacity: 0 !important; }
+
+/* ── Text section ── */
+.j-sec__content { position: absolute; top: 50%; left: 10.3vw; z-index: 2; transform: translateY(-50%); }
+.j-sec--l8 .j-sec__content { left: 8vw; }
+.j-t1 { color: var(--kf-surface); font-size: 24px; font-weight: 500; line-height: 2.3; letter-spacing: 0.02em; text-shadow: var(--site-text-shade); }
+.j-sec--dark .j-t1, .j-sec--dark .j-t2 { color: var(--kf-ink); text-shadow: none; }
+.j-line { display: block; overflow: hidden; }
+.j-line__in { display: block; will-change: transform; }
+.j-t2 { width: 320px; margin-top: min(10.7vh, 103px); color: var(--kf-surface); font-size: 16px; font-weight: 300; line-height: 2.3; }
+.j-t2 .j-line { overflow: visible; }
+
+/* ── Video Section ── */
+.j-movie { width: calc(100% - 80px); max-width: 1144px; color: var(--kf-ink); }
+.j-movie__title { margin: 0 auto; font: 400 32px/2.3 var(--kf-font-display); letter-spacing: 0.04em; }
+.j-movie__video { position: relative; width: clamp(0px, calc((100vh - 300px) * 16 / 9), min(1122px, 100%)); max-width: 1122px; aspect-ratio: 16 / 9; margin: 32px auto 0; overflow: hidden; border-radius: 24px; background: var(--kf-surface); box-shadow: var(--kf-shadow-soft); }
+.j-movie__play { position: absolute; inset: 0; border: 0; background: none; cursor: pointer; }
+.j-movie__detail { display: flex; align-items: center; margin: 16px auto 0; font: 300 16px/1 var(--kf-font-display); }
+.j-movie__detail p { opacity: 0.5; }
+.j-movie__time { margin-left: auto; }
+.j-movie__q { display: flex; align-items: center; justify-content: center; width: 40px; height: 28px; margin-left: 8px; border: 1px solid currentColor; border-radius: 999px; }
+
+/* ── Hope header section: rounded white panel (mask) at bottom grows to screen height, big text at center ── */
+.j-hs__bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+.j-hs__mask { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; width: 100%; height: calc(100% + 30vw); transform-origin: top center; will-change: transform, height; }
+.j-hs__mask svg { position: absolute; left: 0; bottom: 0; width: 100%; height: 100%; }
+.j-f-surface { fill: var(--kf-surface); }
+.j-hs__content { position: relative; z-index: 2; width: calc(100% - 80px); max-width: 1144px; }
+.j-hs__text { color: var(--kf-ink); font-size: 32px; font-weight: 400; line-height: 2.3; letter-spacing: 0.02em; }
+.j-hs__text span { display: block; }
+
+/* ── Hope section: three backgrounds overlap and swap, the photo in the center vertical window moves sideways per wheel notch (.9s power3.inOut), and the text block rises line by line ── */
+.j-hope__bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+.j-hope__bg > .j-ph { opacity: 0; transition: opacity 0.9s ease; }
+.j-hope__bg > .j-ph.is-on { opacity: 1; }
+.j-hope__window { position: absolute; bottom: calc(10.5vh + 203.2px); left: 50%; z-index: 2; width: min(320px, 100%, calc((100vh - 300px) * 320 / 467)); aspect-ratio: 320 / 467; overflow: hidden; border-radius: 160px 160px 24px 24px; transform: translate(-50%, 0); }
+.j-hope__track { display: flex; width: 300%; height: 100%; will-change: transform; }
+.j-ph-cell { position: relative; flex: 0 0 33.333%; height: 100%; }
+.j-hope__mask { position: absolute; bottom: 0; left: 50%; z-index: 1; width: max(1440px, 100%); height: min(max(80vh, 690px), 48vw); transform: translateX(-50%); }
+.j-hope__mask svg { width: 100%; height: 100%; }
+.j-hope__content { position: absolute; top: 50%; left: calc(50% + 260px); z-index: 3; width: 294px; transform: translateY(-50%); }
+.j-hope__item { display: flex; flex-direction: column; gap: 24px; }
+.j-hope__item + .j-hope__item { position: absolute; top: 0; left: 0; right: 0; visibility: hidden; }
+.j-hope__t1 { color: var(--kf-ink); font-size: 32px; font-weight: 500; line-height: 1.6; letter-spacing: 0.02em; }
+.j-hope__t2 { color: var(--kf-ink); font-size: 18px; font-weight: 300; line-height: 2.3; letter-spacing: 0.02em; }
+.j-hope__t2 .j-line:first-child { margin-top: 12px; }
+
+/* The bottom section fills the section height and holds the links · wordmark · footer inside */
+.j-scroll .j-bottom { min-height: var(--section-height); padding-top: 64px; color: var(--kf-ink); }
+.j-scroll .j-bottom__logo { margin-top: 48px; }
+.j-scroll .j-foot { margin-top: 48px; }
+
+@media (max-width: 1200px) {
+  .j-hope__content { left: auto; right: 4vw; }
+  .j-hope__t1 { font-size: 18px; }
+  .j-hope__t2 { font-size: 14px; }
+}
+@media (max-width: 767px) {
+  .j-fv__plane { top: 120px; left: calc(50% + 112px); width: 120px; }
+  .j-fv__text { top: 51.4%; left: calc(50% - 73.6px); width: 177px; }
+  .j-fv__text small { margin-bottom: 8px; font-size: 9px; }
+  /* Size at which the single line ”Together” fits the original title image width of 177px */
+  .j-fv__text span { font-size: 47px; }
+  .j-band { top: calc(100% - 17.2vw); width: 100%; aspect-ratio: 402 / 584; }
+  .j-mbtn { width: 115px; left: 5vw; bottom: 18px; }
+  .j-mbtn b { font-size: 22px; }
+  .j-sec__content, .j-sec--l8 .j-sec__content { top: calc(50% + 87px); left: 40px; display: flex; align-items: center; height: 110px; }
+  .j-t1 { font-size: 16px; }
+  .j-t2 { width: 177px; margin-top: 32px; font-size: 13px; }
+  .j-pager { top: auto; right: 20px; bottom: 74px; gap: 20px; }
+  .j-pager__text { font-size: 12px; }
+  .j-pager__bar { width: 220px; }
+  .j-movie { width: calc(100% - 40px); }
+  .j-movie__title { font-size: 22px; }
+  .j-movie__video { width: 100%; border-radius: 12px; }
+  .j-movie__detail { font-size: 12px; }
+  .j-hs__text { font-size: 22px; }
+  .j-hope__window { bottom: auto; top: 12%; width: 60.15vw; }
+  .j-hope__content { top: auto; right: auto; left: 20px; bottom: 40px; width: calc(100% - 40px); transform: none; }
+  .j-hope__item { flex-direction: row; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .j-band, .j-pager__bar i, .j-hope__bg > .j-ph { transition: none; }
+}

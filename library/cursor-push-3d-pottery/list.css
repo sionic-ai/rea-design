@@ -1,0 +1,165 @@
+/* Series pages lay the background from black on top to gray at the bottom (original Background colorFrom · colorTo) — pinned to the screen while only text · boxes scroll up */
+:root:has(body[data-page="list"]) {
+  --site-bg-from: oklch(from var(--kf-bg) calc(l * 0) c h);
+  --site-bg-to: oklch(from var(--kf-bg) calc(l + 0.5) c h);
+}
+html { background-attachment: fixed; }
+
+.sl-grid {
+  display: grid;
+  padding: var(--site-pad-top) var(--site-pad-inline) var(--site-pad-bottom);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--site-unit);
+}
+
+/* Header — 48px symbol | English branch | Korean branch. Under the symbol the year is stacked vertically one digit at a time */
+.sl-head {
+  position: relative;
+  display: grid;
+  align-content: start;
+  padding-top: 20px;
+  grid-template-columns: 48px repeat(2, minmax(0, 228px));
+  grid-template-rows: auto auto;
+  column-gap: 24px;
+  row-gap: 24px;
+}
+.sl-head__icon {
+  width: 48px;
+  height: 48px;
+  color: var(--kf-ink);
+}
+.sl-head__icon svg { width: 100%; height: 100%; }
+.sl-head__icon path { fill: currentColor; }
+.sl-head__en,
+.sl-head__ja {
+  color: var(--kf-ink);
+  font-size: var(--site-title);
+  font-weight: 400;
+  line-height: 1;
+}
+.sl-head__en { font-family: var(--kf-font-display); }
+.sl-head__ja {
+  margin-left: 4px;
+  font-family: var(--kf-font-serif, var(--kf-font-display));
+}
+.sl-head__year {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--kf-ink);
+  font: 300 var(--site-desc)/1.1 var(--kf-font-body-cjk, var(--kf-font-sans));
+  opacity: 0.25;
+}
+.sl-head__desc-en {
+  color: var(--kf-ink);
+  font: 400 var(--site-desc)/1.14 var(--kf-font-sans);
+  text-transform: uppercase;
+}
+.sl-head__desc-ja {
+  color: var(--kf-ink);
+  font: var(--kf-weight-cjk, 200) var(--site-desc)/1.16 var(--kf-font-body-cjk, var(--kf-font-sans));
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+  text-align: justify;
+}
+
+/* Work cells — first cell to the right of the header, the rest in two rows */
+.sl-cards { display: contents; }
+.sl-cards > .wf-note { position: fixed; top: auto; bottom: 60px; }
+.sl-card {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--kf-radius-lg);
+  touch-action: pan-y;
+}
+.sl-card__media {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  border: none;
+  border-radius: var(--kf-radius-lg);
+}
+/* On hover two work names float up in .3s — English at the bottom left, Korean (original Chinese characters) at the top right */
+.sl-card__en,
+.sl-card__ja {
+  position: absolute;
+  z-index: 1;
+  color: var(--kf-ink);
+  font-size: var(--site-title);
+  font-weight: 400;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.sl-card__en { bottom: 24px; left: 24px; font-family: var(--kf-font-display); }
+.sl-card__ja { top: 24px; right: 24px; font-family: var(--kf-font-serif, var(--kf-font-display)); }
+@media (hover: hover) and (pointer: fine) {
+  .sl-card:hover .sl-card__en,
+  .sl-card:hover .sl-card__ja { opacity: 1; }
+}
+
+/* Next series — NEXT below an 80px line · large English title · Korean title. The line fills in a 3s linear while hovered */
+.sl-next {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 56px 0 40px;
+  color: var(--kf-ink);
+  grid-column: 1 / -1;
+}
+.sl-next__bar {
+  position: relative;
+  width: 80px;
+  height: 1px;
+  margin-bottom: 24px;
+}
+.sl-next__bar::before,
+.sl-next__bar::after {
+  position: absolute;
+  background-color: var(--kf-ink);
+  content: "";
+  inset: 0;
+  opacity: 0.2;
+}
+.sl-next__bar::before {
+  opacity: 1;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0s linear;
+}
+.sl-next.is-active .sl-next__bar::before { transform: scaleX(1); transition: transform 3s linear; }
+.sl-next__row { display: flex; align-items: center; gap: 12px; }
+.sl-next__label,
+.sl-next__ja { font-size: var(--site-desc); line-height: 1; opacity: 0.8; }
+.sl-next__label { font-family: var(--kf-font-sans); text-transform: uppercase; }
+.sl-next__ja { font-family: var(--kf-font-serif, var(--kf-font-display)); }
+.sl-next__en {
+  font-family: var(--kf-font-display);
+  font-size: clamp(72px, 10.5vw, 152px);
+  line-height: 0.8;
+  text-transform: uppercase;
+}
+
+/* Portrait screen — header on top, cells one per row */
+@media (orientation: portrait) {
+  .sl-grid { grid-template-columns: minmax(0, 1fr); row-gap: 32px; }
+  .sl-head {
+    grid-template-columns: 32px repeat(2, minmax(0, 1fr));
+    column-gap: 16px;
+    row-gap: 16px;
+  }
+  .sl-head__icon { width: 32px; height: 32px; }
+}
+@media (max-width: 599px) {
+  .sl-head { grid-template-columns: 32px minmax(0, 1fr); }
+  .sl-head__ja { grid-column: 2; margin-left: 0; }
+  .sl-head__year { grid-row: 3 / span 2; }
+  .sl-head__desc-ja { grid-column: 2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sl-card__en, .sl-card__ja, .sl-next__bar::before { transition: none !important; }
+}

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>grow-feed-in — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 10; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo { max-width: 720px; margin: 0 auto; padding: 40px 20px 80px; }
+  .demo-row { display: grid; grid-template-columns: 160px 1fr; gap: 20px; align-items: center; padding: 18px 0; border-bottom: 1px solid var(--kf-line); }
+  .demo-row .wf-img { aspect-ratio: 16 / 9; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>grow-feed-in</b> — Scroll all the way down. When the end of the list shows, the next batch attaches, its height unfolds and it settles from 20px above (up to three times).</p>
+<section class="demo">
+  <div class="feed" data-fx="grow-feed-in">
+    <ul data-fx-part="batch">
+      <li class="demo-row"><span class="wf-img" data-label="News thumbnail · 16:9"></span><span>Your news title here, one line</span></li>
+      <li class="demo-row"><span class="wf-img" data-label="News thumbnail · 16:9"></span><span>Your news title here, one line</span></li>
+      <li class="demo-row"><span class="wf-img" data-label="News thumbnail · 16:9"></span><span>Your news title here, one line</span></li>
+      <li class="demo-row"><span class="wf-img" data-label="News thumbnail · 16:9"></span><span>Your news title here, one line</span></li>
+    </ul>
+    <i data-fx-part="more"></i>
+  </div>
+</section>
+<script>
+// The writing side’s share — receives fx:more and attaches the batch. It also watches ones that arrive late · ones being removed.
+(() => {
+  const wire = (feed) => {
+    let n = 0;
+    feed.addEventListener("fx:more", () => {
+      const more = feed.querySelector('[data-fx-part="more"]');
+      if (!more || n >= 3) return more?.remove();
+      n += 1;
+      const b = feed.querySelector('[data-fx-part="batch"]').cloneNode(true);
+      b.querySelectorAll("span:last-child").forEach((s, i) => (s.textContent = `Loaded more news ${n}-${i + 1}`));
+      more.before(b);
+    });
+  };
+  const src = document.querySelector('[data-fx~="grow-feed-in"]');
+  if (!src) return;
+  wire(src);
+  const html = src.outerHTML;
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = html; const el = t.content.firstElementChild; el.dataset.demo = tag; wire(el); return el; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => src.after(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1s another identical one comes in (the late arrival), and after 2.5s one drops out (the detach).");
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

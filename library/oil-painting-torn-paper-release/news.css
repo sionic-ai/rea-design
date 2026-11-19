@@ -1,0 +1,75 @@
+/* All boards — a one-screen wall. Shelf and cover use three, text is two lines at top left and the board list at the bottom */
+html { background: var(--site-wall); }
+body[data-edition="shelf"] .ed-brand { min-width: 140px; padding-left: 4px; }
+:root { --site-wall: oklch(from var(--kf-bg) calc(l * 1.0) 0 h); --site-wall-hi: oklch(from var(--kf-surface) calc(l * .96) 0 h); }
+.n-main { position: relative; height: 100svh; min-height: 560px; overflow: hidden; }
+.n-wall { position: absolute; inset: 0; color: var(--kf-ink); background: radial-gradient(120% 90% at 50% 38%, var(--site-wall-hi), var(--site-wall)); }
+.n-wall::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 90px; height: 1px; background: var(--kf-line); }
+.n-gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.n-lede { position: absolute; z-index: 2; left: 12px; top: 58px; margin: 0; font: 500 12px/1.25 var(--kf-font-sans); letter-spacing: -.01em; }
+.n-sound { position: absolute; z-index: 2; right: 16px; top: 60px; width: 40px; height: 40px; border: 0; border-radius: 50%; background: transparent; color: var(--kf-ink); cursor: pointer; }
+.n-sound svg { width: 18px; height: 18px; }
+.n-sound[aria-pressed="true"] .n-sound__x { display: none; }
+.n-cap { position: absolute; z-index: 2; right: 12px; bottom: 100px; max-width: 360px; margin: 0; text-align: right; font: 500 11px/1.4 var(--kf-font-sans); color: var(--kf-dim); }
+
+/* Lower panel list — hovering lifts that cover */
+/* The list rows cover down to the bottom of the screen as in the original — the chosen cover stays shown even when the pointer moves over them */
+.n-list { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; display: flex; justify-content: safe center; gap: 2px; margin: 0; padding: 0 12px 22px; list-style: none; }
+.n-list button { display: grid; gap: 1px; width: 104px; padding: 6px; border: 0; border-color: transparent; border-radius: 3px; background: transparent; color: var(--site-black); text-align: left; cursor: pointer; font: 500 11px/1.2 var(--kf-font-sans); }
+/* The original Browse view is a different build, so the border color doesn’t follow the text color (fixed) — header button · list text border colors are tied together */
+.ed-btn, .ed-btn *, .n-list button * { border-color: transparent; }
+/* Original search button snaps back to the expanded-state color on press (even while the pointer is still over it) */
+html .ed-search.is-open > .ed-btn, html[data-nav-theme] .ed-search.is-open > .ed-btn { color: inherit; background: transparent; }
+/* The original gallery view has the header standing from the start instead of dropping in (zero screen change until .73s after the first image) */
+body[data-edition="shelf"] .ed-in { animation: none; opacity: 1; transform: none; }
+/* Original list cell — on hover the year and season text goes 60% → 100%, and a line appears under the name over .5s */
+.n-list span { color: color-mix(in srgb, var(--site-black) 60%, transparent); transition: color .5s var(--site-ease); }
+.n-list b::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: currentColor; opacity: 0; transition: opacity .5s var(--site-ease); }
+.n-list button:hover span { color: var(--site-black); }
+.n-list button:hover b::after { opacity: 1; }
+.n-list b { position: relative; font-weight: 600; }
+/* Open · Details over the cover — a 0×0 anchor at the bottom center of the cover moves with the cover, and when a hand hovers, the pill floats up in .3s */
+.n-acts { position: absolute; z-index: 3; left: 0; top: 0; width: 0; height: 0; pointer-events: none; }
+/* As in the original, the pill receives pointer events even when transparent — hovering over it lifts the anchored marker */
+.n-acts__in { position: absolute; display: flex; gap: 6px; translate: -50% -50%; opacity: 0; pointer-events: auto; transition: opacity .3s var(--site-ease); }
+.n-acts.is-on .n-acts__in { opacity: 1; transition-delay: .05s; }
+.n-wall.is-open .n-acts__in { visibility: hidden; transition: opacity .3s var(--site-ease), visibility 0s .53s; }
+/* In the original the pill button switches off all at once .53s after the press */
+/* In the original, after a press the pill button leaves from under the hand together with the cover, returns to its own background at .29s, and turns off all at once at .43s */
+.n-wall.is-open .n-acts .n-act { opacity: 0; background: color-mix(in srgb, var(--site-white) 70%, transparent); transition: opacity 0s .43s, background-color .3s var(--site-ease) .24s; }
+/* While the cover is open, the raised hover state of list cells is withdrawn */
+.n-wall.is-open .n-list button:hover span { color: color-mix(in srgb, var(--site-black) 60%, transparent); }
+.n-wall.is-open .n-list button:hover b::after { opacity: 0; }
+/* Original search panel slides quickly outward */
+.ed-search__in { transition-timing-function: cubic-bezier(.33, 1, .68, 1); }
+.n-acts a, .n-acts button { height: 35px; padding: 0 16px; border: 0; border-radius: 99px; background: color-mix(in srgb, var(--site-white) 70%, transparent); color: var(--site-black); font: 500 13px/35px var(--kf-font-sans); text-decoration: none; cursor: pointer; transition: background-color .3s var(--site-ease); }
+.n-acts a:hover, .n-acts button:hover { background: var(--site-white); }
+
+/* Text panel of the pressed cover — at left (36px · 42%) 255×79, the title rises from 13px below, the intro text above vanishes, and the left shade deepens over .7s */
+.n-wall::before { content: ""; position: absolute; z-index: 2; left: -200px; top: 0; bottom: 0; width: 400px; background: radial-gradient(closest-side, var(--site-wall-hi), transparent); opacity: 0; pointer-events: none; transition: opacity .7s; }
+.n-wall.is-open::before { opacity: 1; }
+.n-lede { transition: opacity .35s var(--site-ease); }
+.n-wall.is-open .n-lede { opacity: 0; }
+/* In the original the plate first stands transparent (0×0), then on the next frame the text box attaches and it becomes 255×79 */
+.n-card { position: absolute; z-index: 3; left: 36px; top: 42.2%; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .4s, visibility 0s .4s; }
+.n-card.is-on { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .4s; }
+.n-card__body { display: none; position: relative; width: 255px; min-height: 79px; }
+.n-card.is-full .n-card__body { display: block; }
+/* Original order — the heading rises 13px over .6s starting at .15s, the subtitle line starts at .4s, and the button row attaches at .39s and blooms in .5s from .8s */
+.n-card h2 { margin: 0 0 6px; font: 600 24px/1.3 var(--kf-font-display); letter-spacing: -.02em; transition: opacity .6s var(--site-ease) .06s, translate .6s var(--site-ease) .06s; }
+.n-card__k { margin: 0; font: 500 26px/1.3 var(--kf-font-sans); color: var(--kf-dim); transition: opacity .45s var(--site-ease) .31s, translate .45s var(--site-ease) .31s; }
+@starting-style { .n-card.is-full h2, .n-card.is-full .n-card__k { opacity: 0; translate: 0 13.5px; } }
+.n-card__act { position: absolute; left: 0; top: calc(100% + 12px); display: none; flex-wrap: wrap; gap: 6px; transition: opacity .5s var(--site-ease) .41s; }
+.n-card.is-acts .n-card__act { display: flex; }
+@starting-style { .n-card.is-acts .n-card__act { opacity: 0; } }
+.n-card .ed-btn:hover { color: var(--kf-contrast-ink); background: var(--kf-contrast-bg); }
+
+@media (max-width: 939px) {
+  .n-list { left: 12px; right: 12px; translate: none; overflow-x: auto; }
+  .n-list button { width: 64px; flex: none; }
+  .n-card { left: 12px; right: 12px; top: auto; bottom: 120px; translate: none; width: auto; }
+  .n-card h2 { font-size: 22px; }
+  .n-card__body { width: auto; }
+  .n-cap { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .n-gl, .n-card { transition: none; } }

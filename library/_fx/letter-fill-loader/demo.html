@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>letter-fill-loader — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 1001; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .demo { min-height: 80vh; padding: 48px 20px; }
+  .demo [data-fx~="letter-fill-loader"] { position: absolute; inset: 120px 20px auto; height: 240px; background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); }
+  .demo button { margin-top: 380px; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>letter-fill-loader</b> — The panel’s text lights up one character at a time, and after 2.6s the panel lifts. Press “Replay”. <span style="color:var(--kf-dim)">(After 1s one more progress panel comes in, and after 2.5s one empty panel leaves)</span></p>
+<main class="demo">
+  <div id="slot">
+    <div data-fx="letter-fill-loader"><p data-fx-part="line"><span data-fx-part="base">Loading, please wait</span><span data-fx-part="fill">Loading, please wait</span></p></div>
+  </div>
+  <div data-fx="letter-fill-loader" data-demo-remove></div>
+  <template data-demo-late><div data-fx="letter-fill-loader" data-fx-letter-fill-loader="min: 0; wait: event" style="top: 380px"><p data-fx-part="line"><span data-fx-part="base">Turns on as progress advances</span><span data-fx-part="fill">Turns on as progress advances</span></p></div></template>
+  <button type="button" id="again">Again</button>
+</main>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+const first = document.querySelector("#slot").innerHTML;
+document.querySelector("#again").addEventListener("click", () => { document.querySelector("#slot").innerHTML = first; });
+setTimeout(() => {
+  document.querySelectorAll("template[data-demo-late]").forEach((t) => t.replaceWith(t.content.cloneNode(true)));
+  setTimeout(() => {
+    const late = document.querySelector('[data-fx-letter-fill-loader*="wait: event"]');
+    let p = 0;
+    const tick = setInterval(() => {
+      p += 0.2;
+      late?.dispatchEvent(new CustomEvent("fx:progress", { detail: p }));
+      if (p >= 1) { clearInterval(tick); late?.dispatchEvent(new Event("fx:ready")); }
+    }, 300);
+  }, 50);
+}, 1000);
+setTimeout(() => document.querySelectorAll("[data-demo-remove]").forEach((n) => n.remove()), 2500);
+</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+/* Home — horizontal infinite photo grid. Cell sizes are as in the original: column width 4 cells, gap between columns 1.75 cells×2, height 100vh − 4 cells over 5 rows */
+.py-home { background: var(--kf-bg); transition: background-color 0.35s; user-select: none; }
+html.l-dark .py-home { background: var(--site-stage); }
+html.l-dark .py-home a, html.l-dark .py-home h2, html.l-dark .py-home p { color: var(--site-stage-ink); }
+
+.py-home__page { position: absolute; inset: 0; width: 100vw; height: 100vh; touch-action: none; }
+.py-home__body { display: flex; height: 100vh; }
+.py-home__content { position: relative; display: flex; align-items: center; height: 100vh; width: 99999px; }
+.py-sec { position: relative; height: 100vh; will-change: transform; }
+.py-sec__inner { display: flex; align-items: flex-start; justify-content: center; height: 100%; perspective: 200vw; }
+.py-col {
+  position: relative; top: calc(var(--py-grid) * 1.25);
+  display: flex; flex-wrap: wrap; align-items: center;
+  width: calc(var(--py-grid) * 4); height: calc(100vh - var(--py-grid) * 4);
+  margin: 0 calc(var(--py-grid) * 1.75);
+}
+.py-cell { position: relative; display: flex; align-items: center; justify-content: center; width: calc(var(--py-grid) * 4); height: calc(var(--py-grid) * 4); }
+.py-img { position: absolute; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.py-img.is-v { width: 65%; height: 100%; }
+.py-img.is-h { width: 100%; height: 65%; }
+/* Photos are drawn by the WebGL layer — the DOM slot only holds size and label and is invisible */
+.py-img .wf-img { position: absolute; inset: 0; height: 100%; border: 0; opacity: 0; }
+html.no-gl .py-img .wf-img { opacity: 1; }
+
+@media (min-width: 680px) and (max-aspect-ratio: 1.35) {
+  .py-col { margin: 0 calc(var(--py-grid) * 0.75); width: calc(var(--py-grid) * 6); }
+  .py-cell { width: calc(var(--py-grid) * 6); height: calc(var(--py-grid) * 6); }
+}
+
+/* Category name at bottom center · crosshair at top center · mode button at bottom right */
+.py-home__fixed { position: absolute; left: 0; top: 0; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; z-index: 100; pointer-events: none; }
+.py-home__fixed > * { pointer-events: auto; }
+.py-home__scope.is-grid { position: absolute; top: var(--py-grid); }
+.py-home__scope.is-full { position: absolute; }
+html[data-mode="grid"] .py-home__scope.is-full .l1, html[data-mode="grid"] .py-home__scope.is-full .l3 { height: 0; transform: rotate(180deg); }
+html[data-mode="grid"] .py-home__scope.is-full .l2, html[data-mode="grid"] .py-home__scope.is-full .l4 { width: 0; transform: rotate(180deg); }
+html[data-mode="full"] .py-home__scope.is-grid .l1, html[data-mode="full"] .py-home__scope.is-grid .l3 { height: 0; transform: rotate(180deg); }
+html[data-mode="full"] .py-home__scope.is-grid .l2, html[data-mode="full"] .py-home__scope.is-grid .l4 { width: 0; transform: rotate(180deg); }
+
+.py-home__category { position: absolute; bottom: calc(var(--py-grid) - 0.5em); text-align: center; z-index: 150; }
+.py-home__category-item { position: absolute; left: 0; bottom: 0; display: inline-block; opacity: 0; pointer-events: none; transition: 0s; white-space: nowrap; }
+.py-home__category-item.active { position: relative; opacity: 1; pointer-events: auto; transition: 0.5s; }
+.py-home__category-item .is-n { position: absolute; right: -2.25em; top: 0.5em; }
+.py-home__category-all { line-height: 1; }
+
+.py-home__mode { position: absolute; right: calc(var(--py-grid) - 10px); bottom: calc(var(--py-grid) - 14px); display: flex; z-index: 999; }
+.py-btn { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border: 0; background: none; cursor: pointer; transition: opacity 0.5s; font-size: 13.333px; line-height: 1; }
+.py-btn.py-btn--grid:hover, .py-btn.py-btn--full:hover { opacity: 1; }.py-btn__inner { display: flex; flex-wrap: nowrap; align-items: flex-start; justify-content: flex-start; width: 17.52px; height: 17.52px; overflow: hidden; white-space: nowrap; }
+.py-btn i { display: inline-block; background: var(--kf-ink); transition: transform 0.5s; }
+html.l-dark .py-btn i { background: var(--site-stage-ink); }
+.py-btn--grid .l { position: relative; display: flex; flex-wrap: wrap; align-content: space-between; justify-content: space-between; flex: none; width: 5.84px; height: 5.84px; }
+.py-btn--grid .l i { width: 4.16px; height: 4.16px; margin: 0.84px; }
+.py-btn--grid:hover .l i { transform: translateX(-5.84px); }
+.py-btn--full .py-btn__inner { display: inline-block; width: 25px; }
+.py-btn--full .l { position: relative; display: inline-block; width: 3.32px; height: 100%; vertical-align: top; transition: 0.5s; }
+.py-btn--full .l i { display: inline-block; width: 100%; height: 100%; margin: 0; }
+.py-btn--full .l2, .py-btn--full .l3 { width: 15px; }
+.py-btn--full:hover .l { transform: translateX(-16.68px); }
+html[data-mode="grid"] .py-btn--grid, html[data-mode="full"] .py-btn--full { opacity: 1; pointer-events: none; }
+html[data-mode="grid"] .py-btn--full, html[data-mode="full"] .py-btn--grid { opacity: 0.5; }
+@media (min-width: 1442px) {
+  .py-btn { width: 48px; height: 48px; }
+  .py-btn__inner { width: 21.024px; height: 21.024px; }
+  .py-btn--grid .l { width: 7.008px; height: 7.008px; }
+  .py-btn--grid .l i { width: 4.992px; height: 4.992px; margin: 1.008px; }
+  .py-btn--grid:hover .l i { transform: translateX(-7.008px); }
+  .py-btn--full .py-btn__inner { width: 30px; }
+  .py-btn--full .l { width: 3.984px; }
+  .py-btn--full .l2, .py-btn--full .l3 { width: 18px; }
+  .py-btn--full:hover .l { transform: translateX(-20.016px); }
+}
+
+@media (max-width: 680px) {
+  .py-home__fixed { flex-wrap: wrap; align-content: flex-end; top: calc(var(--py-grid) * -1.5); }
+  .py-home__category { position: relative; bottom: 0; width: 100%; margin-bottom: calc(var(--py-grid) * 0.5); }
+  .py-home__mode { position: relative; left: 0; right: auto; bottom: 0; width: 100%; align-items: center; justify-content: center; }
+  .py-home__scope.is-grid { top: 46.5%; }
+  .py-sec__inner { align-items: flex-start; position: relative; top: calc(var(--py-grid) * -0.5); }
+  .py-col { height: calc(100vh - var(--py-grid) * 7.5); margin: 0 2.4875621891vw; top: calc(var(--py-grid) * 1.55); width: 19.9004975124vw; }
+  .py-cell { width: 19.9004975124vw; height: 19.9004975124vw; }
+}
+
+/* The text group over the grid stays hidden until the splash ends */
+html.is-load__before .py-home .to { opacity: 0; }

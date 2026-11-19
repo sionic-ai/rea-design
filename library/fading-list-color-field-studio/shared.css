@@ -1,0 +1,191 @@
+/* Common to all pages — grid based on 1440 (left 198 · menu +348 · right 24), header bar · now-playing bar, top progress line, footer, phone menu pill · black panel.
+   --gs (grid scale) and --s (text scale, applied only .7 of the scale difference) are set by shared.js from the window width */
+:root {
+  --gs: 1;
+  --s: 1;
+  --am-left: calc(198px * var(--gs));
+  --am-nav: calc(348px * var(--gs));
+  --am-edge: 24px;
+  --am-col: calc(348px * var(--gs));
+  --am-ease: cubic-bezier(0.16, 1, 0.55, 1);
+  --am-sweep: cubic-bezier(0.6, 0.18, 0.17, 0.72);
+  --site-ink-half: color-mix(in srgb, var(--kf-ink) 50%, transparent);
+  --site-ink-quarter: color-mix(in srgb, var(--kf-ink) 25%, transparent);
+  --site-grid-line: color-mix(in srgb, var(--kf-ink) 8%, transparent);
+  --site-select: var(--kf-accent-text);
+}
+
+html { overflow-x: clip; scrollbar-width: none; }
+html::-webkit-scrollbar { display: none; }
+body {
+  margin: 0;
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+::selection { color: var(--site-select); background: var(--kf-raised); }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+p { margin: 0; }
+.am-ko { font-family: var(--kf-font-body-ko, var(--kf-font-sans)); font-weight: 300; }
+.am-mono { font-family: var(--kf-font-mono); letter-spacing: calc(-0.6px * var(--s)); }
+.am-dim { color: var(--site-ink-half); }
+
+/* Underline — relay-underline-hover sweep type with the original values (.7s, cubic-bezier(.6,.18,.17,.72) per half) */
+.am-u {
+  --fx-dur: 0.7s;
+  --fx-sweep-ease: var(--am-sweep);
+  --fx-weight: 1px;
+  position: relative;
+  display: inline-block;
+}
+.am-u::before { bottom: -0.12em !important; }
+/* Multi-line underline (case names) — original underline-sweep-lines: the background-size line shrinks to the right and then regrows from the left (.7s linear, each half cubic-bezier(.6,.18,.17,.72)) */
+@keyframes am-ul {
+  0% { background-size: 100% 1px; background-position-x: 100%; animation-timing-function: var(--am-sweep); }
+  50% { background-size: 0% 1px; background-position-x: 100%; animation-timing-function: step-end; }
+  50.01% { background-size: 0% 1px; background-position-x: 0%; animation-timing-function: var(--am-sweep); }
+  100% { background-size: 100% 1px; background-position-x: 0%; }
+}
+
+/* Screen-fixed background color field (about · contact) */
+.am-field { position: fixed; inset: 0; z-index: -1; }
+
+/* Top progress line — grows from the left as far as the scroll progress */
+.am-progress {
+  position: fixed; top: 0; left: 0; z-index: 60;
+  width: 100%; height: 3px;
+  background: var(--kf-ink);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+  pointer-events: none;
+}
+
+/* Headline */
+.am-head {
+  position: absolute; top: 24px; left: 0; right: 0;
+  height: calc(14px * var(--s));
+  font-size: calc(14px * var(--s));
+  line-height: 1;
+  font-weight: 500;
+}
+/* Home uses stage-opposite-color text + exclusion like the original — readable even over preview photos. The dark panel (contact) keeps the stage-opposite color as is */
+body[data-page="home"] :is(.am-head__mark, .am-head__nav, .am-head__play) { --am-head-ink: var(--kf-contrast-ink); mix-blend-mode: exclusion; }
+.is-stage .am-head { --am-head-ink: var(--kf-contrast-ink); }
+.am-head__mark, .am-head__nav, .am-head__play { z-index: 50; color: var(--am-head-ink, var(--kf-ink)); }
+/* Don’t put z-index on the group (.am-head) — if a stacking context forms, exclusion won’t blend with the background */
+.am-head__mark { position: absolute; left: var(--am-left); top: 0; white-space: nowrap; }
+.am-head__nav { position: absolute; left: calc(var(--am-left) + var(--am-nav)); top: 0; display: flex; gap: calc(5px * var(--s)); white-space: nowrap; }
+.am-head__nav a { transition: color 0.15s var(--kf-ease-ui); }
+.am-head__nav a:hover, .am-head__nav [aria-current="page"] { color: color-mix(in oklab, var(--am-head-ink, var(--kf-ink)) 50%, transparent); }
+.am-head__play {
+  position: absolute; top: 0; right: var(--am-edge);
+  display: flex; gap: calc(10px * var(--s)); align-items: flex-start;
+  font-size: calc(12px * var(--s));
+}
+.am-head__play b { font-weight: 500; color: color-mix(in srgb, var(--am-head-ink, var(--kf-ink)) 50%, transparent); }
+.am-ticker { width: calc(120px * var(--s)); overflow: clip; font-weight: 400; }
+.am-ticker__run { display: flex; gap: 32px; white-space: nowrap; width: max-content; animation: am-ticker var(--am-tick, 15.9s) linear infinite; }
+.am-ticker__run span { white-space: nowrap; }
+.am-char { display: inline-block; opacity: 0; animation: am-char 0.25s ease-out forwards; }
+@keyframes am-char { from { opacity: 0; transform: translateX(-2px); } to { opacity: 1; transform: none; } }
+@keyframes am-ticker { to { transform: translateX(calc(-1 * var(--am-run, 413px))); } }
+
+/* Body text on the dark panel (contact) is the stage’s opposite color */
+.is-stage { color: var(--kf-contrast-ink); }
+
+/* Entrance — 500ms ease-out from 24px below */
+.am-rise { transition: translate 0.5s ease-out, opacity 0.5s ease-out; }
+.am-rise:not(.is-in) { translate: 0 24px; opacity: 0; }
+.am-fade { transition: opacity 0.5s ease-out; }
+.am-fade:not(.is-in) { opacity: 0; }
+
+/* Large text rising from below, line by line */
+.am-lines { display: flex; flex-direction: column; }
+.am-lines > span { display: block; overflow: hidden; padding: 0.1em 0 0.3em; margin: -0.1em 0 -0.3em; }
+.am-lines > span > span { display: block; transition: translate 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
+.am-lines:not(.is-in) > span > span { translate: 0 110%; }
+
+/* Footer */
+.am-foot {
+  position: relative;
+  margin: calc(360px * var(--s)) 0 0 var(--am-left);
+  width: calc(100% - var(--am-left) - var(--am-edge));
+  height: calc(52px * var(--s));
+  font-size: calc(12px * var(--s));
+  line-height: 1.4;
+}
+.am-foot__copy { position: absolute; left: 0; bottom: 0; font-size: calc(30px * var(--s)); line-height: 1.05; font-weight: 500; letter-spacing: -0.01em; }
+.am-foot__cols { position: absolute; left: var(--am-nav); bottom: 0; display: flex; gap: calc(40px * var(--s)); }
+.am-foot__cols > div { display: flex; flex-direction: column; gap: calc(12px * var(--s)); white-space: nowrap; }
+.am-foot__cols .am-mono { color: var(--site-ink-half); }
+.am-foot__cols a, .am-foot__cols button, .am-foot__top { font-weight: 500; transition: color 0.15s var(--kf-ease-ui); }
+.am-foot__cols a:hover, .am-foot__cols button:hover, .am-foot__top:hover { color: var(--site-ink-half); }
+.am-foot__top { position: absolute; left: calc(var(--am-nav) * 2); bottom: calc(-4px * var(--s)); }
+.am-foot__mark { position: absolute; right: 0; top: 0; width: calc(52px * var(--s)); height: calc(52px * var(--s)); }
+.am-foot__mark svg { width: 100%; height: 100%; display: block; }
+/* ”Copied” bubble — floats up from 8px below to 10px above the button in .25s ease-out, then disappears right after 1.5s (original Web Animations) */
+.am-copied {
+  position: fixed; z-index: 10000;
+  padding: 5px 10px; border-radius: var(--kf-radius-pill);
+  background: var(--kf-contrast-bg); color: var(--kf-contrast-ink);
+  font-size: 12px; line-height: 1; font-weight: 400; white-space: nowrap;
+  transform: translate(-50%, -100%); pointer-events: none;
+}
+.am-copied::after { content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 3px solid transparent; border-top-color: var(--kf-contrast-bg); }
+.is-stage .am-copied { background: var(--kf-contrast-ink); color: var(--kf-contrast-bg); }
+.is-stage .am-copied::after { border-top-color: var(--kf-contrast-ink); }
+/* Footer rises 24px from below once it is within 100px of the bottom (original footerReady) */
+.am-foot > * { transition: translate 0.5s ease-out, opacity 0.5s ease-out; }
+.am-foot:not(.is-ready) > * { translate: 0 24px; opacity: 0; }
+
+/* Phone — bottom menu pill and black panel */
+.am-pill, .am-sheet { display: none; }
+@media (max-width: 1023px) {
+  :root { --am-left: 8px; --am-edge: 8px; }
+  .am-head__nav, .am-head__play { display: none; }
+  .am-head { top: 33px; }
+  .am-head__mark { left: 31px; }
+  .am-foot { display: none; }
+  .am-pill {
+    display: block; position: fixed; z-index: 70;
+    left: 50%; bottom: 20px; translate: -50% 0;
+    width: calc(100vw - 92px); max-width: 310px; height: 30px;
+    border-radius: var(--kf-radius-lg);
+    background: var(--kf-contrast-bg); color: var(--kf-contrast-ink);
+    font-size: 12px; font-weight: 500;
+    transition: width 0.3s var(--am-ease), height 0.3s var(--am-ease), bottom 0.3s var(--am-ease);
+  }
+  .am-sheet {
+    display: flex; flex-direction: column; position: fixed; z-index: 69;
+    left: 8px; right: 8px; bottom: 8px;
+    padding: 18px 16px 16px;
+    border-radius: var(--kf-radius-lg);
+    background: var(--kf-contrast-bg); color: var(--kf-contrast-ink);
+    clip-path: inset(calc(100% - 46px) 40px 12px 40px round var(--kf-radius-lg));
+    visibility: hidden;
+    transition: clip-path 0.5s var(--am-ease), visibility 0s 0.5s;
+  }
+  .am-open .am-sheet { clip-path: inset(0 0 0 0 round var(--kf-radius-lg)); visibility: visible; transition: clip-path 0.5s var(--am-ease), visibility 0s; }
+  .am-open .am-pill { opacity: 0; pointer-events: none; }
+  .am-sheet__nav { display: flex; justify-content: center; gap: 5px; font-size: 22px; font-weight: 500; }
+  .am-sheet__nav [aria-current="page"] { color: color-mix(in srgb, var(--kf-contrast-ink) 50%, transparent); }
+  .am-sheet__row { display: flex; justify-content: space-between; margin-top: 30px; font-size: 12px; }
+  .am-sheet__row .am-mono { color: color-mix(in srgb, var(--kf-contrast-ink) 50%, transparent); display: block; margin-bottom: 8px; text-align: center; }
+  .am-sheet__row a, .am-sheet__row button { text-decoration: underline; font-weight: 500; }
+  .am-sheet__copy { margin-top: 30px; display: flex; justify-content: space-between; align-items: flex-end; font-size: 22px; font-weight: 500; line-height: 1.05; }
+  .am-sheet__copy svg { width: 36px; height: 36px; }
+  .am-sheet__top {
+    margin-top: 30px; height: 30px; border-radius: var(--kf-radius-lg);
+    background: var(--kf-contrast-ink); color: var(--kf-contrast-bg);
+    font-size: 12px; font-weight: 500;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .am-rise, .am-fade, .am-lines > span > span, .am-sheet, .am-pill { transition: none; }
+  .am-ticker__run, .am-char { animation: none; opacity: 1; }
+}

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>point-cloud-scroll-morph — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); font: 400 15px/1.5 var(--kf-font-sans); margin: 0; }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); color: var(--kf-ink); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .scene { position: fixed; inset: 0; z-index: 0; --fx-dot: var(--kf-contrast-ink); }
+  .step { position: relative; z-index: 1; height: 100vh; display: flex; align-items: center; padding: 0 6vw; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .mini { position: relative; z-index: 1; width: 320px; height: 200px; border: 1px solid var(--kf-line); margin: 0 6vw; }
+  .mail { font-size: 6vw; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>point-cloud-scroll-morph</b> — Scroll down: upper body → globe → map → spiral. Move the mouse and the head turns. Use the buttons to mix the loader ring, tunnel, and text-surround box. <span>(After 1s one more small panel comes in, and after 2.5s one leaves)</span></p>
+<div class="scene" id="scene" data-fx="point-cloud-scroll-morph"></div>
+<section class="step"><div class="row"><button type="button" data-k="ring">Loader ring</button><button type="button" data-k="tunnel">Tunnel</button><button type="button" data-k="frame">Post border</button><button type="button" data-k="none">Turn off</button></div></section>
+<section class="step"><p>Earth</p></section>
+<section class="step"><p>Map</p></section>
+<section class="step"><p>Spiral</p></section>
+<section class="step"><span class="mail" id="mail">hello@studio.name</span></section>
+<div class="mini" data-demo-remove data-fx="point-cloud-scroll-morph" data-fx-point-cloud-scroll-morph="count: 6000"></div>
+<template data-demo-late><div class="mini" data-fx="point-cloud-scroll-morph" data-fx-point-cloud-scroll-morph="count: 6000; formation: 1"></div></template>
+<section class="step"></section>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="three-global.js"></script>
+<script src="../../_vendor/three@0.185.0/build/three.cjs"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+const scene = document.getElementById("scene"), mail = document.getElementById("mail");
+let mode = "none", mix = { v: 0 };
+const send = () => scene.dispatchEvent(new CustomEvent("fx:state", { detail: { ring: mode === "ring" ? mix.v : 0, tunnel: mode === "tunnel" ? mix.v : 0, frame: mode === "frame" ? mix.v : 0, rect: mail.getBoundingClientRect() } }));
+document.querySelectorAll("[data-k]").forEach((b) => b.addEventListener("click", () => {
+  gsap.to(mix, { v: 0, duration: 0.6, onUpdate: send, onComplete: () => { mode = b.dataset.k; if (mode !== "none") gsap.to(mix, { v: 1, duration: 1.2, ease: "power2.inOut", onUpdate: send }); } });
+}));
+addEventListener("scroll", send, { passive: true });
+setTimeout(() => document.querySelectorAll("template[data-demo-late]").forEach((t) => t.replaceWith(t.content.cloneNode(true))), 1000);
+setTimeout(() => document.querySelectorAll("[data-demo-remove]").forEach((n) => n.remove()), 2500);
+</script>
+</body>
+</html>

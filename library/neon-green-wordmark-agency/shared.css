@@ -1,0 +1,290 @@
+/* The original sets 1rem to screen width/1440 (/390 on phones) and measures every dimension in rem — carried over as is so it keeps the same proportion at any width */
+html { font-size: calc(100vw / 1440); }
+@media (max-width: 767px) { html { font-size: calc(100vw / 390); } }
+
+:root {
+  /* Original :root --ease-01 — every hover uses this one curve */
+  --site-ease: cubic-bezier(.32, .48, 0, 1);
+  /* Dark green of the original VIEW MORE and arrow (#00cc20) — accent moved 18% toward the text color */
+  --site-accent-deep: color-mix(in srgb, var(--kf-accent) 82%, var(--kf-ink));
+  --site-head: var(--kf-font-head, var(--kf-font-sans));
+  --site-dark: var(--kf-contrast-bg);
+  --site-on-dark: var(--kf-contrast-ink);
+}
+body {
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  font-size: 14rem;
+  line-height: 1.7;
+  color: var(--kf-ink);
+  background: var(--kf-bg);
+}
+.nv-dark { background: var(--site-dark); color: var(--site-on-dark); }
+
+/* Marker: a box in the inverse color of the background. shared.js paints the box from the left and lights the letters in shuffled order */
+.nv-mk { display: inline; padding: 0 .12em; background: var(--kf-ink); color: var(--kf-accent); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.nv-dark .nv-mk { background: var(--kf-accent); color: var(--kf-ink); }
+
+/* ── Header: logo on the left, small menu row in the center, two pill buttons (black and white), hamburger. White text over black bands ── */
+.nv-header {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 9998;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  height: 60rem;
+  padding: 28rem 20rem 0 40rem;
+  pointer-events: none;
+  transition: color .3s;
+}
+.nv-header > * { pointer-events: auto; }
+.nv-header[data-white] { color: var(--site-on-dark); }
+.nv-header .nv-logo, .nv-nav a { transition: color .35s var(--site-ease); }
+.nv-logo { display: flex; align-items: center; gap: 6rem; font-weight: 900; font-size: 24rem; line-height: 1; letter-spacing: -.02em; }
+.nv-logo svg { width: 28rem; height: 28rem; }
+.nv-header__right { display: flex; align-items: center; gap: 13rem; }
+.nv-nav { display: flex; gap: 16rem; margin-right: 14rem; font-size: 12rem; font-weight: 700; }
+.nv-nav a { position: relative; }
+.nv-pill { display: inline-flex; align-items: center; height: 30rem; padding: 0 20rem; border: 2rem solid; border-radius: var(--kf-radius-pill); font-size: 12rem; font-weight: 700; line-height: 1; }
+.nv-pill--dark { background: var(--kf-ink); color: var(--kf-surface); border-color: var(--kf-ink); }
+.nv-pill--light { background: var(--kf-surface); color: var(--kf-ink); border-color: var(--kf-surface); }
+.nv-pill--accent { background: var(--kf-accent); color: var(--site-on-dark); border-color: var(--kf-accent); }
+.nv-header[data-white] .nv-pill--dark { background: var(--kf-surface); color: var(--kf-ink); border-color: var(--kf-surface); }
+.nv-burger { position: relative; width: 22rem; height: 30rem; margin-left: 9rem; border: 0; background: none; cursor: pointer; color: inherit; }
+.nv-burger span, .nv-burger::before, .nv-burger::after { content: ""; position: absolute; left: 0; right: 0; height: 2rem; background: currentColor; }
+.nv-burger::before { top: 8rem; }
+.nv-burger span { top: 14rem; }
+.nv-burger::after { top: 20rem; }
+
+/* Two fixed buttons, bottom right */
+.nv-cta { position: fixed; right: 20rem; bottom: 42rem; z-index: 9990; display: flex; gap: 20rem; }
+.nv-cta a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6rem;
+  width: 270rem;
+  height: 76rem;
+  font-size: 18rem;
+  font-weight: 700;
+  border: 4rem solid var(--kf-accent);
+}
+.nv-cta__a { background: var(--site-dark); color: var(--kf-accent); text-decoration: underline; text-underline-offset: 4rem; }
+.nv-cta__b { background: var(--kf-surface); color: var(--kf-ink); }
+.nv-cta svg { width: 18rem; height: 18rem; }
+
+/* ── Menu: a black panel appears with a springy feel, using the same column layout as the footer below ── */
+.nv-menu {
+  position: fixed;
+  top: 16rem;
+  right: 8rem;
+  z-index: 9999;
+  width: 100%;
+  max-width: 730rem;
+  height: 100%;
+  max-height: 770rem;
+  padding: 84rem 60rem 30rem 40rem;
+  border-radius: 6rem;
+  background: var(--site-dark);
+  color: var(--site-on-dark);
+  opacity: 0;
+  visibility: hidden;
+  overflow-y: auto;
+  transform-origin: right top;
+}
+.nv-menu .nv-cols { grid-template-columns: 1fr 1fr 1fr; }
+.nv-menu .nv-cols__col:last-child { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: flex-end; }
+.nv-menu__close { position: absolute; top: 24rem; right: 20rem; width: 36rem; height: 36rem; border: 0; background: none; color: inherit; cursor: pointer; }
+.nv-menu__close::before, .nv-menu__close::after { content: ""; position: absolute; left: 6rem; right: 6rem; top: 17rem; height: 2rem; background: currentColor; transform: rotate(45deg); }
+.nv-menu__close::after { transform: rotate(-45deg); }
+
+.nv-cols { display: grid; grid-template-columns: repeat(3, 1fr) 1.2fr; gap: 40rem; }
+.nv-cols__col { display: flex; flex-direction: column; gap: 22rem; }
+.nv-cols__head { font-family: var(--site-head); font-size: 22rem; font-weight: 800; line-height: 1; text-transform: uppercase; }
+.nv-cols__head small { display: block; margin-top: 4rem; font-family: var(--kf-font-sans); font-size: 10rem; font-weight: 500; }
+.nv-cols__sub { font-size: 11rem; font-weight: 500; line-height: 1.9; }
+.nv-cols__extra { display: flex; flex-direction: column; gap: 6rem; font-size: 12rem; }
+.nv-cols__btns { display: flex; flex-direction: column; align-items: flex-start; gap: 10rem; margin-top: 30rem; }
+
+.nv-footer { position: relative; padding: 70rem 40rem 30rem; background: var(--site-dark); color: var(--site-on-dark); }
+.nv-footer__bottom { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 110rem; font-size: 10rem; }
+.nv-footer .nv-logo { color: var(--kf-accent); }
+
+/* ── Subpage header: huge title + small name tag, three ↓ anchor lines below ── */
+.nv-pagehead { position: relative; display: flex; flex-direction: column; min-height: 100vh; padding: 150rem 40rem 20rem; }
+.nv-pagehead__we { position: absolute; right: 20rem; top: 150rem; font-family: var(--site-head); font-size: 10rem; font-weight: 800; line-height: 1.3; text-align: right; }
+.nv-pagehead__foot { display: flex; justify-content: space-between; margin-top: auto; padding-top: 20rem; font-family: var(--site-head); font-size: 10rem; font-weight: 800; }
+.nv-pagehead__title { display: flex; align-items: flex-end; gap: 14rem; }
+.nv-pagehead__title h1 { font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); font-size: 220rem; line-height: .9; letter-spacing: -.01em; overflow: hidden; }
+.nv-pagehead__title h1 span { display: inline-block; }
+.nv-pagehead__title small { margin-bottom: 14rem; font-size: 12rem; }
+/* Breadcrumb row (original parts-breadcrumb — top right of the header, no hover reaction) */
+.nv-crumb { position: absolute; top: 160rem; left: 982rem; z-index: 2; display: flex; gap: 8rem; font-family: var(--site-head); font-size: 12rem; font-weight: 600; line-height: 1.4; }
+.nv-anchors { margin-top: 54rem; border-bottom: 1rem solid var(--kf-ink); }
+.nv-anchors a { position: relative; z-index: 0; display: flex; align-items: center; padding: 17rem 0 17rem 76rem; border-top: 1rem solid var(--kf-ink); overflow: hidden; cursor: pointer; }
+.nv-anchors b { margin-right: 10rem; padding-top: 5rem; font-family: var(--site-head); font-size: 75rem; font-weight: 600; line-height: .7; letter-spacing: -1rem; text-transform: uppercase; }
+.nv-anchors small { align-self: flex-end; font-size: 16rem; line-height: 1; }
+.nv-anchors__arrow { position: absolute; top: 0; bottom: 0; left: 20rem; width: 42rem; height: 41rem; margin: auto 0; }
+.nv-anchors__arrow.is-first { transform: translateY(-200%); }
+.nv-anchors__arrow svg { width: 100%; height: 100%; }
+.nv-anchors__bg { position: absolute; inset: 0; z-index: -1; background: var(--kf-surface); transform: scaleY(0); transform-origin: bottom; }
+
+/* Section title: huge condensed letters, each rising from below */
+.nv-title { font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); font-size: 120rem; line-height: .92; text-transform: uppercase; overflow: hidden; }
+.nv-title--center { text-align: center; }
+.nv-more { display: inline-flex; align-items: center; gap: 6rem; font-family: var(--site-head); font-size: 12rem; font-weight: 800; }
+.nv-more svg { width: 21rem; height: 22rem; }
+.nv-more svg path { fill: none; stroke: currentColor; stroke-width: 2; }
+
+/* Common card: photo slot + tag + two-line title */
+.nv-card { display: flex; flex-direction: column; gap: 10rem; padding: 10rem; background: var(--site-dark); color: var(--site-on-dark); border: 2rem solid var(--site-dark); }
+.nv-card .wf-img { aspect-ratio: 16 / 9; }
+.nv-card__tag { align-self: flex-start; padding: 1rem 8rem; border: 1rem solid var(--kf-accent); color: var(--kf-accent); font-size: 10rem; }
+.nv-card__title { font-size: 13rem; line-height: 1.6; color: var(--site-on-dark); }
+/* List cards (original interview__item__link · parts-card-column) have their own dark green text color and the inner text keeps its own color — on hover only the card’s text color turns white */
+.nv-grid .nv-card, .dt-others .nv-card { color: var(--site-accent-deep); }
+.nv-card__logo { width: 70rem; aspect-ratio: 3 / 1; }
+.nv-chips { display: flex; flex-wrap: wrap; gap: 6rem; }
+.nv-chip { padding: 2rem 14rem; border: 1rem solid currentColor; border-radius: var(--kf-radius-pill); background: transparent; color: inherit; font: inherit; font-size: 11rem; }
+.nv-chip.is-on { background: var(--kf-ink); color: var(--kf-accent); }
+
+/* ── Free analysis pinned stage: a 3D laptop turns under a giant title and steps 01→02 switch ── */
+.nv-fa { position: relative; height: 300vh; }
+.nv-fa__stage { position: relative; height: 100vh; overflow: hidden; padding: 70rem 20rem 20rem; }
+.nv-fa__head { display: flex; align-items: flex-start; gap: 18rem; }
+.nv-fa__labels { display: flex; flex-direction: column; gap: 4rem; padding-top: 10rem; }
+.nv-fa__labels .nv-mk { font-size: 15rem; line-height: 1.5; align-self: flex-start; }
+.nv-fa__now { font-size: 46rem; font-weight: 900; line-height: 1.1; }
+.nv-fa__now small { display: block; font-family: var(--site-head); font-size: 10rem; font-weight: 600; }
+.nv-fa__title { font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); font-size: 200rem; line-height: .86; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; }
+.nv-fa__laptop { position: absolute; inset: 0; width: 710rem; height: 650rem; margin: auto; }
+.nv-fa__laptop canvas { width: 100% !important; height: 100% !important; }
+.nv-fa__foot { position: absolute; left: 20rem; right: 20rem; bottom: 20rem; display: flex; justify-content: space-between; align-items: flex-end; }
+.nv-fa__free { font-size: 30rem; font-weight: 900; }
+.nv-fa__step { text-align: right; font-size: 30rem; font-weight: 900; line-height: 1.2; }
+.nv-fa__num { display: flex; justify-content: flex-end; align-items: flex-start; gap: 4rem; font-family: var(--site-head); font-size: 40rem; font-weight: 800; line-height: 1; }
+.nv-fa__num small { font-size: 9rem; font-weight: 600; }
+/* 01·02 text is stacked in one cell, with each letter switching off and on (original out/inMarkerText) */
+.nv-fa__stack { display: inline-grid; justify-items: end; }
+.nv-fa__stack > * { grid-area: 1 / 1; }
+.nv-fa__stack [data-step="2"] { visibility: hidden; }
+.nv-fa[data-step="2"] .nv-fa__stack [data-step="1"] { visibility: hidden; }
+.nv-fa[data-step="2"] .nv-fa__stack [data-step="2"] { visibility: visible; }
+.nv-fa.is-ready .nv-fa__stack > * { visibility: visible; }
+
+/* Contact band: CONTACT between lines above and below. On wide screens, hovering the band spreads a black panel and five cards rise (original contactDirection) */
+.nv-contact { padding: 0 0 100rem; }
+.nv-contact__link { position: relative; margin-top: 100rem; padding: 185rem 0 180rem; border-top: 2rem solid var(--kf-ink); border-bottom: 2rem solid var(--kf-ink); text-align: center; }
+.nv-contact__title { font-family: var(--site-head); font-size: 40rem; font-weight: 700; line-height: 1; }
+.nv-contact__contents { position: absolute; inset: 0; z-index: 1; display: flex; justify-content: center; align-items: center; gap: 16rem; padding: 20rem; overflow: hidden; }
+.nv-contact__panel { position: absolute; inset: 0; z-index: -1; background: var(--site-dark); transform: scale(0, .25); }
+.nv-contact__item { position: relative; display: flex; width: 258rem; color: var(--site-on-dark); opacity: 0; }
+.nv-contact__inner { position: relative; z-index: 0; display: flex; flex-direction: column; align-items: center; width: 100%; padding: 79rem 0 30rem; background: var(--kf-accent); }
+.nv-contact__en { position: absolute; inset: 60rem 0 auto; z-index: 1; font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); font-size: 40rem; line-height: .9; text-transform: uppercase; color: var(--kf-ink); }
+.nv-contact__ja { position: relative; z-index: 1; min-width: 185rem; margin-top: 191.7rem; padding: 6rem 12rem; background: var(--site-dark); color: var(--kf-accent); font-size: 18rem; font-weight: 700; }
+.nv-contact__inner > svg { position: relative; z-index: 1; width: 50rem; margin-top: 25rem; color: var(--kf-ink); }
+.nv-contact__bgwrap { position: absolute; inset: 0; z-index: -1; width: calc(100% - 10rem); height: calc(100% - 10rem); margin: auto; }
+.nv-contact__bg { position: absolute; inset: 0; background: var(--kf-surface); transform: scaleY(0); transform-origin: bottom; }
+
+/* Copy notification (original showCopyNotification) */
+.nv-notice { position: fixed; top: 20rem; left: 50%; z-index: 9999; padding: 4rem; border-radius: .25rem; background: var(--site-dark); color: var(--site-on-dark); font-size: 10rem; opacity: 0; transform: translateX(-50%); }
+
+/* ── Hover: the original animation-hover-* bundle as is (one curve, move and band .6s · cover .5s · color .35s). Not applied on touch devices ── */
+.nv-cta { transition: opacity .35s cubic-bezier(0, .831, .25, 1); }
+.nv-cta.is-hide { opacity: 0; pointer-events: none; }
+@media (hover: hover) {
+  .nv-nav a::before { content: ""; position: absolute; inset: auto auto -8rem 0; width: 100%; height: 2rem; background: currentColor; transform: scaleX(0); transform-origin: right; transition: transform .6s var(--site-ease); }
+  .nv-nav a:hover::before { transform: scaleX(1); transform-origin: left; }
+  .nv-pill { transition: color .35s var(--site-ease), border-color .35s var(--site-ease), background .35s var(--site-ease); }
+  .nv-pill:hover { color: var(--site-on-dark); background: transparent; border-color: var(--site-on-dark); }
+  .nv-header[data-white] .nv-pill:hover { color: var(--site-on-dark); background: var(--site-dark); border-color: var(--site-on-dark); }
+  /* Buttons inside menu and footer (animation-hover-menu-button): green text, green border, black background */
+  .nv-cols__btns .nv-pill:hover { color: var(--kf-accent); background: var(--site-dark); border-color: var(--kf-accent); }
+  /* Fixed button (animation-hover-link-card-scale): set to .95 */
+  .nv-cta a { transition: transform .6s var(--site-ease); }
+  .nv-cta a:hover { transform: scale(.95); }
+  /* Big row link (animation-hover-link + -arrow): a white band paints from the left and the arrow bar goes 42→54rem */
+  .nv-biglink__bar { transition: width .6s var(--site-ease); }
+  .nv-biglink__bg { transform: scaleX(0); transform-origin: right; transition: transform .6s var(--site-ease); }
+  .nv-biglink:hover .nv-biglink__bar { width: 54rem; }
+  .nv-biglink:hover .nv-biglink__bg { transform: scaleX(1); transform-origin: left; }
+  /* Card (animation-hover-link-card): shrinks to .95 and a black cover fills from the bottom while the text turns white */
+  .nv-svc, .sv-card, .nv-contact__inner { transition: color .6s var(--site-ease), transform .6s var(--site-ease); }
+  .nv-svc__bg, .nv-contact__bg { transform: scaleY(0); transform-origin: top; transition: transform .5s var(--site-ease); }
+  .sv-card .nv-more { transition: none; }
+  .nv-svc svg path, .nv-contact__inner svg path { transition: stroke .6s var(--site-ease); }
+  .nv-svc:hover, .sv-card:hover, .nv-contact__inner:hover { color: var(--site-on-dark); transform: scale(.95); }
+  .nv-svc:hover .nv-svc__bg, .sv-card:hover .nv-svc__bg, .nv-contact__inner:hover .nv-contact__bg { transform: scaleY(1); transform-origin: bottom; }
+  .nv-svc:hover svg path, .nv-contact__inner:hover svg path { stroke: var(--site-on-dark); }
+  /* Bordered card (animation-hover-link-border): shrinks to .95 and the border turns white */
+  /* Card (animation-hover-link-card-scale): shrinks to .95 over .6s and the text color turns white immediately (color has no transition). Only activity cards get a border that turns white over .6s (animation-hover-link-border) */
+  .nv-card { transition: transform .6s var(--site-ease); }
+  .nv-card:hover { transform: scale(.95); color: var(--site-on-dark); }
+  .nv-acts .nv-card { transition: border-color .6s var(--site-ease), transform .6s var(--site-ease); }
+  .nv-acts .nv-card:hover { border-color: var(--site-on-dark); }
+  /* Text color (animation-hover-link-color · -white) */
+  .nv-more, .nv-slider__arrows button, .nv-cols__sub a, .nv-cols__head a { transition: color .35s var(--site-ease); }
+  .nv-more svg path, .nv-slider__arrows svg path { transition: stroke .35s var(--site-ease); }
+  /* Arrows inside cards follow the card group (.6s) */
+  .nv-svc .nv-more svg path, .sv-card .nv-more svg path, .nv-contact__inner svg path { transition: stroke .6s var(--site-ease); }
+  .ab-map__link { transition: color .35s var(--site-ease); }
+  .ab-map__link svg path { transition: stroke .35s var(--site-ease); }
+  .ab-map__link:hover { color: var(--site-on-dark); }
+  .ab-map__link:hover svg path { stroke: var(--site-on-dark); }
+  .nv-more:hover { color: var(--site-on-dark); }
+  .nv-more:hover svg path, .nv-svc:hover .nv-more svg path, .sv-card:hover .nv-more svg path { stroke: var(--site-on-dark); }
+  .nv-slider__arrows button:hover, .nv-slider__arrows button:hover svg path { color: var(--kf-accent); stroke: var(--kf-accent); }
+  .nv-dark .nv-more:hover, .nv-menu .nv-cols a:hover, .nv-footer .nv-cols a:hover { color: var(--kf-accent); }
+  /* Anchor row (animation-hover-link-down): a white cover drops from above, the hidden arrow above slides down into place while the existing arrow exits downward */
+  .nv-anchors__arrow, .nv-anchors__bg { transition: transform .6s var(--site-ease); }
+  .nv-anchors a:hover .nv-anchors__arrow.is-first { transform: translateY(0%); }
+  .nv-anchors a:hover .nv-anchors__arrow:not(.is-first) { transform: translateY(200%); }
+  .nv-anchors a:hover .nv-anchors__bg { transform: scaleY(1); transform-origin: top; }
+  /* Filter button (animation-hover-button-black) · page numbers (-color-white) */
+  .nv-chip, .wk-pager a { transition: color .35s var(--site-ease), border-color .35s var(--site-ease), background .35s var(--site-ease); }
+  .nv-chip:hover { color: var(--site-on-dark); background: var(--site-dark); border-color: var(--site-dark); }
+  .wk-pager a:hover { color: var(--site-on-dark); }
+  /* Arrow bar (animation-hover-link-arrow) */
+  .nv-arrowlink__bar { transition: width .6s var(--site-ease); }
+  .nv-arrowlink:hover .nv-arrowlink__bar { width: 54rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nv-header *, .nv-anchors *, .nv-chip, .wk-pager a, .nv-cta, .nv-cta a, .nv-pill, .nv-svc, .nv-svc__bg, .nv-card, .nv-more, .nv-biglink *, .nv-contact *, .nv-arrowlink__bar { transition: none !important; }
+}
+
+@media (max-width: 767px) {
+  .nv-header { height: 54rem; padding: 26rem 8rem 0 8rem; }
+  .nv-nav, .nv-header .nv-pill { display: none; }
+  .nv-cta { left: 8rem; right: 8rem; bottom: 8rem; gap: 6rem; }
+  .nv-cta a { flex: 1; width: auto; height: 54rem; font-size: 13rem; border-width: 3rem; }
+  .nv-menu { top: 14rem; right: 0; max-width: 343rem; max-height: none; height: calc(100% - 14rem); padding: 84rem 16rem 100rem 24rem; border-top-right-radius: 0; }
+  .nv-menu .nv-cols { grid-template-columns: 1fr 1fr; }
+  .nv-cols { grid-template-columns: 1fr 1fr; gap: 30rem 16rem; }
+  .nv-footer { padding: 50rem 16rem 90rem; }
+  .nv-pagehead { min-height: 0; padding: 120rem 8rem 30rem; }
+  .nv-pagehead__title h1 { font-size: 92rem; }
+  .nv-anchors b { font-size: 36rem; }
+  .nv-crumb { top: 64rem; left: 8rem; font-size: 10rem; }
+  .nv-anchors__arrow { width: 32rem; height: 31rem; }
+  .nv-pagehead__we { top: 70rem; right: 8rem; }
+  .nv-title { font-size: 64rem; }
+  .nv-fa { height: 260vh; }
+  .nv-fa__stage { padding: 70rem 8rem 80rem; }
+  .nv-fa__head { flex-direction: column; gap: 6rem; }
+  .nv-fa__title { font-size: 92rem; }
+  .nv-fa__laptop { width: 390rem; height: 360rem; }
+  .nv-fa__foot { left: 8rem; right: 8rem; bottom: 76rem; }
+  .nv-fa__free, .nv-fa__step { font-size: 18rem; }
+  .nv-fa__num { font-size: 26rem; }
+  .nv-contact__link { margin-top: 60rem; padding: 31.3rem 8rem 0; border-bottom: 0; }
+  .nv-contact__contents { position: static; flex-wrap: wrap; gap: 8rem; padding: 30rem 0 0; }
+  .nv-contact__panel { display: none; }
+  .nv-contact__item { width: calc(50% - 4rem); opacity: 1; }
+  .nv-contact__inner { padding-top: 60rem; }
+  .nv-contact__en { inset: 20rem 0 auto; font-size: 26rem; }
+  .nv-contact__ja { margin-top: 80rem; min-width: 0; font-size: 12rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nv-fa { height: auto; }
+}

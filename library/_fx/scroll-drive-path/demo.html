@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>scroll-drive-path — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .gap { height: 60vh; display: grid; place-items: center; color: var(--kf-dim); }
+  .map { background: color-mix(in oklab, var(--kf-accent) 30%, var(--kf-bg)); }
+  .map svg { display: block; width: 100%; height: auto; }
+  .road { fill: none; stroke: var(--kf-line); stroke-width: 80; stroke-linecap: round; }
+  .lane { fill: none; stroke: var(--kf-bg); stroke-width: 4; stroke-dasharray: 30 26; }
+  .car rect { fill: var(--kf-accent); stroke: var(--kf-ink); stroke-width: 3; }
+  .pin rect { fill: var(--kf-surface); stroke: var(--kf-ink); stroke-width: 3; }
+  .pin text { font: 700 26px/1 var(--kf-font-sans); fill: var(--kf-ink); }
+  .pin [data-fx-part="icon"] circle { fill: var(--kf-accent); }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>scroll-drive-path</b> — Scroll down. The map stops, a car runs along the road and spots pop out one by one (1 second later a second map attaches late, and 3 seconds later the first map drops off).</p>
+<div class="gap">Scroll Up</div>
+<section class="map" data-fx="scroll-drive-path" data-fx-scroll-drive-path="screens: 3; at: .3 .6">
+</section>
+<div class="gap">Second map (added late)</div>
+<section class="map" id="late"></section>
+<template id="tpl">
+  <div data-fx-part="viewport"><div data-fx-part="world">
+    <svg viewBox="0 0 1000 1400">
+      <path class="road" data-fx-part="route" d="M0 160H700C880 160 880 560 700 560H300C120 560 120 960 300 960H700C880 960 880 1300 700 1300H1000"/>
+      <path class="lane" d="M0 160H700C880 160 880 560 700 560H300C120 560 120 960 300 960H700C880 960 880 1300 700 1300H1000"/>
+      <g class="car" data-fx-part="car"><rect width="90" height="50" rx="14"/></g>
+      <g class="pin" data-fx-part="spot"><rect x="330" y="20" width="220" height="90" rx="20"/><text x="440" y="74" text-anchor="middle">Landmark 1</text><g data-fx-part="icon"><circle cx="550" cy="110" r="22"/></g></g>
+      <g class="pin" data-fx-part="spot"><rect x="420" y="640" width="220" height="90" rx="20"/><text x="530" y="694" text-anchor="middle">Landmark 2</text><g data-fx-part="icon"><circle cx="640" cy="730" r="22"/></g></g>
+      <g class="pin" data-fx-part="spot"><rect x="330" y="1040" width="220" height="90" rx="20"/><text x="440" y="1094" text-anchor="middle">Landmark 3</text></g>
+    </svg>
+  </div></div>
+</template>
+<div class="gap">Footer</div>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../../../_shared/vendor/gsap/ScrollTrigger.min.js"></script>
+<script src="../../../_shared/vendor/gsap/MotionPathPlugin.min.js"></script>
+<script>document.querySelector("section.map[data-fx]").append(document.getElementById("tpl").content.cloneNode(true));</script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+  setTimeout(() => {
+    const late = document.getElementById("late");
+    if (!late) return;
+    late.append(document.getElementById("tpl").content.cloneNode(true));
+    late.setAttribute("data-fx-scroll-drive-path", "screens: 2; at: .5 .8");
+    late.setAttribute("data-fx", "scroll-drive-path");
+    ScrollTrigger.refresh();
+  }, 1000);
+  setTimeout(() => document.querySelector("section.map")?.removeAttribute("data-fx"), 3000);
+</script>
+</body>
+</html>

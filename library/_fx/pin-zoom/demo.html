@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pin-zoom — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .demo { padding: 48px 20px; }
+  .demo-btn { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-sm); background: var(--kf-surface); color: var(--kf-ink); cursor: pointer; }
+  .demo-card { padding: 20px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-md); background: var(--kf-surface); }
+  .demo-spacer { height: 90vh; display: grid; place-items: center; color: var(--kf-dim); }
+  .map { height: 100svh; display: grid; place-items: center; background-image: linear-gradient(var(--kf-raised) 1px, transparent 1px), linear-gradient(90deg, var(--kf-raised) 1px, transparent 1px); background-size: 80px 80px; }
+  .map svg { position: absolute; inset: 0; width: 100%; height: 100%; transform-origin: 72% 56%; }
+  .map path { fill: none; stroke: var(--kf-dim); stroke-width: 1.2; vector-effect: non-scaling-stroke; } .map circle { fill: var(--kf-accent); } .map text { font: 3.2px var(--kf-font-mono); fill: var(--kf-dim); }
+  .map p { position: relative; z-index: 2; font: 400 40px/1.1 var(--kf-font-display); } .map p span { color: var(--kf-accent); }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>pin-zoom</b> — Scroll and the section pins, the sentence clears, then the map zooms 4.2x onto a single point, and marker dots and labels appear.</p>
+<div class="demo-spacer">Scroll down ↓</div><section class="map" data-fx="pin-zoom"><svg data-fx-part="zoom" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid slice"><path d="M120 140c60-50 180-40 220 10s-20 120-90 130-170-90-130-140z"/><path d="M420 110c80-30 200-10 230 60s-60 120-150 110-140-140-80-170z"/><path d="M640 220c50-20 120 0 130 60s-40 110-100 100-80-130-30-160z"/><path d="M300 330c40-10 80 30 70 80s-60 70-90 40-20-110 20-120z"/>
+<circle data-fx-part="pin" cx="688" cy="258" r="1.6"/><circle data-fx-part="pin" cx="695" cy="311" r="0.9"/><circle data-fx-part="pin" cx="702" cy="284" r="0.9"/><circle data-fx-part="pin" cx="709" cy="337" r="0.9"/><circle data-fx-part="pin" cx="716" cy="310" r="0.9"/><circle data-fx-part="pin" cx="693" cy="283" r="1.6"/><circle data-fx-part="pin" cx="700" cy="336" r="0.9"/><circle data-fx-part="pin" cx="707" cy="309" r="0.9"/><circle data-fx-part="pin" cx="714" cy="282" r="0.9"/><circle data-fx-part="pin" cx="691" cy="335" r="0.9"/><circle data-fx-part="pin" cx="698" cy="308" r="1.6"/><circle data-fx-part="pin" cx="705" cy="281" r="0.9"/><circle data-fx-part="pin" cx="712" cy="334" r="0.9"/><circle data-fx-part="pin" cx="689" cy="307" r="0.9"/><circle data-fx-part="pin" cx="696" cy="280" r="0.9"/><circle data-fx-part="pin" cx="703" cy="333" r="1.6"/><circle data-fx-part="pin" cx="710" cy="306" r="0.9"/><circle data-fx-part="pin" cx="717" cy="279" r="0.9"/><circle data-fx-part="pin" cx="694" cy="332" r="0.9"/><circle data-fx-part="pin" cx="701" cy="305" r="0.9"/><circle data-fx-part="pin" cx="708" cy="278" r="1.6"/><circle data-fx-part="pin" cx="715" cy="331" r="0.9"/><circle data-fx-part="pin" cx="692" cy="304" r="0.9"/><circle data-fx-part="pin" cx="699" cy="277" r="0.9"/><circle data-fx-part="pin" cx="706" cy="330" r="0.9"/><circle data-fx-part="pin" cx="713" cy="303" r="1.6"/><text data-fx-part="label" x="655" y="240">Place name one</text><text data-fx-part="label" x="735" y="268">Place name two</text><text data-fx-part="label" x="700" y="345">Place name three</text></svg><p data-fx-part="say">…and every place I have been <span>Mosaic</span>…</p></section><div class="demo-spacer"></div>
+<script>
+// Late arrivals and removals — checks that fx-core attaches to an element added after 1s and detaches from an element removed after 2.5s
+(() => {
+  const src = document.querySelector('[data-fx~="pin-zoom"]');
+  if (!src) return;
+  const html = src.outerHTML.replace(/\sid="[^"]*"/g, "");
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = html; const el = t.content.firstElementChild; el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => (src.closest(".pin-spacer") || src).after(make("late")), 1000); // Once pinned the panel gets wrapped in a pin-spacer, so place it outside that
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1s another identical one comes in (the late arrival), and after 2.5s one drops out (the detach).");
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../../../_shared/vendor/gsap/ScrollTrigger.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

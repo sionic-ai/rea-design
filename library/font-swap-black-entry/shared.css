@@ -1,0 +1,91 @@
+/* Spans many pages — header (logo · share button) · footer · background dot grid · two modals (entry form · share).
+   The original hides the header blurred 8px and 2em up during html.is-intro, then lowers it over .6s once the title settles (fx:done). */
+:root {
+  --site-unit: 20px;
+  --site-fluid-xs: clamp(.75rem, .6196rem + .6522vw, 1.125rem);
+  --site-fluid-sm: clamp(1rem, .8261rem + .8696vw, 1.5rem);
+  --site-fluid-md: clamp(1.5rem, 1.3261rem + .8696vw, 2rem);
+  --site-fluid-2xl: clamp(3rem, 2.4783rem + 2.6087vw, 4.5rem);
+  --site-body-lg: clamp(1.375rem, 1.2011rem + .8696vw, 1.875rem);
+  --site-body-sm: clamp(.875rem, .8315rem + .2174vw, 1rem);
+  --site-ease: cubic-bezier(.645, .045, .355, 1);
+  --site-ease-smooth: cubic-bezier(.38, .005, .215, 1);
+  --site-ease-expo-out: cubic-bezier(0, .962, .5, 1);
+  --site-veil: color-mix(in srgb, var(--kf-bg) 64%, transparent);
+  --site-veil-dot: color-mix(in srgb, var(--kf-ink) 10%, transparent);
+  --site-soft-line: color-mix(in oklab, var(--kf-contrast-bg) 87%, var(--kf-contrast-ink));
+  --site-soft-fill: color-mix(in oklab, var(--kf-contrast-bg) 95%, var(--kf-contrast-ink));
+  --fx-dot-color: var(--kf-dim);
+}
+
+html { background: var(--kf-bg); }
+/* Background goes on html only — painting body would cover the z-index −1 dot grid panel */
+body { background: transparent; color: var(--kf-ink); font: var(--kf-weight-body) 1rem/1.4 var(--kf-font-sans); -webkit-font-smoothing: antialiased; }
+a, button { color: inherit; font: inherit; }
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--kf-accent-text); outline-offset: 3px; }
+.ct-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.ct-container { width: 100%; max-width: min(1400px, 100% - var(--site-unit) * 2); margin-inline: auto; }
+
+/* ───── Background dot grid (fixed to screen, opacity .3) ───── */
+.ct-grid { position: fixed; inset: 0; z-index: -1; height: 100lvh; opacity: .3; pointer-events: none; }
+
+/* ───── Header ───── */
+.ct-head { position: fixed; top: var(--site-fluid-md); left: var(--site-unit); right: var(--site-unit); z-index: 30; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none;
+  transition: opacity .6s var(--site-ease-smooth), filter .6s var(--site-ease-smooth), transform .6s var(--site-ease-smooth); }
+.ct-head > * { pointer-events: auto; }
+/* Shade band behind the header — 200px from background color to transparent. On wide screens, hovering the header deepens it to .3 over .4s, and on release it recedes straight over 2s */
+.ct-header::before { content: ""; position: fixed; top: 0; left: 0; z-index: 29; width: 100%; height: 200px; opacity: 0; pointer-events: none; transition: opacity 2s linear;
+  background: linear-gradient(var(--kf-bg), color-mix(in srgb, var(--kf-bg) 72%, transparent) 21.6%, color-mix(in srgb, var(--kf-bg) 39%, transparent) 47%, color-mix(in srgb, var(--kf-bg) 11%, transparent) 75.9%, transparent); }
+@media (min-width: 1000px) { .ct-header:has(.ct-head:hover)::before { opacity: .3; transition-duration: .4s; } }
+html.is-intro .ct-head { opacity: 0; }
+@media (prefers-reduced-motion: no-preference) { html.is-intro .ct-head { filter: blur(8px); transform: translateY(-2em); } }
+@media (prefers-reduced-motion: reduce) { .ct-head { transition-duration: 0s; } }
+.ct-logo { display: block; font-size: 36px; line-height: 0; color: var(--kf-ink); }
+.ct-logo svg { width: 2.84em; height: 1em; overflow: visible; }
+.ct-logo text { font-family: var(--kf-font-sans); }
+.ct-icon-btn { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); border: 1px solid var(--site-soft-line); }
+.ct-icon-btn svg { width: 18px; height: 18px; }
+.ct-icon-btn:focus-visible { background: var(--site-soft-fill); }
+@media (hover: hover) { .ct-icon-btn:hover { background: var(--site-soft-fill); } }
+
+/* ───── Buttons ───── */
+.ct-btn { display: inline-flex; align-items: center; padding: 13px 15px; border-radius: var(--kf-radius-sm); border: 1px solid var(--kf-contrast-bg); background: var(--kf-contrast-bg); color: var(--kf-contrast-ink);
+  font: 500 11px/1 var(--kf-font-sans); letter-spacing: 1px; text-transform: uppercase; }
+.ct-btn:focus-visible { opacity: .8; text-decoration: underline; text-underline-offset: .2em; }
+@media (hover: hover) { .ct-btn:hover { opacity: .8; text-decoration: underline; text-underline-offset: .2em; } }
+.ct-btn.is-dark { background: var(--kf-contrast-ink); color: var(--kf-contrast-bg); border-color: var(--kf-contrast-ink); }
+
+/* ───── Footer ───── */
+.ct-foot { position: relative; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--site-fluid-xs) var(--site-fluid-sm); margin-top: var(--site-fluid-2xl); padding-block: var(--site-fluid-xs);
+  font-size: var(--site-body-sm); letter-spacing: -.03em; line-height: 1.1; }
+.ct-foot .is-dim { opacity: .5; }
+/* Footer links — .5 at rest, on hover they brighten to 1 in .2s while the underline draws from the left (it retracts to the right on release) */
+.ct-link { position: relative; display: inline-block; text-decoration: none; opacity: .5; transition: opacity .2s var(--site-ease-smooth); }
+.ct-link::before { content: ""; position: absolute; left: 0; bottom: 0; width: 100%; height: max(1px, .04em); background: currentColor; transform: scaleX(0); transform-origin: 100% 0; transition: transform .2s var(--site-ease-smooth); }
+@media (hover: hover) { .ct-link:hover { opacity: 1; } .ct-link:hover::before { transform: scaleX(1); transform-origin: 0 0; } }
+.ct-link:focus-visible { opacity: 1; }
+
+/* ───── Modal — the backdrop is a 64% black scrim + 28px dot pattern + 4px blur, the panel rises from fluid-md below in .4s (closes in .2s) ───── */
+.ct-modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; color: var(--kf-contrast-ink);
+  background: var(--site-veil) radial-gradient(var(--site-veil-dot) 1.4px, transparent 1.4px) 0 0 / 28px 28px; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+  opacity: 1; visibility: visible; transition: opacity .4s ease, visibility 0s; }
+.ct-modal:not(.is-active) { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .2s ease, visibility 0s .2s; }
+.ct-modal__outer { position: absolute; inset: 0; display: grid; place-items: center; padding-block: clamp(2.5rem, 2rem + 2vw, 4rem); overflow-y: auto; }
+.ct-modal__inner { position: relative; display: flex; flex-direction: column; gap: var(--site-fluid-sm); width: 100%; max-width: min(24rem, calc(100vw - var(--site-unit) * 2)); padding: var(--site-fluid-sm);
+  border-radius: var(--kf-radius-lg); background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); transform: translate3d(0, 0, 0); transition: transform .4s var(--site-ease); }
+.ct-modal:not(.is-active) .ct-modal__inner { transform: translate3d(0, var(--site-fluid-md), 0); transition-duration: .2s; }
+.ct-modal__close { position: absolute; top: var(--site-fluid-sm); right: var(--site-fluid-sm); }
+.ct-modal__title { padding-right: 3rem; margin-bottom: var(--site-fluid-sm); font: 700 clamp(1.25rem, 1.1rem + .6vw, 1.625rem)/1.1 var(--kf-font-sans); letter-spacing: -.03em; }
+.ct-form { display: grid; gap: .75rem; }
+.ct-form label { display: grid; gap: .3rem; font-size: 13px; }
+.ct-form input, .ct-form select { width: 100%; height: 2.5rem; padding: 0 .75rem; border-radius: .5rem; border: 1px solid var(--site-soft-line); background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); font: inherit; }
+.ct-form .ct-btn { justify-self: start; margin-top: .5rem; }
+
+.ct-share { max-width: min(25rem, calc(100vw - var(--site-unit) * 2)); }
+.ct-share__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--site-fluid-md); }
+.ct-share__head p { font: 700 1.25rem/1.1 var(--kf-font-sans); letter-spacing: -.03em; }
+.ct-share__list { display: flex; flex-direction: column; gap: clamp(.5rem, .4565rem + .2174vw, .625rem); }
+.ct-share__list a, .ct-share__list button { display: flex; align-items: center; justify-content: space-between; padding: .9rem 1rem; border-radius: var(--kf-radius-sm); background: var(--site-soft-fill); font-size: 15px; text-decoration: none; transition: background-color .4s var(--site-ease); }
+@media (hover: hover) { .ct-share__list a:hover, .ct-share__list button:hover { background: var(--site-soft-line); } }
+@media (prefers-reduced-motion: reduce) { .ct-modal, .ct-modal__inner { transition-duration: 0s !important; } }

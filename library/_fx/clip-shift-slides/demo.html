@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>clip-shift-slides — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .demo { display: grid; gap: 30px; padding: 48px 20px; }
+  .shift { height: 320px; }
+  .sl { display: grid; place-items: center; font: 700 64px/1 var(--kf-font-display); color: var(--kf-surface); }
+  .s0 { background: var(--kf-ink); } .s1 { background: var(--kf-accent); } .s2 { background: var(--kf-dim); }
+  .dots { position: absolute; z-index: 2; left: 16px; bottom: 16px; display: flex; gap: 10px; font-size: 12px; }
+  .row { display: flex; gap: 10px; }
+  .row button { padding: 6px 14px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-pill); background: var(--kf-surface); color: var(--kf-ink); cursor: pointer; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>clip-shift-slides</b> — Left alone, sections swap every 5 seconds (the second panel every 2), cut and pushed to the right. Press the dots, or on the third panel use the button below. <span style="color:var(--kf-dim)">(After 1s one more panel comes in, and one leaves 2.5s later)</span></p>
+<section class="demo">
+  <div class="shift" data-demo-remove data-fx="clip-shift-slides"><div data-fx-part="slide" class="sl s0">1</div><div data-fx-part="slide" class="sl s1">2</div></div>
+  <div class="shift" data-fx="clip-shift-slides" data-fx-clip-shift-slides="every: 2"><div data-fx-part="slide" class="sl s0">1</div><div data-fx-part="slide" class="sl s1">2</div><div data-fx-part="slide" class="sl s2">3</div><div class="dots"><button type="button" data-fx-part="dot" aria-label="1st"></button><button type="button" data-fx-part="dot" aria-label="2nd"></button><button type="button" data-fx-part="dot" aria-label="3rd"></button></div></div>
+  <div class="shift" id="step" data-fx="clip-shift-slides" data-fx-clip-shift-slides="every: 0; dur: .5; ease: sine.in"><div data-fx-part="slide" class="sl s2">A</div><div data-fx-part="slide" class="sl s0">B</div><div data-fx-part="slide" class="sl s1">C</div></div>
+  <div class="row"><button type="button" data-step="-1">Previous section</button><button type="button" data-step="1">Next section</button></div>
+  <template data-demo-late><div class="shift" data-fx="clip-shift-slides" data-fx-clip-shift-slides="every: 3"><div data-fx-part="slide" class="sl s1">Late 1</div><div data-fx-part="slide" class="sl s0">Late 2</div></div></template>
+  <div class="shift" data-fx="clip-shift-slides"></div>
+</section>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+let at = 0;
+const step = document.getElementById("step");
+document.querySelectorAll("[data-step]").forEach((b) => b.addEventListener("click", () => {
+  const d = +b.dataset.step;
+  at = (at + d + 3) % 3;
+  step.dispatchEvent(new CustomEvent("fx:go", { detail: { index: at, back: d < 0 } }));
+}));
+// Checks that late-arriving elements are picked up and removed ones are detached — adds [data-demo-late] after 1 second and removes [data-demo-remove] after 2.5 seconds.
+setTimeout(() => document.querySelectorAll("template[data-demo-late]").forEach((t) => t.replaceWith(t.content.cloneNode(true))), 1000);
+setTimeout(() => document.querySelectorAll("[data-demo-remove]").forEach((n) => n.remove()), 2500);
+</script>
+</body>
+</html>

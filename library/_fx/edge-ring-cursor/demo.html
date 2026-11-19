@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>edge-ring-cursor — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { margin: 0; background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); overflow-x: hidden; }
+  .demo-hint { margin: 0; padding: 12px 20px; border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo { display: grid; gap: 64px; padding: 48px 0; }
+  .band { overflow: hidden; }
+  .track { display: flex; gap: 24px; padding: 0 64px; transition: translate 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+  .card { flex: 0 0 312px; display: block; color: var(--kf-ink); text-decoration: none; border-bottom: 1px solid var(--kf-line); padding-bottom: 24px; }
+  .card .ph { height: 300px; background: var(--kf-raised); border: 1px solid var(--kf-line); display: grid; place-items: center; color: var(--kf-dim); }
+  .card:hover .ph { background: var(--kf-accent-soft); }
+  .is-edge .card:hover .ph { background: var(--kf-raised); }
+  .band button { position: absolute; left: -9999px; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>edge-ring-cursor</b> — Hover over the card strip. At the 20% edges of the screen a disc lights up and follows with a lag, and pressing moves the strip that way. In the middle it turns off.</p>
+<section class="demo" id="demo">
+  <div class="band" data-fx="edge-ring-cursor">
+    <div class="track" data-fx-part="area"></div>
+    <button type="button" data-fx-part="prev">Previous</button><button type="button" data-fx-part="next">Next</button>
+  </div>
+  <div class="band" id="gone" data-fx="edge-ring-cursor" data-fx-edge-ring-cursor="zone: .3; follow: .2">
+    <div class="track" data-fx-part="area"></div>
+  </div>
+</section>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+// Writer-side strip — buttons push it if present, otherwise fx:prev and fx:next push one cell at a time
+(() => {
+  const wire = (band) => {
+    const track = band.querySelector(".track");
+    if (!track.children.length) track.innerHTML = Array.from({ length: 8 }, (_, i) => `<a class="card" href="#c${i + 1}"><div class="ph">Your photo $ here{i + 1}</div><p>Your post title $ here{i + 1}</p></a>`).join("");
+    let i = 0;
+    const go = (d) => { i = Math.max(0, Math.min(5, i + d)); track.style.translate = `${-i * 336}px 0`; };
+    band.querySelector('[data-fx-part="prev"]')?.addEventListener("click", () => go(-1));
+    band.querySelector('[data-fx-part="next"]')?.addEventListener("click", () => go(1));
+    band.addEventListener("fx:prev", () => go(-1));
+    band.addEventListener("fx:next", () => go(1));
+  };
+  document.querySelectorAll(".band").forEach(wire);
+  // Checks whether it attaches to a late-arriving band (after 1s) and whether detach runs when the band is removed (after 2.5s)
+  setTimeout(() => {
+    const src = document.querySelector(".band");
+    if (!src) return;
+    const late = src.cloneNode(true);
+    late.querySelectorAll('[data-fx-part="cursor"]').forEach((c) => c.remove());
+    late.querySelector(".track").style.translate = "";
+    document.getElementById("demo").append(late);
+    wire(late);
+  }, 1000);
+  setTimeout(() => document.getElementById("gone")?.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1s one more strip comes in, and after 2.5s one leaves.");
+})();
+</script>
+</body>
+</html>

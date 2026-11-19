@@ -1,0 +1,141 @@
+/* Floating chat button at bottom right — on hover the shadow deepens (.2s ease-out), and on press the speech bubble icon rotates 45° while shrinking away and the X stands up from -45° (.3s), 
+   The chat window floats up from 20px below the button and turns on (.3s). The window is screen height minus 118px, up to 667px.
+   Below 460px the window covers the whole screen and sits over the button, so a dismiss is placed inside the window */
+[data-fx~="chat-launcher-pop"] {
+  --fx-size: 60px;
+  --fx-gap: 20px;
+  --fx-panel-w: 375px;
+  --fx-panel-h: 667px;
+  --fx-dur: 0.3s;
+  --fx-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  width: 0;
+  height: 0;
+}
+
+[data-fx~="chat-launcher-pop"] [data-fx-part="toggle"] {
+  position: absolute;
+  right: var(--fx-gap);
+  bottom: var(--fx-gap);
+  width: var(--fx-size);
+  height: var(--fx-size);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--fx-chat-bg, var(--kf-ink));
+  color: var(--kf-bg);
+  box-shadow: var(--kf-shadow-soft);
+  cursor: pointer;
+  z-index: 2;
+}
+[data-fx~="chat-launcher-pop"] [data-fx-part="toggle"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: var(--kf-shadow-lift);
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
+}
+[data-fx~="chat-launcher-pop"] [data-fx-part="toggle"]:hover::after,
+[data-fx~="chat-launcher-pop"] [data-fx-part="toggle"]:focus-visible::after { opacity: 1; }
+[data-fx~="chat-launcher-pop"] [data-fx-part="toggle"]:focus-visible { outline: 2px solid var(--kf-accent); outline-offset: 3px; }
+
+[data-fx~="chat-launcher-pop"] [data-fx-part="icon"] {
+  position: absolute;
+  top: calc(var(--fx-size) * 0.2333);
+  left: calc(var(--fx-size) * 0.2333);
+  width: calc(var(--fx-size) * 0.5333);
+  height: calc(var(--fx-size) * 0.6167);
+  transition: transform var(--fx-dur) var(--fx-ease), opacity var(--fx-dur) var(--fx-ease);
+}
+[data-fx~="chat-launcher-pop"] [data-fx-part="icon"] svg { width: 100%; height: 100%; }
+[data-fx~="chat-launcher-pop"] [data-fx-part="close"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: rotate(-45deg);
+  transition: transform var(--fx-dur) var(--fx-ease), opacity var(--fx-dur) var(--fx-ease);
+}
+[data-fx~="chat-launcher-pop"] [data-fx-part="close"]::before,
+[data-fx~="chat-launcher-pop"] [data-fx-part="close"]::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--fx-size) * 0.35);
+  right: calc(var(--fx-size) * 0.4833);
+  width: 2px;
+  height: calc(var(--fx-size) * 0.3167);
+  background: currentColor;
+  transform: rotate(45deg);
+}
+[data-fx~="chat-launcher-pop"] [data-fx-part="close"]::after { transform: rotate(-45deg); }
+
+[data-fx~="chat-launcher-pop"].is-open [data-fx-part="icon"] { opacity: 0; transform: rotate(45deg) scale(0.7); }
+[data-fx~="chat-launcher-pop"].is-open [data-fx-part="close"] { opacity: 1; transform: rotate(0deg); }
+
+[data-fx~="chat-launcher-pop"] [data-fx-part="panel"] {
+  position: absolute;
+  right: var(--fx-gap);
+  bottom: calc(var(--fx-gap) + var(--fx-size) + var(--fx-gap));
+  width: var(--fx-panel-w);
+  height: min(calc(100vh - 118px), var(--fx-panel-h));
+  border-radius: var(--kf-radius-md);
+  background: var(--kf-surface);
+  box-shadow: var(--kf-shadow-soft);
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(var(--fx-rise, 20px));
+  transition: visibility 0s linear var(--fx-dur), opacity var(--fx-dur) var(--fx-ease), transform var(--fx-dur) var(--fx-ease);
+  z-index: 1;
+}
+[data-fx~="chat-launcher-pop"].is-open [data-fx-part="panel"] {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition-delay: 0s;
+}
+
+[data-fx~="chat-launcher-pop"] [data-fx-part="loader"] {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  background: var(--kf-surface);
+  transition: opacity 0.3s linear, visibility 0s linear 0.3s;
+}
+[data-fx~="chat-launcher-pop"] [data-fx-part="loader"]::before {
+  content: "";
+  width: 35px;
+  height: 35px;
+  border: 4px solid var(--kf-accent);
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: fx-chat-launcher-spin 1s linear infinite;
+}
+[data-fx~="chat-launcher-pop"] .is-loaded[data-fx-part="loader"] { opacity: 0; visibility: hidden; }
+[data-fx~="chat-launcher-pop"]:not(.is-open) [data-fx-part="loader"]::before,
+[data-fx~="chat-launcher-pop"] .is-loaded[data-fx-part="loader"]::before { animation: none; }
+@keyframes fx-chat-launcher-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 460px) {
+  [data-fx~="chat-launcher-pop"] [data-fx-part="panel"] {
+    position: fixed;
+    inset: 0;
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    box-shadow: none;
+    z-index: 3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="chat-launcher-pop"] *,
+  [data-fx~="chat-launcher-pop"] *::before,
+  [data-fx~="chat-launcher-pop"] *::after { transition-duration: 0s !important; transition-delay: 0s !important; animation: none !important; }
+}

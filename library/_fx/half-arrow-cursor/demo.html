@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>half-arrow-cursor — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { margin: 0; padding: 12px 20px; border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo { display: grid; gap: 48px; padding: 48px 20px; }
+  .slider { position: relative; width: min(100%, 630px); margin-left: auto; --fx-color: var(--kf-ink); }
+  .slider [data-fx-part="area"] { position: relative; aspect-ratio: 1 / 0.578; }
+  .slide { position: absolute; inset: 0; display: grid; place-items: center; border: 1px solid var(--kf-line); background: var(--kf-surface); color: var(--kf-dim); opacity: 0; transition: opacity 2s; }
+  .slide.is-on { opacity: 1; }
+  .slider button { position: absolute; bottom: 0; padding: 0 6px; border: 0; background: none; color: var(--kf-ink); cursor: pointer; }
+  .slider [data-fx-part="prev"] { left: -64px; } .slider [data-fx-part="next"] { left: -32px; }
+  .count { position: absolute; bottom: -24px; left: 0; font: 12px var(--kf-font-mono); }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>half-arrow-cursor</b> — Hover the photo. The left half shows ←, the right half shows →, and clicking moves in that direction.</p>
+<section class="demo" id="demo">
+  <div class="slider" data-fx="half-arrow-cursor">
+    <div data-fx-part="area"><div class="slide is-on">Your photo 1 here</div><div class="slide">Your photo 2 here</div><div class="slide">Your photo 3 here</div></div>
+    <button type="button" data-fx-part="prev" aria-label="Previous">‹</button><button type="button" data-fx-part="next" aria-label="Next">›</button><span class="count">1 / 3</span>
+  </div>
+  <div class="slider" id="gone" data-fx="half-arrow-cursor" data-fx-half-arrow-cursor="mode: next">
+    <div data-fx-part="area"><div class="slide is-on">Strip about to drop out (always next)</div></div>
+  </div>
+</section>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+<script>
+// Authoring-side slider — buttons advance it, and panels without buttons receive fx:prev and fx:next to advance
+(() => {
+  const wire = (s) => {
+    const items = [...s.querySelectorAll(".slide")], count = s.querySelector(".count");
+    let i = 0;
+    const go = (d) => { items[i].classList.remove("is-on"); i = (i + d + items.length) % items.length; items[i].classList.add("is-on"); if (count) count.textContent = `${i + 1} / ${items.length}`; };
+    s.querySelector('[data-fx-part="prev"]')?.addEventListener("click", () => go(-1));
+    s.querySelector('[data-fx-part="next"]')?.addEventListener("click", () => go(1));
+    s.addEventListener("fx:prev", () => go(-1));
+    s.addEventListener("fx:next", () => go(1));
+  };
+  document.querySelectorAll(".slider").forEach(wire);
+  // Checks whether it attaches to a late-arriving panel (after 1s) and whether detach runs when the panel is removed (after 2.5s)
+  setTimeout(() => {
+    const src = document.querySelector(".slider");
+    if (!src) return;
+    const late = src.cloneNode(true);
+    late.removeAttribute("id");
+    late.querySelectorAll('[data-fx-part="cursor"]').forEach((c) => c.remove());
+    document.getElementById("demo").append(late);
+    wire(late);
+  }, 1000);
+  setTimeout(() => document.getElementById("gone")?.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1s one more panel comes in, and after 2.5s one leaves.");
+})();
+</script>
+</body>
+</html>

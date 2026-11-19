@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>spring-card-morph — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); min-height: 100vh; }
+  .demo-hint { position: relative; z-index: 5; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-ui { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+  .demo-ui [data-fx-part="overlay"] { position: absolute; inset: 0; }
+  .demo-ui [data-fx-part="box"] { pointer-events: auto; }
+  .demo-card { width: 100%; height: 100%; border-radius: 24px; background: var(--kf-surface); box-shadow: var(--kf-shadow-lift); overflow: hidden; position: relative; }
+  .demo-card [data-fx-part="pane"] { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 10px; padding: 16px; text-align: center; }
+  .demo-card button { padding: 12px; border: 0; border-radius: 16px; background: var(--kf-ink); color: var(--kf-bg); cursor: pointer; }
+  .demo-head { position: absolute; top: -36px; left: 30px; right: 30px; height: 26px; display: flex; gap: 6px; align-items: center; }
+  .demo-head span { flex: 1; text-align: center; border-radius: 13px; background: var(--kf-ink); color: var(--kf-bg); font-size: 12px; line-height: 26px; }
+  .demo-head button { width: 26px; height: 26px; border: 0; border-radius: 50%; background: var(--kf-surface); cursor: pointer; }
+  .demo-bg { height: 60vh; margin: 40px 20px; border: 1px dashed var(--kf-line); display: flex; align-items: center; justify-content: center; font-size: 40px; color: var(--kf-dim); }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>spring-card-morph</b> — Press the button on the card that rose from below. The card grows with a spring and moves to the center while the background blurs. Esc or × to return.</p>
+<div class="demo-bg">Back background</div>
+<div class="demo-ui" data-fx="spring-card-morph">
+  <div data-fx-part="overlay"></div>
+  <div data-fx-part="box">
+    <div class="demo-head" data-fx-part="head"><button type="button" data-go="home" aria-label="Close">×</button><span data-fx-part="title"></span><button type="button" data-fx-part="confirm" aria-label="Confirm">✓</button></div>
+    <div class="demo-card">
+      <div data-fx-part="pane" data-key="home" data-size="280x200"><b>Your name here</b><button type="button" data-go="info">View information</button><button type="button" data-go="form">Register</button></div>
+      <div data-fx-part="pane" data-key="info" data-size="340x420" data-title="Info"><p>Your info text goes here.</p></div>
+      <div data-fx-part="pane" data-key="form" data-size="280x140" data-title="Register" data-confirm><p>Your input field here</p></div>
+      <div data-fx-part="pane" data-key="wait" data-size="100x100" data-next="home" data-hold="1000"><p>…</p></div>
+    </div>
+  </div>
+</div>
+<script>
+(() => {
+  const ui = document.querySelector('[data-fx~="spring-card-morph"]');
+  ui.addEventListener("fx:confirm", () => ui.dispatchEvent(new CustomEvent("fx:go", { detail: { state: "wait" } })));
+  const make = (tag) => { const el = ui.cloneNode(true); el.dataset.demo = tag; el.style.display = "none"; return el; };
+  const gone = make("gone");
+  ui.after(gone);
+  setTimeout(() => ui.after(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

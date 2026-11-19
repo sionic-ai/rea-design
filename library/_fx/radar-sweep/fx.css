@@ -1,0 +1,121 @@
+/* Half-circle radar — four rings grow in one after another from the outside, and the needle (conic gradient) turns one full turn at --fx-sweep. 
+   The moment the needle passes a dot, the dot pops out (.6→1x, bouncy curve) and the pill attaches, then turns off at 55~65% of a turn. At the dot the ring spreads to 3.5x */
+[data-fx~="radar-sweep"] {
+  --fx-radar-sweep-ring: color-mix(in oklab, var(--kf-accent) 12%, transparent);
+  --fx-radar-sweep-glow: color-mix(in oklab, var(--kf-accent) 3.5%, transparent);
+  --fx-radar-sweep-edge: color-mix(in oklab, var(--kf-accent) 10%, transparent);
+  --fx-radar-sweep-tail: oklch(from var(--kf-accent) l c calc(h + 60) / 0.01);
+  --fx-radar-sweep-mid: oklch(from var(--kf-accent) l c calc(h + 20) / 0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-fx~="radar-sweep"] .fx-radar-sweep__dish {
+  position: absolute;
+  top: var(--fx-top, 12%);
+  left: 50%;
+  width: var(--fx-size, 104%);
+  aspect-ratio: 1;
+  translate: -50%;
+  pointer-events: none;
+}
+
+[data-fx~="radar-sweep"] .fx-radar-sweep__arm {
+  position: absolute;
+  inset: 0;
+  rotate: 130deg;
+  animation: fx-radar-sweep-turn var(--fx-sweep, 10s) linear infinite;
+}
+
+[data-fx~="radar-sweep"] .fx-radar-sweep__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--fx-radar-sweep-ring), inset 0 0 48px var(--fx-radar-sweep-glow);
+  background-image: conic-gradient(from 140deg,
+    var(--fx-radar-sweep-edge) 0deg, transparent 1.5deg, transparent 250deg,
+    var(--fx-radar-sweep-tail) 280deg, var(--fx-radar-sweep-mid) 315deg,
+    color-mix(in oklab, var(--kf-accent) 6%, transparent) 342deg, var(--fx-radar-sweep-edge) 360deg);
+  animation: fx-radar-sweep-ring-in 1s cubic-bezier(0.72, 0.01, 0.16, 1.01) both;
+}
+[data-fx~="radar-sweep"] .fx-radar-sweep__ring:nth-child(1) { animation-delay: 0.45s; }
+[data-fx~="radar-sweep"] .fx-radar-sweep__ring:nth-child(2) { animation-delay: 0.3s; inset: 14%; }
+[data-fx~="radar-sweep"] .fx-radar-sweep__ring:nth-child(3) { animation-delay: 0.15s; inset: 28%; }
+[data-fx~="radar-sweep"] .fx-radar-sweep__ring:nth-child(4) { inset: 42%; }
+
+[data-fx~="radar-sweep"] [data-fx-part="blip"] {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+[data-fx~="radar-sweep"] .fx-radar-sweep__dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: var(--fx-radar-sweep-tone, var(--kf-accent));
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--fx-radar-sweep-tone, var(--kf-accent)) 16%, transparent);
+}
+[data-fx~="radar-sweep"] .fx-radar-sweep__dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: fx-radar-sweep-ping var(--fx-sweep, 10s) var(--fx-radar-sweep-at, 0s) infinite both;
+}
+
+[data-fx~="radar-sweep"] .fx-radar-sweep__dot,
+[data-fx~="radar-sweep"] [data-fx-part="pill"] {
+  animation: fx-radar-sweep-detect var(--fx-sweep, 10s) var(--fx-radar-sweep-at, 0s) infinite both;
+}
+[data-fx~="radar-sweep"] [data-fx-part="pill"] {
+  position: absolute;
+  top: 0;
+  translate: 0 -50%;
+  white-space: nowrap;
+  transform-origin: left center;
+  animation-delay: calc(var(--fx-radar-sweep-at, 0s) + 0.12s);
+}
+[data-fx~="radar-sweep"] [data-fx-part="blip"][data-side="left"] [data-fx-part="pill"] { right: 12px; transform-origin: right center; }
+[data-fx~="radar-sweep"] [data-fx-part="blip"]:not([data-side="left"]) [data-fx-part="pill"] { left: 12px; }
+
+/* Not skin: allow · confirm · block are traffic-light colors by meaning — the consumer changes them via --fx-radar-sweep-tone */
+[data-fx~="radar-sweep"] [data-tone="ok"] { --fx-radar-sweep-tone: #34c778; } /* Not skin: allow signal */
+[data-fx~="radar-sweep"] [data-tone="warn"] { --fx-radar-sweep-tone: #f2b93b; } /* Not skin: confirm signal */
+[data-fx~="radar-sweep"] [data-tone="bad"] { --fx-radar-sweep-tone: #ff5a6e; } /* Not skin: blocking signal */
+
+[data-fx~="radar-sweep"][data-radar-live="false"] .fx-radar-sweep__arm,
+[data-fx~="radar-sweep"][data-radar-live="false"] .fx-radar-sweep__ring,
+[data-fx~="radar-sweep"][data-radar-live="false"] .fx-radar-sweep__dot,
+[data-fx~="radar-sweep"][data-radar-live="false"] .fx-radar-sweep__dot::after,
+[data-fx~="radar-sweep"][data-radar-live="false"] [data-fx-part="pill"] {
+  animation-play-state: paused;
+}
+
+@keyframes fx-radar-sweep-turn {
+  from { rotate: 130deg; }
+  to { rotate: 490deg; }
+}
+@keyframes fx-radar-sweep-ring-in {
+  from { opacity: 0; scale: 0.75; }
+}
+@keyframes fx-radar-sweep-detect {
+  0% { opacity: 0; scale: 0.6; animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+  5%, 55% { opacity: 1; scale: 1; animation-timing-function: ease-in; }
+  65%, 100% { opacity: 0; scale: 0.96; }
+}
+@keyframes fx-radar-sweep-ping {
+  0% { opacity: 0.7; scale: 1; animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+  14%, 100% { opacity: 0; scale: 3.5; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="radar-sweep"] .fx-radar-sweep__arm,
+  [data-fx~="radar-sweep"] .fx-radar-sweep__ring,
+  [data-fx~="radar-sweep"] .fx-radar-sweep__dot,
+  [data-fx~="radar-sweep"] [data-fx-part="pill"] { animation: none; }
+  [data-fx~="radar-sweep"] .fx-radar-sweep__dot::after { display: none; }
+}

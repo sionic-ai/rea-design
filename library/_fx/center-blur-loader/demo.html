@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>center-blur-loader — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .demo-op { height: 60vh; margin: 24px 20px; display: grid; place-items: center; background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); }
+  .demo-op p { margin: 0; font: 200 72px/1 var(--kf-font-display); }
+  .demo-op .gap { display: inline-block; width: 24px; }
+  .demo-row { padding: 0 20px 48px; font: 13px var(--kf-font-mono); }
+  .demo-row button { padding: 6px 12px; border: 1px solid var(--kf-line); background: var(--kf-surface); cursor: pointer; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>center-blur-loader</b> — Name letters come into focus from blur, alternating outward from the center letter, then the whole block blurs away. Press ”Replay” to start over.</p>
+<div class="demo-op" data-fx="center-blur-loader"><p><span data-fx-part="char">Woman</span><span data-fx-part="char">Flag</span><span data-fx-part="char">At</span><i class="gap"></i><span data-fx-part="char" data-center>This</span><span data-fx-part="char">Reum</span></p></div>
+<p class="demo-row"><button type="button" id="again">Again</button></p>
+<script>
+document.getElementById("again").addEventListener("click", () => {
+  const old = document.querySelector('.demo-op[data-fx~="center-blur-loader"]');
+  const t = document.createElement("template"); t.innerHTML = old.outerHTML;
+  const fresh = t.content.firstElementChild; fresh.removeAttribute("style"); fresh.classList.remove("fx-done");
+  old.replaceWith(fresh);
+});
+</script>
+<script>
+// Late arrivals and removals — checks that fx-core attaches to an element added after 1s and detaches from an element removed after 2.5s
+(() => {
+  const src = document.querySelector('[data-fx~="center-blur-loader"]');
+  if (!src) return;
+  const html = src.outerHTML.replace(/\sid="[^"]*"/g, "");
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = html; const el = t.content.firstElementChild; el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => src.after(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1s another identical one comes in (the late arrival), and after 2.5s one drops out (the detach).");
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

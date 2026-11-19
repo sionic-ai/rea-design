@@ -1,0 +1,25 @@
+/* Transition between documents with the browser’s View Transition — the old screen shrinks to .9x in place and fades to .25,
+   The new screen opens over it from bottom to top with clip-path (1.75s cubic-bezier(.86,0,.07,1)). Both pages carry data-fx on html.
+   @view-transition is a rule applied to the whole document and cannot be narrowed by a selector — in documents without data-fx, fx.js skips the transition */
+@view-transition { navigation: auto; }
+:root[data-fx~="page-vt-reveal"]::view-transition-group(root) { z-index: auto; animation-duration: var(--fx-dur, 1.75s); }
+:root[data-fx~="page-vt-reveal"]::view-transition-image-pair(root) { isolation: isolate; z-index: 1; }
+:root[data-fx~="page-vt-reveal"]::view-transition-old(root) {
+  animation: fx-vt-reveal-out var(--fx-dur, 1.75s) var(--fx-ease, cubic-bezier(0.86, 0, 0.07, 1)) forwards;
+  transform-origin: var(--fx-origin, 50% 50%);
+  z-index: 1;
+}
+:root[data-fx~="page-vt-reveal"]::view-transition-new(root) {
+  animation: fx-vt-reveal-in var(--fx-dur, 1.75s) var(--fx-ease, cubic-bezier(0.86, 0, 0.07, 1)) forwards;
+  z-index: 1000;
+}
+/* shift·rise·clip default to 0·0·100%, so without options only shrink·blur·open-from-below remain — on the Brand site the old screen shrinks pivoting on its top edge while moving down 5vw, and the new screen rises from 15vh below with only the bottom 15% open */
+@keyframes fx-vt-reveal-out { from { transform: scale(1) translateY(0); opacity: 1; } to { transform: scale(var(--fx-shrink, 0.9)) translateY(var(--fx-shift, 0px)); opacity: var(--fx-fade, 0.25); } }
+@keyframes fx-vt-reveal-in { from { clip-path: inset(var(--fx-clip, 100%) 0 0 0); transform: translateY(var(--fx-rise, 0px)); } to { clip-path: inset(0 0 0 0); transform: translateY(0); } }
+/* Where View Transition is unavailable (page opened from a file, old browsers), only the incoming page body opens from below with the same curve */
+:root[data-fx~="page-vt-reveal"].is-fx-vt-fallback body { animation: fx-vt-reveal-in var(--fx-dur, 1.75s) var(--fx-ease, cubic-bezier(0.86, 0, 0.07, 1)) both; }
+@media (prefers-reduced-motion: reduce) {
+  :root[data-fx~="page-vt-reveal"]::view-transition-old(root),
+  :root[data-fx~="page-vt-reveal"]::view-transition-new(root),
+  :root[data-fx~="page-vt-reveal"].is-fx-vt-fallback body { animation: none; }
+}

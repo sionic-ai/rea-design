@@ -1,0 +1,103 @@
+/* Archive: one black-background screen. The active item on top (number · name · title · year), the next item faded below, and an instant-photo wheel on a big circle in the middle */
+html[data-page="list"], html[data-page="list"] body { height: 100%; overflow: hidden; }
+.lib__stage { position: fixed; inset: 0; overflow: hidden; color: var(--site-white); touch-action: none; }
+
+.lib__switch { position: absolute; left: var(--site-side); top: calc(10vh + 2.6rem); z-index: 5; display: flex; gap: 0.25rem; }
+.lib__switch-btn { border: 0; background: none; padding: 0 0 2px; cursor: pointer; color: inherit; opacity: 0.5; transition: opacity 0.3s; font-size: var(--site-fs-main); }
+.lib__switch-btn:hover, .lib__switch-btn.is-active { opacity: 1; }
+.lib__switch-btn > span { display: inline-block; }
+/* Original view-button cell width (Wheel, 48px) — the Korean label for Wheel is shorter, so the cell gets narrower */
+.lib__switch-btn { min-width: 3.2em; text-align: left; }
+
+.lib__top, .lib__next { position: absolute; left: 0; right: 0; z-index: 4; pointer-events: none; align-items: start; }
+.lib__top { top: calc(10vh + 5.5rem); }
+.lib__next { top: 72.5vh; opacity: 0.3; transition: opacity 0.6s var(--site-ease-gl); }
+.lib__num, .lib__title, .lib__year { line-height: 1.2; }
+.lib__num { grid-column: 1; }
+.lib__title { grid-column: 4 / span 6; display: flex; flex-direction: column; pointer-events: auto; cursor: pointer; user-select: none; max-width: 73ch; }
+.lib__year { grid-column: 11 / span 2; justify-self: end; }
+.lib__line { display: block; overflow: clip; padding-bottom: 0.08em; }
+.lib__line > span { display: block; }
+
+.lib__wheel { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.lib-card {
+  position: absolute;
+  left: 0; top: 0;
+  width: 17vw;
+  aspect-ratio: 245 / 315;
+  background: var(--site-white);
+  padding: 1.7vw;
+  will-change: transform;
+}
+.lib-card .wf-img { height: 100%; border: 0; --wf-fill: color-mix(in oklab, var(--site-brand) 68%, var(--site-black)); --wf-line: color-mix(in oklab, var(--site-brand) 86%, var(--site-black)); --wf-fill-ink: color-mix(in oklab, var(--site-white) 92%, var(--site-brand)); }
+.lib-card .wf-img::after { white-space: normal; width: 86%; text-align: center; font-size: 10px; line-height: 1.35; }
+
+.lib__list {
+  position: absolute; left: 0; right: 0; top: 59.5vh; z-index: 4;
+  font-size: var(--site-fs-main); line-height: 1.2;
+  opacity: 0; visibility: hidden;
+  max-height: 38vh; overflow: hidden;
+}
+.lib__list li { display: contents; }
+.lib__list li > * { opacity: 0.4; transition: opacity 0.3s; cursor: pointer; }
+.lib__list li.is-active > * { opacity: 1; }
+.lib__list .c1 { grid-column: 1; }
+.lib__list .c2 { grid-column: 4 / span 3; }
+.lib__list .c3 { grid-column: 7 / span 3; }
+.lib__list-slot { position: absolute; right: var(--site-side); top: 59.5vh; width: 15vw; aspect-ratio: 245 / 315; pointer-events: none; }
+
+.lib__cursor {
+  position: fixed; left: 0; top: 0; z-index: 9;
+  padding: 0.3rem 0.45rem;
+  background: var(--site-white); color: var(--site-black);
+  font-size: var(--site-fs-small);
+  pointer-events: none; visibility: hidden; opacity: 0;
+}
+.lib__corner { position: absolute; bottom: var(--site-side); z-index: 4; font-size: var(--site-fs-main); }
+.lib__corner--l { left: var(--site-side); }
+.lib__corner--r { right: var(--site-side); }
+.is-mob { display: none; }
+
+/* Clicking the title drops a 55svh white panel from the top using clip-path */
+.lib-info { position: fixed; inset: 0; z-index: 50; pointer-events: none; }
+.lib-info__panel {
+  position: relative; height: 55svh; background: var(--site-white); color: var(--site-black);
+  clip-path: inset(0% 0% 100% 0%); pointer-events: auto; overflow: hidden;
+}
+.lib-info__grid { height: 100%; padding-block: 5.5rem 1.5rem; }
+.lib-info__left { grid-column: 1 / span 3; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; }
+.lib-info__close { border: 0; background: none; padding: 0 0 2px; cursor: pointer; color: inherit; font-size: var(--site-fs-main); }
+.lib-info__content { grid-column: 4 / span 5; display: flex; flex-direction: column; justify-content: space-between; gap: 2rem; }
+.lib-info__dim { opacity: 0.45; }
+.lib-info__right { grid-column: 10 / span 3; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; }
+.lib-info__img { width: 10rem; aspect-ratio: 4 / 5; padding: 0.8rem; }
+.lib-info__watch { display: inline-flex; align-items: center; gap: 0.4rem; font-size: var(--site-fs-main); line-height: 1; height: 18px; }
+
+@media (max-width: 767px) {
+  .lib__top, .lib__next { row-gap: 0.9rem; }
+  .lib__top { top: 19.5vh; }
+  .lib__next { top: 72vh; }
+  .lib__num { grid-column: 1 / -1; }
+  .lib__title { grid-column: 1 / span 3; }
+  .lib__year { grid-column: 4; grid-row: 2; }
+  .lib__switch { top: 11.5vh; }
+  .lib-card { width: 59vw; padding: 5.9vw; }
+  .lib__list { top: 55vh; max-height: 36vh; }
+  .lib__list .c1 { grid-column: 1; }
+  .lib__list .c2 { grid-column: 2 / span 3; }
+  .lib__list .c3 { display: none; }
+  .lib__list-slot { width: 30vw; top: auto; bottom: 3rem; }
+  .lib-info__left, .lib-info__content, .lib-info__right { grid-column: 1 / -1; }
+  .lib-info__img { display: none; }
+  .is-mob { display: inline; }
+  .is-desk { display: none; }
+}
+/* Cards are drawn as GL planes in the band scene — the DOM card only holds position, order and opacity */
+.lib__stage.is-gl .lib-card { visibility: hidden; }
+/* Backdrop behind the info panel (original lib_info_bg: 10px blur · 40% ink) and the mask that raises the number · view link from below */
+.lib-info__bg { position: absolute; inset: 0; background: color-mix(in srgb, var(--site-black) 40%, transparent); backdrop-filter: blur(10px); opacity: 0; visibility: hidden; pointer-events: none; }
+.lib-info__panel { z-index: 1; }
+.lib-info__mask { display: block; overflow: clip; }
+.lib-info__right .lib-info__mask { display: inline-block; }
+/* Info panel numbers are small text like the original (line height 18px) */
+.lib-info__num { font-size: var(--site-fs-main); line-height: 1.2; }

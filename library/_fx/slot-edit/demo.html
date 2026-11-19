@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>slot-edit — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-hint b { font-weight: 700; }
+  .demo { padding: 48px 20px; }
+  .demo-btn { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-sm); background: var(--kf-surface); color: var(--kf-ink); cursor: pointer; }
+  .demo-card { padding: 20px; border: 1px solid var(--kf-line); border-radius: var(--kf-radius-md); background: var(--kf-surface); }
+  .demo-spacer { height: 90vh; display: grid; place-items: center; color: var(--kf-dim); }
+  .hello { font: 400 72px/1 var(--kf-font-display); color: var(--kf-accent); }
+  .hello [data-fx] { font: 400 32px/1 var(--kf-font-mono); }
+  .hello [data-fx].is-filled { font: inherit; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>slot-edit</b> — {{ Name }} Tap a spot and write a name — cells grow as you write, and Enter merges them into the text line. Enter on empty goes back.</p>
+<section class="demo"><p class="hello">Hello <button data-fx="slot-edit" data-fx-slot-edit="placeholder: Name"></button></p></section>
+<script>
+// Late arrivals and removals — checks that fx-core attaches to an element added after 1s and detaches from an element removed after 2.5s
+(() => {
+  const src = document.querySelector('[data-fx~="slot-edit"]');
+  if (!src) return;
+  const html = src.outerHTML.replace(/\sid="[^"]*"/g, "");
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = html; const el = t.content.firstElementChild; el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  src.after(gone);
+  setTimeout(() => (src.closest(".pin-spacer") || src).after(make("late")), 1000); // Once pinned the panel gets wrapped in a pin-spacer, so place it outside that
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1s another identical one comes in (the late arrival), and after 2.5s one drops out (the detach).");
+})();
+</script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

@@ -1,0 +1,259 @@
+/* Shared by all pages: header · phone menu · footer laid behind · page transition curtain · text mask · NEXT link · news card */
+
+/* Values not in the standard skin — colors are made from the skin (--kf-*). Change the skin and they change together */
+:root {
+  --site-line-soft: color-mix(in srgb, var(--kf-ink) 10%, transparent);
+  --site-box-line: oklch(from var(--kf-bg) calc(l - 0.0572) c h);                         /* #d9d9d9 */
+  --site-photo-soft: oklch(from var(--kf-surface) calc(l - 0.0298) c h);                  /* #f5f5f5 product photo cell */
+  --site-mask-fill: oklch(from var(--kf-bg) calc(l - 0.0946) calc(c + 0.0082) h);         /* #cfcdc6 Hover round-mask photo */
+  --site-tegaki: color-mix(in oklab, var(--kf-ink) 70%, var(--kf-bg));                    /* #2a2a2a handwritten note */
+  --site-dark-fill: oklch(from var(--kf-contrast-bg) calc(l + 0.2686) c h);               /* #262626 black strip photo slot */
+  --site-dark-line: oklch(from var(--kf-contrast-bg) calc(l + 0.3485) c h);               /* #3a3a3a */
+  --site-dark-deep: oklch(from var(--kf-contrast-bg) calc(l + 0.2178) c h);               /* #1a1a1a */
+  --site-dark-ink: color-mix(in oklab, var(--kf-dim) 92%, var(--kf-contrast-ink));         /* #77746f black band label */
+  /* Not skin: news category legend colors — color separates the categories (notices use a muted text color) */
+  --site-cat-info: var(--kf-dim);
+  --site-cat-media: #16a34a; /* Not skin: category legend */
+  --site-cat-shop: #dc2626; /* Not skin: category legend */
+  --site-cat-new: #ca8a04; /* Not skin: category legend */
+  --site-cat-etc: #2563eb; /* Not skin: category legend */
+  --site-ease-back: cubic-bezier(0.34, 1.15, 0.64, 1);
+  --yk-head-h: 77px;
+  /* Placeholder boxes also match the background tone */
+  --wf-bg: var(--kf-bg);
+  --wf-fill: oklch(from var(--kf-bg) calc(l - 0.0484) calc(c + 0.0039) h);                /* #dddcd8 */
+  --wf-line: oklch(from var(--kf-bg) calc(l - 0.1104) calc(c + 0.0054) h);                /* #c9c8c3 */
+  --wf-fill-ink: oklch(from var(--kf-bg) calc(l - 0.3299) calc(c + 0.0059) h);            /* #85847f */
+  --wf-font: var(--kf-font-sans);
+}
+
+html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--kf-bg);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-size: 1rem;
+  line-height: 1.8;
+  /* The footer is fixed behind the screen and revealed as the body peels away — leave that much space below */
+  padding-bottom: 100vh;
+}
+.yk-main { position: relative; z-index: 1; background: var(--kf-bg); }
+.yk-en { font-family: var(--kf-font-display); font-weight: 400; }
+
+/* ── Page transition: white veil .65s + body blur 10px .5s, navigate after 650ms ── */
+.yk-overlay {
+  position: fixed; inset: 0; z-index: 9998; background: var(--kf-surface); pointer-events: none;
+  opacity: 1; transition: opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.yk-overlay.is-hidden { opacity: 0; }
+body.is-leaving > :not(.yk-overlay):not(.yk-head):not(.wf-ui) {
+  filter: blur(10px); opacity: 0; pointer-events: none;
+  transition: filter 0.5s ease, opacity 0.5s ease;
+}
+.js-fade { opacity: 0; transition: opacity 0.8s ease; }
+.js-fade.is-visible { opacity: 1; }
+
+/* ── Header ── */
+.yk-head {
+  position: fixed; top: 0; left: 0; width: 100%; z-index: 9999;
+  background: linear-gradient(to bottom, var(--kf-bg) 0, color-mix(in srgb, var(--kf-bg) 0%, transparent) 100%);
+  transition: transform 0.3s ease;
+}
+.yk-head.is-hidden { transform: translateY(-100%); }
+.yk-head__inner { display: flex; align-items: center; height: var(--yk-head-h); padding-inline: 40px; position: relative; z-index: 100; }
+.yk-logo { display: inline-flex; align-items: center; flex-shrink: 0; line-height: 0; }
+.yk-logo svg { height: 22px; width: auto; display: block; }
+.yk-nav { margin-left: 24px; }
+.yk-nav p { font-family: var(--kf-font-display); font-size: 13px; letter-spacing: 2px; white-space: nowrap; }
+.yk-nav span { margin-inline: 4px; opacity: 0.4; }
+.yk-ul { position: relative; display: inline-block; }
+.yk-ul::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 1px; background: currentColor;
+  transform: scaleX(0); transform-origin: left; pointer-events: none;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (hover: hover) { .yk-ul:hover::after { transform: scaleX(1); } }
+.yk-ul.is-current::after { transform: scaleX(1); transition: none; }
+@media (hover: hover) { .yk-ul.is-current:hover::after { animation: yk-redraw 0.7s ease; } }
+@keyframes yk-redraw {
+  0% { transform-origin: right; transform: scaleX(1); }
+  49.99% { transform-origin: right; transform: scaleX(0); }
+  50% { transform-origin: left; transform: scaleX(0); }
+  100% { transform-origin: left; transform: scaleX(1); }
+}
+.yk-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.yk-pill {
+  position: relative; isolation: isolate; overflow: hidden;
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--kf-font-display); font-size: 14px; letter-spacing: 2px; white-space: nowrap; line-height: 1.6;
+  border: 1px solid color-mix(in srgb, var(--kf-ink) 15%, transparent); border-radius: 50px; padding: 8px 22px; color: inherit;
+}
+.yk-pill.is-ig { padding: 8px 16px; gap: 6px; }
+.yk-pill::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; background: color-mix(in srgb, var(--kf-surface) 82%, transparent);
+  transform: scale(0); z-index: 0; pointer-events: none;
+}
+.yk-pill > * { position: relative; z-index: 1; }
+.yk-pill svg { width: 19px; height: 19px; flex: 0 0 auto; transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+@media (hover: hover) {
+  .yk-pill:hover { color: var(--kf-ink); }
+  .yk-pill:hover::before { transform: scale(1); }
+  .yk-pill:hover svg { transform: scale(1.1); }
+}
+.yk-burger { display: none; flex-direction: column; gap: 6px; width: 28px; margin-left: auto; padding: 0; background: none; border: 0; cursor: pointer; }
+.yk-burger i { display: block; height: 1px; background: var(--kf-ink); transition: transform 0.3s ease, opacity 0.3s ease; }
+.yk-burger[aria-expanded="true"] i:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.yk-burger[aria-expanded="true"] i:nth-child(2) { opacity: 0; }
+.yk-burger[aria-expanded="true"] i:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── Phone menu: a white curtain lifts downward from the top over .5s and items float up .06s later each ── */
+.yk-sp { display: none; }
+@media (max-width: 767px) {
+  .yk-head { background: transparent; }
+  .yk-head__inner { padding-inline: 20px; transition: background-color 0.2s ease; }
+  .yk-head.is-menu .yk-head__inner { background: var(--kf-surface); }
+  .yk-nav, .yk-actions { display: none; }
+  .yk-burger { display: flex; }
+  .yk-sp {
+    position: fixed; inset: 0; height: 100dvh; z-index: 50; padding: 100px 40px 60px;
+    flex-direction: column; align-items: center; overflow-y: auto;
+  }
+  .yk-sp.is-open, .yk-sp.is-closing { display: flex; }
+  .yk-sp__backdrop { position: absolute; inset: 0; background: var(--kf-surface); clip-path: inset(0 0 100% 0); }
+  .yk-sp.is-open .yk-sp__backdrop { animation: yk-sp-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+  .yk-sp.is-closing .yk-sp__backdrop { animation: none; clip-path: inset(0 0 100% 0); }
+  .yk-sp__veil { position: absolute; inset: 0; z-index: 5; background: var(--kf-bg); opacity: 0; pointer-events: none; transition: opacity 0.22s ease; }
+  .yk-sp.is-closing .yk-sp__veil { opacity: 1; }
+  .yk-sp__nav { position: relative; z-index: 2; flex: 1 1 auto; width: 100%; display: flex; flex-direction: column; justify-content: center; }
+  .yk-sp__nav ul { display: flex; flex-direction: column; align-items: center; gap: 40px; text-align: center; }
+  .yk-sp__nav a { font-family: var(--kf-font-display); font-size: 18px; letter-spacing: 2px; line-height: 1.5; }
+  .yk-sp__nav .yk-share { display: flex; align-items: center; gap: 16px; margin-top: 4px; }
+  .yk-sp__nav .yk-share__label { margin: 0 4px 0 0; }
+  .yk-sp__nav .yk-share__list { gap: 20px; }
+  .yk-sp__nav .yk-share__btn { width: 36px; height: 36px; border-color: color-mix(in srgb, var(--kf-ink) 15%, transparent); }
+  .yk-sp__nav li, .yk-sp__foot {
+    opacity: 0; transform: translateY(12px);
+    transition: opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1), transform 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .yk-sp.is-revealed .yk-sp__nav li, .yk-sp.is-revealed .yk-sp__foot { opacity: 1; transform: none; }
+  .yk-sp.is-revealed .yk-sp__nav li:nth-child(1) { transition-delay: 0.1s; }
+  .yk-sp.is-revealed .yk-sp__nav li:nth-child(2) { transition-delay: 0.16s; }
+  .yk-sp.is-revealed .yk-sp__nav li:nth-child(3) { transition-delay: 0.22s; }
+  .yk-sp.is-revealed .yk-sp__nav li:nth-child(4) { transition-delay: 0.28s; }
+  .yk-sp.is-revealed .yk-sp__nav li:nth-child(5) { transition-delay: 0.34s; }
+  .yk-sp.is-revealed .yk-sp__nav li:nth-child(6) { transition-delay: 0.4s; }
+  .yk-sp.is-revealed .yk-sp__foot { transition-delay: 0.42s; }
+  .yk-sp.is-closing li, .yk-sp.is-closing .yk-sp__foot { opacity: 0 !important; transform: none !important; transition: none !important; }
+  .yk-sp__foot { position: relative; z-index: 2; display: flex; justify-content: center; gap: 10px; padding-top: 32px; margin-top: auto; }
+}
+@keyframes yk-sp-in { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+
+/* ── Share buttons ── */
+.yk-share__label { font-family: var(--kf-font-display); font-size: 12px; letter-spacing: 0.13em; margin-bottom: 10px; }
+.yk-share__list { display: flex; gap: 10px; }
+.yk-share__btn {
+  display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid currentColor; color: inherit; transition: opacity 0.2s ease;
+}
+.yk-share__btn svg { width: 12px; height: 12px; }
+/* Original share button: transition .2s, it only fades */
+@media (hover: hover) { .yk-share__btn:hover { opacity: 0.6; } }
+
+/* ── Footer: fixed behind the screen, revealed as the body lifts away, background photo scales 1→1.1 ── */
+.yk-foot {
+  position: fixed; left: 0; bottom: 0; width: 100vw; height: 100vh; z-index: 0; overflow: hidden;
+  color: var(--kf-contrast-ink); display: flex; flex-direction: column; pointer-events: none;
+}
+.yk-foot__bg { position: absolute; inset: 0; z-index: 0; }
+.yk-foot__bg .wf-img { width: 100%; height: 100%; border: 0; transform-origin: center; }
+.yk-foot__bg .wf-img::after { top: 62%; white-space: normal; width: min(70%, 520px); text-align: center; }
+.yk-foot__inner { position: relative; z-index: 1; flex: 1; padding: 60px 44px 40px; display: flex; flex-direction: column; pointer-events: auto; }
+.yk-foot__top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 40px; }
+.yk-foot .yk-logo svg { height: 28px; }
+.yk-foot .yk-pill { border-color: color-mix(in srgb, var(--kf-contrast-ink) 30%, transparent); color: var(--kf-contrast-ink); }
+@media (hover: hover) { .yk-foot .yk-pill:hover { color: var(--kf-ink); } }
+.yk-foot__nav { margin-bottom: 48px; }
+.yk-foot__nav ul { display: flex; flex-direction: column; gap: 24px; }
+.yk-foot__nav a { font-family: var(--kf-font-display); font-size: 1.8vw; letter-spacing: 3px; line-height: 1.3; }
+.yk-foot__copy { font-family: var(--kf-font-display); font-size: 12px; letter-spacing: 1px; color: color-mix(in srgb, var(--kf-contrast-ink) 60%, transparent); margin-top: 24px; }
+.yk-foot__mark {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 2; display: block; line-height: 0;
+  padding: 0 40px 30px; pointer-events: none; color: var(--kf-contrast-ink);
+}
+.yk-foot__mark.is-active { pointer-events: auto; }
+.yk-foot__mark svg { width: 100%; height: auto; display: block; opacity: 0; will-change: transform, opacity; }
+@media (max-width: 767px) {
+  .yk-foot__inner { padding: 100px 20px 40px; }
+  .yk-foot__top { order: 4; margin: 24px 0 0; }
+  .yk-foot__top .yk-logo { display: none; }
+  .yk-foot .yk-actions { display: flex; }
+  .yk-foot__copy { order: 5; }
+  .yk-foot__nav a { font-size: 18px !important; }
+  .yk-foot__mark { padding: 0 20px 20px; }
+}
+
+/* ── Text mask — rises 110% from below ── */
+.char-mask { display: inline-block; overflow: hidden; vertical-align: baseline; }
+.char-inner {
+  display: inline-block; transform: translateY(110%); opacity: 0;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease; will-change: transform, opacity;
+}
+.is-revealed > .char-mask > .char-inner, .is-revealed span > .char-mask > .char-inner { transform: translateY(0); opacity: 1; }
+
+/* Big page-head title — letters switch on one by one at .075s intervals (.5s pause after the first line break) */
+.char-wrap { display: inline-block; vertical-align: bottom; line-height: inherit; }
+.char { display: inline-block; opacity: 0; transition: opacity 80ms linear; }
+.char.is-visible { opacity: 1; }
+
+/* Section head: small serif label + large Marcellus title */
+.yk-label { font-size: 18px; letter-spacing: 0.13em; }
+.yk-h2 { font-family: var(--kf-font-display); font-weight: 400; font-size: clamp(48px, 6.4vw, 92px); line-height: 1.05; letter-spacing: 0.01em; }
+@media (max-width: 767px) { .yk-label { font-size: 15px; } .yk-h2 { font-size: clamp(40px, 11vw, 72px); } }
+
+/* ── NEXT link: letter mask at 50ms intervals + underline ── */
+.yk-next { padding: 100px 0 120px; text-align: center; }
+.yk-next__link {
+  display: inline-flex; flex-direction: column; align-items: center;
+  font-family: var(--kf-font-display); font-size: clamp(26px, 5.28vw, 76px); letter-spacing: 0.04em; line-height: 1.5;
+}
+.yk-next__link > span { position: relative; display: inline-block; }
+.yk-next__link > span::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 1px; background: currentColor;
+  transform: scaleX(0); transform-origin: left; transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.yk-next__link.is-revealed > span::after { transform: scaleX(1); }
+/* Only the first page NEXT, as in the original, retracts its underline to the right on hover and then draws it again from the left (subpage NEXT stays as it is) */
+@media (hover: hover) { .yk-next__link.is-redraw:hover > span::after { animation: yk-redraw 0.7s ease; } }
+.yk-next__link .char-mask { line-height: 1; vertical-align: bottom; }
+@media (max-width: 767px) { .yk-next { padding: 80px 0 100px; } }
+
+/* ── News category pills · cards (shared by the news list and a single news item) ── */
+.yk-cat {
+  display: inline-flex; align-items: center; gap: 0.15em; align-self: flex-start;
+  font-size: 13px; letter-spacing: 0.06em; line-height: 1; white-space: nowrap;
+  border: 1px solid var(--kf-line); border-radius: 40px; padding: 4px 17px 5px 6px;
+}
+.yk-cat i { font-style: normal; color: var(--cat, var(--site-cat-info)); font-size: 1.725em; line-height: 0; height: 0; display: inline-flex; align-items: center; }
+.yk-cat small { font-size: 11px; margin-left: 0.35em; color: var(--kf-dim); letter-spacing: 0.04em; }
+.yk-card__link { display: block; }
+.yk-card__img { overflow: hidden; margin-bottom: 20px; }
+.yk-card__img .wf-img { aspect-ratio: 446 / 234; transition: transform 0.5s ease; }
+.yk-card__body { display: flex; flex-direction: column; gap: 4px; }
+.yk-card__desc { font-size: 15px; line-height: 2; letter-spacing: 0.06em; margin-top: 8px; }
+.yk-card__desc span {
+  background-image: linear-gradient(currentColor, currentColor); background-position: 0 100%; background-repeat: no-repeat;
+  background-size: 0% 1px; -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  transition: background-size 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (hover: hover) {
+  .yk-card__link:hover .yk-card__img .wf-img { transform: scale(1.06); }
+  .yk-card__link:hover .yk-card__desc span { background-size: 100% 1px; }
+}
+.yk-card__date { font-size: 12px; letter-spacing: 0.06em; color: var(--kf-dim); }
+.yk-grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 60px 30px; }
+@media (max-width: 767px) { .yk-grid3 { grid-template-columns: 1fr; gap: 48px 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .char-inner, .char, .js-fade { transition: none !important; transform: none !important; opacity: 1 !important; }
+  .yk-overlay { display: none; }
+}

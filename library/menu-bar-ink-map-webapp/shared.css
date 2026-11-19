@@ -1,0 +1,107 @@
+/* Desktop app shell: menu bar (53px) · document title bar (41px) · dropdown menu · dialog. Values measured from the original */
+
+/* Site-specific colors made in the skin (theme.css) — they remain even if theme.css is swapped out whole, and values change along with --kf-* */
+:root {
+  /* Map ink takes the accent slot of the original (fj.light #121212), so it comes from --kf-accent, and the paper from the background */
+  --site-map-ink: var(--kf-accent);
+  --site-map-paper: var(--kf-bg);
+  --site-map-sel: color-mix(in srgb, var(--site-map-paper) 60%, transparent);
+  /* Dialog scrim: the original is black .32 in both light and dark — take the darkest color of that mode (ink in light, background in dark) */
+  --site-scrim: var(--kf-ink);
+}
+html[data-theme="dark"] { --site-scrim: var(--kf-bg); }
+
+html, body { height: 100%; overflow: hidden; }
+body { background: var(--kf-bg); color: var(--kf-ink); font: 400 16px/24px var(--kf-font-sans); overscroll-behavior: none; }
+.ic { width: 24px; height: 24px; flex: none; fill: currentColor; }
+
+.ap-bar { position: relative; z-index: 5; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px; border-bottom: 1px solid var(--kf-line); }
+.ap-bar__side { display: flex; align-items: center; }
+.ap-logo { display: inline-block; width: 28px; height: 28px; color: var(--kf-ink); }
+.ap-logo .ic { width: 28px; height: 28px; }
+.ap-btn {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 0 16px; border: 0; border-radius: 4px;
+  background: none; color: inherit; opacity: 0.62; cursor: pointer; font: 400 16px/24px var(--kf-font-sans); letter-spacing: 0.114px;
+  transition: opacity 0.28s var(--kf-ease-ui);
+}
+.ap-btn:hover, .ap-btn:focus-visible, .ap-btn[aria-expanded="true"] { opacity: 1; outline: none; }
+.ap-tool { display: inline-flex; color: var(--kf-ink); }
+
+.ap-title { position: relative; z-index: 4; display: flex; justify-content: center; align-items: center; border-bottom: 1px solid var(--kf-line); }
+.ap-title__in {
+  width: 100%; max-width: 300px; height: 32px; margin-bottom: 8px; padding: 8px 0 0; border: 0; background: none; outline: none;
+  color: var(--kf-ink); opacity: 0.87; text-align: center; font: 400 16px/24px var(--kf-font-sans); letter-spacing: 0.15px;
+}
+
+/* Dropdown menu: opens centered below the button with an 8px gap, growing from 0 in 0.3s. On close, like the original scale-transition, the size stays and it only fades out in 0.1s */
+.ap-menu { position: relative; display: inline-flex; }
+.ap-pop {
+  position: absolute; top: calc(100% + 8px); left: 50%; z-index: 20; min-width: 200px; padding: 8px 0; border: 1px solid var(--kf-line); border-radius: 4px;
+  background: var(--kf-surface); color: var(--kf-ink-soft); transform-origin: top center; translate: -50% 0;
+  opacity: 0; visibility: hidden; transform: scale(0); transition: opacity 0.1s var(--kf-ease-ui), transform 0s 0.1s, visibility 0s 0.1s;
+}
+.ap-menu.is-open > .ap-pop { opacity: 1; visibility: visible; transform: scale(1); transition: transform 0.3s var(--kf-ease-ui), opacity 0.3s var(--kf-ease-ui), visibility 0s; }
+.ap-item {
+  position: relative; display: flex; align-items: center; width: 100%; min-height: 40px; padding: 4px 16px; border: 0; background: none; color: inherit; cursor: pointer;
+  font: 400 16px/24px var(--kf-font-sans); text-align: left; white-space: nowrap;
+}
+.ap-item::before { content: ""; position: absolute; inset: 0; background: currentColor; opacity: 0; transition: opacity 0.2s var(--kf-ease-ui); pointer-events: none; }
+.ap-item:hover::before, .ap-item:focus-visible::before, .ap-sub:hover > .ap-item::before { opacity: 0.04; }
+.ap-item:focus-visible { outline: none; }
+.ap-item > .ic { margin-right: 32px; opacity: 0.6; }
+.ap-item__t { flex: 1; }
+.ap-key { margin-left: 8px; }
+.ap-item[disabled] { opacity: 0.38; pointer-events: none; }
+.ap-item.is-on .ap-item__t { font-weight: 500; }
+.ap-chev { width: 16px; height: 16px; margin-left: 8px; opacity: 0.6; }
+.ap-size { display: inline-flex; justify-content: center; align-items: center; width: 32px; margin-right: 20px; }
+.ap-size .ic { margin: 0; }
+
+/* A branch menu opens attached to the right when its parent row is hovered */
+.ap-sub { position: relative; }
+.ap-sub > .ap-pop { top: -9px; left: 100%; min-width: 180px; translate: 0 0; transform-origin: top left; }
+.ap-sub.is-open > .ap-pop { opacity: 1; visibility: visible; transform: scale(1); transition: transform 0.3s var(--kf-ease-ui), opacity 0.3s var(--kf-ease-ui), visibility 0s; }
+
+/* Small switch: can be toggled only while that tool is selected */
+.ap-switch { position: relative; flex: none; width: 36px; height: 24px; margin-left: 12px; border: 0; padding: 0; background: none; cursor: pointer; }
+.ap-switch::before { content: ""; position: absolute; left: 6px; right: 6px; top: 7px; height: 10px; border-radius: 9999px; background: currentColor; opacity: 0.26; transition: opacity 0.2s; }
+.ap-switch::after { content: ""; position: absolute; top: 4px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--kf-surface); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); transition: transform 0.2s var(--kf-ease-ui); }
+.ap-switch[aria-checked="true"]::after { transform: translateX(16px); }
+.ap-switch[aria-checked="true"]::before { opacity: 0.5; }
+.ap-switch[disabled] { opacity: 0.38; pointer-events: none; }
+
+/* Dialog: 1px bordered card over a dark .32 scrim */
+.ap-dialog { position: fixed; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center; padding: 24px; }
+.ap-dialog.is-open { display: flex; }
+.ap-scrim { position: absolute; inset: 0; background: var(--site-scrim); opacity: 0.32; }
+.ap-card { position: relative; width: 100%; max-width: 420px; border: 1px solid var(--kf-line); border-radius: 4px; background: var(--kf-surface); color: var(--kf-ink-soft); }
+.ap-card.is-wide { max-width: 550px; }
+.ap-card__head { display: flex; justify-content: space-between; align-items: center; padding: 16px; font-size: 20px; line-height: 32px; color: var(--kf-ink); }
+.ap-card__head span { margin: 8px; }
+.ap-card__close { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 50%; background: none; color: inherit; opacity: 0.62; cursor: pointer; transition: opacity 0.28s var(--kf-ease-ui); }
+.ap-card__close:hover { opacity: 1; }
+.ap-card__title { padding: 16px 24px 0; font-size: 20px; line-height: 32px; color: var(--kf-ink); }
+.ap-card__text { padding: 16px 24px 0; font-size: 14px; line-height: 1.6; }
+.ap-card__text p + p { margin-top: 16px; }
+.ap-card__by { display: flex; align-items: center; gap: 6px; margin-top: 32px; }
+.ap-card__by .ic { width: 34px; height: 34px; }
+.ap-card__actions { display: flex; justify-content: flex-end; gap: 8px; padding: 24px 16px 16px; }
+.ap-out {
+  height: 44px; padding: 0 20px; border: 1px solid currentColor; border-radius: 4px; background: none; color: var(--kf-ink); cursor: pointer;
+  font: 400 16px/24px var(--kf-font-sans); letter-spacing: 0.1px;
+}
+.ap-out:hover { background: color-mix(in srgb, currentColor 4%, transparent); }
+.ap-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+.ap-field span { font-size: 12px; opacity: 0.6; }
+.ap-field input { height: 48px; padding: 0 14px; border: 1px solid color-mix(in srgb, var(--kf-ink) 38%, transparent); border-radius: 4px; background: none; color: var(--kf-ink); font: 400 16px var(--kf-font-sans); }
+.ap-radios { display: flex; flex-direction: column; gap: 4px; }
+.ap-radios legend { margin-bottom: 4px; font-size: 16px; opacity: 0.6; }
+.ap-radios label { display: flex; align-items: center; gap: 12px; min-height: 40px; cursor: pointer; }
+.ap-radios input { width: 18px; height: 18px; accent-color: var(--kf-ink); }
+
+@media (max-width: 599px) {
+  .ap-logo, .ap-tool { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ap-pop, .ap-menu.is-open > .ap-pop, .ap-sub.is-open > .ap-pop { transition: none; }
+}

@@ -1,0 +1,187 @@
+/* Home — scrolling two screens past the pinned hero (logo · 3D can), the left column slides in from the top and the right column from the bottom,
+   At the end page scroll stops and the wheel spins the two columns endlessly in opposite directions */
+body.is-home.is-end { background-color: var(--kf-surface); }
+
+.lj-hero {
+  position: sticky; top: 0; z-index: -1;
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; height: calc(100vh - var(--site-head));
+  padding: 0 2.2rem;
+  background-color: var(--kf-bg);
+}
+.lj-hero__logo { display: flex; align-items: center; justify-content: center; width: 100%; }
+.lj-hero__main { width: 49.9rem; max-width: 500px; margin: 0 auto; }
+.lj-hero__side { position: relative; display: flex; align-items: center; }
+.lj-hero__side, .lj-hero__main { visibility: hidden; }
+html.lj-ready .lj-hero__side, html.lj-ready .lj-hero__main { visibility: visible; }
+@media (max-width: 1024px) {
+  .lj-hero { height: calc(100dvh - var(--site-head)); padding: 7.8rem 0; }
+  .lj-hero__logo { flex-direction: column; height: 100%; }
+  .lj-hero__main { width: 20rem; margin: auto 0; order: 2; }
+  .lj-hero__side--left { transform: rotate(-90deg); order: 3; }
+  .lj-hero__side--right { transform: rotate(-90deg); order: 1; }
+  .lj-hero__side, .lj-hero__main { visibility: visible; }
+}
+
+.lj-tiles__ph { width: 100%; height: calc(100vh - var(--site-head)); }
+.lj-tiles { position: relative; display: flex; justify-content: space-between; width: 100%; height: calc(100vh - var(--site-head)); overflow: hidden; }
+.lj-tiles__col { position: relative; width: 50%; height: 100%; overflow: hidden; opacity: 0; pointer-events: none; }
+.lj-tiles__col--left { transform: translateY(-105%); }
+.lj-tiles__col--right { transform: translateY(105%); }
+.lj-tiles__mobile { width: 100%; }
+@media (min-width: 1025px) {
+  .lj-tiles { position: fixed; top: var(--site-head); left: 0; }
+}
+@media (max-width: 1024px) {
+  .lj-tiles__ph { display: none; }
+  .lj-tiles { z-index: 5; height: auto; overflow: visible; }
+}
+
+/* ── Single tile ── */
+.lj-tile { position: absolute; top: 0; left: 0; z-index: 5; display: flex; width: 100%; }
+.lj-tile:first-child { z-index: 6; }
+.lj-tile > .wf-img { width: 100%; }
+@media (min-width: 1025px) { .lj-tile { min-height: 22.2rem; transform-origin: center top; } }
+@media (max-width: 1024px) { .lj-tile { position: relative; } }
+
+.lj-tile--video .wf-img { width: 100%; height: 100%; }
+@media (min-width: 1025px) { .lj-tile--video { aspect-ratio: 720 / var(--h); } }
+@media (max-width: 1024px) { .lj-tile--video { aspect-ratio: 3 / 2; } }
+
+/* Product card — on hover the add bar and name strip rise from the bottom (.42s) and a video overlaps the photo in .25s */
+.lj-tile--single .lj-card { width: 100%; }
+.lj-card__img { position: relative; display: flex; flex-direction: column; overflow: hidden; border-radius: var(--kf-radius-sm); transform-origin: center bottom; }
+.lj-card__photo { width: 100%; aspect-ratio: 1; pointer-events: none; }
+.lj-card__link { position: absolute; inset: 0; z-index: 3; }
+/* The original card reacts 31ms later than on entry, only on release (enter 79ms · leave 110ms) — .04s is set only on the leave side (the base rule) */
+.lj-card__video { position: absolute; inset: 0; z-index: 2; opacity: 0; pointer-events: none; transition: opacity 0.25s ease-in-out 0.04s; }
+.lj-card__buy {
+  position: absolute; bottom: 0; left: 0; z-index: 5;
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 1.4rem 1.2rem;
+  background-color: var(--kf-surface);
+  border-radius: 0 0 var(--kf-radius-sm) var(--kf-radius-sm);
+  transform: translateY(103%);
+  transition: transform 0.42s var(--site-ease) 0.04s;
+}
+.lj-card__ticker {
+  position: absolute; top: -50%; left: 0; right: 0;
+  height: 2.7rem; padding: 0.4rem 0;
+  background-color: var(--kf-surface); border-bottom: 1px solid var(--kf-line);
+}
+.lj-card__title { position: relative; width: 100%; font-size: 1.6rem; text-transform: uppercase; white-space: nowrap; font-weight: var(--kf-weight-body); }
+.lj-card__title-text { display: flex; align-items: center; padding-left: 1rem; }
+.lj-card__title-text .lj-star { width: 1rem; height: 1rem; margin-left: 1rem; animation-duration: 3.5s; }
+.lj-card__price { font-size: 1.6rem; }
+.lj-card__add { padding: 0.4rem 0.8rem 0.2rem; border: 1px solid var(--kf-line); border-radius: 7rem; background-color: var(--kf-contrast-bg); color: var(--kf-contrast-ink); font-size: 1.6rem; text-transform: uppercase; }
+.lj-card__qty { display: flex; align-items: center; font-size: 1.6rem; }
+.lj-card__qty > span { width: 2.4rem; text-align: center; }
+.lj-card__qty button { position: relative; display: flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; }
+.lj-card__qty button svg { position: relative; z-index: 1; width: 0.8rem; }
+.lj-card__qty button::before { content: ""; position: absolute; inset: 0; border-radius: 100%; background: var(--site-qty-hover); transform: scale(0); transition: transform 0.28s cubic-bezier(0.645, 0.045, 0.355, 1); }
+.lj-card__qty button:hover::before { transform: scale(1); }
+.lj-card.is-sold .lj-card__buy { pointer-events: none; }
+.lj-card.is-sold .lj-card__add, .lj-card.is-sold .lj-card__qty { opacity: 0.3; }
+.lj-card--tile .lj-card__img, .lj-card--tile .lj-card__buy { border-radius: 0; }
+.lj-card--tile .lj-card__buy { padding: 1.4rem 0.7rem; transform: translateY(155%); }
+.lj-card--tile .lj-card__add { font-size: 1.4rem; }
+@media (min-width: 1025px) {
+  .lj-card:hover .lj-card__buy { transform: none; transition-delay: 0s; }
+  .lj-card:hover .lj-card__video { opacity: 1; transition-delay: 0s; }
+}
+@media (max-width: 1024px) {
+  .lj-card--tile .lj-card__buy { display: block; height: 1.5rem; padding: 0; transform: none; }
+  .lj-card--tile .lj-card__price, .lj-card--tile .lj-card__add, .lj-card--tile .lj-card__qty { display: none; }
+}
+
+/* Product bundle — yellow strip banner + three-column products (two columns on phone) */
+.lj-tile--grid { flex-direction: column; }
+.lj-banner { position: relative; min-height: 8.9rem; overflow: hidden; background-color: var(--kf-raised); font: var(--kf-weight-display) 6.8rem/0.7 var(--kf-font-display); }
+.lj-banner__text { display: flex; align-items: center; padding: 1.3rem 0 0 2.4rem; white-space: nowrap; }
+.lj-banner__text .lj-star, .lj-mq__item .lj-star { width: 2rem; margin-left: 2.6rem; }
+.lj-grid { display: flex; flex-wrap: wrap; width: 100%; }
+.lj-grid .lj-card__photo { min-height: 0; }
+@media (max-width: 1024px) {
+  .lj-banner { min-height: 6.4rem; font-size: 4.4rem; }
+  .lj-banner__text { padding-left: 2.2rem; }
+}
+
+/* Three Red Bands */
+.lj-tile--marquee { flex-direction: column; gap: 2.4rem; overflow: hidden; padding: 1.8rem 0 2.8rem; background-color: var(--kf-accent); color: var(--kf-on-accent); font: var(--kf-weight-display) 6.8rem/0.7 var(--kf-font-display); }
+.lj-mq { position: relative; min-height: 5.2rem; white-space: nowrap; }
+.lj-mq__item { display: flex; align-items: center; padding-left: 2.4rem; }
+.lj-mq__item .lj-star { margin-left: 2.4rem; position: relative; top: 0.2rem; }
+@media (max-width: 1024px) {
+  .lj-tile--marquee { gap: 2rem; padding: 1.6rem 0 2.2rem; font-size: 4.4rem; }
+  .lj-mq { min-height: 3.2rem; }
+  .lj-mq__item { padding-left: 1.8rem; }
+}
+
+/* Three Photos in a Row */
+.lj-tile--pgrid { min-height: 24rem; }
+.lj-tile--pgrid .wf-img { width: 33.3333%; height: 24rem; }
+@media (max-width: 1024px) { .lj-tile--pgrid { min-height: 0; } .lj-tile--pgrid .wf-img { height: auto; aspect-ratio: 3 / 4; } }
+
+/* Chef list — in each row the name, short video and arrow flow in opposite directions, and on hover the row background darkens */
+.lj-tile--chefs { flex-direction: column; background-color: var(--kf-bg); }
+.lj-chefs__head { display: flex; align-items: center; justify-content: center; padding: 4.4rem 3.2rem; font-size: 1.6rem; text-transform: uppercase; }
+.lj-chefs__head svg { width: 1.8rem; flex: none; }
+.lj-chefs__head h3 { margin: 0 auto; text-align: center; font-weight: var(--kf-weight-body); }
+.lj-chefs__list { width: 100%; overflow: hidden; }
+.lj-chef { position: relative; display: flex; align-items: center; width: 100%; min-height: 11rem; padding: 1rem 0; border-top: 1px solid var(--kf-line); transition: background-color 0.32s var(--site-ease); }
+.lj-chef:hover { background-color: var(--site-hover-green); }
+.lj-chef__link { position: absolute; inset: 0; z-index: 1; }
+.lj-chef__row { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+.lj-chef__item { display: flex; align-items: center; white-space: nowrap; }
+.lj-chef__name { position: relative; top: -4px; font: 200 6.8rem/1 var(--kf-font-spiky, var(--kf-font-display)); }
+.lj-chef__video { width: 6.6rem; height: 9.2rem; margin: 0 1.4rem; border-radius: var(--kf-radius-sm); flex: none; }
+.lj-chef__arrow { display: block; width: 5.2rem; }
+.lj-chef__item .lj-star { width: 2rem; margin: 0 2.4rem; }
+@media (max-width: 1024px) {
+  .lj-chefs__head { padding: 1.8rem 0.8rem; }
+  .lj-chefs__head h3 { max-width: 24.7rem; line-height: 1.2; }
+  .lj-chef { min-height: 7.4rem; }
+  .lj-chef__name { top: 0; font-size: 4.4rem; }
+  .lj-chef__video { width: 3.9rem; height: 5.8rem; }
+  .lj-chef__arrow { width: 2.7rem; }
+  .lj-chef__item .lj-star { width: 1.2rem; margin: 0 1.8rem; }
+}
+
+/* SNS yellow band — three letters move up and down, staggered 1.4s each */
+.lj-tile--ig { display: flex; align-items: center; height: 24rem; padding: 0 4rem; overflow: hidden; background-color: var(--kf-raised); }
+.lj-tile--ig > .lj-star { width: 1.8rem; flex: none; animation: none; }
+.lj-tile--ig > .lj-star:first-child { margin-right: 2.4rem; }
+.lj-tile--ig > .lj-star:last-child { margin-left: 2.4rem; }
+.lj-ig__img { width: 7.6rem; aspect-ratio: 76 / 100; flex: none; border-radius: var(--kf-radius-sm); }
+.lj-ig__img::after { display: none; }
+.lj-ig__text { margin: 0 1.9rem; font-size: 1.6rem; text-transform: uppercase; animation: lj-ig 1.4s var(--site-ease) alternate infinite; }
+.lj-ig__text--alt { animation-direction: alternate-reverse; }
+@keyframes lj-ig { 0% { transform: translateY(-8.5rem); } to { transform: translateY(8.5rem); } }
+@media (max-width: 1024px) {
+  .lj-tile--ig { justify-content: center; height: 12rem; padding: 0; }
+  .lj-tile--ig > .lj-star, .lj-ig__img--first, .lj-ig__img--last { display: none; }
+  .lj-ig__img { width: 5.4rem; }
+  .lj-ig__text { animation-name: lj-ig-m; }
+  @keyframes lj-ig-m { 0% { transform: translateY(-3.8rem); } to { transform: translateY(3.8rem); } }
+}
+
+/* New Product (Phone) */
+.lj-tile--newest { position: relative; flex-direction: column; }
+.lj-newest__img { position: relative; }
+.lj-newest__img .wf-img { aspect-ratio: 1; }
+.lj-newest__title { display: flex; overflow: hidden; width: 100%; min-height: 10.5rem; padding: 1rem 0 2.4rem; border-bottom: 1px solid var(--kf-line); background-color: var(--kf-surface); font: var(--kf-weight-display) 6.8rem/1 var(--kf-font-display); }
+.lj-newest__row { display: flex; align-items: center; white-space: nowrap; }
+.lj-newest__row .lj-star { width: 2rem; height: 2rem; margin: 0 2.4rem; position: relative; top: 0.4rem; }
+@media (max-width: 1024px) { .lj-newest__title { min-height: 6.1rem; padding: 0.5rem 0 1rem; font-size: 4.4rem; } }
+
+/* Column-end footing (red) */
+.lj-tile--foot, .lj-tile--foot-mobile { display: flex; align-items: center; height: 24rem; background-color: var(--kf-accent); font-size: 1.6rem; }
+.lj-tile-foot { width: 100%; padding-top: 1rem; border-top: 1px solid var(--kf-line); }
+.lj-tile--foot-left { padding-left: 7.5rem; }
+.lj-tile--foot-left .lj-tile-foot > * { margin-right: 6.2rem; }
+.lj-tile--foot-right { padding-right: 7.5rem; text-align: right; }
+.lj-tile--foot-right .lj-tile-foot > * { margin-left: 6.2rem; }
+.lj-tile-foot__author a { text-decoration: underline; }
+.lj-tile--foot-mobile { height: 37.5rem; padding: 0 1.6rem; }
+.lj-tile--foot-mobile .lj-foot__links { width: 100%; }
+@media (max-width: 1024px) { .lj-tile--foot-mobile .lj-foot--mobile { display: block; } }

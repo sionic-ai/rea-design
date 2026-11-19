@@ -1,0 +1,97 @@
+/* Three light colors — center (hot) · surround (mid) · bloom (glow). Made from the skin’s accent color. For a cool light, the user overrides --fx-light-* */
+[data-fx~="edge-light-follow"] {
+  --fx-g: 8.125rem;
+  --fx-gap: 0.5rem;
+  --fx-light-glow: var(--kf-accent);
+  --fx-light-mid: color-mix(in oklab, var(--fx-light-glow) 45%, var(--kf-on-accent));
+  --fx-light-hot: color-mix(in oklab, var(--fx-light-glow) 6%, var(--kf-on-accent));
+  --fx-x: 0px; --fx-y: 0px; --fx-w: 0px; --fx-h: 0px; --fx-r: 0px;
+  --fx-px: 0px; --fx-py: 0px; --fx-k: 1;
+  --fx-size: max(var(--fx-w), var(--fx-h));
+  --fx-long: calc(var(--fx-size) * 0.32);
+  position: relative;
+  isolation: isolate;
+}
+[data-fx~="edge-light-follow"] > [data-fx-part] { position: absolute; pointer-events: none; }
+
+/* .5rem glass rim outside the window, with the light side tinted pale */
+[data-fx~="edge-light-follow"] > [data-fx-part="shell"] {
+  z-index: -1;
+  top: calc(var(--fx-y) - var(--fx-gap)); left: calc(var(--fx-x) - var(--fx-gap));
+  width: calc(var(--fx-w) + var(--fx-gap) * 2); height: calc(var(--fx-h) + var(--fx-gap) * 2);
+  border-radius: calc(var(--fx-r) + var(--fx-gap));
+  background-color: color-mix(in srgb, var(--kf-ink) 3.5%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--kf-ink) 7%, transparent), inset 0 1px color-mix(in srgb, var(--kf-ink) 6%, transparent);
+  overflow: hidden;
+}
+[data-fx~="edge-light-follow"] > [data-fx-part="shell"] > i {
+  position: absolute;
+  top: calc(var(--fx-gap) - var(--fx-size) * 0.45); left: calc(var(--fx-gap) - var(--fx-size) * 0.45);
+  width: calc(var(--fx-size) * 0.9); height: calc(var(--fx-size) * 0.9);
+  opacity: var(--fx-k);
+  background-image: radial-gradient(closest-side, color-mix(in srgb, var(--fx-light-glow) 10%, transparent), color-mix(in srgb, var(--fx-light-glow) 5%, transparent) 50%, transparent);
+}
+
+/* Glow around the window — a border-shaped shadow ring revealed only within a radius of size × .5 around the light position */
+[data-fx~="edge-light-follow"] > [data-fx-part="glow"] {
+  z-index: -1;
+  top: calc(var(--fx-y) - var(--fx-g)); left: calc(var(--fx-x) - var(--fx-g));
+  width: calc(var(--fx-w) + var(--fx-g) * 2); height: calc(var(--fx-h) + var(--fx-g) * 2);
+  opacity: var(--fx-k);
+  -webkit-mask-image: radial-gradient(calc(var(--fx-size) * 0.5) calc(var(--fx-size) * 0.5) at calc(var(--fx-px) + var(--fx-g)) calc(var(--fx-py) + var(--fx-g)), black 0, color-mix(in srgb, black 70%, transparent) 22%, color-mix(in srgb, black 35%, transparent) 45%, color-mix(in srgb, black 12%, transparent) 68%, transparent 92%);
+  mask-image: radial-gradient(calc(var(--fx-size) * 0.5) calc(var(--fx-size) * 0.5) at calc(var(--fx-px) + var(--fx-g)) calc(var(--fx-py) + var(--fx-g)), black 0, color-mix(in srgb, black 70%, transparent) 22%, color-mix(in srgb, black 35%, transparent) 45%, color-mix(in srgb, black 12%, transparent) 68%, transparent 92%);
+}
+[data-fx~="edge-light-follow"] > [data-fx-part="glow"] > i {
+  position: absolute;
+  inset: var(--fx-g);
+  border-radius: var(--fx-r);
+  box-shadow:
+    0 0 0.25rem color-mix(in srgb, var(--fx-light-mid) 70%, transparent),
+    0 0 1rem color-mix(in srgb, var(--fx-light-glow) 55%, transparent),
+    0 0 2.25rem color-mix(in srgb, var(--fx-light-glow) 32%, transparent),
+    0 0 4rem color-mix(in srgb, var(--fx-light-glow) 16%, transparent),
+    0 0 6.5rem color-mix(in srgb, var(--fx-light-glow) 7%, transparent);
+}
+[data-fx~="edge-light-follow"] > [data-fx-part="dust"] {
+  z-index: -1;
+  top: calc(var(--fx-y) - var(--fx-g)); left: calc(var(--fx-x) - var(--fx-g));
+  width: calc(var(--fx-w) + var(--fx-g) * 2); height: calc(var(--fx-h) + var(--fx-g) * 2);
+  color: var(--fx-dust, color-mix(in oklab, var(--fx-light-mid) 60%, var(--fx-light-hot)));
+}
+
+/* Double border — 1px white edge (brighter on top) and 2px light ring (from the light spot: center → around → spread) */
+[data-fx~="edge-light-follow"] > [data-fx-part="rim"],
+[data-fx~="edge-light-follow"] > [data-fx-part="line"] {
+  z-index: 2;
+  top: var(--fx-y); left: var(--fx-x); width: var(--fx-w); height: var(--fx-h);
+  border-radius: var(--fx-r);
+  -webkit-mask: linear-gradient(black 0 0) content-box, linear-gradient(black 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(black 0 0) content-box exclude, linear-gradient(black 0 0);
+  overflow: hidden;
+}
+[data-fx~="edge-light-follow"] > [data-fx-part="rim"] {
+  padding: 1px;
+  background: linear-gradient(color-mix(in srgb, var(--kf-ink) 22%, transparent), color-mix(in srgb, var(--kf-ink) 9%, transparent) 30%, color-mix(in srgb, var(--kf-ink) 6%, transparent) 70%, color-mix(in srgb, var(--kf-ink) 10%, transparent));
+}
+[data-fx~="edge-light-follow"] > [data-fx-part="line"] { padding: 2px; opacity: var(--fx-k); }
+[data-fx~="edge-light-follow"] > [data-fx-part="line"] > i {
+  position: absolute;
+  top: calc(var(--fx-long) * -1.1); left: calc(var(--fx-long) * -1.1);
+  width: calc(var(--fx-long) * 2.2); height: calc(var(--fx-long) * 2.2);
+  background-image: radial-gradient(closest-side, var(--fx-light-hot) 0, var(--fx-light-hot) 5%, var(--fx-light-mid) 14%, var(--fx-light-glow) 30%, color-mix(in srgb, var(--fx-light-glow) 40%, transparent) 48%, transparent 66%);
+  will-change: transform;
+}
+
+/* Faint glow seeping in from the window’s inner edge */
+[data-fx~="edge-light-follow"] [data-fx-part="spot-box"] {
+  position: absolute; inset: 0; z-index: -1;
+  border-radius: inherit; overflow: hidden; pointer-events: none;
+}
+[data-fx~="edge-light-follow"] [data-fx-part="spot"] {
+  position: absolute;
+  top: calc(var(--fx-long) * -1.2); left: calc(var(--fx-long) * -1.2);
+  width: calc(var(--fx-long) * 2.4); height: calc(var(--fx-long) * 2.4);
+  opacity: var(--fx-k);
+  background-image: radial-gradient(closest-side, color-mix(in srgb, var(--fx-light-glow) 11%, transparent), color-mix(in srgb, var(--fx-light-glow) 5.5%, transparent) 50%, transparent);
+}

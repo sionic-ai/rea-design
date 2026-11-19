@@ -1,0 +1,176 @@
+/* Every page puts the same intro sentence, avatar and tabs in the head and only the panel below changes — the original also swaps just the panel into the same shell per tab */
+:root {
+  background: var(--kf-bg);
+  min-width: 320px;
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-feature-settings: "rlig" 1, "calt" 0, "ss11" 1;
+  font-variant-numeric: tabular-nums;
+  text-rendering: optimizeLegibility;
+  /* The original gray steps (#7d7d7d · #8f8f8f · #c9c9c9) are mixes of ink and background — they match the original on a white background with #171717 ink */
+  --site-mute: color-mix(in srgb, var(--kf-ink) 56.03%, var(--kf-bg));
+  --site-faint: color-mix(in srgb, var(--kf-ink) 48.28%, var(--kf-bg));
+  --site-ash: color-mix(in srgb, var(--kf-ink) 23.28%, var(--kf-bg));
+  /* Line art and glasses frames are one step darker than ink (original #000) — pushed away from the background so on dark skins they become white lines */
+  --site-carbon: oklch(from var(--kf-ink) calc(l + (l - .5) * .7) c h);
+  --site-skin: #f8d5b8; /* Not skin: skin tone of the avatar face drawing — matched to the lines inside the drawing, so independent of the base skin */
+  --site-hair: #261c1c; /* Not skin: avatar hair color — artwork content */
+  --site-pen: #140606; /* Not skin: avatar face lines — drawn over the skin tone, so they follow the drawing’s colors rather than the base skin */
+  --site-ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --site-ease-pop: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --site-ease-in: cubic-bezier(0.4, 0, 1, 1);
+}
+body { background: var(--kf-bg); color: var(--kf-ink); font-family: var(--kf-font-sans); min-height: 100vh; }
+:focus-visible { outline: 2px solid var(--kf-ink); outline-offset: 2px; }
+.sr-only { clip-path: inset(50%); white-space: nowrap; border: 0; width: 1px; height: 1px; margin: -1px; padding: 0; position: absolute; overflow: hidden; }
+
+.g-shell { min-height: 100svh; position: relative; overflow-x: clip; }
+.g-landing { min-height: 100svh; padding: max(4em, 12vh) 1em 4em; font-size: 1.25rem; overflow: clip; position: relative; }
+.g-intro { max-width: 30em; margin: 0 auto; }
+.g-landing a { color: inherit; text-decoration: none; transition: color .16s var(--kf-ease-out); }
+.g-landing a:active { opacity: .55; }
+
+.t-eyebrow { font-family: var(--kf-font-mono); letter-spacing: .071em; text-transform: uppercase; font-size: .6875rem; font-weight: 400; line-height: 1rem; }
+.t-mono-12 { font-family: var(--kf-font-mono); font-size: .75rem; line-height: 1rem; }
+.t-copy-13 { font-size: .8125rem; line-height: 1.125rem; }
+.t-copy-14 { font-size: .875rem; line-height: 1.25rem; }
+.t-copy-16 { font-size: 1rem; line-height: 1.5rem; }
+
+/* About sentence — line height 2 so word-size images sit between the lines */
+.g-lede { font-size: 1.25rem; letter-spacing: -.02em; font-weight: var(--kf-weight-display); line-height: 2; position: relative; }
+.g-w { display: inline-block; }
+@media (width <= 30em) { .g-lede { line-height: 2.4; } }
+
+/* Intro: while the avatar is drawn the rest stays hidden, then is revealed in .3s as the text unfurls */
+html:is([data-intro=hold], [data-intro=drawing]) .g-lede > :not(.g-avatar),
+/* Also hides the annotation strip (wf-note) — the original intro’s first screen is empty, no avatar */
+html:is([data-intro=hold], [data-intro=drawing]) :is(.g-socials, .g-rule, .g-nav, .g-panel, .g-landing > .wf-note) { opacity: 0; pointer-events: none; }
+html[data-intro=reveal] .g-lede > :not(.g-avatar),
+html[data-intro=reveal] :is(.g-socials, .g-rule, .g-nav, .g-panel, .g-landing > .wf-note) { transition: opacity .3s var(--kf-ease-out); }
+.scrambled { color: var(--site-ash); }
+
+.g-socials { margin: 1.6em 0 0 -.32em; padding: 0; list-style: none; display: flex; }
+.g-socials a { width: 1.5em; height: 1.5em; color: var(--site-mute); place-items: center; display: grid; }
+.g-socials svg { width: .9em; height: .9em; }
+.g-socials .cut { fill: var(--kf-bg); }
+.g-socials a:hover { color: var(--kf-ink); }
+@media (pointer: coarse) {
+  .g-socials { margin-left: -.68em; }
+  .g-socials a { width: 2.2em; height: 2.2em; }
+}
+.g-rule { border: 0; border-top: 1px solid var(--kf-line); margin: 1.2em 0 0; }
+
+/* Tabs — a single underline slides under the next tab in .36s */
+.g-nav { color: var(--kf-dim); gap: 1.33rem; margin-top: 2.6rem; display: flex; position: relative; }
+.g-nav a { text-underline-offset: .3em; margin: -.75rem 0; padding: .75rem 0; text-decoration-thickness: 1px; }
+.g-nav a[aria-current=page] { color: var(--kf-ink); }
+.g-nav:not(.placed) a[aria-current=page] { text-decoration-line: underline; }
+.g-nav a:hover { color: var(--kf-ink); }
+.g-nav__line { background: var(--kf-ink); pointer-events: none; height: 1px; position: absolute; top: calc(100% - 1px); left: 0; }
+.g-nav:not(.placed) .g-nav__line { visibility: hidden; }
+.g-nav.placed .g-nav__line { transition: translate .36s var(--kf-ease-out), width .36s var(--kf-ease-out); }
+
+.g-panel { color: var(--kf-dim); margin-top: 1.9em; }
+.g-follow { will-change: transform; }
+
+@media (width <= 30em) {
+  .g-landing { padding-top: 1.5em; }
+  .g-socials { margin-top: .2em; }
+  .g-rule { display: none; }
+  .g-nav { margin-top: .625rem; }
+}
+
+/* ── Avatar: hand-drawn face. In the intro a pen draws the lines and a brush fills in color ── */
+.g-avatar { z-index: 1; vertical-align: .15em; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; width: 4em; display: inline-block; position: relative; }
+.g-avatar:active { cursor: grabbing; }
+html:is([data-intro=hold], [data-intro=drawing]) .g-avatar { pointer-events: none; }
+.g-avatar > svg { width: 100%; height: auto; display: block; overflow: visible; }
+.av-lines { fill: none; stroke: var(--site-pen); stroke-width: 1.7px; stroke-linecap: round; stroke-linejoin: round; }
+.av-lines .thin { stroke-width: 1.1px; }
+.av-colour { transition: none; }
+/* Brush stroke — visible only during the intro, edges rough from a bristle-bleed filter */
+.av-strokes { visibility: hidden; fill: none; stroke-width: 13px; stroke-linecap: round; stroke-linejoin: round; }
+html[data-intro=drawing] .av-strokes { visibility: visible; }
+.av-strokes .hair { stroke: var(--site-hair); }
+.av-strokes .skin { stroke: var(--site-skin); }
+.av-glasses { fill: none; stroke: var(--site-carbon); stroke-width: 1.1px; stroke-linecap: round; }
+.av-glasses .lens { fill: color-mix(in srgb, var(--kf-bg) 18%, transparent); }
+.av-glasses.flown { transition: translate .35s var(--site-ease-in); translate: 0 -120vh; }
+.av-pen, .av-brush { opacity: 0; fill: var(--kf-bg); stroke: var(--site-pen); stroke-width: .8px; }
+.av-brush .tuft { fill: var(--site-hair); }
+.av-startle { fill: none; stroke: var(--site-carbon); stroke-width: 1.5px; stroke-linecap: round; }
+.av-startle g { opacity: 0; transform-box: fill-box; transform-origin: 50% 100%; transform: scale(.3); transition: transform .3s var(--site-ease-back) calc(var(--i) * 60ms), opacity .12s var(--kf-ease-out) calc(var(--i) * 60ms); }
+.g-avatar.alarmed .av-startle g { opacity: 1; transform: none; }
+.av-wonder { fill: none; stroke: var(--site-carbon); stroke-width: 1.15px; stroke-linecap: round; }
+.av-wonder g { opacity: 0; transform-box: fill-box; transform-origin: bottom; transform: translateY(3px) scale(.8); transition: opacity .16s var(--kf-ease-out), transform .16s var(--kf-ease-out); }
+.g-avatar.wondering .av-wonder g { opacity: 1; transform: scale(1.3); transition: opacity .12s var(--kf-ease-out) calc(var(--i) * .11s), transform .32s var(--site-ease-back) calc(var(--i) * .11s); }
+.av-wonder .point { stroke-width: 1.7px; }
+
+/* Glasses detached from the avatar — they snap back into place when released */
+.g-held-glasses { position: fixed; left: 0; top: 0; width: 55px; height: 40px; z-index: 20; pointer-events: none; fill: none; stroke: var(--site-carbon); stroke-width: .8px; stroke-linecap: round; overflow: visible; }
+.g-held-glasses .halo { stroke: var(--kf-bg); stroke-width: 2.2px; stroke-opacity: .9; }
+
+/* ── Word link: thumbnail-size line drawing + word. On hover the bracket frame grows and an ink band spreads from the left ── */
+.g-cat { --u: calc(2.625em / 70); --pop: 0; --zoom: 1; --wipe: 100; --side: calc((70 + 2 * var(--pop)) * var(--zoom) * var(--u)); color: inherit; white-space: nowrap; -webkit-tap-highlight-color: transparent; touch-action: manipulation; text-decoration: none; display: inline-block; position: relative; }
+.g-cat:focus-visible { outline: 2px solid transparent; }
+.g-cat__frame { width: calc(var(--u) * 70); height: calc(var(--u) * 70); margin: calc((1em - var(--u) * 70) / 2) .5em calc((1em - var(--u) * 70) / 2) 0; vertical-align: middle; display: inline-block; position: relative; }
+.g-cat__box { position: absolute; left: 0; top: 0; width: calc(var(--u) * 70); height: calc(var(--u) * 70); transform-origin: 0 0; transform: translate(calc(var(--pop) * var(--zoom) * var(--u)), calc(var(--pop) * var(--zoom) * var(--u))) scale(var(--zoom)); background: color-mix(in srgb, var(--kf-bg) clamp(0%, calc((var(--zoom) - 1) * 2000%), 100%), transparent); }
+.g-cat__corners { position: absolute; inset: calc(-1 * var(--u) * var(--pop)); opacity: clamp(0, calc(var(--pop) / 3), 1); }
+.g-cat__corners i { width: calc(var(--u) * 8); height: calc(var(--u) * 8); position: absolute; }
+.g-cat__corners i::before, .g-cat__corners i::after { content: ""; background: var(--site-carbon); position: absolute; top: 0; }
+.g-cat__corners i::before { width: calc(var(--u) * 1.6); height: 100%; left: 0; }
+.g-cat__corners i::after { left: calc(var(--u) * 1.6); width: calc(var(--u) * 6.4); height: calc(var(--u) * 2); }
+.g-cat__corners i:nth-child(1) { top: calc(var(--u) * -1); left: calc(var(--u) * -1); }
+.g-cat__corners i:nth-child(2) { top: calc(var(--u) * -1); right: calc(var(--u) * -1); transform: rotate(90deg); }
+.g-cat__corners i:nth-child(3) { right: calc(var(--u) * -1); bottom: calc(var(--u) * -1); transform: rotate(180deg); }
+.g-cat__corners i:nth-child(4) { bottom: calc(var(--u) * -1); left: calc(var(--u) * -1); transform: rotate(-90deg); }
+.g-cat__art { position: absolute; max-width: none; width: calc(var(--u) * 280); height: calc(var(--u) * 280); left: calc(var(--side) / 2); top: calc(var(--side) / 2); transform: translate(-50%, -50%); pointer-events: none; overflow: visible; }
+/* three line art — a 280-cell board is centered in the frame and enlarged with camera zoom. Once ready it fades in over .2s and the SVG poster is hidden after that */
+.g-cat__gl { position: absolute; width: calc(var(--u) * 280); height: calc(var(--u) * 280); left: calc(var(--side) / 2); top: calc(var(--side) / 2); transform: translate(-50%, -50%); opacity: 0; pointer-events: none; transition: opacity .2s var(--kf-ease-out); }
+.g-cat__gl.ready { opacity: 1; }
+.g-cat.gl .g-cat__art { visibility: hidden; transition: visibility 0s .2s; }
+.g-cat__label { --bar: .1em; margin: 0 calc(-1 * var(--bar)); padding: 0 var(--bar); line-height: 1.3; display: inline-block; position: relative; transform: translateX(calc(var(--side) - var(--u) * 70)); }
+.g-cat__bar { padding: inherit; color: var(--kf-contrast-ink); background: var(--kf-contrast-bg); clip-path: inset(0 calc(var(--wipe) * 1%) 0 0); position: absolute; inset: 0; white-space: nowrap; }
+.g-cat__bar::before { content: attr(data-label); }
+
+/* Line drawing — resting type (thumbnail size) and the expanded scene. Each piece pops out 60ms later per index */
+.ic { fill: var(--kf-bg); stroke: var(--kf-ink); stroke-width: 1.5px; stroke-linejoin: round; stroke-linecap: round; }
+.ic .fill-ink { fill: var(--kf-ink); }
+.ic .no-fill { fill: none; }
+.ic-rest, .ic-part { transform-box: view-box; transition: transform .3s var(--site-ease-back) calc(var(--i, 0) * 60ms), opacity .12s var(--kf-ease-out) calc(var(--i, 0) * 60ms); }
+.ic-part { opacity: 0; transform: var(--from, scale(.4)); transform-origin: var(--o, 140px 150px); }
+.g-cat.lit .ic-part { opacity: 1; transform: none; }
+.ic-move { transform: var(--rest-t, none); transition: transform .32s var(--site-ease-back) calc(var(--i, 0) * 60ms); }
+.g-cat.lit .ic-move { transform: var(--lit-t, none); }
+.ic-rest { transform-origin: 140px 140px; }
+.g-cat.lit .ic-rest { opacity: 0; transform: scale(.7); }
+
+/* about panel */
+.g-panel p + p { margin-top: 1em; }
+.g-rev, .g-after { position: relative; }
+.g-rev del, .g-rev ins { text-decoration: none; }
+.g-rev:not(.drawn) del { text-decoration: line-through; }
+.g-scratch { pointer-events: none; width: 100%; height: 100%; position: absolute; inset: 0; overflow: visible; }
+.g-scratch path { fill: none; stroke: var(--site-carbon); stroke-width: 1px; }
+.g-after .cipher { color: var(--site-ash); transition: color .24s var(--kf-ease-out); }
+.g-after.hovered .cipher { color: var(--kf-ink); }
+.g-after.pointing { cursor: none; }
+.g-after__through { position: absolute; inset: 0; color: var(--kf-ink); background: var(--kf-bg); pointer-events: none; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+.g-glasses-pointer { z-index: 10; fill: none; width: 55px; height: 40px; stroke: var(--site-carbon); stroke-width: .8px; stroke-linecap: round; pointer-events: none; position: fixed; top: 0; left: 0; overflow: visible; }
+.g-glasses-pointer .halo { stroke: var(--kf-bg); stroke-width: 2.2px; stroke-opacity: .9; }
+.g-glasses-pointer .point { stroke-width: 1.5px; }
+.g-glasses-pointer .rim { stroke-dasharray: 1; animation: g-draw-rim .26s var(--kf-ease-out) calc(var(--i, 0) * 70ms) backwards; }
+.g-glasses-pointer .bridge, .g-glasses-pointer .halo { animation: g-appear .16s var(--kf-ease-out) 60ms backwards; }
+.g-glasses-pointer .query { transform-box: fill-box; transform-origin: bottom; animation: g-pop .56s var(--site-ease-pop) .28s backwards; }
+@keyframes g-draw-rim { 0% { stroke-dashoffset: 1px; } }
+@keyframes g-appear { 0% { opacity: 0; } }
+@keyframes g-pop { 0% { opacity: 0; transform: translateY(2px) scale(.5); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .g-nav.placed .g-nav__line, .g-cat__gl, .ic-rest, .ic-part, .ic-move, .av-startle g, .av-wonder g, .av-glasses.flown { transition: none; }
+  .g-glasses-pointer .rim, .g-glasses-pointer .bridge, .g-glasses-pointer .halo, .g-glasses-pointer .query { animation: none; }
+}
+
+/* If Korean placeholder text breaks between syllables, the word-by-word text effect goes out of sync */
+.g-landing { word-break: keep-all; }
+.g-landing > .wf-note { top: 12px; }

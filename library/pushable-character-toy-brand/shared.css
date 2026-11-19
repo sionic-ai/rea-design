@@ -1,0 +1,142 @@
+/* Things spanning several pages: background color table (one per open, the next one each time the character is pushed hard), top menu (mirror-shadow text) · hamburger panel, character drawing, bottom line */
+:root {
+  /* The original picks one from a 24-color table each time it opens — here we rotate only the hue of the skin’s base color to make eight colors */
+  --site-hue-0: var(--kf-bg);
+  --site-hue-1: color-mix(in srgb, oklch(from var(--kf-bg) calc(l * 0.62) c calc(h + 95)) 100%, transparent);
+  --site-hue-2: color-mix(in srgb, oklch(from var(--kf-bg) calc(l * 1.08) calc(c * 1.1) calc(h + 205)) 100%, transparent);
+  --site-hue-3: color-mix(in srgb, oklch(from var(--kf-bg) calc(l * 0.58) c calc(h + 255)) 100%, transparent);
+  --site-hue-4: color-mix(in srgb, oklch(from var(--kf-bg) calc(l * 0.86) c calc(h + 170)) 100%, transparent);
+  --site-hue-5: color-mix(in srgb, oklch(from var(--kf-bg) calc(l * 1.05) c calc(h + 60)) 100%, transparent);
+  --site-hue-6: color-mix(in srgb, oklch(from var(--kf-bg) calc(l * 0.7) c calc(h + 300)) 100%, transparent);
+  --site-hue-7: color-mix(in srgb, oklch(from var(--kf-bg) calc(l * 0.9) calc(c * 0.8) calc(h + 130)) 100%, transparent);
+  /* Teal glow of the footer section — the counter color to the accent pink */
+  --site-glow: color-mix(in srgb, oklch(from var(--kf-accent) 0.87 0.148 calc(h - 136.74)) 100%, transparent);
+  /* Blue of the timeline date line — only the hue is turned from the teal glow */
+  --site-blue: color-mix(in srgb, oklch(from var(--site-glow) 0.5635 0.2408 calc(h + 57.94)) 100%, transparent);
+  --site-glow-soft: color-mix(in srgb, var(--site-glow) 45%, transparent);
+  --site-pink: color-mix(in oklab, var(--kf-accent) 70%, var(--kf-bg) 0%);
+  --site-pink-stage: color-mix(in srgb, oklch(from var(--kf-accent) calc(l * 0.82) calc(c * 1.25) calc(h + 18)) 100%, transparent);
+  --site-shade: color-mix(in oklab, var(--kf-contrast-bg) 22%, transparent);
+  /* Speech bubble yolk-yellow text and pink shadow — only the hue is rotated from the accent color */
+  --site-yolk: color-mix(in srgb, oklch(from var(--kf-accent) 0.93 0.19 calc(h + 125)) 100%, transparent);
+  --site-yolk-shadow: color-mix(in srgb, oklch(from var(--kf-accent) calc(l * 0.62) calc(c * 1.4) calc(h + 15)) 100%, transparent);
+  --site-doll-line: var(--kf-contrast-bg);
+  --site-doll-skin: var(--kf-accent-soft);
+  --site-ease-nav: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+html { background: var(--ms-page, var(--kf-bg)); }
+body.ms {
+  margin: 0;
+  background: var(--ms-page, var(--kf-bg));
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+:where(.ms) button { font: inherit; color: inherit; border: 0; background: none; padding: 0; cursor: pointer; }
+
+/* ───── Top menu: four letters with a mirror shadow reflected, small marks at both ends. Hides on scroll down, leaving only the hamburger ───── */
+.ms-nav {
+  position: fixed;
+  top: 35px;
+  left: 50%;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  transform: translateX(calc(-50% + 8px));
+  transition: transform 0.4s var(--site-ease-nav), opacity 0.35s ease;
+}
+body.is-nav-hidden .ms-nav { transform: translateX(calc(-50% + 8px)) translateY(-150%); opacity: 0; pointer-events: none; }
+.ms-nav__link {
+  position: relative;
+  display: inline-block;
+  padding: 0 10px;
+  color: color-mix(in srgb, var(--kf-ink) 97%, var(--kf-contrast-bg));
+  font-family: var(--kf-font-display);
+  font-weight: var(--kf-weight-display);
+  font-size: 22px;
+  -webkit-box-reflect: below -4px linear-gradient(transparent 50%, color-mix(in srgb, var(--kf-ink) 35%, transparent));
+  transition: color 0.3s ease;
+}
+.ms-nav__link[aria-current="page"] { color: var(--kf-ink); }
+.ms-nav__link:hover { color: var(--kf-accent); animation: ms-rgb-burst 0.35s var(--site-ease-nav) forwards; }
+/* On hover the text shakes side to side while teal and magenta shadows split apart and merge */
+@keyframes ms-rgb-burst {
+  0% { text-shadow: 0 0 transparent, 0 0 transparent; transform: translateX(0); }
+  20% { text-shadow: -5px 0 var(--site-glow), 5px 0 var(--kf-accent); transform: translateX(-2px); }
+  40% { text-shadow: 4px 0 var(--site-glow), -4px 0 var(--kf-accent); transform: translateX(2px); }
+  60% { text-shadow: -3px 0 var(--site-glow), 3px 0 var(--kf-accent); transform: translateX(-1px); }
+  80% { text-shadow: 2px 0 var(--site-glow), -2px 0 var(--kf-accent); transform: translateX(1px); }
+  100% { text-shadow: -1px 0 var(--site-glow-soft), 1px 0 var(--site-glow-soft); transform: translateX(0); }
+}
+.ms-nav__tag { font-size: 11px; letter-spacing: 2px; pointer-events: none; -webkit-user-select: none; user-select: none; }
+.ms-nav__tag--left { opacity: 0.5; transform: translateX(-72px); }
+.ms-nav__tag--right { opacity: 0.65; padding: 4px 10px; border: 1px solid color-mix(in srgb, var(--kf-ink) 20%, transparent); border-radius: 12px; background: var(--site-shade); font-size: 11.5px; letter-spacing: 0; transform: translateX(72px); }
+@media (max-width: 767px) { .ms-nav { display: none; } }
+
+/* Hamburger — when the menu is hidden (always on phone) it stands at top right, and pressing it turns three lines into an X and opens a small panel */
+.ms-burger { position: fixed; top: 32px; right: 30px; z-index: 110; opacity: 0; pointer-events: none; transition: opacity 0.35s ease; }
+body.is-nav-hidden .ms-burger, .ms-burger.is-open { opacity: 1; pointer-events: auto; }
+@media (max-width: 767px) { .ms-burger { top: 22px; right: 10px; opacity: 1; pointer-events: auto; } }
+.ms-burger__bar { display: block; width: 35px; height: 5px; margin: 6px 0; border-radius: 5px; background: var(--kf-ink); transition: 0.4s; }
+.ms-burger.is-open .ms-burger__bar:nth-child(1) { transform: rotate(-45deg) translate(-9px, 6px); }
+.ms-burger.is-open .ms-burger__bar:nth-child(2) { opacity: 0; }
+.ms-burger.is-open .ms-burger__bar:nth-child(3) { transform: rotate(45deg) translate(-8px, -8px); }
+.ms-menu { position: fixed; top: 82px; right: 30px; z-index: 110; display: none; padding: 10px; border-radius: 8px; background: color-mix(in srgb, var(--kf-contrast-bg) 88%, var(--kf-ink) 12%); box-shadow: 0 8px 16px var(--site-shade); }
+@media (max-width: 767px) { .ms-menu { top: 72px; right: 10px; } }
+.ms-menu.is-open { display: block; }
+.ms-menu a { display: block; padding: 12px 16px; border: 1px solid transparent; border-radius: 6px; color: var(--kf-ink-soft); text-align: center; font-family: var(--kf-font-sans); transition: all 0.25s ease; }
+.ms-menu a:hover { border-color: color-mix(in srgb, var(--site-glow) 20%, transparent); background: color-mix(in srgb, var(--site-glow) 8%, transparent); color: var(--site-glow); }
+
+/* ───── Character art — thick line + skin tone, cap color is --ms-cap. Frame (data-frame) swings the hips and looking back shows the face ───── */
+.ms-doll { display: block; width: 100%; height: 100%; overflow: visible; --ms-cap: var(--site-hue-2); }
+.ms-doll__o { stroke: var(--site-doll-line); stroke-width: 4.5; stroke-linejoin: round; }
+.ms-doll__skin { fill: var(--site-doll-skin); }
+.ms-doll__cap { fill: var(--ms-cap); }
+.ms-doll__sticker { fill: var(--kf-accent); }
+.ms-doll__hair { fill: none; stroke: var(--site-doll-line); stroke-width: 4; stroke-linecap: round; }
+.ms-doll__limb-o { fill: none; stroke: var(--site-doll-line); stroke-width: 15; stroke-linecap: round; stroke-linejoin: round; }
+.ms-doll__limb-i { fill: none; stroke: var(--site-doll-skin); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+.ms-doll__face { fill: var(--site-doll-line); opacity: 0; }
+.ms-doll__mouth { fill: none; stroke: var(--site-doll-line); stroke-width: 3.5; stroke-linecap: round; }
+.ms-doll__hips, .ms-doll__arm { transform-box: view-box; }
+.ms-doll__hips { transform-origin: 150px 250px; }
+.ms-doll__arm--l { transform-origin: 134px 214px; }
+.ms-doll__arm--r { transform-origin: 166px 214px; }
+.ms-doll[data-frame="left"] .ms-doll__hips { transform: translateX(-4px) rotate(-6deg); }
+.ms-doll[data-frame="right"] .ms-doll__hips { transform: translateX(4px) rotate(6deg); }
+.ms-doll[data-frame="left"] .ms-doll__arm--l { transform: rotate(10deg); }
+.ms-doll[data-frame="right"] .ms-doll__arm--r { transform: rotate(-10deg); }
+.ms-doll[data-frame="turn"] .ms-doll__face { opacity: 1; }
+.ms-doll[data-frame="turn"] .ms-doll__arm--l { transform: rotate(-24deg); }
+.ms-doll[data-frame="turn"] .ms-doll__arm--r { transform: rotate(24deg); }
+
+/* ───── Bottom row ───── */
+.ms-foot { padding: 20px 10px; text-align: center; font-family: var(--kf-font-sans); font-size: 0.9rem; letter-spacing: 0.5px; }
+.ms-foot__pipe { margin: 0 8px; opacity: 0.7; }
+.ms-foot a { transition: color 0.3s; }
+@media (hover: hover) { .ms-foot a:hover, .ms-foot__legal:hover { color: color-mix(in srgb, oklch(from var(--site-yolk) 0.82 0.07 calc(h - 20)) 100%, transparent); } }
+.ms-foot__legal { cursor: pointer; transition: color 0.3s; }
+@media (max-width: 480px) {
+  .ms-foot { font-size: 0.75rem; line-height: 2; }
+  .ms-foot__copy { display: block; }
+  .ms-foot__pipe--wide { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ms-nav, .ms-burger, .ms-burger__bar, .ms-nav__link { transition: none; animation: none !important; }
+}
+
+/* Legal notice panel — center panel (max 600px) over a dark blurred scrim, closed with × at the top right */
+.ms-legal { width: 90%; max-width: 600px; max-height: 80vh; padding: 35px 25px 25px; box-sizing: border-box; border: 5px solid color-mix(in srgb, var(--kf-contrast-ink) 10%, transparent); border-radius: 12px; background: color-mix(in oklab, var(--kf-contrast-bg) 82%, var(--kf-contrast-ink)); color: var(--kf-contrast-ink); font-family: var(--kf-font-sans); line-height: 1.6; text-align: left; opacity: 0; transition: opacity 0.3s ease, display 0.3s allow-discrete, overlay 0.3s allow-discrete; }
+.ms-legal[open] { opacity: 1; }
+@starting-style { .ms-legal[open] { opacity: 0; } }
+.ms-legal::backdrop { background: color-mix(in srgb, var(--kf-contrast-bg) 80%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.ms-legal__close { position: absolute; top: 0; right: 0; width: 48px; height: 48px; font-size: 32px; line-height: 1; transition: color 0.2s; }
+.ms-legal__close:hover { color: var(--kf-accent); }
+.ms-legal__title { margin: 0 0 15px; color: var(--site-glow); font-size: 1.5rem; text-align: center; }
+.ms-legal h4 { margin: 20px 0 5px; font-size: 1.1rem; }
+.ms-legal p { margin: 0; color: color-mix(in srgb, var(--kf-contrast-ink) 70%, transparent); font-size: 0.9rem; }

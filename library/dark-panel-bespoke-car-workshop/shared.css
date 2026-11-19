@@ -1,0 +1,508 @@
+/* Shared by all pages: cookie gate (loader), header bar, menu revealed as the body shrinks, buttons, scrollbar, logo band, closing section, page transition.
+   Original is 1rem = Built on 10px (62.5%), so rem values are carried over as they are, keeping the same ratio. */
+:root {
+  --site-black: var(--kf-bg);
+  --site-bc1: var(--kf-surface);
+  --site-bc2: var(--kf-raised);
+  --site-red: var(--kf-accent);
+  --site-red-deep: color-mix(in oklab, var(--kf-accent) 62%, var(--kf-bg));
+  --site-cream: var(--kf-ink-soft);
+  --site-cream-80: color-mix(in srgb, var(--kf-ink-soft) 80%, transparent);
+  --site-cream-60: color-mix(in srgb, var(--kf-ink-soft) 60%, transparent);
+  --site-cream-55: color-mix(in srgb, var(--kf-ink-soft) 55%, transparent);
+  --site-cream-40: color-mix(in srgb, var(--kf-ink-soft) 40%, transparent);
+  --site-cream-10: color-mix(in srgb, var(--kf-ink-soft) 10%, transparent);
+  --site-white-10: color-mix(in srgb, var(--kf-ink) 10%, transparent);
+  --site-shade-10: color-mix(in srgb, var(--kf-bg) 10%, transparent);
+  --site-shade-90: color-mix(in srgb, var(--kf-bg) 90%, transparent);
+  --site-ph: color-mix(in oklab, var(--kf-ink) 7%, var(--kf-surface));
+  --site-ph-line: color-mix(in oklab, var(--kf-ink) 14%, var(--kf-surface));
+  --site-edge: var(--kf-accent-text);
+
+  --bezzy: cubic-bezier(0.8, 0, 0, 1);
+  --bezzy2: cubic-bezier(0.43, 0.195, 0.02, 1);
+  --bezzy3: cubic-bezier(0.5, 0, 0, 1);
+  --page-beat: 1.2s;
+  --gap-col: calc(8.333vw + 1.6rem);
+  --grid-gutter: 3.2rem;
+  --grid-margin: 2.4rem;
+}
+@media (hover: none) { :root { --page-beat: 0.6s; } }
+
+html { font-size: 62.5%; background: var(--site-black); }
+@media (min-width: 1600px) { html { font-size: 68.75%; } }
+@media (min-width: 1920px) { html { font-size: 75%; } }
+body {
+  background: var(--site-black);
+  color: var(--kf-ink);
+  font-family: var(--kf-font-sans);
+  font-weight: var(--kf-weight-body);
+  line-height: 1;
+  word-break: keep-all;
+}
+::selection { background: var(--site-red); color: var(--kf-ink); }
+.fg-sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* 12-column grid — 1024 and up: 12 columns · 3.2rem gap · 1.6rem edges, 700 and up: 6 columns, below that 4 columns */
+.fg-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  column-gap: var(--grid-gutter);
+  padding-inline: var(--grid-margin);
+  width: 100%;
+}
+.fg-grid > * { grid-column: 1 / -1; }
+@media (min-width: 420px) { :root { --grid-margin: 3.2rem; } }
+@media (min-width: 700px) { .fg-grid { grid-template-columns: repeat(6, 1fr); } :root { --grid-margin: 1.6rem; } }
+@media (min-width: 1024px) { .fg-grid { grid-template-columns: repeat(12, 1fr); } }
+
+/* Type — named as in the original (heading · body · label) */
+.fg-display { font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); text-transform: capitalize; line-height: 1.2; letter-spacing: -0.2rem; }
+.fg-h-xl { font-size: 5.8rem; }
+@media (min-width: 1200px) { .fg-h-xl { font-size: 9.6rem; } }
+.fg-body { font-family: var(--kf-font-sans); font-size: 1.6rem; font-weight: 300; line-height: 1.4; letter-spacing: -0.05rem; color: var(--site-cream-80); text-wrap: balance; }
+@media (min-width: 700px) { .fg-body { font-size: 1.8rem; } }
+.fg-label { font-family: var(--kf-font-sans); font-size: 0.9rem; font-weight: 600; line-height: 2; letter-spacing: 0.3rem; text-transform: uppercase; }
+@media (min-width: 700px) { .fg-label { font-size: 1rem; } }
+
+/* Photo slot — a label describes what the photo captures */
+.fg-ph {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background:
+    linear-gradient(to top right, transparent calc(50% - 0.5px), var(--site-ph-line) 50%, transparent calc(50% + 0.5px)),
+    linear-gradient(to bottom right, transparent calc(50% - 0.5px), var(--site-ph-line) 50%, transparent calc(50% + 0.5px)),
+    var(--site-ph);
+}
+.fg-ph::after {
+  content: attr(data-label);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  max-width: calc(100% - 2.4rem);
+  padding: 0.4rem 0.8rem;
+  background: var(--site-bc1);
+  color: var(--site-cream-60);
+  font: 500 1.1rem/1.3 var(--kf-font-mono);
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: none;
+}
+.fg-ph.is-quiet::after { display: none; }
+/* A background photo covering the screen drops its label down so it does not overlap the title */
+.fg-outro__bg .fg-ph::after, .fg-teaser__bg .fg-ph::after, .fg-slide__bg .fg-ph::after, .fg-approach__bg .fg-ph::after, .fg-ct-hero__stick .fg-ph::after { top: auto; bottom: 22%; translate: -50% 0; }
+
+/* Forged carbon pattern — the original repeating image (313×314, .2 transparent) redrawn with a noise filter */
+.fg-carbon { position: absolute; inset: 0; pointer-events: none; opacity: 0.2; }
+.fg-carbon svg { width: 100%; height: 100%; display: block; }
+.fg-defs feFlood { flood-color: var(--kf-ink); }
+
+/* ───────── Header bar ───────── */
+.fg-head {
+  position: fixed;
+  z-index: 1000;
+  inset: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.fg-head > * { pointer-events: auto; }
+.fg-social { display: none; }
+@media (min-width: 1024px) { .fg-social { display: flex; padding: 3.2rem; overflow: clip; } }
+.fg-social a { display: grid; place-items: center; padding: 0.8rem; transition: opacity 0.3s ease-in-out; }
+.fg-social svg { width: 1.6rem; height: 1.6rem; fill: var(--kf-ink); }
+@media (hover: hover) and (pointer: fine) { .fg-social:has(a:hover) a:not(:hover) { opacity: 0.4; } }
+.fg-tel { display: grid; place-items: center; padding: 2.4rem; overflow: clip; }
+@media (min-width: 420px) { .fg-tel { padding: 3.2rem; } }
+@media (min-width: 1024px) { .fg-tel { display: none; } }
+.fg-tel svg { width: 2.4rem; height: 2.4rem; stroke: var(--site-cream); stroke-width: 1.5; fill: none; }
+.fg-logo { position: absolute; top: 2.4rem; left: 50%; translate: -50% 0; z-index: 1; }
+@media (min-width: 420px) { .fg-logo { top: 3.2rem; } }
+@media (min-width: 1024px) { .fg-logo { top: 4rem; } }
+.fg-logo svg { display: block; height: 3.2rem; width: auto; fill: var(--kf-ink); overflow: visible; }
+.fg-logo .fg-logo__text { overflow: hidden; }
+.fg-logo .fg-logo__text text { font: 700 10.5px/1 var(--kf-font-sans); text-anchor: middle; }
+.fg-nav {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.6rem;
+  overflow: clip;
+  padding: 2.4rem;
+  background: none;
+  border: 0;
+}
+@media (min-width: 420px) { .fg-nav { padding: 3.2rem; } }
+@media (min-width: 1024px) { .fg-nav { padding: 4rem; } }
+.fg-nav em { display: none; font-style: normal; }
+@media (min-width: 1024px) {
+  .fg-nav em { display: block; position: relative; overflow: clip; transition: opacity 0.3s ease-in-out; }
+}
+.fg-nav em span { display: block; text-align: right; transition: transform 1s var(--bezzy3); }
+.fg-nav em [data-menu="closed"] { position: relative; }
+.fg-nav em [data-menu="open"] { position: absolute; top: 0; right: 0; transform: translateY(-100%) skewY(3deg); }
+html.fg-menu-open .fg-nav em [data-menu="closed"] { transform: translateY(100%) skewY(3deg); }
+html.fg-menu-open .fg-nav em [data-menu="open"] { transform: translateY(0) skewY(0deg); }
+@media (hover: hover) and (pointer: fine) {
+  .fg-nav:hover em { opacity: 0.4; }
+  .fg-nav:hover .fg-burger span:nth-child(2) { scale: 0.5 1; }
+}
+.fg-burger {
+  --g: 0.6rem;
+  position: relative;
+  width: 2.4rem;
+  height: 2.3rem;
+  transition: rotate 1s var(--bezzy2);
+}
+@media (min-width: 1024px) { .fg-burger { width: 1.6rem; height: 1.5rem; margin-bottom: 0.1rem; --g: 0.4rem; } }
+.fg-burger span {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--kf-ink);
+  transition: translate 0.3s ease-in-out, rotate 0.3s ease-in-out, scale 0.3s ease-in-out;
+}
+.fg-burger span:nth-child(1) { translate: 0 calc(-50% - var(--g)); }
+.fg-burger span:nth-child(2) { translate: 0 -50%; }
+.fg-burger span:nth-child(3) { translate: 0 calc(-50% + var(--g)); }
+html.fg-menu-open .fg-burger { rotate: 90deg; }
+html.fg-menu-open .fg-burger span:nth-child(1) { translate: 0 -50%; rotate: 45deg; }
+html.fg-menu-open .fg-burger span:nth-child(2) { scale: 0 1; }
+html.fg-menu-open .fg-burger span:nth-child(3) { translate: 0 -50%; rotate: -45deg; }
+/* The header line sits above the gate (998) — during the gate the logo stands above it and is pressed (original header line 1000 · gate 999) */
+.fg-social, .fg-nav, .fg-tel { visibility: hidden; }
+
+/* ───────── Body panel (shrinks when the menu opens) ───────── */
+/* Keep the body from showing through the first frame before the script sets up the gate — in the original the gate exists from the first frame */
+html.fg-boot .fg-page { visibility: hidden; }
+html.fg-in .fg-gate { display: none; }
+/* While the gate is floating, the window does not move (in the original, scrolling inside the panel is stopped) */
+html.fg-gated body { position: fixed; inset: 0; overflow: hidden; }
+.fg-page {
+  position: relative;
+  z-index: 1;
+  background: var(--site-black);
+  clip-path: inset(0%);
+  scale: 1;
+  transition: clip-path 1s var(--bezzy2), scale 1s var(--bezzy2);
+}
+html.fg-menu-open .fg-page { clip-path: inset(50%); scale: 0.8; pointer-events: none; }
+.fg-page::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 996;
+  background: var(--site-black);
+  opacity: 0;
+  pointer-events: none;
+}
+html[data-page-leaving] .fg-page::after { opacity: 1; transition: opacity var(--page-beat) var(--bezzy2); }
+html.fg-in .fg-page, html.fg-entering .fg-page { animation: fg-page-in var(--page-beat) cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@keyframes fg-page-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* ───────── Menu panel (red stage behind the body) ───────── */
+.fg-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--site-red);
+  visibility: hidden;
+}
+html.fg-menu-open .fg-menu, html.fg-menu-closing .fg-menu { visibility: visible; }
+.fg-menu__mark { position: absolute; inset: -12rem; pointer-events: none; }
+.fg-menu__mark svg { width: 100%; height: 100%; fill: var(--site-red-deep); }
+.fg-menu__inner { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2.4rem; }
+.fg-menu__big { display: flex; flex-direction: column; align-items: center; }
+.fg-menu__big a {
+  display: block;
+  font-family: var(--kf-font-display);
+  font-weight: 200;
+  font-size: 6.4rem;
+  line-height: 1.1;
+  letter-spacing: -0.2rem;
+  text-transform: uppercase;
+  color: var(--site-cream);
+  transition: opacity 0.6s var(--bezzy2);
+}
+@media (min-width: 1024px) { .fg-menu__big a { font-size: 14rem; } }
+@media (hover: hover) and (pointer: fine) {
+  .fg-menu__big:has(a:hover) a:not(:hover) { opacity: 0.3; }
+}
+.fg-menu__small { display: flex; gap: 3.2rem; }
+.fg-menu__small a, .fg-menu__small button {
+  font-family: var(--kf-font-display);
+  font-size: 1.8rem;
+  font-weight: 300;
+  letter-spacing: -0.05rem;
+  text-transform: uppercase;
+  color: var(--site-cream);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.fg-menu__foot {
+  position: absolute;
+  inset: auto 4rem 4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font: 600 0.8rem/1.25 var(--kf-font-sans);
+  letter-spacing: 0.05rem;
+  text-transform: uppercase;
+  color: var(--site-cream-55);
+}
+.fg-menu__foot > span:nth-child(2) { display: grid; justify-items: center; gap: 0.6rem; }
+.fg-menu__foot .fg-wf-logo { font: 600 1.2rem/1 var(--kf-font-sans); letter-spacing: 0.2rem; color: var(--site-cream); border: 1px dashed var(--site-cream-40); padding: 0.4rem 0.8rem; }
+
+/* ───────── Button — light traveling around the border + text rolls down from above ───────── */
+@property --fg-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+@keyframes fg-angle { to { --fg-angle: 360deg; } }
+.fg-btn {
+  --play-state: paused;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: max-content;
+  white-space: nowrap;
+  padding: 1.6rem 3.2rem;
+  border: 1px solid var(--site-cream-10);
+  background: var(--site-shade-10);
+  cursor: pointer;
+  transition: border-color 0.5s ease-in-out;
+}
+@media (min-width: 1024px) { .fg-btn { backdrop-filter: blur(4px); } }
+.fg-btn > span {
+  position: relative;
+  z-index: 1;
+  display: block;
+  overflow: clip;
+  font-family: var(--kf-font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 2;
+  letter-spacing: 0.3rem;
+  text-transform: uppercase;
+  color: var(--kf-ink);
+  transition: opacity 0.5s ease-in-out;
+}
+@media (min-width: 700px) { .fg-btn > span { font-size: 1rem; } }
+.fg-roll > span > span, .fg-btn > span > span {
+  display: inline-block;
+  text-shadow: var(--site-cream-60) 0 -4em 0;
+  transition: transform 0.5s var(--bezzy2);
+  transition-delay: calc(var(--i, 0) * 0.02s);
+}
+.fg-btn > i {
+  position: absolute;
+  inset: -1px;
+  z-index: 0;
+  padding: 1px;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background: conic-gradient(from var(--fg-angle) at center,
+    transparent 15%, var(--kf-ink) 25%, transparent 35%,
+    transparent 65%, var(--kf-ink) 75%, transparent 85%);
+  -webkit-mask: linear-gradient(var(--kf-ink) 0 0) content-box, linear-gradient(var(--kf-ink) 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(var(--kf-ink) 0 0) content-box exclude, linear-gradient(var(--kf-ink) 0 0);
+  animation: fg-angle 4.5s linear infinite var(--play-state);
+  transition: opacity 0.5s ease-in-out;
+}
+@media (hover: hover) and (pointer: fine) {
+  .fg-btn:hover { border-color: var(--site-cream-40); }
+  .fg-btn:hover > span { opacity: 0.6; }
+  .fg-btn:hover > span > span, .fg-roll:hover > span > span { transform: translateY(4em); }
+}
+.fg-btn:focus-visible { outline: 1px dashed var(--site-cream-60); outline-offset: 2px; }
+
+/* ───────── Cookie gate (loader) ───────── */
+.fg-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+  display: grid;
+  place-items: center;
+  background: var(--site-black);
+}
+.fg-gate[hidden] { display: none; }
+.fg-gate__mark { position: absolute; top: 2.4rem; left: 50%; translate: -50% 0; }
+@media (min-width: 420px) { .fg-gate__mark { top: 3.2rem; } }
+@media (min-width: 1024px) { .fg-gate__mark { top: 4rem; } }
+.fg-gate__mark svg { display: block; height: 3.2rem; width: auto; fill: var(--kf-ink); }
+.fg-gate.is-out { pointer-events: none; }
+.fg-gate__text {
+  max-width: 45.5rem;
+  margin: 0 auto;
+  padding-inline: 2.4rem;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--kf-ink);
+  visibility: hidden;
+}
+.fg-gate__text > span { display: inline-block; vertical-align: baseline; }
+.fg-gate__bottom {
+  position: fixed;
+  left: 50%;
+  bottom: 3.2rem;
+  translate: -50% 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+@media (min-width: 1024px) { .fg-gate__bottom { bottom: 4rem; } }
+.fg-gate__bar { width: 16rem; height: 2px; border-radius: 1px; overflow: hidden; background: var(--site-white-10); }
+.fg-gate__bar > i { display: block; width: 100%; height: 100%; background: var(--site-cream); transform: scaleX(0); transform-origin: left center; }
+/* Button and notice sit in place from the start (invisible) with the bar overlapping beneath them, vanishing once full — the original turns the bar into the button */
+.fg-gate__choice { display: flex; flex-direction: column; align-items: center; gap: 0.8rem; }
+.fg-gate__bar { position: absolute; left: 50%; bottom: 0; translate: -50% 0; }
+.fg-gate.is-ready .fg-gate__bar { visibility: hidden; }
+.fg-gate__btns { display: flex; }
+.fg-enter {
+  position: relative;
+  padding: 1.6rem;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-family: var(--kf-font-display);
+  font-size: 1.8rem;
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: -0.05rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--kf-ink);
+}
+.fg-enter > span { position: relative; display: block; overflow: clip; padding-bottom: 0.2rem; }
+.fg-enter > span > span { display: inline-block; text-shadow: var(--site-cream-60) 0 -2em 0; transition: transform 0.75s var(--bezzy2); transition-delay: calc(var(--i, 0) * 0.03s); }
+.fg-enter > span::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: currentColor;
+  transform-origin: right center;
+  transition: transform 0.28s ease-in-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  /* After a pick (is-out), release the hover-lift shape so text and underline return into place only once — so a late-dropping hand doesn’t trigger twice */
+  .fg-gate:not(.is-out) .fg-enter:hover > span > span { transform: translateY(2em); }
+  .fg-gate:not(.is-out) .fg-enter:hover > span::after { transform: scaleX(0); }
+}
+.fg-enter:focus-visible { outline: 1px dashed var(--site-cream-60); outline-offset: 2px; }
+.fg-gate__note {
+  max-width: 26rem;
+  text-align: center;
+  font: 600 0.8rem/1.4 var(--kf-font-sans);
+  letter-spacing: 0.05rem;
+  text-transform: uppercase;
+  color: var(--site-cream-60);
+}
+.fg-gate__note a { color: color-mix(in srgb, var(--kf-ink) 55%, transparent); text-decoration: underline; transition: color 0.18s cubic-bezier(0.5, 0, 0.5, 1); }
+@media (hover: hover) and (pointer: fine) { .fg-gate__note a:hover { color: var(--kf-ink); } }
+
+/* ───────── Scroll bar (1.6rem from the bottom, 2px) ───────── */
+.fg-progress {
+  position: fixed;
+  z-index: 999;
+  left: 1.6rem;
+  right: 1.6rem;
+  bottom: 1.6rem;
+  height: 2px;
+  background: var(--site-white-10);
+  pointer-events: none;
+}
+.fg-progress > i { display: block; height: 100%; background: var(--site-cream); transform: scaleX(0); transform-origin: left center; }
+html.fg-menu-open .fg-progress { opacity: 0; transition: opacity 0.6s var(--bezzy2); }
+
+/* ───────── Logo strip (14 brand slots go around once in 20s) ───────── */
+.fg-logos {
+  --gap: 6.4rem;
+  --play-state: paused;
+  display: flex;
+  overflow: hidden;
+  gap: var(--gap);
+  user-select: none;
+  mask-image: linear-gradient(to right, transparent 0%, var(--kf-ink) 30%, var(--kf-ink) 70%, transparent 100%);
+}
+.fg-logos ul { flex-shrink: 0; display: flex; justify-content: space-around; min-width: 100%; gap: var(--gap); animation: fg-logos 20s linear infinite var(--play-state); }
+.fg-logos li { display: grid; place-items: center; aspect-ratio: 2 / 1; height: 4rem; }
+@media (min-width: 1024px) { .fg-logos li { height: 6rem; } }
+.fg-logos svg { width: 100%; height: 100%; fill: none; stroke: var(--site-cream-60); stroke-width: 1.2; }
+@keyframes fg-logos { to { transform: translateX(calc(-100% - var(--gap))); } }
+
+/* ───────── Previous section: big photo cells leading to past work · inventory ───────── */
+.fg-teaser {
+  position: relative;
+  z-index: 1;
+  overflow: clip;
+  height: 100vh;
+  height: 100dvh;
+  padding-top: 50dvh;
+  background: var(--site-bc1);
+}
+.fg-teaser::after { content: ""; position: absolute; inset: 0; z-index: 0; background: linear-gradient(to top, var(--site-black) 0%, transparent 50%); opacity: 0.4; }
+.fg-teaser.is-dark::after { opacity: 1; }
+.fg-teaser__bg { position: absolute; inset: 0; z-index: -1; }
+.fg-teaser__bg .fg-ph { width: 100%; height: 100%; }
+.fg-teaser__box { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50dvh; }
+.fg-teaser h2 { margin-bottom: 0.8rem; color: var(--site-cream); text-align: center; }
+.fg-teaser p { margin-bottom: 3.2rem; text-align: center; max-width: 52rem; }
+
+/* ───────── Final section (Ready? · big title · back to top) ───────── */
+.fg-outro {
+  position: relative;
+  z-index: 0;
+  overflow: clip;
+  display: flex;
+  align-items: flex-start;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-top: calc(var(--gap-col) + 3.2rem);
+  background: var(--site-black);
+}
+.fg-outro::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to bottom, var(--site-black) 0%, transparent 50%); }
+.fg-outro__bg { position: absolute; inset: 0; z-index: -2; overflow: clip; visibility: hidden; }
+.fg-outro__bg .fg-ph { width: 100%; height: 100%; }
+.fg-outro .fg-grid { position: relative; z-index: 1; }
+.fg-outro__box { display: flex; flex-direction: column; align-items: center; gap: 2.4rem; }
+@media (min-width: 1024px) { .fg-outro__box { gap: 3.2rem; } }
+.fg-outro__kicker { color: var(--site-cream-60); text-align: center; }
+.fg-outro h2 { text-align: center; text-wrap: balance; color: var(--site-cream); }
+.fg-outro__cta { margin-top: 0.4rem; visibility: hidden; }
+.fg-top {
+  position: absolute;
+  z-index: 5;
+  inset: auto 0 6.4rem 0;
+  display: grid;
+  place-items: center;
+}
+.fg-top button { background: none; border: 0; cursor: pointer; }
+
+/* Word split (heading that grows with blur and size) */
+.fg-words > .w { display: inline-block; vertical-align: top; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fg-page, .fg-btn > i, .fg-logos ul, .fg-burger, .fg-burger span { transition: none; animation: none; }
+  .fg-gate__text, .fg-social, .fg-nav, .fg-tel, .fg-outro__cta, .fg-outro__bg { visibility: visible; }
+}
+
+/* After the big title letters rise (.6s expo.out) the end fill is applied — while rising, a faint 18% before the fill */
+[data-rise-fill] .fg-ch { display: inline-block; }
+/* While rising, it also uses the same line box as when filling (width of the text, .14em margin above and below) — so the box doesn’t change when moving to the fill */
+[data-rise-fill] > .fg-rise-line { display: block; width: fit-content; padding: 0.14em; margin: -0.14em auto -0.14em -0.14em; }
+[data-rise-fill][data-center] > .fg-rise-line { margin-inline: auto; }
+.fg-slide__box > [data-rise-fill] { align-self: stretch; }
+.fg-line { display: block; overflow: clip; }
+.fg-line > span { display: block; }

@@ -1,0 +1,145 @@
+/* Used by the whole page — screen-width-bound font size, font type, vertical stripe pattern, rolling-swap buttons, yellow-panel menu, following pill cursor, footer. 
+   The original scales the root font size linearly per width range (11 to 16px from 992 to 1440, 13 to 15px below 479). The same ranges are used. */
+:root {
+  --site-black: var(--kf-contrast-bg);
+  --site-white: var(--kf-contrast-ink);
+  --site-ink80: color-mix(in oklab, var(--kf-ink) 80%, transparent);
+  --site-line-dark: color-mix(in oklab, var(--kf-ink) 5%, transparent);
+  --site-line-light: color-mix(in oklab, var(--site-white) 20%, transparent);
+  --site-field: color-mix(in oklab, var(--kf-ink) 5%, var(--kf-bg));
+  --site-nav-bg: var(--kf-raised);
+  --pad: 5rem;
+  --gap: 1.5rem;
+  --sec: 8rem;
+  --r: 0.25rem;
+  --ease-nav: cubic-bezier(0.7, 0, 0.3, 1);
+  --ease-tile: cubic-bezier(0.9, 0, 0.1, 1);
+  --ease-btn: cubic-bezier(0.19, 1, 0.22, 1);
+}
+html { font-size: 16px; }
+@media (max-width: 1440px) { html { font-size: calc(11px + (100vw - 992px) * 5 / 448); } }
+@media (max-width: 992px) { html { font-size: calc(12px + (100vw - 479px) * 2 / 513); } }
+@media (max-width: 479px) { html { font-size: calc(13px + (100vw - 1px) * 2 / 478); } :root { --pad: 1.25rem; --sec: 5rem; --gap: 1em; } }
+@media (min-width: 1441px) { html { font-size: calc(16px + (100vw - 1440px) * 3 / 560); } }
+
+body { background: var(--kf-bg); color: var(--kf-ink); font-family: var(--kf-font-sans); font-size: 1rem; line-height: 1.4; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: clip; }
+html.nh-lock { overflow: hidden; }
+
+.nh-wrap { padding-inline: var(--pad); position: relative; }
+.nh-h-xl { font: var(--kf-weight-display) 3.125rem/1 var(--kf-font-display); text-transform: uppercase; }
+.nh-h-lg { font: var(--kf-weight-display) 3.125rem/1.1 var(--kf-font-display); text-transform: uppercase; text-wrap: balance; }
+.nh-h-md { font: var(--kf-weight-display) 2rem/1 var(--kf-font-display); text-transform: uppercase; }
+.nh-h-xs { font: var(--kf-weight-display) 1.625rem/1 var(--kf-font-display); text-transform: uppercase; }
+.nh-small { font-size: 0.875rem; line-height: 1.4; }
+.nh-b { font-weight: 700; }
+.nh-o80 { opacity: 0.8; }
+.nh-o50 { opacity: 0.5; }
+.nh-yellow { color: var(--kf-accent); }
+.nh-center { text-align: center; }
+.nh-num { font-variant-numeric: normal; }
+.nh-ph.wf-img { display: block; border: 0; border-radius: inherit; background-color: color-mix(in oklab, var(--kf-ink) 22%, var(--kf-bg)); }
+.nh-ph.wf-img::after { font-size: 10px; }
+
+/* Vertical line pattern — 1px lines dividing the panel into seven columns. In the Hero they grow downward in random order, in other bands they trail behind the scroll */
+.nh-lines { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; display: flex; justify-content: space-between; }
+.nh-lines::before, .nh-lines::after { content: ""; width: 1px; }
+.nh-lines i { width: 1px; height: 100%; background: var(--site-line-light); transform-origin: 50% 0; }
+.nh-lines--dark i { background: var(--site-line-dark); }
+@media (max-width: 767px) { .nh-lines i:nth-child(n+3) { display: none; } }
+
+/* Rolling swap button — the default text tilts left and exits (.05s late, .018s per letter) and the hover text enters from the right (.2s late) */
+.nh-btn { --cs: 0.018s; display: inline-grid; position: relative; color: var(--kf-on-accent); text-decoration: none; line-height: 1; transition: scale 0.15s cubic-bezier(0.4, 0, 0.2, 1); -webkit-tap-highlight-color: transparent; }
+.nh-btn:active { scale: 0.955 0.925; }
+.nh-btn__bg { grid-area: 1 / 1; border-radius: var(--r); background: var(--kf-accent); transition: scale 0.6s var(--ease-btn); }
+.nh-btn__inner { grid-area: 1 / 1; z-index: 1; display: grid; overflow: clip; padding: 0.75rem 1rem; pointer-events: none; }
+.nh-btn.is-small .nh-btn__inner { padding: 0.5rem 0.75rem; }
+.nh-btn__row { grid-area: 1 / 1; display: flex; align-items: center; gap: 0.5rem; font: var(--kf-weight-display) 0.875rem/1 var(--kf-font-display); text-transform: uppercase; letter-spacing: 0.02em; }
+.nh-btn__ico { width: 0.75rem; height: 0.625rem; }
+.nh-btn .ch { display: inline-block; transition: translate 0.6s var(--ease-btn), transform 0.25s ease-out, opacity 0.15s ease-out; }
+.nh-btn__row.is-hover .ch, .nh-btn__row.is-hover .nh-btn__ico { translate: 1.35rem 0 0; transform: skew(-28deg, 0deg); opacity: 0; }
+.nh-btn__ico { transition: translate 0.6s var(--ease-btn), transform 0.25s ease-out, opacity 0.15s ease-out; }
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .nh-btn:is(:hover, :focus-visible) .nh-btn__bg { scale: 1.025 1.035; transition-delay: 0.05s; }
+  .nh-btn:is(:hover, :focus-visible) .nh-btn__row:not(.is-hover) .ch,
+  .nh-btn:is(:hover, :focus-visible) .nh-btn__row:not(.is-hover) .nh-btn__ico { translate: -1.35rem 0 0; transform: skew(-28deg, 0deg); opacity: 0; transition-delay: calc(var(--c, 0) * var(--cs) + 0.05s); }
+  .nh-btn:is(:hover, :focus-visible) .nh-btn__row.is-hover .ch,
+  .nh-btn:is(:hover, :focus-visible) .nh-btn__row.is-hover .nh-btn__ico { translate: 0 0 0; transform: none; opacity: 1; transition: translate 0.6s var(--ease-btn) calc(var(--c, 0) * var(--cs) + 0.2s), transform 0.25s ease-out calc(var(--c, 0) * var(--cs) + 0.2s), opacity 0.15s ease-out calc(var(--c, 0) * var(--cs) + 0.2s); }
+}
+.nh-btn:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+
+/* Menu — when the yellow hamburger opens, the background turns black, the yellow panel drops from the top by polygon in 1s and links rise tilted 5° */
+.nh-nav__logo { position: fixed; z-index: 200; top: 2.0625rem; left: var(--pad); width: 3.1rem; height: 1.5rem; color: var(--site-white); mix-blend-mode: difference; }
+.nh-nav__logo svg { width: 100%; height: 100%; }
+.nh-burger { position: fixed; z-index: 200; top: 1.875rem; right: var(--pad); width: 1.875rem; height: 1.875rem; display: grid; place-items: center; padding: 0; border: 0; background: none; cursor: pointer; color: var(--kf-ink); transition: color 0.5s var(--ease-nav) 0.3s; }
+.nh-burger__bg { position: absolute; inset: 0; border-radius: var(--r); background: var(--kf-accent); transition: transform 0.5s var(--ease-nav), background-color 0.5s var(--ease-nav) 0.3s; }
+.nh-burger__bar { position: relative; z-index: 1; grid-area: 1 / 1; width: 0.75rem; height: 2px; background: currentColor; transition: transform 0.5s var(--ease-nav); }
+.nh-burger__bar:nth-child(2) { transform: translate(0, -0.21875rem); }
+.nh-burger__bar:nth-child(3) { transform: translate(0, 0.21875rem); }
+.nh-burger:hover .nh-burger__bg { transform: rotate(90deg); }
+[data-nav-status="active"] .nh-burger { color: var(--kf-accent); transition-delay: 0s; }
+[data-nav-status="active"] .nh-burger__bg { background-color: var(--kf-ink); transition: transform 0.5s var(--ease-nav), background-color 0.5s var(--ease-nav) 0s; }
+[data-nav-status="active"] .nh-burger__bar:nth-child(2) { transform: rotate(45deg) scale(1.1667, 1); }
+[data-nav-status="active"] .nh-burger__bar:nth-child(3) { transform: rotate(-45deg) scale(1.1667, 1); }
+.nh-nav__tile { position: fixed; inset: 0; z-index: 199; background: var(--kf-accent); color: var(--kf-on-accent); display: flex; flex-direction: column; justify-content: center; align-items: center; clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%); transition: clip-path 1s var(--ease-tile); pointer-events: none; }
+[data-nav-status="active"] .nh-nav__tile { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); pointer-events: auto; }
+.nh-nav__ul { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+.nh-nav__li { display: flex; overflow: hidden; transition: opacity 0.3s var(--ease-nav); }
+.nh-nav__ul:has(.nh-nav__li:hover) .nh-nav__li { opacity: 0.15; }
+.nh-nav__ul:has(.nh-nav__li:hover) .nh-nav__li:hover { opacity: 1; }
+.nh-nav__link { display: grid; font: var(--kf-weight-display) 4rem/1 var(--kf-font-display); text-transform: uppercase; transform: translateY(100%) rotate(5deg); transition: transform 0.75s var(--ease-nav); }
+.nh-nav__li:nth-child(1) .nh-nav__link { transition-delay: 0.2s; }
+.nh-nav__li:nth-child(2) .nh-nav__link { transition-delay: 0.15s; }
+.nh-nav__li:nth-child(3) .nh-nav__link { transition-delay: 0.1s; }
+.nh-nav__li:nth-child(4) .nh-nav__link { transition-delay: 0.05s; }
+.nh-nav__li:nth-child(5) .nh-nav__link { transition-delay: 0s; }
+[data-nav-status="active"] .nh-nav__link { transform: translateY(0) rotate(0.001deg); }
+[data-nav-status="active"] .nh-nav__li:nth-child(1) .nh-nav__link { transition-delay: 0.3s; }
+[data-nav-status="active"] .nh-nav__li:nth-child(2) .nh-nav__link { transition-delay: 0.35s; }
+[data-nav-status="active"] .nh-nav__li:nth-child(3) .nh-nav__link { transition-delay: 0.4s; }
+[data-nav-status="active"] .nh-nav__li:nth-child(4) .nh-nav__link { transition-delay: 0.45s; }
+[data-nav-status="active"] .nh-nav__li:nth-child(5) .nh-nav__link { transition-delay: 0.5s; }
+.nh-nav__text { grid-area: 1 / 1; transition: transform 0.3s var(--ease-nav); }
+.nh-nav__text.is-hover { transform: translateY(100%); }
+.nh-nav__link:hover .nh-nav__text { transform: translateY(-100%); }
+.nh-nav__link:hover .nh-nav__text.is-hover { transform: translateY(0); }
+.nh-nav__bottom { position: absolute; left: var(--pad); right: var(--pad); bottom: 2rem; display: flex; justify-content: space-between; opacity: 0.5; }
+@media (max-width: 479px) { .nh-nav__link { font-size: 3rem; } }
+
+/* Following yellow pill — follows at drag and sound spots with .4s power3.out and turns on scaling .9→1 */
+.nh-cursor { position: fixed; left: 0; top: 0; z-index: 300; pointer-events: none; }
+.nh-cursor__pill { display: inline-flex; padding: 0.5rem 0.75rem; border-radius: var(--r); background: var(--kf-accent); color: var(--kf-on-accent); font: var(--kf-weight-display) 0.875rem/1 var(--kf-font-display); text-transform: uppercase; translate: -50% -50%; opacity: 0; transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.625, 0.05, 0, 1), opacity 0.4s cubic-bezier(0.625, 0.05, 0, 1); }
+.nh-cursor.is-on .nh-cursor__pill { opacity: 1; transform: scale(1); }
+@media (hover: none), (pointer: coarse) { .nh-cursor { display: none; } }
+
+/* Giant background text: grows from .2x to 1x with scroll as it passes by */
+.nh-bgtext { position: absolute; inset: 0; padding: 1.25rem 1.5rem; pointer-events: none; overflow: hidden; display: flex; align-items: flex-start; justify-content: center; }
+.nh-bgtext__w { font: var(--kf-weight-display) 15vw/0.85 var(--kf-font-display); text-transform: uppercase; white-space: nowrap; color: var(--site-line-dark); transform-origin: 50% 0; }
+.nh-bgtext.is-dark .nh-bgtext__w { color: color-mix(in oklab, var(--site-white) 14%, transparent); }
+.nh-bgtext__grad { position: absolute; inset: 0 0 -20% 0; background: linear-gradient(0deg, var(--kf-bg), transparent); }
+.nh-bgtext.is-dark .nh-bgtext__grad { background: linear-gradient(0deg, var(--site-black), transparent); }
+
+/* Line · word entrance — rises from 110px below with .6s expo.out (script) */
+[data-reveal] { visibility: hidden; }
+.nh-ready [data-reveal], .nh-noanim [data-reveal] { visibility: visible; }
+
+.nh-footer { position: relative; background: var(--kf-bg); padding-block: var(--sec) 2rem; }
+.nh-footer__in { display: flex; flex-direction: column; gap: 6rem; }
+.nh-footer__top { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--gap); }
+.nh-footer__logo { grid-column: 1 / span 3; width: 3.25rem; color: var(--kf-ink); }
+.nh-footer__logo svg { width: 100%; }
+.nh-footer__col { grid-column: span 2; display: flex; flex-direction: column; gap: 1.25rem; align-items: flex-start; }
+.nh-footer__col:nth-of-type(2) { grid-column: 7 / span 2; }
+.nh-flink { font-size: 0.875rem; opacity: 0.6; transition: opacity 0.3s var(--ease-nav); }
+.nh-flink:hover { opacity: 1; }
+.nh-footer__bottom { display: flex; justify-content: space-between; }
+@media (max-width: 767px) {
+  .nh-footer__top { grid-template-columns: 1fr 1fr; row-gap: 3rem; }
+  .nh-footer__logo, .nh-footer__col, .nh-footer__col:nth-of-type(2) { grid-column: auto; }
+  .nh-footer__logo { grid-column: 1 / -1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001s !important; transition-duration: 0.001s !important; transition-delay: 0s !important; }
+}

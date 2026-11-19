@@ -1,0 +1,118 @@
+/* Home — wooden tile hero, photo slides, cards by audience, a collection passing over a fixed WebGL stage */
+.xl-fill { position: absolute; inset: 0; height: 100%; border: 0; }
+
+/* Fixed stage: laid behind the inner scroll panel. The body (with background) passes over it and it shows through in the collection box (10% dark) */
+.xl-stage { position: fixed; inset: 0; z-index: 0; background: var(--kf-contrast-bg); overflow: hidden; }
+.xl-stage__behind { position: absolute; inset: 0; opacity: 0.3; mix-blend-mode: hard-light; background: radial-gradient(120% 90% at 85% 10%, color-mix(in oklab, var(--kf-contrast-ink) 35%, transparent), transparent 60%); }
+.xl-stage__gl { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; }
+/* Original overlay-lights video slot — same position (anchored top-right), same blending (color-dodge .4), three light beams drift slowly */
+.xl-stage__lights { position: absolute; inset: 0; z-index: 3; opacity: 0.4; mix-blend-mode: color-dodge; pointer-events: none; overflow: hidden; }
+.xl-stage__lights i { position: absolute; top: -40%; right: -20%; width: 34%; height: 180%; transform: rotate(32deg); filter: blur(48px); background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--kf-contrast-ink) 55%, transparent), transparent); animation: xl-light 14s ease-in-out infinite alternate; }
+.xl-stage__lights i:nth-child(2) { right: 18%; width: 18%; animation-duration: 11s; animation-delay: -4s; opacity: 0.7; }
+.xl-stage__lights i:nth-child(3) { right: 45%; width: 12%; animation-duration: 17s; animation-delay: -9s; opacity: 0.5; }
+@keyframes xl-light { from { translate: 6% -4%; } to { translate: -10% 6%; } }
+
+/* ───── Hero: lays 64px+ square cells to fit the screen width, with a band box below ───── */
+.xl-hero { position: relative; height: 100dvh; overflow: hidden; background: var(--kf-ink); }
+.xl-wood { display: grid; width: 100vw; height: 100dvh; grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); grid-auto-rows: 1fr; overflow: hidden; }
+.xl-tile { position: relative; aspect-ratio: 1 / 1; user-select: none; background-size: cover; background-position: center; }
+.xl-tile::after { content: ""; position: absolute; inset: 0; z-index: 1; opacity: 0; background: var(--kf-accent); transition: 10s ease-in-out opacity; }
+.xl-tile:hover::after { opacity: 1; transition: 0.01s ease-in-out opacity; }
+.xl-hero__still { display: none; }
+@media (hover: none) { .xl-wood { display: none; } .xl-hero__still { display: block; position: absolute; inset: 0; height: 100%; } }
+
+.xl-banner { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; padding: var(--xl-pad); pointer-events: none; }
+.xl-banner__link { display: flex; align-items: flex-end; pointer-events: auto; color: var(--kf-ink); }
+.xl-banner__text, .xl-banner__go { position: relative; isolation: isolate; overflow: hidden; background: color-mix(in oklab, var(--kf-surface) 60%, var(--kf-raised)); }
+.xl-banner__text { flex: 1; align-self: stretch; display: flex; align-items: flex-end; gap: 12px; margin-right: 1px; padding: 48px 24px 24px; }
+.xl-banner__text > * { width: 50%; }
+.xl-banner__sub { font-size: 1rem; font-weight: 400; }
+.xl-banner__go { flex: none; align-self: stretch; display: flex; align-items: center; justify-content: center; width: 144px; height: 144px; padding: 40px; }
+.xl-banner__go svg { width: 32px; height: 32px; }
+.xl-banner__go-label { display: none; opacity: 0.6; }
+.xl-banner__text::after, .xl-banner__go::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--kf-accent); transform: translateY(100%); transition: transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1); }
+.xl-banner__go::after { transition-delay: 0.05s; }
+.xl-banner__link:hover .xl-banner__text::after, .xl-banner__link:hover .xl-banner__go::after,
+.xl-banner__link:focus-visible .xl-banner__text::after, .xl-banner__link:focus-visible .xl-banner__go::after { transform: translateY(0); }
+@media (max-width: 1799.98px) { .xl-banner__text { padding-top: 1.5rem; } .xl-banner__go { width: 130px; height: 130px; } }
+@media (max-width: 1599.98px) { .xl-banner__go { width: 120px; height: 120px; } }
+@media (max-width: 1399.98px) { .xl-banner__go { width: 110px; height: 110px; } }
+@media (max-width: 767.98px) {
+  .xl-banner__link { flex-direction: column; align-items: stretch; }
+  .xl-banner__text { flex-direction: column; align-items: flex-start; gap: 8px; margin-right: 0; padding: 20px; }
+  .xl-banner__text > * { width: 100%; }
+  .xl-banner__go { width: 100%; height: 56px; margin-top: 1px; padding: 0 20px; justify-content: space-between; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0 calc(100% - 4px)); }
+  .xl-banner__go svg { width: 16px; height: 16px; }
+  .xl-banner__go-label { display: block; }
+}
+
+/* ───── Photo slide: 10 columns wide in the center, 60% dark overlay on a 2:1 photo, white text top left, info panel bottom right ───── */
+.xl-intro { padding-block: clamp(60px, 2rem + 8vw, 160px); }
+.xl-intro__wrap { width: min(100% - 2 * var(--xl-pad), 1600px * 10 / 12); margin-inline: auto; }
+@media (min-width: 1600px) { .xl-intro__wrap { width: calc((100% - 2 * var(--xl-pad)) * 10 / 12); } }
+.xl-swiper { position: relative; }
+.xl-slide { position: relative; padding-top: 50%; overflow: hidden; }
+.xl-slide__veil { position: absolute; inset: 0; background: color-mix(in oklab, var(--kf-ink) 60%, transparent); }
+.xl-slide .wf-img { --wf-fill: color-mix(in oklab, var(--kf-contrast-bg) 75%, var(--kf-contrast-ink)); --wf-line: var(--site-line-light); --wf-fill-ink: color-mix(in oklab, var(--kf-contrast-ink) 70%, transparent); }
+.xl-slide__text { position: absolute; top: 0; left: 0; z-index: 1; width: min(620px, 100%); padding: 32px; color: var(--kf-surface); pointer-events: none; }
+.xl-info { position: absolute; right: 0; bottom: 0; z-index: 2; display: flex; width: 614px; height: 141px; margin: 32px; background: var(--kf-surface); }
+.xl-info__text { flex: 1; display: flex; flex-direction: column; }
+.xl-info__top { padding: 16px; }
+.xl-info__top .xl-mono { display: inline-block; margin-bottom: 4px; }
+.xl-info__bottom { position: relative; display: flex; justify-content: space-between; margin-top: auto; padding: 0 16px 16px; }
+.xl-info__link { color: var(--kf-dim); }
+.xl-info__count { position: static; width: auto; color: var(--kf-dim); }
+.xl-progress { position: absolute; left: 0; bottom: 0; width: 100%; height: 3px; }
+.xl-progress i { display: block; height: 100%; width: 0%; background: var(--kf-accent); }
+.xl-info__nav { display: flex; flex-direction: column; border-left: 1px solid var(--kf-ink); }
+.xl-info__nav hr { width: 100%; margin: 0; border: 0; border-top: 1px solid var(--kf-line); }
+.xl-arrow { position: relative; isolation: isolate; overflow: hidden; display: flex; align-items: center; justify-content: center; width: 70px; height: 70px; border: 1px solid transparent; background: transparent; color: var(--kf-ink); cursor: pointer; }
+.xl-arrow svg { width: 24px; height: 24px; }
+.xl-arrow::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--kf-accent); transform: translateY(100%); transition: transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1); }
+.xl-arrow:hover::before { transform: translateY(0); }
+.xl-arrow.swiper-button-disabled { opacity: 0.35; cursor: default; }
+.xl-arrow.swiper-button-disabled::before { transform: translateY(100%); }
+@media (max-width: 1599.98px) { .xl-info, .xl-slide__text { width: 560px; } }
+@media (max-width: 1399.98px) { .xl-info, .xl-slide__text { width: 510px; } }
+@media (max-width: 1199.98px) { .xl-slide { padding-top: 56.25%; } .xl-info { height: 128px; } .xl-arrow { width: 64px; height: 64px; } }
+@media (max-width: 767.98px) {
+  .xl-slide__text { position: relative; width: 100%; padding: 20px 16px; color: var(--kf-ink); }
+  .xl-info { position: relative; width: 100%; margin: 0; height: auto; }
+  .xl-arrow { width: 56px; height: 56px; }
+}
+
+/* ───── Cards by audience ───── */
+.xl-profile { padding-block: clamp(60px, 2rem + 6vw, 128px); }
+.xl-profile__grid { width: calc(100% - 2 * var(--xl-pad)); margin-inline: auto; display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; }
+.xl-profile__lead { grid-column: 2 / span 3; display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+.xl-profile__cards { grid-column: 6 / span 7; display: flex; flex-direction: column; gap: 8px; }
+.xl-card { display: grid; grid-template-columns: 1fr 1fr; border-radius: 8px; overflow: hidden; background: var(--kf-surface); color: var(--kf-ink); transition: all 0.3s ease-in-out; }
+.xl-card:hover { background: transparent; }
+.xl-card__media { position: relative; }
+.xl-card__img { position: relative; padding-top: 66.66%; overflow: hidden; transition: all 0.3s ease-in-out; }
+.xl-card__img .wf-img { transition: all 0.3s ease-in-out; }
+.xl-card:hover .xl-card__img { margin: 4px; width: calc(100% - 8px); padding-top: calc((100% - 8px) * 0.6666 - 8px); }
+.xl-card:hover .xl-card__img .wf-img { transform: scale(1.1); }
+.xl-tag { position: absolute; top: 12px; left: 12px; z-index: 1; padding: 4px 8px; border-radius: 8px; background: var(--kf-surface); color: var(--kf-ink); }
+.xl-tag.is-dark { background: var(--kf-ink); color: var(--kf-surface); }
+.xl-card__body { display: flex; flex-direction: column; justify-content: space-between; }
+.xl-card__body > div { padding: 16px 16px 24px; display: flex; flex-direction: column; gap: 12px; }
+.xl-card__go { position: relative; padding: 16px 64px 16px 16px; border-top: 1px solid var(--kf-line); color: var(--kf-dim); }
+.xl-card__go::after { content: "→"; position: absolute; right: 16px; top: 50%; translate: 0 -50%; font-family: var(--kf-font-sans); }
+@media (max-width: 1199.98px) { .xl-profile__lead, .xl-profile__cards { grid-column: 1 / -1; } }
+@media (max-width: 767.98px) { .xl-card { grid-template-columns: 1fr; } }
+
+/* Collection: text pinned at screen height inside a 1000vh (300vh on portrait screens) box */
+.xl-collection { position: relative; z-index: 1; height: 1000vh; background: color-mix(in oklab, var(--kf-ink) 10%, transparent); color: var(--kf-contrast-ink); pointer-events: none; }
+@media (orientation: portrait) { .xl-collection { height: 300vh; } }
+.xl-collection__sticky { position: sticky; top: 0; height: 100vh; display: flex; align-items: center; justify-content: center; }
+.xl-collection__wrap { width: calc(100% - 2 * var(--xl-pad)); max-width: 1600px; display: flex; flex-direction: column; gap: 24px; }
+.xl-collection__left { max-width: 475px; padding-bottom: clamp(16px, -2rem + 6vw, 120px); }
+.xl-collection__title { display: block; margin-bottom: clamp(16px, 0.5rem + 1.5vw, 32px); }
+.xl-collection__right { align-self: flex-end; max-width: 475px; margin-bottom: 40px; }
+.xl-collection__hint { margin-bottom: 16px; opacity: 0.8; }
+
+@media (prefers-reduced-motion: reduce) {
+  .xl-tile::after, .xl-tile:hover::after, .xl-banner__text::after, .xl-banner__go::after, .xl-arrow::before, .xl-card, .xl-card__img, .xl-card__img .wf-img { transition: none; }
+  .xl-stage__lights i { animation: none; }
+}

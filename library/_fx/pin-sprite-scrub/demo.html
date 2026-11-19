@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pin-sprite-scrub — Motion part</title>
+<link rel="stylesheet" href="../../../_shared/wire.css">
+<link rel="stylesheet" href="../../../_shared/kf-defaults.css">
+<link rel="stylesheet" href="fx.css">
+<style>
+  body { background: var(--kf-bg); color: var(--kf-ink); font: 400 15px/1.5 var(--kf-font-sans); }
+  .demo-hint { position: sticky; top: 0; z-index: 100; padding: 12px 20px; background: var(--kf-surface); border-bottom: 1px solid var(--kf-line); font: 500 13px/1.4 var(--kf-font-mono); }
+  .demo-spacer { height: 90vh; display: grid; place-items: center; color: var(--kf-dim); }
+  .demo-pin { height: 100vh; display: flex; align-items: center; justify-content: center; }
+  .demo-stage { width: min(80vh, 90vw); aspect-ratio: 1; }
+</style>
+</head>
+<body>
+<p class="demo-hint"><b>pin-sprite-scrub</b> — On scroll the screen stops and the box image rotates and splits frame by frame. Past 65% a name tag appears.</p>
+<div class="demo-spacer">Scroll down ↓</div>
+<section data-fx="pin-sprite-scrub" data-fx-pin-sprite-scrub="dist: 1800; frames: 90">
+  <div class="demo-pin" data-fx-part="pin">
+    <div class="demo-stage" data-fx-part="stage">
+      <canvas data-fx-part="canvas" width="600" height="600"></canvas>
+      <button type="button" data-fx-part="point" style="--x: 30%; --y: 34%; --pad: 20%"><span>[—] Part name 01</span></button>
+      <button type="button" data-fx-part="point" data-side="right" style="--x: 72%; --y: 62%; --pad: 18%"><span>[—] Part name 02</span></button>
+    </div>
+  </div>
+</section>
+<div class="demo-spacer"></div>
+<script>
+// Instead of a frame image, take fx:frame and draw three boxes on a canvas — they rotate with progress and split apart up and down
+(() => {
+  const draw = (el, p) => {
+    const c = el.querySelector("canvas"), g = c.getContext("2d");
+    const ink = getComputedStyle(document.documentElement).getPropertyValue("--kf-ink");
+    const acc = getComputedStyle(document.documentElement).getPropertyValue("--kf-accent");
+    g.clearRect(0, 0, 600, 600);
+    [-1, 0, 1].forEach((k) => {
+      g.save();
+      g.translate(300, 300 + k * p * 140);
+      g.rotate(p * Math.PI * 0.75);
+      g.strokeStyle = k ? ink : acc;
+      g.lineWidth = 3;
+      g.strokeRect(-120, -40, 240, 80);
+      g.restore();
+    });
+  };
+  document.addEventListener("fx:frame", (e) => draw(e.target, e.detail.progress), true);
+  const src = document.querySelector('[data-fx~="pin-sprite-scrub"]');
+  const html = src.outerHTML;
+  const make = (tag) => { const t = document.createElement("template"); t.innerHTML = html; const el = t.content.firstElementChild; el.dataset.demo = tag; return el; };
+  const gone = make("gone");
+  (src.closest(".pin-spacer") || src).after(gone);
+  setTimeout(() => document.body.append(make("late")), 1000);
+  setTimeout(() => gone.remove(), 2500);
+  document.querySelector(".demo-hint").append(" · After 1 second one more of the same comes in at the bottom (late arrival), and after 2.5 seconds one drops out (removal).");
+})();
+</script>
+<script src="../../../_shared/vendor/gsap/gsap.min.js"></script>
+<script src="../../../_shared/vendor/gsap/ScrollTrigger.min.js"></script>
+<script src="../fx-core.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

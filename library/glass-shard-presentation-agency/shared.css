@@ -1,0 +1,243 @@
+/* Shared by all pages — fixed WebGL stage behind, header row (logo · menu pill · quote button), menu panel, glass card, big uppercase title, FAQ, purple closing stage + glass footer */
+:root {
+  --site-cyan: oklch(from var(--kf-accent) calc(l * 1.53) calc(c * 0.52) calc(h - 75));
+  --site-green: var(--kf-success);
+  --site-pink: var(--kf-warning);
+  --site-glass: color-mix(in oklab, var(--kf-surface) 55%, transparent);
+  --site-glass-line: color-mix(in oklab, var(--kf-surface) 70%, transparent);
+  --site-ink-dim: color-mix(in oklab, var(--kf-ink) 45%, transparent);
+  --site-night: color-mix(in oklab, var(--kf-contrast-bg) 70%, black);
+  --wf-fill: color-mix(in oklab, var(--kf-accent) 22%, var(--kf-raised));
+  --wf-fill-ink: var(--kf-ink);
+  --wf-line: color-mix(in oklab, var(--kf-accent) 30%, var(--kf-raised));
+  --pad: 40px;
+}
+html { font-size: 16px; }
+body { background: var(--kf-bg); color: var(--kf-ink); font: var(--kf-weight-body) 16px/1.4 var(--kf-font-sans); -webkit-font-smoothing: antialiased; }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+.l-stage { position: fixed; inset: 0; z-index: 0; pointer-events: none; background: var(--kf-bg); }
+.l-stage canvas { display: block; width: 100%; height: 100%; }
+/* Stacking order: Stage < Loading · Transition panel < Body text < Menu < Header row. While the panel covers, the body drops out at .3s, and comes back in at .3s when the panel lifts.
+   [data-hold] (first section title) is text inside the stage in the original, so it stays until the transition, and only the showreel card and scroll hint of the same section drop out */
+main, .l-foot { position: relative; z-index: 2; }
+main, main > *, main > :has([data-hold]) > *, .l-foot { transition: opacity 0.3s ease-out; }
+html:has(.l-loader.is-on):not(.is-leaving) :is(main, .l-foot),
+html.is-leaving :is(main > :not(:has([data-hold])), main > :has([data-hold]) > :not([data-hold]), .l-foot) { opacity: 0; pointer-events: none; }
+/* The original first section keeps the showreel card as-is while the router picks the next section (about .05s), then it drops out */
+html.is-leaving main > :has([data-hold]) > :not([data-hold]) { transition-delay: 0.05s; }
+
+.l-display { font-family: var(--kf-font-display); font-weight: var(--kf-weight-display); text-transform: uppercase; line-height: 0.86; letter-spacing: 0; }
+.l-display:lang(ko) { line-height: 1.02; letter-spacing: -0.02em; }
+.l-display strong, .l-display em { font-weight: inherit; font-style: normal; color: var(--kf-ink); }
+.l-xxl { font-size: clamp(64px, 15.3vw, 221px); }
+.l-xl { font-size: clamp(56px, 10vw, 144px); }
+.l-l { font-size: clamp(44px, 6.8vw, 98px); }
+.l-m { font-size: clamp(36px, 3.9vw, 56px); }
+.l-lead { font-size: clamp(22px, 2.45vw, 35px); line-height: 1.12; font-weight: 600; letter-spacing: -0.02em; }
+.l-big { font-size: clamp(20px, 1.95vw, 28px); line-height: 1.2; font-weight: 500; letter-spacing: -0.01em; }
+.l-small { font-size: 13px; line-height: 1.45; }
+.l-dim { color: var(--kf-dim); }
+.l-wrap { padding-inline: var(--pad); }
+.l-center { text-align: center; }
+
+.l-pill { position: relative; isolation: isolate; display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 0 16px; border: 0; border-radius: var(--kf-radius-pill); background: var(--kf-surface); color: var(--kf-ink); font: 600 13px/1 var(--kf-font-sans); cursor: pointer; transition: color 0.25s ease-out; }
+.l-pill.is-dark { background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); }
+.l-pill.is-glass { background: var(--site-glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.l-pill.is-accent { background: var(--kf-accent); color: var(--kf-on-accent); }
+.l-pill svg { width: 10px; height: 10px; }
+.l-round { width: 36px; height: 36px; padding: 0; justify-content: center; }
+.l-cta { display: inline-flex; gap: 6px; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+
+/* Wave hover — original button: on enter, purple water rises from the bottom carrying a round crest (--wave 0→50%, 2.5s fast decel), on leave it drains upward (50→100%, .4s).
+   The picture is shown by pushing up a band four times the button height — the crest is the band’s 37.5% line, and the tail shape on exit is a mask at the 75% line */
+.l-pill[data-wave]::before { content: ""; position: absolute; inset: 0 -1px -1px 0; z-index: -1; border-radius: inherit; pointer-events: none;
+  background-image: radial-gradient(50% 12.5% at 50% 37.5%, var(--kf-accent) 99%, transparent 100%), linear-gradient(transparent 37.5%, var(--kf-accent) 37.5%);
+  background-size: 100% 400%; background-repeat: no-repeat; background-position: 50% var(--wave, 0%);
+  -webkit-mask-image: linear-gradient(currentColor 75%, transparent 75%), radial-gradient(50% 12.5% at 50% 75%, transparent 99%, currentColor 100%);
+  mask-image: linear-gradient(currentColor 75%, transparent 75%), radial-gradient(50% 12.5% at 50% 75%, transparent 99%, currentColor 100%);
+  -webkit-mask-size: 100% 400%; mask-size: 100% 400%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: 50% var(--wave, 0%); mask-position: 50% var(--wave, 0%); -webkit-mask-composite: source-in; mask-composite: intersect; }
+/* Wave filling in from the side (pair for round arrow button and text button) */
+.l-pill[data-wave="x"]::before {
+  background-image: radial-gradient(12.5% 50% at 37.5% 50%, var(--kf-accent) 99%, transparent 100%), linear-gradient(90deg, transparent 37.5%, var(--kf-accent) 37.5%);
+  background-size: 400% 100%; background-position: var(--wave, 0%) 50%;
+  -webkit-mask-image: linear-gradient(90deg, currentColor 75%, transparent 75%), radial-gradient(12.5% 50% at 75% 50%, transparent 99%, currentColor 100%);
+  mask-image: linear-gradient(90deg, currentColor 75%, transparent 75%), radial-gradient(12.5% 50% at 75% 50%, transparent 99%, currentColor 100%);
+  -webkit-mask-size: 400% 100%; mask-size: 400% 100%; -webkit-mask-position: var(--wave, 0%) 50%; mask-position: var(--wave, 0%) 50%; }
+.l-pill.is-hovered { color: var(--kf-on-accent) !important; }
+.l-pill.is-hovered svg, .l-pill.is-hovered i { transition: color 0.25s ease-out; }
+
+.l-glass { background: var(--site-glass); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid var(--site-glass-line); border-radius: var(--kf-radius-lg); }
+
+/* ───────── Header bar ───────── */
+/* Header bar color — over dark sections (purple, navy, black) and loading panels, the light variant (white-text logo, white glass menu, white estimate button), elsewhere the dark variant. When the menu opens it sits over a white panel, so the dark variant */
+.l-head { --hd-ink: var(--kf-ink); --hd-glass: color-mix(in oklab, var(--kf-ink) 7%, transparent); --hd-cta: var(--kf-contrast-bg); --hd-cta-ink: var(--kf-contrast-ink);
+  position: fixed; top: 0; left: 0; right: 0; z-index: 30; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 24px var(--pad); pointer-events: none; }
+[data-head="light"] .l-head, html:has(.l-loader.is-on) .l-head { --hd-ink: var(--kf-contrast-ink); --hd-glass: color-mix(in oklab, var(--kf-contrast-ink) 10%, transparent); --hd-cta: var(--kf-surface); --hd-cta-ink: var(--kf-ink); }
+html[data-menu="open"] .l-head { --hd-ink: var(--kf-ink); --hd-cta: var(--kf-contrast-bg); --hd-cta-ink: var(--kf-contrast-ink); }
+.l-head > * { pointer-events: auto; }
+.l-logo { justify-self: start; display: grid; color: var(--hd-ink); font: 800 19px/0.84 var(--kf-font-sans); letter-spacing: -0.05em; transition: color 0.37s ease-out; }
+.l-logo span:last-child { padding-left: 0.5em; }
+.l-head .l-pill { height: 48px; padding: 0 28px; border-radius: 21px; font-weight: 500; font-size: 13px; }
+/* The menu button changes color instantly (in the original too, only this button has no transition) — only the star icon inside follows at .25s.
+   Hidden while the loading · transition panel covers, then appears over .5s starting .7s after the panel lifts */
+.l-head .is-menu { padding-left: 21px; gap: 7px; background: var(--hd-glass); color: var(--hd-ink); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); transition: opacity 0.5s ease-out 0.7s; }
+html:has(.l-loader.is-on) .l-head .is-menu { visibility: hidden; opacity: 0; pointer-events: none; }
+html[data-menu="open"] .l-head .is-menu { background: var(--kf-surface); color: var(--kf-ink); }
+.l-head .is-quote { justify-self: end; background: var(--hd-cta); color: var(--hd-cta-ink); transition: background-color 0.37s ease-out, color 0.25s ease-out; }
+.l-head__ico { display: grid; width: 21px; height: 21px; color: inherit; transition: color 0.25s ease-out; animation: lbIcoOut 0.2s ease-out forwards; }
+.l-head__ico svg { width: 100%; height: 100%; }
+html[data-menu="open"] .l-head__ico { animation: lbIcoIn 0.2s ease-out forwards; }
+@keyframes lbIcoIn { 0% { transform: none; } 50% { transform: rotate(15deg) scale(0.9); } 100% { transform: rotate(31deg); } }
+@keyframes lbIcoOut { 0% { transform: rotate(31deg); } 50% { transform: rotate(15deg) scale(0.9); } 100% { transform: none; } }
+/* ”Menu” ↔ ”Close” — wiped away to the left, drawn in from the right (.4s) */
+.l-head__lbl { position: relative; white-space: nowrap; }
+.l-head__lbl > span { display: block; transition: clip-path 0.4s ease-out; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+.l-head__lbl > span + span { position: absolute; top: 50%; left: 0; transform: translateY(-50%); clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%); }
+html[data-menu="open"] .l-head__lbl > span:first-child { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
+html[data-menu="open"] .l-head__lbl > span + span { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+
+/* ───────── Loading·transition panel ─────────
+   Original: two purple panels. On leaving, one rises from below carrying a rounded crest and covers the screen (.7s power2.out). When the new page is ready, it exits upward dragging a bottom edge that sags in the middle (1s power2.in).
+   --c (rising panel) and --f (falling panel) are 0→1 progress values — the crest and bottom step position of the masking art and its roundness change together */
+.l-loader { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+.l-loader.is-on { pointer-events: auto; }
+.l-loader__panel { position: absolute; inset: 0; background: var(--kf-accent); }
+.l-loader__panel.is-rise { --c: 0; --edge: calc((1 - var(--c)) * 100%); --ry: calc((1 - var(--c)) * 60vh + 1px); --rx: calc(100% - (1 - var(--c)) * 30%);
+  -webkit-mask-image: radial-gradient(var(--rx) var(--ry) at 50% calc(var(--edge) + var(--ry)), currentColor 99%, transparent 100%), linear-gradient(transparent calc(var(--edge) + var(--ry)), currentColor calc(var(--edge) + var(--ry)));
+  mask-image: radial-gradient(var(--rx) var(--ry) at 50% calc(var(--edge) + var(--ry)), currentColor 99%, transparent 100%), linear-gradient(transparent calc(var(--edge) + var(--ry)), currentColor calc(var(--edge) + var(--ry))); }
+.l-loader__panel.is-fall { --f: 0; --edge: calc((1 - var(--f)) * (100% + 40vh)); --ry: calc(40vh + var(--f) * 20vh);
+  -webkit-mask-image: radial-gradient(75% var(--ry) at 50% calc(var(--edge) - var(--ry)), currentColor 99%, transparent 100%), linear-gradient(currentColor calc(var(--edge) - var(--ry)), transparent calc(var(--edge) - var(--ry)));
+  mask-image: radial-gradient(75% var(--ry) at 50% calc(var(--edge) - var(--ry)), currentColor 99%, transparent 100%), linear-gradient(currentColor calc(var(--edge) - var(--ry)), transparent calc(var(--edge) - var(--ry))); }
+.l-loader__panel.is-idle { visibility: hidden; }
+/* Two white triangles in the center — original spinner values, pausing and turning half a turn every 3.5s */
+.l-loader__spin { position: absolute; left: 50%; top: 50%; width: 27px; height: 27px; margin: -13.5px 0 0 -13.5px; animation: lbSpin 3.5s -1.4s infinite; }
+.l-loader__spin::before, .l-loader__spin::after { content: ""; position: absolute; width: 0; height: 0; box-sizing: border-box; border: 13.5px solid; animation: inherit; animation-name: lbSpinA; }
+.l-loader__spin::before { top: -13.5px; left: -13.5px; border-color: transparent var(--kf-on-accent) var(--kf-on-accent) transparent; }
+.l-loader__spin::after { top: 13.5px; left: 13.5px; border-color: var(--kf-on-accent) transparent transparent var(--kf-on-accent); animation-name: lbSpinB; }
+.is-idle .l-loader__spin, .is-idle .l-loader__spin::before, .is-idle .l-loader__spin::after { animation-play-state: paused; }
+@keyframes lbSpin { 0% { animation-timing-function: cubic-bezier(0.87, 0.07, 0.87, 0.07); } 50% { transform: rotate(180deg); animation-timing-function: cubic-bezier(0.13, 0.93, 0.13, 0.93); } 100% { transform: rotate(360deg); } }
+@keyframes lbSpinA { 0% { animation-timing-function: cubic-bezier(0.87, 0.07, 0.87, 0.07); } 50% { transform: translate(-7px, -7px) rotate(-45deg); animation-timing-function: cubic-bezier(0.13, 0.93, 0.13, 0.93); } 100% { transform: none; } }
+@keyframes lbSpinB { 0% { animation-timing-function: cubic-bezier(0.87, 0.07, 0.87, 0.07); } 50% { transform: translate(7px, 7px) rotate(-45deg); animation-timing-function: cubic-bezier(0.13, 0.93, 0.13, 0.93); } 100% { transform: none; } }
+/* So the veil never covers the page forever if the script never runs */
+.l-loader.is-on .is-fall { animation: lbLoaderSafety 0s 8s forwards; }
+@keyframes lbLoaderSafety { to { visibility: hidden; } }
+
+/* ───────── Menu panel ─────────
+   Original: a white rounded panel inset 7px from the screen edge tilts down from above (2s), and the three left widgets tilt up from below (2.9s, .2s apart),
+   Seven middle links appear from 130% of their own height below (2.7s, .09s apart), eight right-hand specialty items from 15px to the side. On close the whole panel goes up in .5s */
+.l-menu { position: fixed; top: 7px; left: 7px; z-index: 29; width: calc(100vw - 14px); height: calc(100vh - 14px); pointer-events: none; color: var(--kf-ink); }
+/* The closed pose (panel and widget off screen, links in place below) is set by script — so menu content doesn’t show through in the very first paint */
+.l-menu:not(.is-ready) { visibility: hidden; }
+.l-menu.is-open { pointer-events: auto; }
+.l-menu__bg { position: absolute; inset: 0; z-index: -1; border-radius: 28px; background: var(--kf-surface); transform-origin: bottom; backface-visibility: hidden; transform: translateY(-160vh); }
+.l-menu, .l-menu__widgets { perspective: 875px; transform-style: preserve-3d; }
+.l-menu__grid { position: relative; height: 100%; display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 14px; padding: 100px 22px 28px; box-sizing: border-box; }
+.l-menu__lang { position: absolute; top: 28px; right: 28px; display: flex; gap: 10px; }
+.l-menu__lang button { padding: 0; border: 0; background: none; color: inherit; font: 700 11px/1.4 var(--kf-font-sans); text-transform: uppercase; opacity: 0.4; cursor: pointer; }
+.l-menu__lang .is-on { opacity: 1; }
+.l-menu__widgets { grid-column: 1 / 6; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 14px; height: calc(100vh - 143px); }
+/* Widgets and links in a closed menu are pushed outside the cell — if merely hidden, scrollIntoView (keyboard·measuring tools) would scroll the cell and pull them into view, so they are cut off with clip, which cannot be scrolled */
+.l-menu__widgets > li { border-radius: var(--kf-radius-lg); }
+.l-menu__widgets > .is-wide { grid-column: span 2; }
+.l-mw { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 24px; padding: 24px; box-sizing: border-box; border-radius: var(--kf-radius-lg); overflow: hidden; color: var(--kf-contrast-ink); background: var(--kf-contrast-bg); cursor: pointer; }
+.l-mw.is-paper, .l-mw.is-case { justify-content: space-between; }
+.l-mw > :not(.wf-img) { position: relative; z-index: 1; }
+.l-mw .wf-img { position: absolute; inset: 0; z-index: 0; }
+.l-mw__big { font-size: 56px; line-height: 0.85; text-align: center; text-transform: uppercase; max-width: 9em; }
+.l-mw.is-paper { align-items: flex-start; background: var(--kf-accent); }
+.l-mw.is-case { align-items: flex-start; background: var(--site-night); }
+.l-mw__tag { padding: 6px 10px; border: 1px solid color-mix(in oklab, currentColor 20%, transparent); border-radius: var(--kf-radius-pill); font: 500 13px/1.4 var(--kf-font-sans); }
+.l-mw__title { font-size: 32px; line-height: 0.9; text-transform: uppercase; }
+.l-mw .l-pill.is-glass { background: color-mix(in oklab, var(--kf-contrast-ink) 10%, transparent); color: var(--kf-contrast-ink); }
+.l-menu__mid { grid-column: 7 / 10; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; padding-block: 21px; }
+.l-menu__explore { padding-right: 27px; }
+.l-menu__title { display: block; margin-bottom: 14px; font: 600 11px/1.4 var(--kf-font-sans); text-transform: uppercase; letter-spacing: 0.02em; }
+.l-menu__explore li { overflow: clip; }
+.l-menu__explore a { display: block; font: 500 28px/1.26 var(--kf-font-sans); letter-spacing: -0.03em; transition: color 0.25s ease-out; }
+.l-menu__exp { grid-column: 10 / 13; padding: 21px 0 21px 42px; }
+.l-menu__exp a { display: inline-block; font: 500 13px/1.4 var(--kf-font-sans); transition: color 0.25s ease-out; }
+.l-menu__explore a:hover, .l-menu__exp a:hover { color: var(--kf-accent); }
+.l-menu__foot { display: flex; flex-direction: column; gap: 14px; }
+.l-menu__sep { margin: 0; border: 0; border-top: 1px solid color-mix(in oklab, var(--kf-ink) 20%, transparent); transform-origin: left; }
+.l-menu__addr { transform-origin: left; }
+.l-menu__socials { display: flex; gap: 14px; }
+.l-menu__socials a { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: color-mix(in oklab, var(--kf-ink) 7%, transparent); font: 700 11px/1 var(--kf-font-sans); }
+
+/* Big title word blocks — rise up from below */
+.l-split-line { display: block; overflow: hidden; padding-bottom: 0.04em; }
+
+/* Three glass cards (labels) · review row */
+.l-labels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.l-label { padding: 32px; min-height: 340px; display: flex; flex-direction: column; justify-content: space-between; gap: 24px; }
+.l-label__mark { width: 72px; height: 72px; border-radius: 50%; background: var(--kf-contrast-bg); color: var(--kf-contrast-ink); display: grid; place-items: center; font: 700 14px/1 var(--kf-font-sans); }
+.l-reviews { overflow: hidden; }
+.l-reviews__track { display: flex; gap: 16px; width: max-content; }
+.l-review { width: 340px; min-height: 280px; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+.l-review header { display: flex; gap: 12px; align-items: center; }
+.l-review__logo { width: 40px; height: 40px; border-radius: 10px; }
+
+/* FAQ */
+.l-faq { max-width: 860px; margin: 0 auto; }
+.l-acc { border-bottom: 1px solid var(--kf-line); }
+.l-acc__q { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 18px 0; border: 0; background: none; color: inherit; text-align: left; font: 500 15px/1.4 var(--kf-font-sans); cursor: pointer; }
+/* Chevron — when open, rotates -180° to point up */
+.l-acc__q i { width: 14px; height: 14px; display: grid; place-items: center; flex-shrink: 0; transition: transform 0.27s ease-out; }
+.l-acc__q i::before { content: ""; width: 7px; height: 7px; margin-top: -4px; border-right: 1.5px solid; border-bottom: 1.5px solid; transform: rotate(45deg); }
+.l-acc.is-open .l-acc__q i { transform: rotate(-180deg); }
+.l-acc__a { max-height: 0; overflow: hidden; transition: max-height 0.27s ease-out; }
+.l-acc.is-open .l-acc__a { max-height: var(--h, 400px); }
+.l-acc__a p { padding-bottom: 18px; max-width: 680px; }
+
+/* Contact Form */
+.l-form { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; }
+.l-form label { display: grid; gap: 8px; font: 600 11px/1 var(--kf-font-sans); text-transform: uppercase; letter-spacing: 0.04em; }
+.l-form .is-wide { grid-column: 1 / -1; }
+.l-input { width: 100%; padding: 14px 16px; border: 0; border-radius: var(--kf-radius-sm); background: color-mix(in oklab, var(--kf-ink) 6%, var(--kf-surface)); color: var(--kf-ink); font: 400 14px/1.4 var(--kf-font-sans); }
+textarea.l-input { min-height: 140px; resize: vertical; }
+
+/* ───────── Purple finale stage + glass footer ───────── */
+.l-foot { padding: 18vh var(--pad) var(--pad); color: var(--kf-contrast-ink); }
+.l-foot__title { text-align: center; color: var(--kf-contrast-ink); }
+.l-foot__title strong { color: var(--kf-ink); }
+.l-foot__cta { display: flex; justify-content: center; margin: 32px 0 14vh; }
+.l-foot__panel { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 32px; padding: 40px; color: var(--kf-contrast-ink); background: color-mix(in oklab, var(--kf-surface) 14%, transparent); border-color: color-mix(in oklab, var(--kf-surface) 25%, transparent); }
+.l-foot__panel h3 { font: 600 11px/1 var(--kf-font-sans); text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.6; margin-bottom: 14px; }
+.l-foot__panel ul { display: grid; gap: 6px; font-size: 13px; }
+.l-foot__panel a:hover { text-decoration: underline; }
+.l-foot__panel .l-logo { color: var(--kf-contrast-ink); }
+.l-foot__bottom { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 16px; padding-top: 24px; border-top: 1px solid color-mix(in oklab, var(--kf-surface) 25%, transparent); font-size: 12px; }
+.l-badges { display: flex; gap: 10px; margin-top: 20px; }
+.l-badges span { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid currentColor; display: grid; place-items: center; font: 700 10px/1 var(--kf-font-sans); }
+
+@media (max-width: 991px) {
+  :root { --pad: 20px; }
+  .l-labels { grid-template-columns: 1fr; }
+  .l-foot__panel { grid-template-columns: 1fr 1fr; }
+  /* Narrow-screen menu: the whole panel drops from the top, then links → specialties → widgets stack and roll in vertical order */
+  .l-menu { overflow-y: auto; }
+  .l-menu__bg { position: fixed; inset: 7px; transform: none; }
+  .l-menu__grid { grid-template-columns: 1fr; row-gap: 40px; height: auto; min-height: 100%; padding: 88px 20px 24px; }
+  .l-menu__mid, .l-menu__exp, .l-menu__widgets { grid-column: 1 / -1; }
+  .l-menu__exp { order: 2; padding: 0; }
+  .l-menu__widgets { order: 3; height: auto; grid-template-rows: auto; }
+  .l-mw { min-height: 220px; }
+  .l-menu__explore a { font-size: 24px; }
+}
+@media (max-width: 767px) {
+  .l-head { padding: 14px var(--pad); }
+  .l-head .l-pill { height: 40px; padding: 0 18px; }
+  .l-head .is-quote { display: none; }
+  .l-logo { font-size: 15px; }
+  .l-form { grid-template-columns: 1fr; }
+  .l-foot__panel { grid-template-columns: 1fr; padding: 24px; }
+  .l-foot__bottom { flex-direction: column; }
+  .l-review { width: 280px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .l-pill, .l-head .is-quote, .l-head .is-menu, .l-logo, .l-head__lbl > span, .l-acc__q i, .l-acc__a, .l-menu__explore a, .l-menu__exp a, main, main > *, main > :has([data-hold]) > *, .l-foot { transition: none; }
+  .l-head__ico, .l-loader__spin, .l-loader__spin::before, .l-loader__spin::after { animation: none; }
+}

@@ -1,0 +1,40 @@
+{
+  "kind": "Scroll",
+  "trigger": "scroll-scrub",
+  "pin": "sticky",
+  "fits": [
+    "Section",
+    "Page"
+  ],
+  "what": "On entering the tall section (560vh in the original), it takes over the wheel and pushes the scene progress value directly — one wheel tick is clamped at ±100 and pushes the target by .4×, the target is pulled by .035 per frame toward the nearest stop step, and the progress value follows the target by .04 per frame (max 12 per frame), gliding heavily. If pushed past 30% between steps it runs on to the next step by itself, and if not it returns, with a 500ms pause going forward before a set step. Scrolling further at the end releases to default scroll, and coming back up from below into the section grabs it again at the end. The page scroll position also moves along inside the section following the progress value.",
+  "ease": "Follow on every frame (target .035 · progress .04 · max 12)",
+  "duration": {
+    "Pause": 0.5
+  },
+  "needs": [
+    "gsap"
+  ],
+  "options": {
+    "length": "Virtual run length, default 2640 (sum of the original desktop steps)",
+    "stops": "Pause stage positions (progress share 0–1, comma separated), default 0.076,0.167,0.242,0.545,0.621,0.697,0.773: original black figure, white stage, full view, explosion, chess 1, chess 2, return",
+    "pauses": "Steps to pause briefly when going forward (fractions, comma-separated), default 0.167,0.242",
+    "pause": "Pause length (ms), default 500",
+    "commit": "Scroll this much between steps to move on to the next step, default 0.3",
+    "sens": "Wheel sensitivity, default 0.4",
+    "clamp": "Max per wheel scroll, default 100",
+    "follow": "Ratio at which the progress value follows the target value, default 0.04",
+    "pull": "Share by which the target value is pulled toward the stop step, default 0.035",
+    "max": "Max movement per frame, default 12",
+    "[data-fx-part=stage]": "Stage that stays stuck to the screen within a section (position: sticky is applied by the part)",
+    "--fx-progress": "Each frame writes the progress share (0~1) onto the element — CSS draws the scene with calc, JS with the fx:progress event (detail.p)",
+    "fx:go": "Sending this event to the element starts the grab (e.g. after the loader ends). If it is not sent, it grabs as soon as it attaches. To make it wait, use data-fx-wheel-stage-scroll=\"wait: true\""
+  },
+  "use": "<section data-fx=\"wheel-stage-scroll\" style=\"height:560vh\"><div data-fx-part=\"stage\" style=\"height:100vh\">…Scene…</div></section>",
+  "from": [
+    {
+      "slug": "dark-stage-3d-statue-portfolio",
+      "where": "index.js vscroll() — original R3F home page STICKY_CONFIG (steps, ranges, stop points, wheel/touch sensitivity, follow)"
+    }
+  ],
+  "note": "The original pulls differently in each segment (first segment auto-plays for 2s, the chess segment is a door that one wheel flick cannot pass, the last segment only the first and last 10%). That setup lives in dark-stage-3d-statue-portfolio index.js, and the parts are generalized into a single commit. On touch devices (no hover) it does not intercept, and the progress share is given from the default scroll position inside the section. The original intercepts touch too, at ×3.2."
+}

@@ -1,0 +1,36 @@
+/* Unfolding bound book — two pages are folded ±50° around the center spine and float at 1.05x scale, then when visible they unfold flat over 1 second.
+   On each page the back shade lifts, and the text inside the page rises .4s later */
+[data-fx~="book-unfold"] {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  transform-style: preserve-3d;
+  perspective: var(--fx-perspective, 200vw);
+  scale: var(--fx-lift, 1.05);
+}
+[data-fx~="book-unfold"] > [data-fx-part="page"] {
+  position: relative;
+  opacity: 0;
+  box-shadow: var(--kf-shadow-lift);
+  will-change: rotate;
+}
+[data-fx~="book-unfold"] > [data-fx-part="page"]:first-child { transform-origin: right center; rotate: y var(--fx-angle, 50deg); }
+[data-fx~="book-unfold"] > [data-fx-part="page"]:last-child { transform-origin: left center; rotate: y calc(var(--fx-angle, 50deg) * -1); }
+[data-fx~="book-unfold"] > [data-fx-part="page"]::before { content: ""; position: absolute; inset: 0; z-index: 2; border-radius: inherit; pointer-events: none; }
+[data-fx~="book-unfold"] > [data-fx-part="page"]:first-child::before { background: linear-gradient(to right, transparent 20%, color-mix(in oklab, var(--kf-ink) 15%, transparent) 100%); }
+[data-fx~="book-unfold"] > [data-fx-part="page"]:last-child::before { background: linear-gradient(to left, transparent 20%, color-mix(in oklab, var(--kf-ink) 15%, transparent) 100%); }
+[data-fx~="book-unfold"] [data-fx-part="content"] { opacity: 0; }
+
+[data-fx~="book-unfold"].fx-open { scale: 1; transition: scale 0.8s var(--fx-ease, cubic-bezier(0.3, 0.015, 0.12, 1)); }
+[data-fx~="book-unfold"].fx-open > [data-fx-part="page"] {
+  rotate: y 0deg;
+  opacity: 1;
+  box-shadow: var(--kf-shadow-soft);
+  transition: opacity 0.3s var(--fx-ease, cubic-bezier(0.3, 0.015, 0.12, 1)), rotate var(--fx-dur, 1s) var(--fx-ease, cubic-bezier(0.3, 0.015, 0.12, 1)), box-shadow 0.8s var(--fx-ease, cubic-bezier(0.3, 0.015, 0.12, 1));
+}
+[data-fx~="book-unfold"].fx-open > [data-fx-part="page"]::before { opacity: 0; transition: opacity 0.8s var(--fx-ease, cubic-bezier(0.3, 0.015, 0.12, 1)); }
+[data-fx~="book-unfold"].fx-open [data-fx-part="content"] { opacity: 1; transition: opacity 0.8s var(--fx-ease, cubic-bezier(0.3, 0.015, 0.12, 1)) 0.4s; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-fx~="book-unfold"], [data-fx~="book-unfold"] > [data-fx-part="page"], [data-fx~="book-unfold"] [data-fx-part="content"] { scale: 1; rotate: none; opacity: 1; transition: none; }
+  [data-fx~="book-unfold"] > [data-fx-part="page"]::before { opacity: 0; }
+}
