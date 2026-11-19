@@ -1,0 +1,472 @@
+#!/usr/bin/env node
+// rea — pick, preview and pull from the rea-design library.
+// No dependencies. The catalog ships with the plugin (catalog/*.json.gz); library files are
+// fetched from REA_BASE (default: the project's GitHub Pages site) and cached locally.
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import zlib from "node:zlib";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+
+const HERE = path.dirname(fs.realpathSync(fileURLToPath(import.meta.url)));
+const ROOT = path.resolve(HERE, "..");
+const BASE = (process.env.REA_BASE || "https://sionic-ai.github.io/rea-design").replace(/\/$/, "");
+const CACHE = process.env.REA_CACHE || path.join(process.env.CLAUDE_PLUGIN_DATA || path.join(os.homedir(), ".cache"), "rea-design");
+const VERSION = JSON.parse(fs.readFileSync(path.join(ROOT, ".claude-plugin", "plugin.json"), "utf8")).version;
+
+// ---------- catalog ----------
+function readCatalog(name) {
+  const local = [path.join(ROOT, "catalog", `${name}.json.gz`), path.join(ROOT, "catalog", `${name}.json`)];
+  for (const f of local) {
+    if (!fs.existsSync(f)) continue;
+    const buf = fs.readFileSync(f);
+    return JSON.parse((f.endsWith(".gz") ? zlib.gunzipSync(buf) : buf).toString("utf8"));
+  }
+  throw new Error(`catalog/${name}.json is missing from the plugin — reinstall rea-design`);
+}
+const sites = readCatalog("sites");
+const allSections = readCatalog("sections");
+const sections = allSections.filter((s) => !s.parent);
+const fxs = readCatalog("fx");
+const siteOf = Object.fromEntries(sites.map((s) => [s.slug, s]));
+const ROLES = ["hero", "about", "services", "work", "news", "careers", "numbers", "info", "testimonials", "faq", "schedule", "contact", "media", "band", "frame", "footer", "other"];
+const KINDS = [...new Set(sites.map((s) => s.kind))];
+
+// ---------- args ----------
+let argv = [];
+const at = (n) => argv.findIndex((a) => a === `--${n}` || a === `-${n}`);
+const opt = (n, d) => { const i = at(n); return i < 0 ? d : argv[i + 1]; };
+const optRest = (n) => { const i = at(n); if (i < 0) return undefined; const r = []; for (const a of argv.slice(i + 1)) { if (a.startsWith("-")) break; r.push(a); } return r.join(" "); };
+const flag = (n) => argv.includes(`--${n}`);
+const out = [];
+const say = (...xs) => out.push(xs.join(" "));
+
+// ---------- search ----------
+const SYN = {
+  cafe: ["coffee", "bakery", "menu", "shop"], coffee: ["cafe", "roaster"], restaurant: ["food", "menu", "dining"], food: ["menu", "restaurant"],
+  bakery: ["bread", "cake", "sweets"], shop: ["store", "product", "goods"], store: ["shop"], ecommerce: ["shop", "product", "cart"],
+  hotel: ["stay", "resort", "inn", "room"], travel: ["tourism", "trip", "guide"], clinic: ["hospital", "dental", "medical"], hospital: ["clinic", "medical"],
+  dentist: ["dental", "clinic"], school: ["education", "university", "kindergarten"], university: ["school", "education", "campus"],
+  saas: ["product", "platform", "app", "software"], app: ["product", "phone", "mobile"], startup: ["company", "product", "tech"], ai: ["tech", "product", "platform"],
+  agency: ["studio", "creative"], studio: ["agency", "creative", "portfolio"], portfolio: ["works", "designer", "personal"], designer: ["portfolio", "works"],
+  careers: ["recruit", "hiring", "jobs"], hiring: ["recruit", "careers"], jobs: ["recruit", "careers"], recruit: ["careers"],
+  event: ["festival", "conference", "exhibition"], conference: ["event", "schedule", "speakers"], festival: ["event"], hackathon: ["event", "schedule", "prize"],
+  anniversary: ["history", "timeline", "years"], history: ["timeline", "anniversary", "years"], timeline: ["history", "years"],
+  pricing: ["price", "plan"], faq: ["question"], team: ["people", "member", "staff"], gallery: ["photo", "image"], blog: ["news", "article", "journal"],
+  game: ["play", "character"], music: ["band", "label", "artist", "track"], fashion: ["apparel", "lookbook", "collection"], beauty: ["cosmetics", "skincare"],
+  architecture: ["architect", "building", "interior"], realestate: ["housing", "home", "property"], nonprofit: ["public", "foundation"],
+  "3d": ["three", "webgl", "gl"], webgl: ["3d", "shader", "three"], shader: ["webgl", "gl"], scroll: ["scrub", "pin", "parallax"], parallax: ["scroll", "depth"],
+};
+const norm = (s) => String(s || "").toLowerCase();
+const words = (q) => norm(q).split(/[\s,]+/).filter(Boolean).flatMap((w) => [w, ...(SYN[w] || [])]);
+const score = (text, q) => { if (!q) return 1; const t = norm(text); return words(q).reduce((a, w) => a + (t.includes(w) ? (w.length > 3 ? 2 : 1) : 0), 0); };
+const siteText = (s) => `${s.slug} ${s.title} ${s.good_for} ${s.kind} ${(s.libs || []).join(" ")} ${(s.fx || []).join(" ")} ${s.pages.map((p) => `${p.type} ${p.use}`).join(" ")}`;
+const moodLabel = (m) => (m ? [m.tempo, m.curve, m.scroll].filter(Boolean).join("·") : "");
+const moodLine = (m) => (m ? `motion: ${moodLabel(m)}${m.dur != null ? ` · duration ${m.dur}s` : ""}${m.ease ? ` · curve ${m.ease}` : ""}${m.smooth ? ` · scroll ${m.smooth}` : ""}` : "motion: unknown");
+const themeLine = (t = {}) => [t.mode, t.accent, t.font].filter(Boolean).join(" · ");
+const matchMood = (m, want) => !want || want.split(/[·,\s]+/).filter(Boolean).every((w) => moodLabel(m).split("·").includes(w));
+
+let seed = 0;
+const rng = (key) => {
+  let h = seed ^ [...String(key)].reduce((a, c) => Math.imul(a ^ c.codePointAt(0), 16777619), 2166136261);
+  return () => { h = (h + 0x6d2b79f5) | 0; let t = Math.imul(h ^ (h >>> 15), 1 | h); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+};
+const richness = (s) => { const span = s.lines[1] - s.lines[0]; return (span < 5 ? -3 : Math.min(span, 40) / 10) + (/motion|:|scrub|pin|hover/i.test(s.desc || "") ? 2 : 0) + (s.page === "index.html" ? 1 : 0) - (s.desc ? 0 : 2); };
+
+function filterSites(list) {
+  const k = opt("k"), m = optRest("m"), q = optRest("q");
+  return list
+    .filter((s) => (!k || s.kind === k) && matchMood(s.mood, m) && (!flag("light") || s.theme?.mode === "light") && (!flag("dark") || s.theme?.mode === "dark"))
+    .map((s) => [score(siteText(s), q), s]).filter(([sc]) => sc > 0).sort((a, b) => b[0] - a[0]).map(([, s]) => s);
+}
+function filterSections(list) {
+  const k = opt("k"), m = optRest("m"), q = optRest("q");
+  return list.filter((s) => {
+    const site = siteOf[s.slug];
+    if (!site) return false;
+    if (k && site.kind !== k) return false;
+    if (!matchMood(site.mood, m)) return false;
+    if (flag("light") && site.theme?.mode !== "light") return false;
+    if (flag("dark") && site.theme?.mode !== "dark") return false;
+    if (flag("home") && s.page !== "index.html") return false;
+    return score(`${s.slot} ${s.desc || ""} ${siteText(site)}`, q) > 0;
+  });
+}
+const ranked = (xs, key) => { const r = rng(key); const q = optRest("q"); return xs.map((s) => [richness(s) + r() * 3 + (q ? score(`${s.slot} ${s.desc}`, q) * 2 : 0), s]).sort((a, b) => b[0] - a[0]).map(([, s]) => s); };
+const roleArg = (a) => ROLES.find((r) => r === norm(a)) || ROLES.find((r) => r.startsWith(norm(a)));
+const secLine = (s) => `${s.slug}/${s.slot}${s.page === "index.html" ? "" : ` (${s.page_type} · ${s.page})`}${s.dark ? " · dark" : ""}${siteOf[s.slug]?.mood ? ` · ${moodLabel(siteOf[s.slug].mood)}` : ""}\n    ${s.desc || "no description — open it with rea show"}\n    code: library/${s.slug}/${s.page}:${s.lines[0]}-${s.lines[1]}${s.shot ? `\n    picture: ${BASE}/library/${s.shot}` : ""}`;
+
+// ---------- network + cache ----------
+function fetchBuf(rel) {
+  const file = path.join(CACHE, "files", rel);
+  if (fs.existsSync(file)) return fs.readFileSync(file);
+  const url = `${BASE}/${rel.split("/").map(encodeURIComponent).join("/")}`;
+  const r = spawnSync("curl", ["-fsSL", "--retry", "2", "-m", "60", url], { encoding: "buffer", maxBuffer: 1 << 28 });
+  if (r.status !== 0) throw new Error(`could not fetch ${url}${r.stderr?.length ? ` — ${r.stderr.toString().trim()}` : ""}`);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, r.stdout);
+  return r.stdout;
+}
+const fetchText = (rel) => fetchBuf(rel).toString("utf8");
+
+// ---------- commands ----------
+function cmdHelp() {
+  const count = (xs, f) => Object.entries(xs.reduce((a, x) => ((a[f(x)] = (a[f(x)] || 0) + 1), a), {})).sort((a, b) => b[1] - a[1]).map(([a, b]) => `${a} ${b}`).join(" · ");
+  say(`rea ${VERSION} — ${sites.length} sites · ${sites.reduce((a, s) => a + s.pages.length, 0)} pages · ${sections.length} sections · ${fxs.length} motion parts
+library: ${BASE}
+
+  rea route "<request>"                                     which skill and which references fit a request (auto-routing)
+  rea sites [-k kind] [-m mood] [--light|--dark] [-q words] [-n 12]
+                                                            sites to use as a skeleton (structure + motion)
+  rea sections <role> [-k kind] [-m mood] [--light|--dark] [--home] [-q words] [-n 12] [--seed N]
+                                                            section candidates for one role
+  rea set [--base slug | -k kind | -m mood | -q words] [--roles about,services,…] [--alt 2] [--seed N] [--any-mode] [--any-mood]
+                                                            one page's worth: a skeleton + one section per role from other sites
+  rea show <slug>/<slot> [page.html]                        section HTML, size units and the css/js lines to read with it
+  rea pages [-t detail] [-k kind] [-q words] [-n 20]        subpages (about, works, detail, news, article, recruit, contact …)
+  rea fx [-t trigger] [-p part] [-q words] [-s slug] [-n 20]
+                                                            motion parts — attach with data-fx="<name>"
+  rea fx <name>                                             one part: curve, duration, how to attach, files
+  rea get <slug|fx:name|_shared> [--dir project]            download into your project (pages open as-is)
+  rea open <slug>[/page.html]                               print the live URL of a rebuilt page
+  rea url <path>                                            the public URL of any library file
+  rea theme [world[/variant]] [--out kf-theme.css]          list or bake a skin into --kf-* CSS variables
+  rea check <file.html|url> [--desktop] [--shot out.png]    phone gate (390×844): overflow, data start, touch targets
+  rea reel <slug>[/page.html] [--out clip.mp4] [--seconds 8] record a scroll-through clip (footage for video work)
+  rea board <slug,slug,slug> [--title "…"]                  a gallery URL showing just these candidates
+
+kinds: ${count(sites, (s) => s.kind)}
+moods: tempo fast|medium|slow · curve sharp|medium|soft|bouncy · scroll native|smooth|heavy  (e.g. -m slow·sharp)
+roles: ${count(sections, (s) => s.role)}
+triggers: ${[...new Set(fxs.flatMap((f) => [].concat(f.trigger)))].join(" · ")}`);
+}
+
+function cmdSites() {
+  const n = Number(opt("n", 12));
+  const xs = filterSites(sites);
+  for (const s of xs.slice(0, n)) {
+    say(`${s.slug} · ${s.kind} · ${themeLine(s.theme)} · fidelity ${s.fidelity}\n    ${s.title} — ${s.good_for}\n    units: ${s.unit} · pages: ${s.pages.map((p) => `${p.file}(${p.type})`).join(" ")}\n    ${moodLine(s.mood)}${s.fx?.length ? `\n    motion parts: ${s.fx.join(" ")}` : ""}\n    live: ${BASE}/library/${s.slug}/index.html · picture: ${BASE}/library/${s.slug}/thumb.webp`);
+  }
+  say(`— ${xs.length} sites match, showing ${Math.min(n, xs.length)}`);
+}
+
+function cmdSections() {
+  const role = roleArg(argv[1] || "");
+  if (!role || (argv[1] || "").startsWith("-")) return say(`give a role: ${ROLES.join(" · ")}`);
+  const xs = ranked(filterSections(sections.filter((s) => s.role === role)), role);
+  const n = Number(opt("n", 12));
+  for (const s of xs.slice(0, n)) say(secLine(s));
+  say(`— ${xs.length} ${role} sections, showing ${Math.min(n, xs.length)} · --seed ${seed}`);
+}
+
+function cmdSet() {
+  const asked = (optRest("roles") || "about,services,work,news,contact,footer").split(",").map((x) => x.trim()).filter(Boolean);
+  const unknown = asked.filter((a) => !roleArg(a));
+  if (unknown.length) say(`unknown roles ${unknown.join(", ")} — use: ${ROLES.join(" · ")}\n`);
+  const order = asked.map(roleArg).filter(Boolean);
+  const heroes = sections.filter((s) => s.role === "hero" && s.page === "index.html");
+  const base = opt("base") ? heroes.find((s) => s.slug === opt("base")) : ranked(filterSections(heroes), "base")[0];
+  if (!base) return say("no skeleton found — check --base, or widen -k / -q");
+  const site = siteOf[base.slug], mode = site.theme?.mode, used = new Set([base.slug]), alt = Number(opt("alt", 2));
+  const sameMood = (a, b) => !!(a && b && a.tempo === b.tempo && a.curve === b.curve);
+  say(`skeleton (hero · header · footer · motion tempo): ${base.slug} — ${site.title} (${themeLine(site.theme)} · units ${site.unit})\n    ${moodLine(site.mood)} — fit every section's duration and curve to this tempo\n    live: ${BASE}/library/${base.slug}/index.html\n`);
+  say(`[hero]\n  ${secLine(base)}\n`);
+  for (const role of order) {
+    const pool0 = ranked(sections.filter((s) => s.role === role && !used.has(s.slug) && siteOf[s.slug] && (flag("any-mode") || !mode || siteOf[s.slug].theme?.mode === mode)), role);
+    const pool = flag("any-mood") ? pool0 : [...pool0.filter((s) => sameMood(siteOf[s.slug].mood, site.mood)), ...pool0.filter((s) => !sameMood(siteOf[s.slug].mood, site.mood))];
+    const own = role === "footer" ? sections.find((s) => s.slug === base.slug && s.role === "footer" && s.page === "index.html") : null;
+    const picks = own ? [own] : [];
+    for (const s of pool) { if (picks.length > alt) break; if (!picks.some((p) => p.slug === s.slug)) picks.push(s); }
+    if (!picks.length) { say(`[${role}] no candidates — try --any-mode or drop -k\n`); continue; }
+    used.add(picks[0].slug);
+    say(`[${role}]${own ? " — the skeleton's own" : ""}\n  ${secLine(picks[0])}`);
+    for (const s of picks.slice(1)) say(`  or: ${secLine(s)}`);
+    say("");
+  }
+  say(`--seed ${seed} — the same seed gives the same candidates per role. Decide order and length yourself (skill: rea-web, step 4).`);
+}
+
+function linesFor(text, tokens) {
+  const ls = text.split("\n");
+  const hits = ls.map((l, i) => (tokens.some((t) => l.includes(t)) ? i + 1 : 0)).filter(Boolean);
+  const spans = [];
+  for (const h of hits) { const last = spans.at(-1); if (last && h - last[1] <= 6) last[1] = h; else spans.push([h, h]); }
+  return spans.map(([a, b]) => (a === b ? `${a}` : `${a}-${b}`));
+}
+
+function cmdShow() {
+  let [a, b, c] = argv.slice(1);
+  let slug = a, slot = b, page = c;
+  if (a && a.includes("/")) [slug, slot, page] = [a.split("/")[0], a.split("/")[1], b];
+  const s = allSections.find((x) => x.slug === slug && x.slot === slot && (!page || x.page === page));
+  if (!s) return say("no such section — pass slug/slot exactly as rea sections or rea set print them");
+  const site = siteOf[slug];
+  const html = fetchText(`library/${slug}/${s.page}`).split("\n").slice(s.lines[0] - 1, s.lines[1]);
+  const body = html.join("\n");
+  const generic = /^(wf-|is-|js-|has-|u-|l-|c-|container|inner|wrap|row|col|grid|flex|sr-only|visually-hidden)/;
+  const tokens = [...new Set([...body.matchAll(/class="([^"]+)"/g)].flatMap((m) => m[1].split(/\s+/)))].filter((x) => x.length > 2 && !generic.test(x)).slice(0, 12);
+  const stem = s.page.replace(/\.html$/, "");
+  const files = ["theme.css", "shared.css", "shared.js", `${stem}.css`, `${stem}.js`].filter((f) => site.files.includes(f));
+  say(`${secLine(s)}\nunits: ${site.unit} — convert to your own grammar when you move it`);
+  say(`lines to read with it (classes ${tokens.slice(0, 6).join(" ")} …):`);
+  for (const f of files) {
+    const spans = linesFor(fetchText(`library/${slug}/${f}`), [...tokens, `data-slot="${slot}"`, `[data-slot="${slot}"]`]);
+    say(`  library/${slug}/${f}${spans.length ? `: ${spans.slice(0, 10).join(", ")}${spans.length > 10 ? " …" : ""}` : f.startsWith("shared") ? "" : " (nothing for this section)"}`);
+  }
+  if (["frame", "footer"].includes(s.role) || html.length < 4) say("  many sites draw the header, menu, footer and loader from shared.js — if the HTML looks empty, read shared.js and shared.css");
+  if (site.notes?.length) say(`site notes: ${site.notes.slice(0, 2).join(" / ")}`);
+  say("");
+  say(html.slice(0, 150).join("\n"));
+  if (html.length > 150) say(`… (${html.length - 150} more lines — ${BASE}/library/${slug}/${s.page})`);
+}
+
+function cmdPages() {
+  const t = opt("t"), n = Number(opt("n", 20));
+  const rows = filterSites(sites).flatMap((s) => s.pages.filter((p) => p.type !== "home" && (!t || p.type === t)).map((p) => ({ s, p })));
+  for (const { s, p } of rows.slice(0, n)) say(`${s.slug}/${p.file} · ${p.type} · ${s.kind}\n    ${p.use || "no summary yet — open the page"}\n    live: ${BASE}/library/${s.slug}/${p.file}${p.shot ? `\n    picture: ${BASE}/library/${p.shot}` : ""}`);
+  say(`— ${rows.length} ${t || "sub"} pages, showing ${Math.min(rows.length, n)} · types: ${[...new Set(sites.flatMap((s) => s.pages.map((p) => p.type)))].join(" · ")}`);
+}
+
+function cmdFx() {
+  const name = argv[1] && !argv[1].startsWith("-") ? argv[1] : null;
+  if (name) {
+    const f = fxs.find((x) => x.name === name);
+    if (!f) return say(`no motion part named ${name} — rea fx -q <words> to search`);
+    return say(`${f.name} · ${f.kind} · ${[].concat(f.trigger).join("+")} · fits ${(f.fits || []).join(", ")}
+    ${f.what}
+    curve ${f.ease || "-"} · duration ${typeof f.duration === "object" ? JSON.stringify(f.duration) : `${f.duration ?? "-"}s`}${f.pin ? ` · pin ${f.pin}` : ""}${f.needs?.length ? ` · needs ${f.needs.join(", ")}` : ""}
+    attach: ${f.use || `data-fx="${f.name}"`}${f.options && Object.keys(f.options).length ? `\n    options:\n${Object.entries(f.options).map(([k, v]) => `      ${k} — ${v}`).join("\n")}` : ""}${f.note ? `\n    note: ${f.note}` : ""}
+    demo: ${BASE}/library/_fx/${f.name}/demo.html
+    files: library/_fx/fx-core.js, library/_fx/${f.name}/{fx.css${f.js !== false ? ",fx.js" : ""}} — rea get fx:${f.name} --dir <project>
+    from: ${(f.from || []).map((s) => (typeof s === "string" ? s : s.slug)).join(" · ")}`);
+  }
+  const t = opt("t"), p = optRest("p"), q = optRest("q"), s = opt("s"), n = Number(opt("n", 20));
+  const xs = fxs
+    .filter((f) => (!t || [].concat(f.trigger).includes(t) || f.kind === t) && (!p || (f.fits || []).some((x) => norm(x).includes(norm(p)))) && (!s || (f.from || []).some((x) => (x.slug || x) === s)))
+    .map((f) => [score(`${f.name} ${f.what} ${(f.fits || []).join(" ")} ${[].concat(f.trigger).join(" ")}`, q), f]).filter(([sc]) => sc > 0).sort((a, b) => b[0] - a[0]).map(([, f]) => f);
+  for (const f of xs.slice(0, n)) say(`${f.name} · ${f.kind} · ${[].concat(f.trigger).join("+")} · ${(f.fits || []).join(", ")}\n    ${f.what}\n    demo: ${BASE}/library/_fx/${f.name}/demo.html`);
+  say(`— ${xs.length} motion parts match, showing ${Math.min(xs.length, n)} · triggers: ${[...new Set(fxs.flatMap((f) => [].concat(f.trigger)))].join(" · ")}`);
+}
+
+// files a page pulls from _shared and _vendor
+function deps(text) {
+  const shared = new Set(), vendor = new Set(), fx = new Set();
+  for (const m of text.matchAll(/(?:\.\.\/)+_shared\/([^"'`)\s?#]+)/g)) shared.add(m[1]);
+  for (const m of text.matchAll(/(?:\.\.\/)+_vendor\/([^"'`)\s?#]+)/g)) vendor.add(m[1]);
+  for (const m of text.matchAll(/(?:\.\.\/)+_fx\/([^"'`)\s?#]+)/g)) fx.add(m[1]);
+  for (const m of text.matchAll(/data-fx="([^"]+)"/g)) for (const n of m[1].split(/\s+/)) if (fxs.some((f) => f.name === n)) fx.add(`${n}/`);
+  return { shared, vendor, fx };
+}
+
+function save(rel, dest) {
+  const buf = fetchBuf(rel);
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
+  fs.writeFileSync(dest, buf);
+  return buf;
+}
+
+function cmdGet() {
+  const what = argv[1];
+  const dir = path.resolve(opt("dir", "."));
+  if (!what) return say("rea get <slug> | fx:<name> | _shared  [--dir project]");
+  const shared = new Set(["wire.css", "kf-defaults.css", "wire.js"]), vendor = new Set(), fxNeed = new Set();
+  let n = 0;
+  const take = (d) => { d.shared.forEach((x) => shared.add(x)); d.vendor.forEach((x) => vendor.add(x)); d.fx.forEach((x) => fxNeed.add(x)); };
+  if (what.startsWith("fx:")) {
+    fxNeed.add(`${what.slice(3)}/`);
+  } else if (what !== "_shared") {
+    const site = siteOf[what];
+    if (!site) return say(`no site named ${what} — rea sites -q <words>`);
+    for (const f of site.files) {
+      const buf = save(`library/${what}/${f}`, path.join(dir, "library", what, f)); n++;
+      if (/\.(html|css|js|mjs)$/.test(f)) take(deps(buf.toString("utf8")));
+    }
+  }
+  const fxDone = new Set();
+  while ([...fxNeed].some((x) => !fxDone.has(x))) {
+    for (const x of [...fxNeed]) {
+      if (fxDone.has(x)) continue;
+      fxDone.add(x);
+      if (x.endsWith("/")) {
+        const name = x.slice(0, -1), f = fxs.find((y) => y.name === name);
+        if (!f) continue;
+        for (const file of f.files || ["fx.css", "fx.js", "demo.html"]) {
+          try { const buf = save(`library/_fx/${name}/${file}`, path.join(dir, "library", "_fx", name, file)); n++; if (/\.(html|css|js)$/.test(file)) take(deps(buf.toString("utf8"))); } catch {}
+        }
+        fxNeed.add("fx-core.js");
+      } else {
+        try { save(`library/_fx/${x}`, path.join(dir, "library", "_fx", x)); n++; } catch {}
+      }
+    }
+  }
+  for (const x of shared) { try { save(`_shared/${x}`, path.join(dir, "_shared", x)); n++; } catch { say(`  missing _shared/${x}`); } }
+  if (what === "_shared") for (const x of readCatalog("shared")) { if (!shared.has(x)) { save(`_shared/${x}`, path.join(dir, "_shared", x)); n++; } }
+  const vendorDirs = new Set([...vendor].map((v) => v.split("/")[0]));
+  for (const x of vendor) { try { save(`library/_vendor/${x}`, path.join(dir, "library", "_vendor", x)); n++; } catch { say(`  missing _vendor/${x}`); } }
+  for (const d of vendorDirs) for (const l of ["LICENSE", "LICENSE.md", "LICENSE.txt"]) { try { save(`library/_vendor/${d}/${l}`, path.join(dir, "library", "_vendor", d, l)); break; } catch {} }
+  say(`wrote ${n} files under ${dir}`);
+  if (siteOf[what]) say(`open: ${path.join(dir, "library", what, "index.html")}\nnext: rebuild it in your own folder — don't edit library/ in place (skill: rea-web)`);
+}
+
+function cmdUrl() { say(`${BASE}/${(argv[1] || "").replace(/^\//, "")}`); }
+function cmdOpen() {
+  const [slug, page = "index.html"] = (argv[1] || "").split("/");
+  if (!siteOf[slug]) return say(`no site named ${slug}`);
+  say(`${BASE}/library/${slug}/${page}`);
+}
+function cmdBoard() {
+  const picks = (argv[1] || "").split(",").map((x) => x.trim()).filter(Boolean);
+  const bad = picks.filter((p) => !siteOf[p.split("/")[0]]);
+  if (!picks.length || bad.length) return say(`rea board <slug,slug,slug> ${bad.length ? `— unknown: ${bad.join(", ")}` : ""}`);
+  const title = opt("title");
+  say(`${BASE}/?pick=${picks.map(encodeURIComponent).join(",")}${title ? `&title=${encodeURIComponent(title)}` : ""}`);
+}
+
+// ---------- route (auto-routing) ----------
+const INTENTS = [
+  { skill: "rea-video", why: "video / motion film", re: /\b(video|film|reel|promo clip|trailer|teaser|motion graphic|hyperframes|render|mp4|shorts|launch film|explainer)\b/i },
+  { skill: "rea-interactions", why: "an interaction or effect on an existing UI", re: /\b(hover|cursor|drag|scroll(-| )?(effect|animation|reveal)|parallax|marquee|pin(ned)?|scrub|reveal|micro.?interaction|transition|loader|preloader|magnetic|tilt|split text|text effect|animate|animation|motion part|data-fx|dashboard|app screen|button effect|menu effect|carousel|slider)\b/i },
+  { skill: "rea-theme-mobile", why: "skin or phone layout", re: /\b(theme|palette|colou?rs?|fonts?|typography|dark mode|mobile|responsive|phone|390|overflow|touch target)\b/i },
+  { skill: "rea-web", why: "a page or site to build", re: /\b(landing|website|web ?site|homepage|home page|page|site|portfolio|careers|recruit|about page|event page|redesign|lp|microsite|one.?pager)\b/i },
+];
+function cmdRoute() {
+  const req = argv.slice(1).filter((a) => !a.startsWith("--")).join(" ");
+  if (!req) return say('rea route "<what the user asked for>"');
+  const hits = INTENTS.map((x) => ({ ...x, n: (req.match(new RegExp(x.re.source, "gi")) || []).length })).filter((x) => x.n);
+  hits.sort((a, b) => b.n - a.n || INTENTS.indexOf(a) - INTENTS.indexOf(b));
+  const primary = hits[0]?.skill || "rea-web";
+  const kind = KINDS.find((k) => new RegExp(`\\b${k}`, "i").test(req)) || null;
+  const kindFromWords = { cafe: "shop", coffee: "shop", bakery: "shop", restaurant: "shop", store: "shop", hotel: "venue", clinic: "clinic", hospital: "clinic", dental: "clinic", school: "education", university: "education", saas: "product", app: "product", startup: "company", studio: "agency", designer: "portfolio", hiring: "careers", conference: "event", festival: "event", hackathon: "event" };
+  const k = kind || Object.entries(kindFromWords).find(([w]) => new RegExp(`\\b${w}`, "i").test(req))?.[1] || null;
+  const q = norm(req).replace(/[^a-z0-9\s-]/g, " ");
+  const siteHits = sites.filter((s) => !k || s.kind === k).map((s) => [score(siteText(s), q) + (k && s.kind === k ? 2 : 0), s]).filter(([n]) => n > 0).sort((a, b) => b[0] - a[0]).slice(0, 3).map(([, s]) => s);
+  const fxHits = fxs.map((f) => [score(`${f.name} ${f.what} ${(f.fits || []).join(" ")} ${[].concat(f.trigger).join(" ")}`, q), f]).filter(([n]) => n > 1).sort((a, b) => b[0] - a[0]).slice(0, 3).map(([, f]) => f);
+  const res = { skill: primary, also: hits.slice(1).map((h) => h.skill), kind: k, sites: siteHits.map((s) => ({ slug: s.slug, title: s.title, live: `${BASE}/library/${s.slug}/index.html` })), fx: fxHits.map((f) => ({ name: f.name, what: f.what, demo: `${BASE}/library/_fx/${f.name}/demo.html` })) };
+  if (flag("json")) return say(JSON.stringify(res, null, 1));
+  say(`skill: ${res.skill}${res.also.length ? ` (then ${res.also.join(", ")})` : ""}${k ? ` · kind: ${k}` : ""}`);
+  if (res.sites.length) say(`sites:\n${res.sites.map((s) => `  ${s.slug} — ${s.title}\n    ${s.live}`).join("\n")}`);
+  if (res.fx.length) say(`motion parts:\n${res.fx.map((f) => `  ${f.name} — ${f.what}`).join("\n")}`);
+}
+
+// ---------- theme ----------
+function cmdTheme() {
+  const themes = readCatalog("themes");
+  const ref = argv[1] && !argv[1].startsWith("-") ? argv[1] : null;
+  if (!ref) {
+    for (const t of themes) say(`${t.id}\t${t.scheme}\t${t.variants.length} variants\t${t.metaphor}`);
+    return say(`— ${themes.length} worlds · rea theme <world> --variants · rea theme <world>[/<variant>] --out kf-theme.css`);
+  }
+  const [world, variant] = ref.split("/");
+  const t = themes.find((x) => x.id === world);
+  if (!t) return say(`no world named ${world} — rea theme to list`);
+  if (flag("variants")) { for (const v of t.variants) say(`${world}/${v.id}\t${v.scheme}\t${v.desc}`); return say(`— ${t.variants.length} variants (default is ${world})`); }
+  const v = variant ? t.variants.find((x) => x.id === variant) : null;
+  if (variant && !v) return say(`no variant ${ref} — rea theme ${world} --variants`);
+  const css = (v || t).css;
+  const o = opt("out");
+  if (!o) return process.stdout.write(css);
+  fs.mkdirSync(path.dirname(path.resolve(o)), { recursive: true });
+  fs.writeFileSync(o, css);
+  say(`wrote ${o}`);
+}
+
+// ---------- playwright helpers (check, reel) ----------
+// headless Chromium can stall on screenshots of pages that never stop animating (WebGL, video).
+// An off-screen headed window does not; fall back to headless where there is no display.
+async function launch(chromium) {
+  const headed = process.platform === "darwin" || process.platform === "win32" || !!process.env.DISPLAY;
+  if (headed && !process.env.REA_HEADLESS) {
+    try { return await chromium.launch({ headless: false, args: ["--window-position=-4000,0", "--disable-backgrounding-occluded-windows", "--disable-renderer-backgrounding", "--mute-audio"] }); } catch {}
+  }
+  return chromium.launch({ channel: "chromium" }).catch(() => chromium.launch());
+}
+const shoot = async (page, opts) => { try { await page.screenshot({ ...opts, timeout: 15000 }); } catch { await page.waitForTimeout(500); await page.screenshot({ ...opts, timeout: 15000 }); } };
+
+async function playwright() {
+  const tries = [path.join(process.cwd(), "node_modules", "playwright", "index.mjs"), path.join(CACHE, "node_modules", "playwright", "index.mjs")];
+  const g = spawnSync("npm", ["root", "-g"], { encoding: "utf8" }).stdout?.trim();
+  if (g) tries.push(path.join(g, "playwright", "index.mjs"));
+  for (const t of tries) if (fs.existsSync(t)) return (await import(t)).default || (await import(t));
+  process.stderr.write(`rea: installing playwright into ${CACHE} (one time)…\n`);
+  fs.mkdirSync(CACHE, { recursive: true });
+  const r = spawnSync("npm", ["i", "--prefix", CACHE, "--no-save", "--silent", "playwright@1"], { stdio: "inherit" });
+  if (r.status !== 0) throw new Error("npm could not install playwright — run: npm i -D playwright && npx playwright install chromium");
+  spawnSync(path.join(CACHE, "node_modules", ".bin", "playwright"), ["install", "chromium"], { stdio: "inherit" });
+  const m = await import(path.join(CACHE, "node_modules", "playwright", "index.mjs"));
+  return m.default || m;
+}
+const toUrl = (t) => (/^https?:|^file:/.test(t) ? t : siteOf[t.split("/")[0]] ? `${BASE}/library/${t.includes("/") ? t : `${t}/index.html`}` : `file://${path.resolve(t)}`);
+
+async function cmdCheck() {
+  const target = argv.slice(1).find((a, i, xs) => !a.startsWith("--") && !["--data", "--shot", "--width", "--height", "--wait", "--scroll"].includes(xs[i - 1]));
+  if (!target) return say("rea check <file.html|url|slug> [--desktop] [--data '<row selector>'] [--shot out.png] [--scroll px]");
+  const { chromium } = await playwright();
+  const desktop = flag("desktop");
+  const W = Number(opt("width", desktop ? 1440 : 390)), H = Number(opt("height", desktop ? 900 : 844));
+  const browser = await launch(chromium);
+  const page = await (await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: desktop ? 1 : 3, isMobile: !desktop, hasTouch: !desktop })).newPage();
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
+  await page.goto(toUrl(target), { waitUntil: "load", timeout: 60000 });
+  await page.waitForTimeout(Number(opt("wait", 800)));
+  if (opt("scroll")) { await page.mouse.wheel(0, Number(opt("scroll"))); await page.waitForTimeout(600); }
+  const dataSel = opt("data");
+  const r = await page.evaluate(({ dataSel, W }) => {
+    const doc = document.documentElement;
+    const over = [];
+    for (const el of document.querySelectorAll("body *")) {
+      const b = el.getBoundingClientRect();
+      if (b.width && (b.right > W + 1 || b.left < -1)) { const cs = getComputedStyle(el); if (cs.position !== "fixed" && !el.closest("[data-layout-allow-overflow],[aria-hidden=true]")) over.push(`${el.tagName.toLowerCase()}${el.className && typeof el.className === "string" ? "." + el.className.split(" ")[0] : ""} ${Math.round(b.left)}→${Math.round(b.right)}`); }
+    }
+    const sel = dataSel || "[data-slot] li, [data-slot] article, table tr, .card, [class*=card], [class*=item]";
+    const first = [...document.querySelectorAll(sel)].map((e) => e.getBoundingClientRect()).filter((b) => b.height > 8).sort((a, b) => a.top - b.top)[0];
+    const small = [...document.querySelectorAll("a,button,[role=button],input,select,textarea")].map((e) => [e, e.getBoundingClientRect()]).filter(([, b]) => b.width && b.height && b.top < innerHeight * 3 && (b.width < 44 || b.height < 44)).slice(0, 12).map(([e, b]) => `${e.tagName.toLowerCase()} "${(e.innerText || e.getAttribute("aria-label") || "").replace(/\s+/g, " ").trim().slice(0, 24)}" ${Math.round(b.width)}×${Math.round(b.height)}`);
+    return { scrollW: doc.scrollWidth, W, overflow: Math.max(0, doc.scrollWidth - W), over: over.slice(0, 10), dataStart: first ? Math.round(first.top + scrollY) : null, small, height: doc.scrollHeight };
+  }, { dataSel, W });
+  if (opt("shot")) await shoot(page, { path: opt("shot") });
+  await browser.close();
+  say(`${desktop ? "desktop" : "phone"} ${W}×${H} · ${toUrl(target)}`);
+  say(`horizontal overflow: ${r.overflow}px${r.over.length ? `\n  ${r.over.join("\n  ")}` : ""}`);
+  say(`data starts at y=${r.dataStart ?? "?"} (first screen is ${H}px) · page height ${r.height}px`);
+  say(`touch targets under 44px: ${r.small.length}${r.small.length ? `\n  ${r.small.join("\n  ")}` : ""}`);
+  say(`console errors: ${errors.length}${errors.length ? `\n  ${errors.slice(0, 5).join("\n  ")}` : ""}`);
+  if (opt("shot")) say(`screenshot: ${opt("shot")}`);
+}
+
+async function cmdReel() {
+  const target = argv[1];
+  if (!target) return say("rea reel <slug>[/page.html]|<file>|<url> [--out clip.mp4] [--seconds 8] [--width 1440] [--height 900]");
+  const { chromium } = await playwright();
+  const W = Number(opt("width", 1440)), H = Number(opt("height", 900)), secs = Number(opt("seconds", 8));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rea-reel-"));
+  const browser = await launch(chromium);
+  const ctx = await browser.newContext({ viewport: { width: W, height: H }, recordVideo: { dir: tmp, size: { width: W, height: H } } });
+  const page = await ctx.newPage();
+  await page.addInitScript(() => document.documentElement.classList.add("wf-hide-notes"));
+  await page.goto(toUrl(target), { waitUntil: "load", timeout: 60000 });
+  await page.waitForTimeout(1200);
+  const total = await page.evaluate(() => document.documentElement.scrollHeight - innerHeight);
+  const steps = Math.max(1, Math.round((secs - 1.5) * 30));
+  for (let i = 0; i < steps; i++) { await page.mouse.wheel(0, Math.max(4, total / steps)); await page.waitForTimeout(1000 / 30); }
+  await page.waitForTimeout(300);
+  const video = page.video();
+  await ctx.close(); await browser.close();
+  const src = await video.path();
+  const dest = path.resolve(opt("out", `${target.replace(/[\/.]/g, "-")}.mp4`));
+  const ff = spawnSync("ffmpeg", ["-y", "-v", "error", "-i", src, "-c:v", "libx264", "-pix_fmt", "yuv420p", "-movflags", "+faststart", dest]);
+  if (ff.status !== 0) { fs.copyFileSync(src, dest.replace(/\.mp4$/, ".webm")); say(`ffmpeg not found — wrote ${dest.replace(/\.mp4$/, ".webm")}`); }
+  else say(`wrote ${dest} (${W}×${H}, ~${secs}s scroll-through)`);
+}
+
+// ---------- main ----------
+export async function run(args) {
+  argv = args; out.length = 0;
+  seed = Number(opt("seed", Math.floor(Math.random() * 1e6)));
+  const cmd = { sites: cmdSites, sections: cmdSections, list: cmdSections, set: cmdSet, show: cmdShow, pages: cmdPages, fx: cmdFx, get: cmdGet, url: cmdUrl, open: cmdOpen, board: cmdBoard, route: cmdRoute, theme: cmdTheme, check: cmdCheck, reel: cmdReel, version: () => say(VERSION) }[argv[0]] || cmdHelp;
+  await cmd();
+  return out.join("\n");
+}
+
+run(process.argv.slice(2)).then((s) => s && console.log(s)).catch((e) => { console.error(`rea: ${e.message}`); process.exit(1); });
