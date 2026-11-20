@@ -4,7 +4,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<
 const P = new URLSearchParams(location.search);
 const DEMO = P.has("demo");
 if (DEMO) document.body.classList.add("demo");
-const PAGE = DEMO ? 16 : 48;
+const PAGE = DEMO ? 30 : 48;
 const state = { tab: P.get("tab") || "sites", q: P.get("q") || "", k: P.get("k") || "", t: P.get("t") || "", tempo: P.get("tempo") || "", curve: P.get("curve") || "", scroll: P.get("scroll") || "", mode: P.get("mode") || "", shown: PAGE };
 const pick = (P.get("pick") || "").split(",").filter(Boolean);
 let sites = [], fxs = [];
@@ -140,7 +140,7 @@ function cleanFrame(fr) {
   try {
     const d = fr.contentDocument; if (!d) return;
     d.documentElement.classList.add("wf-hide-notes");
-    const st = d.createElement("style"); st.textContent = ".wf-ui{display:none!important}"; d.head.append(st);
+    const st = d.createElement("style"); st.textContent = ".wf-ui,.v-cookie,[class*=cookie i]{display:none!important}"; d.head.append(st);
   } catch {}
 }
 function closeSite() {
