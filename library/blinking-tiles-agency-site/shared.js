@@ -168,7 +168,7 @@
 
   // ───────── Clock ─────────
   const clocks = document.querySelectorAll("[data-clock]");
-  const fmt = new Intl.DateTimeFormat("ko-KR", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, timeZone: "Asia/City" });
+  const fmt = new Intl.DateTimeFormat("ko-KR", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, timeZone: "UTC" });
   const tickClock = () => clocks.forEach((c) => (c.textContent = fmt.format(new Date())));
   if (clocks.length) { tickClock(); setInterval(tickClock, 1000); }
 

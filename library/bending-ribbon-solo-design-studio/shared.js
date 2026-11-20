@@ -221,7 +221,7 @@
   }
 
   // ───────── Clock · now playing ─────────
-  const fmt = new Intl.DateTimeFormat("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/City" });
+  const fmt = new Intl.DateTimeFormat("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "UTC" });
   const clocks = document.querySelectorAll("[data-clock]");
   const tick = () => clocks.forEach((c) => (c.textContent = fmt.format(new Date())));
   tick(); setInterval(tick, 15000);

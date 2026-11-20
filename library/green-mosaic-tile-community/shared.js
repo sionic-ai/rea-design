@@ -84,7 +84,7 @@
   // Clock — local time of a placeholder city (the original uses the event city)
   const clock = $(".cl__clock");
   const tick = () => {
-    const t = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/City" }).format(new Date());
+    const t = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "UTC" }).format(new Date());
     clock.textContent = `${t} GMT+9`;
   };
   tick(); setInterval(tick, 15000);

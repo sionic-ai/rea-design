@@ -317,7 +317,7 @@
     }));
   };
   const clock = () => {
-    const tick = () => qa("[data-time]").forEach((t) => (t.textContent = new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/City", hour: "2-digit", minute: "2-digit" })));
+    const tick = () => qa("[data-time]").forEach((t) => (t.textContent = new Date().toLocaleTimeString("en-GB", { timeZone: "UTC", hour: "2-digit", minute: "2-digit" })));
     tick(); setInterval(tick, 1000);
   };
   const years = (root) => qa("[data-year]", root).forEach((y) => (y.textContent = new Date().getFullYear()));

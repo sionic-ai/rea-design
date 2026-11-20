@@ -80,7 +80,7 @@
   // Current time (City)
   const clock = $("[data-clock]");
   if (clock) {
-    const f = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/City", hour: "2-digit", minute: "2-digit", hour12: false });
+    const f = new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", hour: "2-digit", minute: "2-digit", hour12: false });
     const t = () => (clock.textContent = f.format(new Date()));
     t(); setInterval(t, 10000);
   }

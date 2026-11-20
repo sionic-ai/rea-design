@@ -182,7 +182,7 @@
     document.fonts?.ready.then(fit);
     // Current time — the colon blinks with a 1s step-end
     const clock = $$("[data-foot-time]", block);
-    const fmt = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/City", hour: "2-digit", minute: "2-digit", hour12: false });
+    const fmt = new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", hour: "2-digit", minute: "2-digit", hour12: false });
     const tick = () => { const [h, m] = fmt.format(new Date()).split(":"); clock.forEach((c) => { c.innerHTML = `${h}<span class="kk-foot__colon">:</span>${m} KST`; }); };
     tick();
     const iv = clock.length ? setInterval(tick, 1000) : 0;

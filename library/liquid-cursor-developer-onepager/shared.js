@@ -130,7 +130,7 @@
   });
 
   // Clock — the colon blinks and the time is rewritten every tenth blink
-  const clockText = () => `${new Date().toLocaleTimeString("ko-KR", { timeZone: "Asia/City", hour: "2-digit", minute: "2-digit", hour12: false })} (KST)`;
+  const clockText = () => `${new Date().toLocaleTimeString("ko-KR", { timeZone: "UTC", hour: "2-digit", minute: "2-digit", hour12: false })} (KST)`;
   document.querySelectorAll("[data-clock]").forEach((el) => (el.textContent = clockText()));
   document.querySelectorAll(".aq-dot").forEach((dot) => {
     let n = 0;

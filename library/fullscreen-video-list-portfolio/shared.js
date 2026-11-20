@@ -145,7 +145,7 @@
   /* ───────── Clock: ticks every 1s, the colon goes off for half a second ───────── */
   const clocks = $$("[data-clock]");
   if (clocks.length && mqFine.matches) {
-    const fmt = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/City", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+    const fmt = new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
     const draw = () => {
       const [h, m, s] = fmt.format(new Date()).split(":");
       clocks.forEach((el) => { el.innerHTML = `${h}<i class="al-colon">:</i>${m}<i class="al-colon">:</i>${s}`; });

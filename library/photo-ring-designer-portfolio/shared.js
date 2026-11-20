@@ -177,7 +177,7 @@
 
   // Local time — the colon blinks in 1-second steps
   const tick = () => {
-    const [h, m] = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "Asia/City" }).format(Date.now()).split(":");
+    const [h, m] = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "UTC" }).format(Date.now()).split(":");
     document.querySelectorAll("[data-time]").forEach((t) => { t.innerHTML = `${h}<i>:</i>${m}`; });
   };
   tick();

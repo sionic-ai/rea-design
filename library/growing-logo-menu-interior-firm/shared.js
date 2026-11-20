@@ -143,7 +143,7 @@
   // ── Clock: City time hours · minutes ──
   const hh = head.querySelector("[data-hh]"), mm = head.querySelector("[data-mm]");
   const tick = () => {
-    const [h, m] = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Europe/City" }).format(new Date()).split(":");
+    const [h, m] = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "UTC" }).format(new Date()).split(":");
     hh.textContent = h; mm.textContent = m;
   };
   tick(); setInterval(tick, 10000);

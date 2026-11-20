@@ -207,7 +207,7 @@
   /* ── Clock ── */
   const clock = document.querySelector("[data-ct-clock]");
   if (clock) {
-    const fmt = new Intl.DateTimeFormat("en-US", { hour12: false, timeZone: "Asia/City", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    const fmt = new Intl.DateTimeFormat("en-US", { hour12: false, timeZone: "UTC", hour: "2-digit", minute: "2-digit", second: "2-digit" });
     const tick = () => (clock.textContent = `${fmt.format(new Date())} KST, City`);
     tick();
     setInterval(tick, 1000);

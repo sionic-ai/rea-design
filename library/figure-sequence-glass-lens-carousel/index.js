@@ -90,7 +90,7 @@
   // ── Clock — every time the minute changes ──
   const clock = document.querySelector(".tk-clock");
   if (clock) {
-    const f = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Studio", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+    const f = new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
     const tick = () => { clock.textContent = `City ${f.format(new Date())}`; setTimeout(tick, 60000 - (Date.now() % 60000) + 20); };
     tick();
   }
